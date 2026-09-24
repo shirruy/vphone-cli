@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04-firmware-restore-parity",
+  "compile_units": 381,
+  "categories": {
+    "PORTABLE": 12,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4A adds one Windows-native executable proof source: upstream_mbn_test.c. MBN production code remains classified SHIMMABLE until the broader MobileRestoreCore dependency surface is proven."
+}
