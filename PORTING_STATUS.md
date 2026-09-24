@@ -4,8 +4,8 @@ Upstream baseline: `d308fb9956afcbf5ad063b1680969d2692a4d9de`
 
 | Phase | Name | Status | Evidence |
 |---:|---|---|---|
-| 0 | Baseline + provenance | PARTIAL_PASS | Fork/branch provenance verified; Windows MSVC build and backend contract test passed on 2026-09-24. Preflight parser and CLI capability-contract defects fixed. WHPX servicing-stack query removed from Phase 0 after a real host hang; clean canonical rerun pending. |
-| 1 | Portability census | PARTIAL_PASS | Initial dependency census complete; full compile-unit matrix pending |
+| 0 | Baseline + provenance | PASS | Verified on Windows 11 Pro build 26200 / AMD64 on 2026-09-24: clean `windows-port` branch, MSVC 19.44, CMake configure/build PASS, 3/3 CTest PASS, `vphone-vm-win --capabilities` JSON contract PASS, persistent storage = supported and all unproven runtime capabilities remain unknown. |
+| 1 | Portability census | IN_PROGRESS | Initial dependency census exists; expanding to a complete compile-unit and host-dependency matrix. |
 | 2 | Host abstraction boundary | NOT_STARTED | |
 | 3 | Portable CLI/core build on Windows | NOT_STARTED | |
 | 4 | Firmware/restore/archive parity | NOT_STARTED | |
@@ -17,4 +17,4 @@ Upstream baseline: `d308fb9956afcbf5ad063b1680969d2692a4d9de`
 | 10 | Packaging + CI + release | NOT_STARTED | |
 | 11 | Full E2E acceptance | NOT_STARTED | |
 
-A full virtual iPhone on Windows is **not yet proven** by this scaffold.
+A full virtual iPhone on Windows is **not yet proven**. Phase 0 proves only repository provenance, the Windows-native scaffold/toolchain, its CLI contract, and its fail-closed test harness.
