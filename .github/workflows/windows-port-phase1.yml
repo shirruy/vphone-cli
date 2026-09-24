@@ -1,0 +1,51 @@
+name: Windows Port Phase 1
+
+on:
+  push:
+    branches:
+      - phase/01-portability-census
+  pull_request:
+    branches:
+      - windows-port
+  workflow_dispatch:
+
+jobs:
+  phase1-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S windows -B build/windows-phase1
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/windows-phase1 --config Release
+
+      - name: Census
+        shell: pwsh
+        run: ./scripts/phase1-census.ps1 -OutputDirectory build/phase1-evidence
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/windows-phase1 -C Release --output-on-failure
+
+      - name: Verify FTAB proof
+        shell: pwsh
+        run: |
+          $tests = ctest --test-dir build/windows-phase1 -C Release -N
+          if (($tests -join "`n") -notmatch "upstream_ftab_roundtrip") {
+            throw "upstream_ftab_roundtrip was not registered"
+          }
+
+      - name: Upload Phase 1 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-windows-evidence
+          path: build/phase1-evidence
+          if-no-files-found: warn
