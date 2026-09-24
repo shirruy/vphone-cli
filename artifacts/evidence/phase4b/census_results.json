@@ -1,12 +1,12 @@
 {
   "generated_from_branch": "phase/04b-archive-restore-parity",
-  "compile_units": 384,
+  "compile_units": 383,
   "categories": {
-    "PORTABLE": 15,
+    "PORTABLE": 14,
     "SHIMMABLE": 283,
     "REWRITE": 63,
     "APPLE_ONLY": 23
   },
   "unknown_count": 0,
-  "note": "Phase 4B adds archive_portable.c, archive_roundtrip_test.c, and the archive capability surface. GNU tar/member read are proven; compression and Darwin metadata remain unproven."
+  "note": "Phase 4B adds two new compile units: archive_portable.c and archive_roundtrip_test.c. Archive capability handling modifies existing CLI compile units and therefore does not increase the compile-unit count. GNU tar/member read are proven targets; compression and Darwin metadata remain unproven."
 }
