@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d-restore-image-backend",
+  "compile_units": 392,
+  "categories": {
+    "PORTABLE": 23,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D2A adds a Windows-native AEA profile 1 symmetric cryptographic core and a multi-cluster authenticated roundtrip test. Full file-streaming/interoperability replacement for /usr/bin/aea remains unsupported until Phase 4D2B."
+}
