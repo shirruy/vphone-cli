@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/03-native-windows-cli",
+  "compile_units": 380,
+  "categories": {
+    "PORTABLE": 11,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 3 adds three native Windows compile units: cli_core.cpp, cli_main.cpp, native_cli_core_test.cpp."
+}
