@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04c-compression-bundle-parity",
+  "compile_units": 386,
+  "categories": {
+    "PORTABLE": 17,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4C1 adds bundle_portable.c, bundle_validation_test.c, and windows_hardlink_identity_test.cpp. Bundle manifest/path safety and Windows hardlink identity are proven; compression remains explicitly unsupported pending Phase 4C2."
+}
