@@ -4,7 +4,7 @@ Upstream baseline: `d308fb9956afcbf5ad063b1680969d2692a4d9de`
 
 | Phase | Name | Status | Evidence |
 |---:|---|---|---|
-| 0 | Baseline + provenance | PARTIAL_PASS | Source tree and key host/VM files audited; Windows build not yet executed |
+| 0 | Baseline + provenance | PARTIAL_PASS | Fork/branch provenance verified; Windows MSVC build and backend contract test passed on 2026-09-24. Preflight parser and CLI capability-contract defects fixed; clean rerun pending. |
 | 1 | Portability census | PARTIAL_PASS | Initial dependency census complete; full compile-unit matrix pending |
 | 2 | Host abstraction boundary | NOT_STARTED | |
 | 3 | Portable CLI/core build on Windows | NOT_STARTED | |
