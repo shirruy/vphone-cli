@@ -73,6 +73,10 @@ int main() {
     CHECK(!bad_port.ok);
     CHECK(bad_port.error.find("6000 through 65535") != std::string::npos);
 
+    const auto capabilities = vphone::parse_native_cli({"firmware-capabilities"});
+    CHECK(capabilities.ok);
+    CHECK(capabilities.show_firmware_capabilities);
+
     const auto live_launch = vphone::parse_native_cli({
         "vm", "launch",
         "--config", "/tmp/a.plist"
