@@ -81,6 +81,24 @@ endif()
 add_executable(vphone_archive_roundtrip_test tests/archive_roundtrip_test.c)
 target_link_libraries(vphone_archive_roundtrip_test PRIVATE vphone_archive_portable)
 
+add_library(vphone_bundle_portable STATIC src/bundle_portable.c)
+target_include_directories(vphone_bundle_portable PUBLIC include)
+target_compile_definitions(vphone_bundle_portable PRIVATE LIBARCHIVE_STATIC)
+target_link_libraries(vphone_bundle_portable PUBLIC archive_static)
+if(WIN32)
+    target_link_libraries(vphone_bundle_portable PUBLIC bcrypt)
+endif()
+
+add_executable(vphone_bundle_validation_test tests/bundle_validation_test.c)
+target_link_libraries(vphone_bundle_validation_test PRIVATE
+    vphone_archive_portable
+    vphone_bundle_portable
+)
+
+if(WIN32)
+    add_executable(vphone_windows_hardlink_identity_test tests/windows_hardlink_identity_test.cpp)
+endif()
+
 # Phase 1 upstream-derived portability proof.
 set(VPHONE_MOBILE_RESTORE_ROOT
     "${CMAKE_CURRENT_SOURCE_DIR}/../VPhoneExecutable/VPhoneCommand/VPhoneRestore/MobileRestoreCore"
@@ -150,6 +168,18 @@ add_test(
     NAME archive_gnutar_roundtrip
     COMMAND vphone_archive_roundtrip_test "${CMAKE_CURRENT_BINARY_DIR}/archive_gnutar_roundtrip.tar"
 )
+
+add_test(
+    NAME bundle_manifest_validation
+    COMMAND vphone_bundle_validation_test "${CMAKE_CURRENT_BINARY_DIR}/bundle_validation.tar"
+)
+
+if(WIN32)
+    add_test(
+        NAME windows_hardlink_identity
+        COMMAND vphone_windows_hardlink_identity_test "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+endif()
 
 add_test(
     NAME native_cli_dry_run
