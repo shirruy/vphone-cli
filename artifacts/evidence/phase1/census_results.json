@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/01-portability-census",
+  "compile_units": 373,
+  "categories": {
+    "APPLE_ONLY": 23,
+    "SHIMMABLE": 281,
+    "REWRITE": 63,
+    "PORTABLE": 6
+  },
+  "unknown_count": 0,
+  "phase1_rule": "Every .swift/.c/.cc/.cpp/.cxx/.m/.mm tracked compile unit must receive an explicit portability category."
+}
