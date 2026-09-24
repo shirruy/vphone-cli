@@ -1,0 +1,13 @@
+{
+  "protocol_version": 1,
+  "operation": "boot",
+  "boot": {
+    "config": "C:/vphone/demo/config.plist",
+    "dfu": false,
+    "headless": true,
+    "api_listen": "127.0.0.1:8765",
+    "kernel_debug_port": 62000,
+    "vphoned_bin": ".vphoned.signed",
+    "install_ipa": null
+  }
+}
