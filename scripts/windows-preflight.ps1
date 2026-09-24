@@ -27,13 +27,8 @@ Write-Host "OS: $($os.Caption) $($os.Version)"
 Write-Host "CPU: $($cpu.Name)"
 Write-Host "Architecture env: $env:PROCESSOR_ARCHITECTURE"
 
-try {
-    $whpx = Get-WindowsOptionalFeature -Online -FeatureName HypervisorPlatform -ErrorAction Stop
-    Write-Host "Windows Hypervisor Platform: $($whpx.State)"
-}
-catch {
-    Write-Host "Windows Hypervisor Platform: UNKNOWN ($($_.Exception.Message))" -ForegroundColor Yellow
-}
+Write-Host "Windows Hypervisor Platform: DEFERRED TO PHASE 5" -ForegroundColor Yellow
+Write-Host "Reason: WHPX is not required for Phase 0 scaffold validation, and querying Windows Optional Features can block on servicing-stack state."
 
 Write-Host ""
 Write-Host "Tool inventory:" -ForegroundColor Cyan
@@ -69,6 +64,7 @@ Write-Host ""
 Write-Host "Interpretation:" -ForegroundColor Cyan
 Write-Host "- x64 Windows can use QEMU TCG for ARM64 correctness research."
 Write-Host "- Windows ARM64 is the candidate host for WHPX-accelerated ARM64 after correctness is proven."
+Write-Host "- WHPX readiness is deliberately tested later, at the Phase 5 boot-feasibility gate."
 Write-Host "- QEMU, Clang, Ninja, and Swift are optional for Phase 0 and become relevant in later phases."
 
 if (-not $requiredOk) {
