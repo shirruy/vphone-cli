@@ -8,15 +8,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(vphone_backend STATIC src/backend_stub.cpp)
 target_include_directories(vphone_backend PUBLIC include)
 
+add_library(vphone_backend_protocol STATIC src/backend_protocol.cpp)
+target_include_directories(vphone_backend_protocol PUBLIC include)
+
 add_executable(vphone-vm-win src/main.cpp)
-target_link_libraries(vphone-vm-win PRIVATE vphone_backend)
+target_link_libraries(vphone-vm-win PRIVATE vphone_backend vphone_backend_protocol)
 
 add_executable(vphone_backend_contract_test tests/backend_contract_test.cpp)
 target_link_libraries(vphone_backend_contract_test PRIVATE vphone_backend)
 
+add_executable(vphone_backend_protocol_test tests/backend_protocol_test.cpp)
+target_link_libraries(vphone_backend_protocol_test PRIVATE vphone_backend_protocol)
+
 # Phase 1 upstream-derived portability proof.
-# This builds real upstream MobileRestoreCore FTAB code under MSVC with only a
-# narrow logging compatibility header. The source itself remains the authority.
 set(VPHONE_MOBILE_RESTORE_ROOT
     "${CMAKE_CURRENT_SOURCE_DIR}/../VPhoneExecutable/VPhoneCommand/VPhoneRestore/MobileRestoreCore"
 )
@@ -36,9 +40,18 @@ target_include_directories(vphone_upstream_ftab_test PRIVATE
 )
 target_link_libraries(vphone_upstream_ftab_test PRIVATE vphone_upstream_ftab)
 
+set(VPHONE_PROTOCOL_FIXTURE
+    "${CMAKE_CURRENT_SOURCE_DIR}/../protocol/fixtures/backend_request_v1_boot.json"
+)
+
 enable_testing()
 
 add_test(NAME backend_contract COMMAND vphone_backend_contract_test)
+
+add_test(
+    NAME backend_protocol_v1
+    COMMAND vphone_backend_protocol_test "${VPHONE_PROTOCOL_FIXTURE}"
+)
 
 add_test(NAME cli_capability_probe COMMAND vphone-vm-win --capabilities)
 set_tests_properties(cli_capability_probe PROPERTIES
@@ -48,6 +61,19 @@ set_tests_properties(cli_capability_probe PROPERTIES
 add_test(NAME cli_help COMMAND vphone-vm-win --help)
 set_tests_properties(cli_help PROPERTIES
     PASS_REGULAR_EXPRESSION "usage: vphone-vm-win"
+)
+
+add_test(NAME cli_protocol_version COMMAND vphone-vm-win protocol-version)
+set_tests_properties(cli_protocol_version PROPERTIES
+    PASS_REGULAR_EXPRESSION "^1"
+)
+
+add_test(
+    NAME cli_validate_protocol_request
+    COMMAND vphone-vm-win validate-request "${VPHONE_PROTOCOL_FIXTURE}"
+)
+set_tests_properties(cli_validate_protocol_request PROPERTIES
+    PASS_REGULAR_EXPRESSION "\"protocol_version\": 1"
 )
 
 add_test(NAME upstream_ftab_roundtrip COMMAND vphone_upstream_ftab_test)
