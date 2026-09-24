@@ -22,6 +22,7 @@
 #ifndef MBN_H
 #define MBN_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 void* mbn_stitch(const void* data, size_t data_size, const void* blob, size_t blob_size);
