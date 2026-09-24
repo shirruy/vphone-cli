@@ -16,6 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Phase 0 preflight
+        shell: pwsh
+        run: ./scripts/windows-preflight.ps1
+
+      - name: Phase 1 census
+        shell: pwsh
+        run: ./scripts/phase1-census.ps1 -OutputDirectory build/phase2-revalidation-evidence
+
       - name: Configure
         shell: pwsh
         run: cmake -S windows -B build/windows-phase2
@@ -24,7 +32,7 @@ jobs:
         shell: pwsh
         run: cmake --build build/windows-phase2 --config Release
 
-      - name: Test
+      - name: Test Release contracts
         shell: pwsh
         run: ctest --test-dir build/windows-phase2 -C Release --output-on-failure
 
