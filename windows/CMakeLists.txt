@@ -158,6 +158,12 @@ target_link_libraries(vphone_compression_roundtrip_test PRIVATE
 
 if(WIN32)
     add_executable(vphone_windows_hardlink_identity_test tests/windows_hardlink_identity_test.cpp)
+
+    add_library(vphone_apfs_snapshot_portable STATIC src/apfs_snapshot_portable.cpp)
+    target_include_directories(vphone_apfs_snapshot_portable PUBLIC include)
+
+    add_executable(vphone_apfs_snapshot_rename_test tests/apfs_snapshot_rename_test.cpp)
+    target_link_libraries(vphone_apfs_snapshot_rename_test PRIVATE vphone_apfs_snapshot_portable)
 endif()
 
 # Phase 1 upstream-derived portability proof.
@@ -225,6 +231,11 @@ set_tests_properties(native_cli_archive_capabilities PROPERTIES
     PASS_REGULAR_EXPRESSION "\"gnutar_uncompressed\": \"supported\""
 )
 
+add_test(NAME native_cli_restore_capabilities COMMAND vphone-cli-win restore-capabilities)
+set_tests_properties(native_cli_restore_capabilities PROPERTIES
+    PASS_REGULAR_EXPRESSION "\"apfs_snapshot_rename\": \"supported\""
+)
+
 add_test(
     NAME archive_gnutar_roundtrip
     COMMAND vphone_archive_roundtrip_test "${CMAKE_CURRENT_BINARY_DIR}/archive_gnutar_roundtrip.tar"
@@ -239,6 +250,11 @@ if(WIN32)
     add_test(
         NAME windows_hardlink_identity
         COMMAND vphone_windows_hardlink_identity_test "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+
+    add_test(
+        NAME apfs_snapshot_rename
+        COMMAND vphone_apfs_snapshot_rename_test "${CMAKE_CURRENT_BINARY_DIR}"
     )
 endif()
 
