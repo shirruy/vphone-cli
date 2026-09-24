@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/02-backend-boundary",
+  "compile_units": 377,
+  "categories": {
+    "PORTABLE": 8,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 2 adds four compile units relative to the Phase 1 closure baseline: VPhoneBackendProtocol.swift, BackendProtocolTests.swift, backend_protocol.cpp, backend_protocol_test.cpp."
+}
