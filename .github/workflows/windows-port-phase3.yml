@@ -1,0 +1,49 @@
+name: Windows Port Phase 3
+
+on:
+  push:
+    branches:
+      - phase/03-native-windows-cli
+  pull_request:
+    branches:
+      - windows-port
+  workflow_dispatch:
+
+jobs:
+  native-windows-cli:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preflight
+        shell: pwsh
+        run: ./scripts/windows-preflight.ps1
+
+      - name: Census
+        shell: pwsh
+        run: ./scripts/phase1-census.ps1 -OutputDirectory build/phase3-evidence
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S windows -B build/windows-phase3
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/windows-phase3 --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/windows-phase3 -C Release --output-on-failure
+
+      - name: Native CLI dry-run contract
+        shell: pwsh
+        run: |
+          $cli = Get-ChildItem build/windows-phase3 -Recurse -Filter vphone-cli-win.exe | Select-Object -First 1
+          if (-not $cli) { throw "vphone-cli-win.exe not found" }
+          $json = & $cli.FullName vm launch --config /tmp/vphone/demo/config.plist --headless --api-listen 127.0.0.1:8765 --kernel-debug-port 62000 --dry-run
+          if ($LASTEXITCODE -ne 0) { throw "dry-run failed" }
+          $request = ($json -join [Environment]::NewLine) | ConvertFrom-Json
+          if ($request.protocol_version -ne 1) { throw "protocol version drift" }
+          if ($request.boot.config -ne "/tmp/vphone/demo/config.plist") { throw "config drift" }
