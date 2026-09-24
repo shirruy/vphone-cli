@@ -44,6 +44,49 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(libarchive)
 
+FetchContent_Declare(
+    zlib
+    GIT_REPOSITORY https://github.com/madler/zlib.git
+    GIT_TAG v1.3.2
+    GIT_SHALLOW TRUE
+)
+set(ZLIB_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(ZLIB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(ZLIB_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(ZLIB_INSTALL OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(zlib)
+
+FetchContent_Declare(
+    xz
+    GIT_REPOSITORY https://github.com/tukaani-project/xz.git
+    GIT_TAG v5.8.4
+    GIT_SHALLOW TRUE
+)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(XZ_NLS OFF CACHE BOOL "" FORCE)
+set(XZ_TOOL_XZ OFF CACHE BOOL "" FORCE)
+set(XZ_TOOL_XZDEC OFF CACHE BOOL "" FORCE)
+set(XZ_TOOL_LZMADEC OFF CACHE BOOL "" FORCE)
+set(XZ_TOOL_LZMAINFO OFF CACHE BOOL "" FORCE)
+set(XZ_TOOL_SCRIPTS OFF CACHE BOOL "" FORCE)
+set(XZ_DOC OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(xz)
+
+FetchContent_Declare(
+    zstd
+    GIT_REPOSITORY https://github.com/facebook/zstd.git
+    GIT_TAG v1.5.7
+    GIT_SHALLOW TRUE
+    SOURCE_SUBDIR build/cmake
+)
+set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(ZSTD_BUILD_DICTBUILDER OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(zstd)
+
 
 add_library(vphone_backend STATIC src/backend_stub.cpp)
 target_include_directories(vphone_backend PUBLIC include)
@@ -93,6 +136,21 @@ add_executable(vphone_bundle_validation_test tests/bundle_validation_test.c)
 target_link_libraries(vphone_bundle_validation_test PRIVATE
     vphone_archive_portable
     vphone_bundle_portable
+)
+
+add_library(vphone_compression_portable STATIC src/compression_portable.c)
+target_include_directories(vphone_compression_portable PUBLIC include)
+target_link_libraries(vphone_compression_portable PUBLIC
+    ZLIB::ZLIBSTATIC
+    liblzma
+    libzstd_static
+)
+
+add_executable(vphone_compression_roundtrip_test tests/compression_roundtrip_test.c)
+target_link_libraries(vphone_compression_roundtrip_test PRIVATE
+    vphone_archive_portable
+    vphone_bundle_portable
+    vphone_compression_portable
 )
 
 if(WIN32)
@@ -180,6 +238,13 @@ if(WIN32)
         COMMAND vphone_windows_hardlink_identity_test "${CMAKE_CURRENT_BINARY_DIR}"
     )
 endif()
+
+add_test(
+    NAME compression_transport_roundtrip
+    COMMAND vphone_compression_roundtrip_test
+        "${CMAKE_CURRENT_BINARY_DIR}/compression_source.tar"
+        "${CMAKE_CURRENT_BINARY_DIR}/compression_restored.tar"
+)
 
 add_test(
     NAME native_cli_dry_run
