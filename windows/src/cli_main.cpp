@@ -56,9 +56,9 @@ int main(int argc, char** argv) {
             << "  \"bundle_manifest_validation\": \"supported\",\n"
             << "  \"windows_hardlink_identity\": \"supported\",\n"
             << "  \"symlink_import\": \"unsupported\",\n"
-            << "  \"zstd\": \"unsupported\",\n"
-            << "  \"xz\": \"unsupported\",\n"
-            << "  \"gzip\": \"unsupported\",\n"
+            << "  \"zstd\": \"supported\",\n"
+            << "  \"xz\": \"supported\",\n"
+            << "  \"gzip\": \"supported\",\n"
             << "  \"darwin_xattrs_acl\": \"unsupported\"\n"
             << "}\n";
         return 0;
