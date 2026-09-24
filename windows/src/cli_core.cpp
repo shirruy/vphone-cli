@@ -58,6 +58,7 @@ std::string native_cli_usage() {
         "  vphone-cli-win --help\n"
         "  vphone-cli-win --version\n"
         "  vphone-cli-win protocol-version\n"
+        "  vphone-cli-win firmware-capabilities\n"
         "  vphone-cli-win vm launch --config PATH [options] --dry-run\n"
         "\n"
         "options for vm launch:\n"
@@ -92,6 +93,12 @@ NativeCliParseResult parse_native_cli(const std::vector<std::string>& args) {
 
     if (args.size() == 1 && args[0] == "protocol-version") {
         result.ok = true;
+        return result;
+    }
+
+    if (args.size() == 1 && args[0] == "firmware-capabilities") {
+        result.ok = true;
+        result.show_firmware_capabilities = true;
         return result;
     }
 
