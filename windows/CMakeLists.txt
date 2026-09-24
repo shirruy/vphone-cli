@@ -13,4 +13,15 @@ add_executable(vphone_backend_contract_test tests/backend_contract_test.cpp)
 target_link_libraries(vphone_backend_contract_test PRIVATE vphone_backend)
 
 enable_testing()
+
 add_test(NAME backend_contract COMMAND vphone_backend_contract_test)
+
+add_test(NAME cli_capability_probe COMMAND vphone-vm-win --capabilities)
+set_tests_properties(cli_capability_probe PROPERTIES
+    PASS_REGULAR_EXPRESSION "\"backend\": \"windows-research-stub\""
+)
+
+add_test(NAME cli_help COMMAND vphone-vm-win --help)
+set_tests_properties(cli_help PROPERTIES
+    PASS_REGULAR_EXPRESSION "usage: vphone-vm-win"
+)
