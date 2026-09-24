@@ -12,23 +12,18 @@ static void set_error(char* error, size_t error_size, const char* message)
     if (!error || error_size == 0) {
         return;
     }
-#if defined(_MSC_VER)
     snprintf(error, error_size, "%s", message ? message : "unknown archive error");
-#else
-    snprintf(error, error_size, "%s", message ? message : "unknown archive error");
-#endif
 }
 
-int vphone_archive_create_single_gnutar(
+int vphone_archive_create_gnutar(
     const char* archive_path,
-    const char* stored_path,
-    const void* data,
-    size_t size,
+    const vphone_archive_member* members,
+    size_t member_count,
     char* error,
     size_t error_size
 )
 {
-    if (!archive_path || !stored_path || !data || size == 0) {
+    if (!archive_path || !members || member_count == 0) {
         set_error(error, error_size, "invalid create arguments");
         return -1;
     }
@@ -40,7 +35,6 @@ int vphone_archive_create_single_gnutar(
     }
 
     int result = -1;
-    struct archive_entry* entry = NULL;
 
     if (archive_write_set_format_gnutar(writer) != ARCHIVE_OK) {
         set_error(error, error_size, archive_error_string(writer));
@@ -52,32 +46,56 @@ int vphone_archive_create_single_gnutar(
         goto cleanup;
     }
 
-    entry = archive_entry_new();
-    if (!entry) {
-        set_error(error, error_size, "archive_entry_new failed");
-        goto cleanup_open;
-    }
+    for (size_t i = 0; i < member_count; ++i) {
+        const vphone_archive_member* member = &members[i];
 
-    archive_entry_set_pathname(entry, stored_path);
-    archive_entry_set_filetype(entry, AE_IFREG);
-    archive_entry_set_perm(entry, 0644);
-    archive_entry_set_size(entry, (la_int64_t)size);
+        if (!member->path || member->path[0] == '\0') {
+            set_error(error, error_size, "archive member path must not be empty");
+            goto cleanup_open;
+        }
 
-    if (archive_write_header(writer, entry) != ARCHIVE_OK) {
-        set_error(error, error_size, archive_error_string(writer));
-        goto cleanup_entry;
-    }
+        struct archive_entry* entry = archive_entry_new();
+        if (!entry) {
+            set_error(error, error_size, "archive_entry_new failed");
+            goto cleanup_open;
+        }
 
-    const la_ssize_t written = archive_write_data(writer, data, size);
-    if (written < 0 || (size_t)written != size) {
-        set_error(error, error_size, archive_error_string(writer));
-        goto cleanup_entry;
+        archive_entry_set_pathname(entry, member->path);
+        archive_entry_set_filetype(entry, AE_IFREG);
+        archive_entry_set_perm(entry, 0644);
+
+        if (member->hardlink_target) {
+            archive_entry_set_hardlink(entry, member->hardlink_target);
+            archive_entry_set_size(entry, 0);
+        } else {
+            if (!member->data && member->size != 0) {
+                archive_entry_free(entry);
+                set_error(error, error_size, "archive member data is null");
+                goto cleanup_open;
+            }
+            archive_entry_set_size(entry, (la_int64_t)member->size);
+        }
+
+        if (archive_write_header(writer, entry) != ARCHIVE_OK) {
+            set_error(error, error_size, archive_error_string(writer));
+            archive_entry_free(entry);
+            goto cleanup_open;
+        }
+
+        if (!member->hardlink_target && member->size != 0) {
+            const la_ssize_t written = archive_write_data(writer, member->data, member->size);
+            if (written < 0 || (size_t)written != member->size) {
+                set_error(error, error_size, archive_error_string(writer));
+                archive_entry_free(entry);
+                goto cleanup_open;
+            }
+        }
+
+        archive_entry_free(entry);
     }
 
     result = 0;
 
-cleanup_entry:
-    archive_entry_free(entry);
 cleanup_open:
     if (archive_write_close(writer) != ARCHIVE_OK && result == 0) {
         set_error(error, error_size, archive_error_string(writer));
@@ -86,6 +104,31 @@ cleanup_open:
 cleanup:
     archive_write_free(writer);
     return result;
+}
+
+int vphone_archive_create_single_gnutar(
+    const char* archive_path,
+    const char* stored_path,
+    const void* data,
+    size_t size,
+    char* error,
+    size_t error_size
+)
+{
+    const vphone_archive_member member = {
+        stored_path,
+        data,
+        size,
+        NULL
+    };
+
+    return vphone_archive_create_gnutar(
+        archive_path,
+        &member,
+        1,
+        error,
+        error_size
+    );
 }
 
 int vphone_archive_read_member(
