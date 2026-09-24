@@ -49,8 +49,22 @@ Invoke-Checked -Label "[2/6] Phase 1 full compile-unit census" -Action {
 }
 
 $census = Get-Content (Join-Path $evidenceDir "census_results.runtime.json") -Raw | ConvertFrom-Json
-if ($census.compile_units -ne 373 -or $census.unknown_count -ne 0) {
-    throw "VALIDATION FAIL: census drift. compile_units=$($census.compile_units), unknown=$($census.unknown_count)"
+$baseline = Get-Content ".\artifacts\evidence\phase2\census_results.json" -Raw | ConvertFrom-Json
+
+if ($census.unknown_count -ne 0) {
+    throw "VALIDATION FAIL: census has unclassified compile units. unknown=$($census.unknown_count)"
+}
+
+if ($census.compile_units -ne $baseline.compile_units) {
+    throw "VALIDATION FAIL: Phase 2 compile-unit drift. runtime=$($census.compile_units), baseline=$($baseline.compile_units)"
+}
+
+foreach ($category in @("PORTABLE", "SHIMMABLE", "REWRITE", "APPLE_ONLY")) {
+    $runtimeCount = $census.categories.$category
+    $baselineCount = $baseline.categories.$category
+    if ($runtimeCount -ne $baselineCount) {
+        throw "VALIDATION FAIL: Phase 2 category drift for $category. runtime=$runtimeCount, baseline=$baselineCount"
+    }
 }
 
 Invoke-Checked -Label "[3/6] Configure Windows Phase 2 build" -Action {
