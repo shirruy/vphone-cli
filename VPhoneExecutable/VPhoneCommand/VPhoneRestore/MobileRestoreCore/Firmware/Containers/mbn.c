@@ -377,7 +377,7 @@ void* mbn_mav25_stitch(const void* data, size_t data_size, const void* blob, siz
 			logger(LL_ERROR, "%s: ELF has no program sections\n", __func__);
 			return NULL;
 		}
-		if ((ehdr->e_phoff + ehdr->e_phnum * sizeof(elf32_pheader)) > data_size) {
+		if ((ehdr->e_phoff + ehdr->e_phnum * sizeof(elf64_pheader)) > data_size) {
 			logger(LL_ERROR, "%s: Last ELF program section is out of bounds\n", __func__);
 			return NULL;
 		}
