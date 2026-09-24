@@ -60,7 +60,7 @@ int ftab_parse(const void *data, size_t data_size, ftab_t *ftab, uint32_t *tag)
 
 	/* copy entries */
 	ftab_new->entries = (struct ftab_entry*)malloc(sizeof(struct ftab_entry) * ftab_new->header.num_entries);
-	memcpy(ftab_new->entries, data + sizeof(struct ftab_header), sizeof(struct ftab_entry) * ftab_new->header.num_entries);
+	memcpy(ftab_new->entries, (const unsigned char*)data + sizeof(struct ftab_header), sizeof(struct ftab_entry) * ftab_new->header.num_entries);
 
 	/* create data storage */
 	ftab_new->storage = (unsigned char**)calloc(ftab_new->header.num_entries, sizeof(unsigned char*));
@@ -73,7 +73,7 @@ int ftab_parse(const void *data, size_t data_size, ftab_t *ftab, uint32_t *tag)
 		ftab_new->entries[i].size = le32toh(ftab_new->entries[i].size);
 
 		ftab_new->storage[i] = malloc(ftab_new->entries[i].size);
-		memcpy(ftab_new->storage[i], data + ftab_new->entries[i].offset, ftab_new->entries[i].size);
+		memcpy(ftab_new->storage[i], (const unsigned char*)data + ftab_new->entries[i].offset, ftab_new->entries[i].size);
 	}
 
 	*ftab = ftab_new;
