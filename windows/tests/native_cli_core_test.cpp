@@ -77,6 +77,10 @@ int main() {
     CHECK(capabilities.ok);
     CHECK(capabilities.show_firmware_capabilities);
 
+    const auto archiveCapabilities = vphone::parse_native_cli({"archive-capabilities"});
+    CHECK(archiveCapabilities.ok);
+    CHECK(archiveCapabilities.show_archive_capabilities);
+
     const auto live_launch = vphone::parse_native_cli({
         "vm", "launch",
         "--config", "/tmp/a.plist"
