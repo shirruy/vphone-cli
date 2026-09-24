@@ -5,6 +5,45 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(ENABLE_TEST OFF CACHE BOOL "" FORCE)
+set(ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+set(ENABLE_TAR OFF CACHE BOOL "" FORCE)
+set(ENABLE_CPIO OFF CACHE BOOL "" FORCE)
+set(ENABLE_CAT OFF CACHE BOOL "" FORCE)
+set(ENABLE_UNZIP OFF CACHE BOOL "" FORCE)
+set(ENABLE_OPENSSL OFF CACHE BOOL "" FORCE)
+set(ENABLE_MBEDTLS OFF CACHE BOOL "" FORCE)
+set(ENABLE_NETTLE OFF CACHE BOOL "" FORCE)
+set(ENABLE_LIBB2 OFF CACHE BOOL "" FORCE)
+set(ENABLE_LZ4 OFF CACHE BOOL "" FORCE)
+set(ENABLE_LZO OFF CACHE BOOL "" FORCE)
+set(ENABLE_LZMA OFF CACHE BOOL "" FORCE)
+set(ENABLE_ZSTD OFF CACHE BOOL "" FORCE)
+set(ENABLE_ZLIB OFF CACHE BOOL "" FORCE)
+set(ENABLE_BZip2 OFF CACHE BOOL "" FORCE)
+set(ENABLE_LIBXML2 OFF CACHE BOOL "" FORCE)
+set(ENABLE_EXPAT OFF CACHE BOOL "" FORCE)
+set(ENABLE_WIN32_XMLLITE OFF CACHE BOOL "" FORCE)
+set(ENABLE_PCREPOSIX OFF CACHE BOOL "" FORCE)
+set(ENABLE_PCRE2POSIX OFF CACHE BOOL "" FORCE)
+set(ENABLE_LIBGCC OFF CACHE BOOL "" FORCE)
+set(ENABLE_CNG OFF CACHE BOOL "" FORCE)
+set(ENABLE_XATTR OFF CACHE BOOL "" FORCE)
+set(ENABLE_ACL OFF CACHE BOOL "" FORCE)
+set(ENABLE_ICONV OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    libarchive
+    GIT_REPOSITORY https://github.com/libarchive/libarchive.git
+    GIT_TAG v3.8.9
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(libarchive)
+
+
 add_library(vphone_backend STATIC src/backend_stub.cpp)
 target_include_directories(vphone_backend PUBLIC include)
 
@@ -29,6 +68,13 @@ target_link_libraries(vphone_backend_protocol_test PRIVATE vphone_backend_protoc
 
 add_executable(vphone_native_cli_core_test tests/native_cli_core_test.cpp)
 target_link_libraries(vphone_native_cli_core_test PRIVATE vphone_cli_core)
+
+add_library(vphone_archive_portable STATIC src/archive_portable.c)
+target_include_directories(vphone_archive_portable PUBLIC include)
+target_link_libraries(vphone_archive_portable PUBLIC archive_static)
+
+add_executable(vphone_archive_roundtrip_test tests/archive_roundtrip_test.c)
+target_link_libraries(vphone_archive_roundtrip_test PRIVATE vphone_archive_portable)
 
 # Phase 1 upstream-derived portability proof.
 set(VPHONE_MOBILE_RESTORE_ROOT
@@ -88,6 +134,16 @@ set_tests_properties(native_cli_protocol_version PROPERTIES
 add_test(NAME native_cli_firmware_capabilities COMMAND vphone-cli-win firmware-capabilities)
 set_tests_properties(native_cli_firmware_capabilities PROPERTIES
     PASS_REGULAR_EXPRESSION "\"mbn\": \"supported\""
+)
+
+add_test(NAME native_cli_archive_capabilities COMMAND vphone-cli-win archive-capabilities)
+set_tests_properties(native_cli_archive_capabilities PROPERTIES
+    PASS_REGULAR_EXPRESSION "\"gnutar_uncompressed\": \"supported\""
+)
+
+add_test(
+    NAME archive_gnutar_roundtrip
+    COMMAND vphone_archive_roundtrip_test "${CMAKE_CURRENT_BINARY_DIR}/archive_gnutar_roundtrip.tar"
 )
 
 add_test(
