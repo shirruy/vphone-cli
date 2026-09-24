@@ -48,6 +48,19 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    if (parsed.show_archive_capabilities) {
+        std::cout
+            << "{\n"
+            << "  \"gnutar_uncompressed\": \"supported\",\n"
+            << "  \"member_read\": \"supported\",\n"
+            << "  \"zstd\": \"unsupported\",\n"
+            << "  \"xz\": \"unsupported\",\n"
+            << "  \"gzip\": \"unsupported\",\n"
+            << "  \"darwin_xattrs_acl\": \"unsupported\"\n"
+            << "}\n";
+        return 0;
+    }
+
     if (parsed.dry_run) {
         std::cout << vphone::canonical_backend_request_json(parsed.request);
         return 0;
