@@ -2,7 +2,7 @@
   "protocol_version": 1,
   "operation": "boot",
   "boot": {
-    "config": "C:/vphone/demo/config.plist",
+    "config": "/tmp/vphone/demo/config.plist",
     "dfu": false,
     "headless": true,
     "api_listen": "127.0.0.1:8765",
