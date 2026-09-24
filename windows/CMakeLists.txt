@@ -11,6 +11,13 @@ target_include_directories(vphone_backend PUBLIC include)
 add_library(vphone_backend_protocol STATIC src/backend_protocol.cpp)
 target_include_directories(vphone_backend_protocol PUBLIC include)
 
+add_library(vphone_cli_core STATIC src/cli_core.cpp)
+target_include_directories(vphone_cli_core PUBLIC include)
+target_link_libraries(vphone_cli_core PUBLIC vphone_backend_protocol)
+
+add_executable(vphone-cli-win src/cli_main.cpp)
+target_link_libraries(vphone-cli-win PRIVATE vphone_cli_core)
+
 add_executable(vphone-vm-win src/main.cpp)
 target_link_libraries(vphone-vm-win PRIVATE vphone_backend vphone_backend_protocol)
 
@@ -19,6 +26,9 @@ target_link_libraries(vphone_backend_contract_test PRIVATE vphone_backend)
 
 add_executable(vphone_backend_protocol_test tests/backend_protocol_test.cpp)
 target_link_libraries(vphone_backend_protocol_test PRIVATE vphone_backend_protocol)
+
+add_executable(vphone_native_cli_core_test tests/native_cli_core_test.cpp)
+target_link_libraries(vphone_native_cli_core_test PRIVATE vphone_cli_core)
 
 # Phase 1 upstream-derived portability proof.
 set(VPHONE_MOBILE_RESTORE_ROOT
@@ -47,6 +57,31 @@ set(VPHONE_PROTOCOL_FIXTURE
 enable_testing()
 
 add_test(NAME backend_contract COMMAND vphone_backend_contract_test)
+
+add_test(NAME native_cli_core COMMAND vphone_native_cli_core_test)
+
+add_test(NAME native_cli_help COMMAND vphone-cli-win --help)
+set_tests_properties(native_cli_help PROPERTIES
+    PASS_REGULAR_EXPRESSION "vphone-cli-win vm launch"
+)
+
+add_test(NAME native_cli_protocol_version COMMAND vphone-cli-win protocol-version)
+set_tests_properties(native_cli_protocol_version PROPERTIES
+    PASS_REGULAR_EXPRESSION "^1"
+)
+
+add_test(
+    NAME native_cli_dry_run
+    COMMAND vphone-cli-win vm launch
+        --config /tmp/vphone/demo/config.plist
+        --headless
+        --api-listen 127.0.0.1:8765
+        --kernel-debug-port 62000
+        --dry-run
+)
+set_tests_properties(native_cli_dry_run PROPERTIES
+    PASS_REGULAR_EXPRESSION "\"protocol_version\": 1"
+)
 
 add_test(
     NAME backend_protocol_v1
