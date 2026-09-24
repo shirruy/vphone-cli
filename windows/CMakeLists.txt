@@ -94,6 +94,11 @@ FetchContent_Declare(
 )
 set(LZFSE_BUNDLE_MODE ON CACHE BOOL "" FORCE)
 set(LZFSE_DISABLE_TESTS ON CACHE BOOL "" FORCE)
+
+# lzfse still declares cmake_minimum_required(VERSION 2.8.6). CMake 4.x
+# removed compatibility below 3.5, so explicitly raise the policy floor for
+# this pinned legacy dependency without changing its source or commit.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "" FORCE)
 FetchContent_MakeAvailable(lzfse)
 
 
