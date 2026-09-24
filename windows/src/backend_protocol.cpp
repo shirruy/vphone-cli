@@ -14,21 +14,59 @@ void skip_ws(std::string_view text, std::size_t& pos) {
 }
 
 bool find_value(std::string_view text, std::string_view key, std::size_t& pos) {
-    const std::string needle = "\"" + std::string(key) + "\"";
-    const auto key_pos = text.find(needle);
-    if (key_pos == std::string_view::npos) {
-        return false;
+    std::size_t cursor = 0;
+
+    while (cursor < text.size()) {
+        if (text[cursor] != '"') {
+            ++cursor;
+            continue;
+        }
+
+        ++cursor;
+        std::string token;
+        bool escaped = false;
+        bool closed = false;
+
+        while (cursor < text.size()) {
+            const char ch = text[cursor++];
+
+            if (escaped) {
+                token.push_back(ch);
+                escaped = false;
+                continue;
+            }
+
+            if (ch == '\\') {
+                escaped = true;
+                continue;
+            }
+
+            if (ch == '"') {
+                closed = true;
+                break;
+            }
+
+            token.push_back(ch);
+        }
+
+        if (!closed) {
+            return false;
+        }
+
+        std::size_t after = cursor;
+        skip_ws(text, after);
+
+        // A JSON key is a string token immediately followed by a colon.
+        // This deliberately avoids matching string values such as
+        // "operation": "boot" when searching for the separate "boot" key.
+        if (after < text.size() && text[after] == ':' && token == key) {
+            pos = after + 1;
+            skip_ws(text, pos);
+            return pos < text.size();
+        }
     }
 
-    pos = key_pos + needle.size();
-    skip_ws(text, pos);
-    if (pos >= text.size() || text[pos] != ':') {
-        return false;
-    }
-
-    ++pos;
-    skip_ws(text, pos);
-    return pos < text.size();
+    return false;
 }
 
 bool parse_string_at(std::string_view text, std::size_t& pos, std::string& value) {
