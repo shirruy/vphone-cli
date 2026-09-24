@@ -1,0 +1,24 @@
+name: windows-port-smoke
+
+on:
+  push:
+    branches: [ windows-port, 'phase/**' ]
+  pull_request:
+
+jobs:
+  backend-contract:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S windows -B build/windows
+      - name: Build
+        run: cmake --build build/windows --config Release
+      - name: Test
+        run: ctest --test-dir build/windows -C Release --output-on-failure
+      - name: Probe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem build/windows -Recurse -Filter vphone-vm-win.exe | Select-Object -First 1
+          if (-not $exe) { throw "vphone-vm-win.exe not found" }
+          & $exe.FullName probe
