@@ -4,12 +4,12 @@ Upstream baseline: `d308fb9956afcbf5ad063b1680969d2692a4d9de`
 
 | Phase | Name | Status | Evidence |
 |---:|---|---|---|
-| 0 | Baseline + provenance | REVALIDATION_REQUIRED | Repository/toolchain/CLI evidence remains valid, but one native C++ contract test used `assert` under Release and therefore did not provide executable assertion evidence. Revalidation pending with explicit checks. |
-| 1 | Portability census | REVALIDATION_REQUIRED | Census completeness remains valid: 373 compile units, 0 UNKNOWN. The upstream FTAB proof used `assert` under Release, so its behavioral proof is invalidated pending rerun with explicit checks. |
-| 2 | Host abstraction boundary | IN_PROGRESS | Protocol v1 implemented on Swift/macOS and C++/Windows. macOS CI passed at commit `4cddd49927f7085c871004dd9cbb06d5b983f230`. Windows exposed two real validator/parser defects: the string value `"boot"` was mistaken for the `"boot"` key, and the cumulative validator incorrectly hardcoded the Phase 1 compile-unit count after Phase 2 added four reviewed compile units. Parser, Release-test harness, and Phase 2 census-baseline remediation are in progress. |
-| 3 | Portable CLI/core build on Windows | NOT_STARTED | |
+| 0 | Baseline + provenance | PASS | Revalidated on physical Windows host and CI with explicit Release-mode checks. Windows 11 Pro / AMD64 preflight PASS, MSVC/CMake build PASS, backend contract PASS, CLI capability contract PASS. |
+| 1 | Portability census | PASS | Revalidated after removal of Release-disabled `assert` tests. 377 current compile units classified with 0 UNKNOWN: 23 APPLE_ONLY, 63 REWRITE, 283 SHIMMABLE, 8 PORTABLE. Upstream-derived `MobileRestoreCore/Firmware/Containers/ftab.c` compiled under MSVC and `upstream_ftab_roundtrip` passed with explicit runtime checks. |
+| 2 | Host abstraction boundary | PASS | Protocol v1 implemented and verified on physical Windows plus GitHub Windows and macOS CI at code commit `4e6e9d2b0d44a2316b9cf0a88bc206a86609f6eb`. Physical Windows cumulative gate: preflight PASS, census 377/0 UNKNOWN, 7/7 Release-mode CTest PASS, shared v1 fixture accepted. GitHub `windows-protocol`, `macos-protocol`, and `windows-port-smoke` all SUCCESS. |
+| 3 | Portable CLI/core build on Windows | IN_PROGRESS | Build a native Windows orchestration surface against the v1 backend protocol without linking Apple-only host frameworks. |
 | 4 | Firmware/restore/archive parity | NOT_STARTED | |
-| 5 | Windows ARM boot feasibility spike | NOT_STARTED | WHPX readiness belongs here, not Phase 0 |
+| 5 | Windows ARM boot feasibility spike | NOT_STARTED | WHPX readiness belongs here |
 | 6 | Apple device-model parity | NOT_STARTED | |
 | 7 | Persistent VM + restore flow | NOT_STARTED | |
 | 8 | Display/input/audio/network | NOT_STARTED | |
@@ -17,4 +17,4 @@ Upstream baseline: `d308fb9956afcbf5ad063b1680969d2692a4d9de`
 | 10 | Packaging + CI + release | NOT_STARTED | |
 | 11 | Full E2E acceptance | NOT_STARTED | |
 
-A full virtual iPhone on Windows is **not yet proven**. No phase relying on Release-mode `assert` tests will be treated as closed until the replacement explicit-check tests pass on the physical Windows host and CI.
+A full virtual iPhone on Windows is **not yet proven**. Phases 0-2 prove the Windows-native scaffold/toolchain, full compile-unit census, upstream-derived Windows execution proof, and a versioned cross-platform backend protocol with matching Windows/macOS semantics.
