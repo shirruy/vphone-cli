@@ -1,10 +1,19 @@
 #include "vphone/backend.hpp"
-#include <cassert>
+
+#include <iostream>
 #include <string>
 
+#define CHECK(expr) \
+    do { \
+        if (!(expr)) { \
+            std::cerr << "CHECK FAILED at " << __FILE__ << ":" << __LINE__ << ": " #expr "\n"; \
+            return 1; \
+        } \
+    } while (0)
+
 int main() {
-    assert(std::string(vphone::to_string(vphone::CapabilityState::supported)) == "supported");
-    assert(std::string(vphone::to_string(vphone::CapabilityState::unsupported)) == "unsupported");
-    assert(std::string(vphone::to_string(vphone::CapabilityState::unknown)) == "unknown");
+    CHECK(std::string(vphone::to_string(vphone::CapabilityState::supported)) == "supported");
+    CHECK(std::string(vphone::to_string(vphone::CapabilityState::unsupported)) == "unsupported");
+    CHECK(std::string(vphone::to_string(vphone::CapabilityState::unknown)) == "unknown");
     return 0;
 }
