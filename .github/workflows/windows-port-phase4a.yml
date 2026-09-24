@@ -1,0 +1,50 @@
+name: Windows Port Phase 4A
+
+on:
+  push:
+    branches:
+      - phase/04-firmware-restore-parity
+  workflow_dispatch:
+
+jobs:
+  firmware-parity:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preflight
+        shell: pwsh
+        run: ./scripts/windows-preflight.ps1
+
+      - name: Census
+        shell: pwsh
+        run: ./scripts/phase1-census.ps1 -OutputDirectory build/phase4a-evidence
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S windows -B build/windows-phase4
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/windows-phase4 --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/windows-phase4 -C Release --output-on-failure
+
+      - name: Firmware capability boundary
+        shell: pwsh
+        run: |
+          $cli = Get-ChildItem build/windows-phase4 -Recurse -Filter vphone-cli-win.exe | Select-Object -First 1
+          if (-not $cli) { throw "vphone-cli-win.exe not found" }
+
+          $cap = ((& $cli.FullName firmware-capabilities) -join [Environment]::NewLine) | ConvertFrom-Json
+          if ($cap.ftab -ne "supported") { throw "FTAB not supported" }
+          if ($cap.mbn -ne "supported") { throw "MBN not supported" }
+
+          foreach ($name in @("aea_decrypt_encrypt","disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
+            if ($cap.$name -ne "unsupported") {
+              throw "$name must remain unsupported without executable evidence"
+            }
+          }
