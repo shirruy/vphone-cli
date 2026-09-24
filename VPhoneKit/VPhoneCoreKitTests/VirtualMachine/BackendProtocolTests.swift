@@ -17,7 +17,7 @@ struct BackendProtocolTests {
 
         #expect(request.protocolVersion == 1)
         #expect(request.operation == .boot)
-        #expect(request.boot?.config == "C:/vphone/demo/config.plist")
+        #expect(request.boot?.config == "/tmp/vphone/demo/config.plist")
         #expect(request.boot?.dfu == false)
         #expect(request.boot?.headless == true)
         #expect(request.boot?.apiListen == "127.0.0.1:8765")
@@ -27,7 +27,7 @@ struct BackendProtocolTests {
 
         let command = try request.bootCommand()
         #expect(command.bootArguments == [
-            "--config", "C:/vphone/demo/config.plist",
+            "--config", "/tmp/vphone/demo/config.plist",
             "--headless",
             "--api-listen", "127.0.0.1:8765",
             "--kernel-debug-port", "62000",
