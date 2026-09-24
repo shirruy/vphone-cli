@@ -139,7 +139,10 @@ target_link_libraries(vphone_bundle_validation_test PRIVATE
 )
 
 add_library(vphone_compression_portable STATIC src/compression_portable.c)
-target_include_directories(vphone_compression_portable PUBLIC include)
+target_include_directories(vphone_compression_portable
+    PUBLIC include
+    PRIVATE "${xz_SOURCE_DIR}/src/liblzma/api"
+)
 target_link_libraries(vphone_compression_portable PUBLIC
     ZLIB::ZLIBSTATIC
     liblzma
