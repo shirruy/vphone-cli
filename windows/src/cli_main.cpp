@@ -35,6 +35,19 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    if (parsed.show_firmware_capabilities) {
+        std::cout
+            << "{\n"
+            << "  \"ftab\": \"supported\",\n"
+            << "  \"mbn\": \"supported\",\n"
+            << "  \"aea_decrypt_encrypt\": \"unsupported\",\n"
+            << "  \"disk_image_attach_convert\": \"unsupported\",\n"
+            << "  \"apfs_seal\": \"unsupported\",\n"
+            << "  \"canonical_metadata_archive\": \"unsupported\"\n"
+            << "}\n";
+        return 0;
+    }
+
     if (parsed.dry_run) {
         std::cout << vphone::canonical_backend_request_json(parsed.request);
         return 0;
