@@ -81,6 +81,10 @@ int main() {
     CHECK(archiveCapabilities.ok);
     CHECK(archiveCapabilities.show_archive_capabilities);
 
+    const auto restoreCapabilities = vphone::parse_native_cli({"restore-capabilities"});
+    CHECK(restoreCapabilities.ok);
+    CHECK(restoreCapabilities.show_restore_capabilities);
+
     const auto live_launch = vphone::parse_native_cli({
         "vm", "launch",
         "--config", "/tmp/a.plist"
