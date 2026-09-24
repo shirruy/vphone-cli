@@ -1,8 +1,23 @@
 #include "vphone/backend.hpp"
+#include "vphone/backend_protocol.hpp"
+
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 namespace vphone { IVirtualMachineBackend* create_windows_backend(); }
+
+static std::string read_file(const std::string& path) {
+    std::ifstream input(path, std::ios::binary);
+    if (!input) {
+        return {};
+    }
+
+    std::ostringstream buffer;
+    buffer << input.rdbuf();
+    return buffer.str();
+}
 
 static void print_capabilities(vphone::IVirtualMachineBackend* backend) {
     const auto c = backend->probe();
@@ -20,7 +35,8 @@ static void print_capabilities(vphone::IVirtualMachineBackend* backend) {
 }
 
 static void print_usage() {
-    std::cout << "usage: vphone-vm-win [probe|--capabilities|launch|--help]\n";
+    std::cout
+        << "usage: vphone-vm-win [probe|--capabilities|protocol-version|validate-request FILE|launch-request FILE|launch|--help]\n";
 }
 
 int main(int argc, char** argv) {
@@ -38,9 +54,44 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    if (command == "protocol-version") {
+        std::cout << vphone::kBackendProtocolVersion << "\n";
+        return 0;
+    }
+
     if (command == "--help" || command == "-h" || command == "help") {
         print_usage();
         return 0;
+    }
+
+    if (command == "validate-request" || command == "launch-request") {
+        if (argc != 3) {
+            std::cerr << "ERROR: " << command << " requires exactly one JSON request file\n";
+            return 64;
+        }
+
+        const std::string json = read_file(argv[2]);
+        if (json.empty()) {
+            std::cerr << "ERROR: request file is missing or empty: " << argv[2] << "\n";
+            return 66;
+        }
+
+        vphone::BackendRequest request;
+        std::string error;
+        if (!vphone::parse_backend_request_json(json, request, error)) {
+            std::cerr << "ERROR: " << error << "\n";
+            return 64;
+        }
+
+        if (command == "validate-request") {
+            std::cout << vphone::canonical_backend_request_json(request);
+            return 0;
+        }
+
+        vphone::VmConfig cfg;
+        cfg.manifest_path = request.boot->config;
+        cfg.force_dfu = request.boot->dfu;
+        return backend->launch(cfg);
     }
 
     if (command == "launch") {
