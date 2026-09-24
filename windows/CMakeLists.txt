@@ -87,6 +87,15 @@ set(ZSTD_BUILD_STATIC ON CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_DICTBUILDER OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(zstd)
 
+FetchContent_Declare(
+    lzfse
+    GIT_REPOSITORY https://github.com/lzfse/lzfse.git
+    GIT_TAG e634ca58b4821d9f3d560cdc6df5dec02ffc93fd
+)
+set(LZFSE_BUNDLE_MODE ON CACHE BOOL "" FORCE)
+set(LZFSE_DISABLE_TESTS ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(lzfse)
+
 
 add_library(vphone_backend STATIC src/backend_stub.cpp)
 target_include_directories(vphone_backend PUBLIC include)
@@ -158,6 +167,16 @@ target_link_libraries(vphone_compression_roundtrip_test PRIVATE
 
 if(WIN32)
     add_executable(vphone_windows_hardlink_identity_test tests/windows_hardlink_identity_test.cpp)
+
+    add_library(vphone_aea_profile1_portable STATIC src/aea_profile1_portable.cpp)
+    target_include_directories(vphone_aea_profile1_portable
+        PUBLIC include
+        PRIVATE "${lzfse_SOURCE_DIR}/src"
+    )
+    target_link_libraries(vphone_aea_profile1_portable PUBLIC lzfse bcrypt)
+
+    add_executable(vphone_aea_profile1_roundtrip_test tests/aea_profile1_roundtrip_test.cpp)
+    target_link_libraries(vphone_aea_profile1_roundtrip_test PRIVATE vphone_aea_profile1_portable)
 
     add_library(vphone_apfs_snapshot_portable STATIC src/apfs_snapshot_portable.cpp)
     target_include_directories(vphone_apfs_snapshot_portable PUBLIC include)
@@ -255,6 +274,11 @@ if(WIN32)
     add_test(
         NAME apfs_snapshot_rename
         COMMAND vphone_apfs_snapshot_rename_test "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+
+    add_test(
+        NAME aea_profile1_symmetric_roundtrip
+        COMMAND vphone_aea_profile1_roundtrip_test
     )
 endif()
 
