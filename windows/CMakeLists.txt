@@ -72,6 +72,7 @@ target_link_libraries(vphone_native_cli_core_test PRIVATE vphone_cli_core)
 
 add_library(vphone_archive_portable STATIC src/archive_portable.c)
 target_include_directories(vphone_archive_portable PUBLIC include)
+target_compile_definitions(vphone_archive_portable PRIVATE LIBARCHIVE_STATIC)
 target_link_libraries(vphone_archive_portable PUBLIC archive_static)
 
 add_executable(vphone_archive_roundtrip_test tests/archive_roundtrip_test.c)
