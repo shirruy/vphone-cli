@@ -1,0 +1,53 @@
+name: Windows Port Phase 4D2A
+
+on:
+  push:
+    branches:
+      - phase/04d-restore-image-backend
+  workflow_dispatch:
+
+jobs:
+  aea-profile1-core:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preflight
+        shell: pwsh
+        run: ./scripts/windows-preflight.ps1
+
+      - name: Census
+        shell: pwsh
+        run: ./scripts/phase1-census.ps1 -OutputDirectory build/phase4d2a-evidence
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S windows -B build/windows-phase4d2a
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/windows-phase4d2a --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/windows-phase4d2a -C Release --output-on-failure
+
+      - name: AEA capability boundary
+        shell: pwsh
+        run: |
+          $cli = Get-ChildItem build/windows-phase4d2a -Recurse -Filter vphone-cli-win.exe | Select-Object -First 1
+          if (-not $cli) { throw "vphone-cli-win.exe not found" }
+
+          $cap = ((& $cli.FullName restore-capabilities) -join [Environment]::NewLine) | ConvertFrom-Json
+
+          if ($cap.apfs_snapshot_rename -ne "supported") { throw "APFS snapshot regression" }
+          if ($cap.aea_profile1_symmetric_core -ne "supported") { throw "AEA profile 1 core not supported" }
+          if ($cap.aea_decrypt_encrypt -ne "unsupported") { throw "full AEA backend overclaimed" }
+
+          foreach ($name in @("disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
+            if ($cap.$name -ne "unsupported") {
+              throw "$name must remain unsupported"
+            }
+          }
