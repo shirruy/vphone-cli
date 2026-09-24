@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04b-archive-restore-parity",
+  "compile_units": 384,
+  "categories": {
+    "PORTABLE": 15,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4B adds archive_portable.c, archive_roundtrip_test.c, and the archive capability surface. GNU tar/member read are proven; compression and Darwin metadata remain unproven."
+}
