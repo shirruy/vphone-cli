@@ -4,12 +4,12 @@ Upstream baseline: `d308fb9956afcbf5ad063b1680969d2692a4d9de`
 
 | Phase | Name | Status | Evidence |
 |---:|---|---|---|
-| 0 | Baseline + provenance | PARTIAL_PASS | Fork/branch provenance verified; Windows MSVC build and backend contract test passed on 2026-09-24. Preflight parser and CLI capability-contract defects fixed; clean rerun pending. |
+| 0 | Baseline + provenance | PARTIAL_PASS | Fork/branch provenance verified; Windows MSVC build and backend contract test passed on 2026-09-24. Preflight parser and CLI capability-contract defects fixed. WHPX servicing-stack query removed from Phase 0 after a real host hang; clean canonical rerun pending. |
 | 1 | Portability census | PARTIAL_PASS | Initial dependency census complete; full compile-unit matrix pending |
 | 2 | Host abstraction boundary | NOT_STARTED | |
 | 3 | Portable CLI/core build on Windows | NOT_STARTED | |
 | 4 | Firmware/restore/archive parity | NOT_STARTED | |
-| 5 | Windows ARM boot feasibility spike | NOT_STARTED | |
+| 5 | Windows ARM boot feasibility spike | NOT_STARTED | WHPX readiness belongs here, not Phase 0 |
 | 6 | Apple device-model parity | NOT_STARTED | |
 | 7 | Persistent VM + restore flow | NOT_STARTED | |
 | 8 | Display/input/audio/network | NOT_STARTED | |
