@@ -1,0 +1,51 @@
+name: Windows Port Phase 4D1
+
+on:
+  push:
+    branches:
+      - phase/04d-restore-image-backend
+  workflow_dispatch:
+
+jobs:
+  restore-image-parity:
+    runs-on: windows-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preflight
+        shell: pwsh
+        run: ./scripts/windows-preflight.ps1
+
+      - name: Census
+        shell: pwsh
+        run: ./scripts/phase1-census.ps1 -OutputDirectory build/phase4d1-evidence
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S windows -B build/windows-phase4d1
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/windows-phase4d1 --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/windows-phase4d1 -C Release --output-on-failure
+
+      - name: Restore capability boundary
+        shell: pwsh
+        run: |
+          $cli = Get-ChildItem build/windows-phase4d1 -Recurse -Filter vphone-cli-win.exe | Select-Object -First 1
+          if (-not $cli) { throw "vphone-cli-win.exe not found" }
+
+          $cap = ((& $cli.FullName restore-capabilities) -join [Environment]::NewLine) | ConvertFrom-Json
+
+          if ($cap.apfs_snapshot_rename -ne "supported") { throw "APFS snapshot rename not supported" }
+
+          foreach ($name in @("aea_decrypt_encrypt","disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
+            if ($cap.$name -ne "unsupported") {
+              throw "$name must remain unsupported without executable evidence"
+            }
+          }
