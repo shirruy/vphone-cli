@@ -13,6 +13,7 @@ struct NativeCliParseResult {
     bool show_version{false};
     bool show_firmware_capabilities{false};
     bool show_archive_capabilities{false};
+    bool show_restore_capabilities{false};
     bool dry_run{false};
     BackendRequest request{};
     std::string error;
