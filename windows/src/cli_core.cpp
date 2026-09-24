@@ -60,6 +60,7 @@ std::string native_cli_usage() {
         "  vphone-cli-win protocol-version\n"
         "  vphone-cli-win firmware-capabilities\n"
         "  vphone-cli-win archive-capabilities\n"
+        "  vphone-cli-win restore-capabilities\n"
         "  vphone-cli-win vm launch --config PATH [options] --dry-run\n"
         "\n"
         "options for vm launch:\n"
@@ -106,6 +107,12 @@ NativeCliParseResult parse_native_cli(const std::vector<std::string>& args) {
     if (args.size() == 1 && args[0] == "archive-capabilities") {
         result.ok = true;
         result.show_archive_capabilities = true;
+        return result;
+    }
+
+    if (args.size() == 1 && args[0] == "restore-capabilities") {
+        result.ok = true;
+        result.show_restore_capabilities = true;
         return result;
     }
 
