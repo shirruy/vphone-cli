@@ -1,0 +1,62 @@
+name: Windows Port Phase 2
+
+on:
+  push:
+    branches:
+      - phase/02-backend-boundary
+  pull_request:
+    branches:
+      - windows-port
+  workflow_dispatch:
+
+jobs:
+  windows-protocol:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S windows -B build/windows-phase2
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/windows-phase2 --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/windows-phase2 -C Release --output-on-failure
+
+      - name: Validate shared request fixture
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem build/windows-phase2 -Recurse -Filter vphone-vm-win.exe | Select-Object -First 1
+          if (-not $exe) { throw "vphone-vm-win.exe not found" }
+
+          $version = (& $exe.FullName protocol-version).Trim()
+          if ($version -ne "1") { throw "unexpected protocol version: $version" }
+
+          & $exe.FullName validate-request protocol/fixtures/backend_request_v1_boot.json
+          if ($LASTEXITCODE -ne 0) { throw "shared fixture rejected" }
+
+  macos-protocol:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Run VPhoneCoreKit protocol tests
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -project VPhoneKit/VPhoneKit.xcodeproj \
+            -scheme VPhoneCoreKitTests \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
