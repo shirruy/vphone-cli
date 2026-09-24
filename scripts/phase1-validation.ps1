@@ -1,8 +1,8 @@
-$ErrorActionPreference = "Stop"
-
 param(
     [switch]$AllowDetachedHead
 )
+
+$ErrorActionPreference = "Stop"
 
 function Invoke-Checked {
     param(
