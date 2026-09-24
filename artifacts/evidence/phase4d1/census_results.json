@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d-restore-image-backend",
+  "compile_units": 390,
+  "categories": {
+    "PORTABLE": 21,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D1 adds a Win32 port of the offline APFS snapshot rename primitive plus its executable regression test. AEA decrypt/encrypt, disk image attach/convert, APFS seal, and canonical metadata archive remain explicitly unsupported."
+}
