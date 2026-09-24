@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04c-compression-bundle-parity",
+  "compile_units": 388,
+  "categories": {
+    "PORTABLE": 19,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4C2 adds compression_portable.c and compression_roundtrip_test.c. GNU tar bytes are compressed and decompressed through pinned gzip/xz/zstd libraries; restored bytes must match exactly and revalidate as the same bundle."
+}
