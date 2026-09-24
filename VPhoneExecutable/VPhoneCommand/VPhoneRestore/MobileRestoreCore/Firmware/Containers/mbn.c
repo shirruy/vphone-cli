@@ -222,7 +222,7 @@ void* mbn_stitch(const void* data, size_t data_size, const void* blob, size_t bl
 	} else if (mbn_is_valid_elf(data, data_size)) {
 		if (mbn_is_64bit_elf(data)) {
 			const elf64_header* ehdr = data;
-			const elf64_pheader* phdr = data + ehdr->e_phoff;
+			const elf64_pheader* phdr = (const elf64_pheader*)((const uint8_t*)data + ehdr->e_phoff);
 			if (ehdr->e_phnum == 0) {
 				logger(LL_ERROR, "%s: ELF has no program sections\n", __func__);
 				return NULL;
@@ -238,7 +238,7 @@ void* mbn_stitch(const void* data, size_t data_size, const void* blob, size_t bl
 			parsed_size = last_off + phdr[last_index].p_filesz;
 		} else {
 			const elf32_header* ehdr = data;
-			const elf32_pheader* phdr = data + ehdr->e_phoff;
+			const elf32_pheader* phdr = (const elf32_pheader*)((const uint8_t*)data + ehdr->e_phoff);
 			if (ehdr->e_phnum == 0) {
 				logger(LL_ERROR, "%s: ELF has no program sections\n", __func__);
 				return NULL;
@@ -261,9 +261,9 @@ void* mbn_stitch(const void* data, size_t data_size, const void* blob, size_t bl
 		logger(LL_WARNING, "%s: size mismatch for MBN data, expected 0x%zx, input size 0x%zx\n", __func__, parsed_size, data_size);
 	}
 
-	off_t stitch_offset = data_size - blob_size;
+	size_t stitch_offset = data_size - blob_size;
 	if (stitch_offset + blob_size > data_size) {
-		logger(LL_ERROR, "%s: stitch offset (0x%lx) + size (0x%zx) is larger than the destination (0x%zx)\n", __func__, (unsigned long)stitch_offset, blob_size, data_size);
+		logger(LL_ERROR, "%s: stitch offset (0x%zx) + size (0x%zx) is larger than the destination (0x%zx)\n", __func__, stitch_offset, blob_size, data_size);
 		return NULL;
 	}
 
@@ -274,7 +274,7 @@ void* mbn_stitch(const void* data, size_t data_size, const void* blob, size_t bl
 	}
 
 	memcpy(buf, data, data_size);
-	logger(LL_DEBUG, "%s: stitching mbn at 0x%llx, size 0x%zx\n", __func__, stitch_offset, blob_size);
+	logger(LL_DEBUG, "%s: stitching mbn at 0x%zx, size 0x%zx\n", __func__, stitch_offset, blob_size);
 	memcpy(buf + stitch_offset, blob, blob_size);
 
 	return buf;
@@ -368,11 +368,11 @@ void* mbn_mav25_stitch(const void* data, size_t data_size, const void* blob, siz
 		logger(LL_WARNING, "%s: header sizes in header are unexpected (qti_metadata_size=0x%x, oem_metadata_size=0x%x, oem_signature_size=0x%x, oem_certificate_chain_size=0x%x)\n", __func__, src_header->qti_metadata_size, src_header->oem_metadata_size, src_header->oem_signature_size, src_header->oem_certificate_chain_size);
 	}
 
-	off_t sect_off;
+	size_t sect_off;
 	size_t sect_size;
 	if (mbn_is_64bit_elf(data)) {
 		const elf64_header* ehdr = data;
-		const elf64_pheader* phdr = data + ehdr->e_phoff;
+		const elf64_pheader* phdr = (const elf64_pheader*)((const uint8_t*)data + ehdr->e_phoff);
 		if (ehdr->e_phnum == 0) {
 			logger(LL_ERROR, "%s: ELF has no program sections\n", __func__);
 			return NULL;
@@ -385,12 +385,12 @@ void* mbn_mav25_stitch(const void* data, size_t data_size, const void* blob, siz
 		sect_size = phdr[ehdr->e_phnum-1].p_filesz;
 	} else {
 		const elf32_header* ehdr = data;
-		const elf32_pheader* phdr = data + ehdr->e_phoff;
+		const elf32_pheader* phdr = (const elf32_pheader*)((const uint8_t*)data + ehdr->e_phoff);
 		if (ehdr->e_phnum == 0) {
 			logger(LL_ERROR, "%s: ELF has no program sections\n", __func__);
 			return NULL;
 		}
-		if ((ehdr->e_phoff + ehdr->e_phnum * sizeof(elf64_pheader)) > data_size) {
+		if ((ehdr->e_phoff + ehdr->e_phnum * sizeof(elf32_pheader)) > data_size) {
 			logger(LL_ERROR, "%s: Last ELF program section is out of bounds\n", __func__);
 			return NULL;
 		}
@@ -409,7 +409,7 @@ void* mbn_mav25_stitch(const void* data, size_t data_size, const void* blob, siz
 	}
 
 	if (sect_off + sect_size > data_size) {
-		logger(LL_ERROR, "%s: section (0x%lx+0x%zx) is bigger than the data\n", __func__, (unsigned long)sect_off, sect_size);
+		logger(LL_ERROR, "%s: section (0x%zx+0x%zx) is bigger than the data\n", __func__, sect_off, sect_size);
 		return NULL;
 	}
 
@@ -418,7 +418,7 @@ void* mbn_mav25_stitch(const void* data, size_t data_size, const void* blob, siz
 		return NULL;
 	}
 
-	const mbn_v7_header* header = data + sect_off;
+	const mbn_v7_header* header = (const mbn_v7_header*)((const uint8_t*)data + sect_off);
 	mbn_v7_log_header(header, __func__, "dest");
 	if (header->version != 7) {
 		logger(LL_ERROR, "%s: dest header version (0x%x) is incorrect\n", __func__, header->version);
@@ -441,7 +441,7 @@ void* mbn_mav25_stitch(const void* data, size_t data_size, const void* blob, siz
 		new_metadata_size + src_header->hash_table_size;
 	size_t new_oem_sig_and_cert_chain_size =
 		src_header->oem_signature_size + src_header->oem_certificate_chain_size;
-	off_t new_oem_sig_and_cert_chain_off = new_metadata_and_hash_table_size +
+	size_t new_oem_sig_and_cert_chain_off = new_metadata_and_hash_table_size +
 		header->qti_signature_size + header->qti_certificate_chain_size;
 
 	if (new_metadata_and_hash_table_size > blob_size) {
@@ -471,10 +471,10 @@ void* mbn_mav25_stitch(const void* data, size_t data_size, const void* blob, siz
 	}
 
 	memcpy(buf, data, data_size);
-	logger(LL_DEBUG, "%s: stitching mbn at 0x%lx (0x%zx bytes)\n", __func__, (unsigned long)sect_off, new_metadata_and_hash_table_size);
+	logger(LL_DEBUG, "%s: stitching mbn at 0x%zx (0x%zx bytes)\n", __func__, sect_off, new_metadata_and_hash_table_size);
 	memcpy(buf + sect_off, blob, new_metadata_and_hash_table_size);
-	logger(LL_DEBUG, "%s: stitching mbn at 0x%lx (0x%zx bytes)\n", __func__, (unsigned long)(sect_off + new_oem_sig_and_cert_chain_off), new_oem_sig_and_cert_chain_size);
-	memcpy(buf + sect_off + new_oem_sig_and_cert_chain_off, blob + new_metadata_and_hash_table_size, new_oem_sig_and_cert_chain_size);
+	logger(LL_DEBUG, "%s: stitching mbn at 0x%zx (0x%zx bytes)\n", __func__, sect_off + new_oem_sig_and_cert_chain_off, new_oem_sig_and_cert_chain_size);
+	memcpy(buf + sect_off + new_oem_sig_and_cert_chain_off, (const uint8_t*)blob + new_metadata_and_hash_table_size, new_oem_sig_and_cert_chain_size);
 
 	return buf;
 }
