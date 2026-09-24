@@ -68,6 +68,7 @@ int main(int argc, char** argv) {
         std::cout
             << "{\n"
             << "  \"apfs_snapshot_rename\": \"supported\",\n"
+            << "  \"aea_profile1_symmetric_core\": \"supported\",\n"
             << "  \"aea_decrypt_encrypt\": \"unsupported\",\n"
             << "  \"disk_image_attach_convert\": \"unsupported\",\n"
             << "  \"apfs_seal\": \"unsupported\",\n"
