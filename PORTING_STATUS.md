@@ -6,7 +6,7 @@ Upstream baseline: `d308fb9956afcbf5ad063b1680969d2692a4d9de`
 |---:|---|---|---|
 | 0 | Baseline + provenance | REVALIDATION_REQUIRED | Repository/toolchain/CLI evidence remains valid, but one native C++ contract test used `assert` under Release and therefore did not provide executable assertion evidence. Revalidation pending with explicit checks. |
 | 1 | Portability census | REVALIDATION_REQUIRED | Census completeness remains valid: 373 compile units, 0 UNKNOWN. The upstream FTAB proof used `assert` under Release, so its behavioral proof is invalidated pending rerun with explicit checks. |
-| 2 | Host abstraction boundary | IN_PROGRESS | Protocol v1 implemented on Swift/macOS and C++/Windows. macOS CI passed at commit `4cddd49927f7085c871004dd9cbb06d5b983f230`. Windows exposed a real parser defect: the string value `"boot"` was mistaken for the `"boot"` key. Parser and Release-test harness remediation in progress. |
+| 2 | Host abstraction boundary | IN_PROGRESS | Protocol v1 implemented on Swift/macOS and C++/Windows. macOS CI passed at commit `4cddd49927f7085c871004dd9cbb06d5b983f230`. Windows exposed two real validator/parser defects: the string value `"boot"` was mistaken for the `"boot"` key, and the cumulative validator incorrectly hardcoded the Phase 1 compile-unit count after Phase 2 added four reviewed compile units. Parser, Release-test harness, and Phase 2 census-baseline remediation are in progress. |
 | 3 | Portable CLI/core build on Windows | NOT_STARTED | |
 | 4 | Firmware/restore/archive parity | NOT_STARTED | |
 | 5 | Windows ARM boot feasibility spike | NOT_STARTED | WHPX readiness belongs here, not Phase 0 |
