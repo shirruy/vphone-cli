@@ -49,7 +49,11 @@ Invoke-Checked -Label "[2/6] Phase 4C1 compile-unit census" -Action {
 }
 
 $census = Get-Content (Join-Path $evidenceDir "census_results.runtime.json") -Raw | ConvertFrom-Json
-$baseline = Get-Content ".\artifacts\evidence\phase4c1\census_results.json" -Raw | ConvertFrom-Json
+$baselinePath = ".\artifacts\evidence\phase4c2\census_results.json"
+if (-not (Test-Path $baselinePath)) {
+    $baselinePath = ".\artifacts\evidence\phase4c1\census_results.json"
+}
+$baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 
 if ($census.unknown_count -ne 0) {
     throw "PHASE 4C1 FAIL: census has unclassified compile units."
@@ -99,11 +103,12 @@ if ($cap.bundle_manifest_validation -ne "supported") { throw "PHASE 4C1 FAIL: bu
 if ($cap.windows_hardlink_identity -ne "supported") { throw "PHASE 4C1 FAIL: hardlink identity capability drift." }
 if ($cap.symlink_import -ne "unsupported") { throw "PHASE 4C1 FAIL: symlink import must remain unsupported." }
 
-foreach ($name in @("zstd", "xz", "gzip", "darwin_xattrs_acl")) {
-    if ($cap.$name -ne "unsupported") {
-        throw "PHASE 4C1 FAIL: $name must remain unsupported until Phase 4C2 evidence exists."
-    }
+if ($cap.darwin_xattrs_acl -ne "unsupported") {
+    throw "PHASE 4C1 FAIL: Darwin metadata boundary regressed."
 }
+
+# Compression capability ownership moved to Phase 4C2.
+# gzip/xz/zstd may legitimately be supported on later commits.
 
 $tests = ctest --test-dir ".\build\windows-phase4c1" -C Release -N
 $testText = $tests -join [Environment]::NewLine
@@ -115,13 +120,13 @@ foreach ($required in @("bundle_manifest_validation", "windows_hardlink_identity
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Green
-Write-Host " PHASE 4C1 BUNDLE PARITY PASS" -ForegroundColor Green
+Write-Host " PHASE 4C1 BUNDLE REGRESSION PASS" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host "Compile units             : $($census.compile_units)"
 Write-Host "Unknown                   : $($census.unknown_count)"
 Write-Host "Bundle manifest validation: $($cap.bundle_manifest_validation)"
 Write-Host "Windows hardlink identity : $($cap.windows_hardlink_identity)"
 Write-Host "Symlink import            : $($cap.symlink_import)"
-Write-Host "Compression               : explicitly unsupported"
+Write-Host "Compression               : governed by Phase 4C2"
 Write-Host ""
-Write-Host "Phase 4C is NOT closed. Compression parity remains for Phase 4C2."
+Write-Host "This gate now protects Phase 4C1 invariants only. Compression is governed by Phase 4C2."
