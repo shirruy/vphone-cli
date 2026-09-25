@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d3c-udif-lzfse-decode",
+  "compile_units": 399,
+  "categories": {
+    "PORTABLE": 30,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D3C modifies existing UDIF code to add LZFSE block decode using the pinned lzfse dependency. No new tracked compile unit is added."
+}
