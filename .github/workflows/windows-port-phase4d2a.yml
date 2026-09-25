@@ -44,8 +44,9 @@ jobs:
 
           if ($cap.apfs_snapshot_rename -ne "supported") { throw "APFS snapshot regression" }
           if ($cap.aea_profile1_symmetric_core -ne "supported") { throw "AEA profile 1 core not supported" }
-          if ($cap.aea_decrypt_encrypt -ne "unsupported") { throw "full AEA backend overclaimed" }
 
+          # This regression workflow owns the Phase 4D2A core invariant.
+          # Later phases may legitimately promote the full AEA backend.
           foreach ($name in @("disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
             if ($cap.$name -ne "unsupported") {
               throw "$name must remain unsupported"

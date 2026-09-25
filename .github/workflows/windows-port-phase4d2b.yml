@@ -64,8 +64,9 @@ jobs:
           if ($cap.aea_profile1_symmetric_core -ne "supported") { throw "AEA core regression" }
           if ($cap.aea_profile1_file_backend -ne "supported") { throw "AEA file backend missing" }
           if ($cap.aea_independent_interop -ne "supported") { throw "AEA interop missing" }
-          if ($cap.aea_decrypt_encrypt -ne "unsupported") { throw "full AEA backend overclaimed" }
 
+          # This regression workflow owns the Phase 4D2B file/interoperability invariants.
+          # Later phases may legitimately promote bounded streaming and the full AEA backend.
           foreach ($name in @("disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
             if ($cap.$name -ne "unsupported") { throw "$name must remain unsupported" }
           }

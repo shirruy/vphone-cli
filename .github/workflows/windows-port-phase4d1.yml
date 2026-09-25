@@ -44,7 +44,9 @@ jobs:
 
           if ($cap.apfs_snapshot_rename -ne "supported") { throw "APFS snapshot rename not supported" }
 
-          foreach ($name in @("aea_decrypt_encrypt","disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
+          # This regression workflow owns the Phase 4D1 invariant only.
+          # Later phases are allowed to promote AEA capabilities on the same branch.
+          foreach ($name in @("disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
             if ($cap.$name -ne "unsupported") {
               throw "$name must remain unsupported without executable evidence"
             }
