@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d3d-udif-bzip2-decode",
+  "compile_units": 399,
+  "categories": {
+    "PORTABLE": 30,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D3D extends the existing UDIF decoder with BZIP2 support and a pinned external dependency; no tracked repository compile unit is added."
+}
