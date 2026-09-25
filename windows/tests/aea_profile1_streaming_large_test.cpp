@@ -68,13 +68,19 @@ int main(int argc, char** argv) {
 
     vphone::AeaProfile1FileResult enc;
     std::string error;
-    CHECK(vphone::aea_profile1_encrypt_file(src, arc, key, auth, opt, enc, error));
+    if (!vphone::aea_profile1_encrypt_file(src, arc, key, auth, opt, enc, error)) {
+        std::fprintf(stderr, "AEA STREAM ENCRYPT ERROR: %s\n", error.c_str());
+        return 1;
+    }
     CHECK(enc.input_size == payloadSize);
     CHECK(enc.cluster_count > 1);
     CHECK(enc.peak_buffer_bytes < 16ull * 1024ull * 1024ull);
 
     vphone::AeaProfile1FileResult dec;
-    CHECK(vphone::aea_profile1_decrypt_file(arc, dst, key, dec, error));
+    if (!vphone::aea_profile1_decrypt_file(arc, dst, key, dec, error)) {
+        std::fprintf(stderr, "AEA STREAM DECRYPT ERROR: %s\n", error.c_str());
+        return 1;
+    }
     CHECK(dec.output_size == payloadSize);
     CHECK(dec.peak_buffer_bytes < 16ull * 1024ull * 1024ull);
     CHECK(files_equal(src, dst));
