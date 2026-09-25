@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d-restore-image-backend",
+  "compile_units": 395,
+  "categories": {
+    "PORTABLE": 26,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D2B adds a native Windows AEA file backend, a file CLI, and bidirectional interoperability proof against pinned kinnay/AEA d22f4fdf620436d12f1a893bbb11b90ac52fa646. Full streaming/bounded-memory replacement remains for Phase 4D2C."
+}
