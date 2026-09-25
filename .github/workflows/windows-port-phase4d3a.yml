@@ -1,0 +1,23 @@
+name: Windows Port Phase 4D3A
+
+on:
+  push:
+    branches:
+      - phase/04d3a-udrw-container
+  workflow_dispatch:
+
+jobs:
+  udrw-container:
+    runs-on: windows-latest
+    timeout-minutes: 75
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Phase 4D3A validator
+        shell: pwsh
+        run: ./scripts/phase4d3a-validation.ps1

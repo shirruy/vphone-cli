@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d3a-udrw-container",
+  "compile_units": 399,
+  "categories": {
+    "PORTABLE": 30,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D3A adds three Windows-native C++ compile units for bounded-memory UDIF/UDRW raw-container conversion and validation. Aggregate disk-image attach/convert remains unsupported."
+}
