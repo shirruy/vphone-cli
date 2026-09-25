@@ -173,7 +173,10 @@ target_link_libraries(vphone_compression_roundtrip_test PRIVATE
 if(WIN32)
     add_executable(vphone_windows_hardlink_identity_test tests/windows_hardlink_identity_test.cpp)
 
-    add_library(vphone_aea_profile1_portable STATIC src/aea_profile1_portable.cpp)
+    add_library(vphone_aea_profile1_portable STATIC
+        src/aea_profile1_portable.cpp
+        src/aea_profile1_file.cpp
+    )
     target_include_directories(vphone_aea_profile1_portable
         PUBLIC include
         PRIVATE "${lzfse_SOURCE_DIR}/src"
@@ -182,6 +185,12 @@ if(WIN32)
 
     add_executable(vphone_aea_profile1_roundtrip_test tests/aea_profile1_roundtrip_test.cpp)
     target_link_libraries(vphone_aea_profile1_roundtrip_test PRIVATE vphone_aea_profile1_portable)
+
+    add_executable(vphone_aea_file_roundtrip_test tests/aea_profile1_file_roundtrip_test.cpp)
+    target_link_libraries(vphone_aea_file_roundtrip_test PRIVATE vphone_aea_profile1_portable)
+
+    add_executable(vphone-aea-win src/aea_file_main.cpp)
+    target_link_libraries(vphone-aea-win PRIVATE vphone_aea_profile1_portable)
 
     add_library(vphone_apfs_snapshot_portable STATIC src/apfs_snapshot_portable.cpp)
     target_include_directories(vphone_apfs_snapshot_portable PUBLIC include)
@@ -284,6 +293,11 @@ if(WIN32)
     add_test(
         NAME aea_profile1_symmetric_roundtrip
         COMMAND vphone_aea_profile1_roundtrip_test
+    )
+
+    add_test(
+        NAME aea_profile1_file_roundtrip
+        COMMAND vphone_aea_file_roundtrip_test "${CMAKE_CURRENT_BINARY_DIR}"
     )
 endif()
 
