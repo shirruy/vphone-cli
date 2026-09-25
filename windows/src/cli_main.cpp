@@ -69,6 +69,8 @@ int main(int argc, char** argv) {
             << "{\n"
             << "  \"apfs_snapshot_rename\": \"supported\",\n"
             << "  \"aea_profile1_symmetric_core\": \"supported\",\n"
+            << "  \"aea_profile1_file_backend\": \"supported\",\n"
+            << "  \"aea_independent_interop\": \"pending\",\n"
             << "  \"aea_decrypt_encrypt\": \"unsupported\",\n"
             << "  \"disk_image_attach_convert\": \"unsupported\",\n"
             << "  \"apfs_seal\": \"unsupported\",\n"
