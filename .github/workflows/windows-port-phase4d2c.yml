@@ -1,0 +1,23 @@
+name: Windows Port Phase 4D2C
+
+on:
+  push:
+    branches:
+      - phase/04d-restore-image-backend
+  workflow_dispatch:
+
+jobs:
+  bounded-streaming:
+    runs-on: windows-latest
+    timeout-minutes: 75
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Phase 4D2C validator
+        shell: pwsh
+        run: ./scripts/phase4d2c-validation.ps1
