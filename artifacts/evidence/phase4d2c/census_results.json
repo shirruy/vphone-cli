@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d-restore-image-backend",
+  "compile_units": 396,
+  "categories": {
+    "PORTABLE": 27,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D2C adds bounded-memory native Windows AEA profile-1 file processing, 80MB stress coverage, fail-closed atomic output preservation, and keeps full aea_decrypt_encrypt unsupported until both physical Windows and CI evidence pass."
+}
