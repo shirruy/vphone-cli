@@ -40,6 +40,7 @@ struct AeaProfile1FileResult {
     std::uint64_t input_size{0};
     std::uint64_t output_size{0};
     std::size_t cluster_count{0};
+    std::uint64_t peak_buffer_bytes{0};
 };
 
 bool aea_profile1_encrypt_file(
@@ -53,6 +54,24 @@ bool aea_profile1_encrypt_file(
 );
 
 bool aea_profile1_decrypt_file(
+    const std::string& input_path,
+    const std::string& output_path,
+    const std::vector<std::uint8_t>& symmetric_key,
+    AeaProfile1FileResult& result,
+    std::string& error
+);
+
+bool aea_profile1_encrypt_file_streaming(
+    const std::string& input_path,
+    const std::string& output_path,
+    const std::vector<std::uint8_t>& symmetric_key,
+    const std::vector<std::uint8_t>& auth_data,
+    const AeaProfile1Options& options,
+    AeaProfile1FileResult& result,
+    std::string& error
+);
+
+bool aea_profile1_decrypt_file_streaming(
     const std::string& input_path,
     const std::string& output_path,
     const std::vector<std::uint8_t>& symmetric_key,
