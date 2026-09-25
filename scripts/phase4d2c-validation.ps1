@@ -146,8 +146,8 @@ if ($cap.aea_independent_interop -ne "supported") {
 if ($cap.aea_profile1_bounded_streaming -ne "supported") {
     throw "PHASE 4D2C FAIL: bounded streaming capability missing."
 }
-if ($cap.aea_decrypt_encrypt -ne "unsupported") {
-    throw "PHASE 4D2C FAIL: final capability promoted before dual-gate closure."
+if ($cap.aea_decrypt_encrypt -ne "supported") {
+    throw "PHASE 4D2C FAIL: full AEA capability was not promoted after dual-gate closure."
 }
 
 foreach ($name in @(
@@ -172,4 +172,4 @@ Write-Host "Independent interop       : $($cap.aea_independent_interop)"
 Write-Host "Bounded streaming         : $($cap.aea_profile1_bounded_streaming)"
 Write-Host "Full AEA capability       : $($cap.aea_decrypt_encrypt)"
 Write-Host ""
-Write-Host "Final capability promotion requires this exact commit to pass on physical Windows and CI."
+Write-Host "Full AEA capability is promoted. This exact promotion commit must pass on physical Windows and CI."
