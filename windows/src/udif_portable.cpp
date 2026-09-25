@@ -14,6 +14,7 @@
 #include <system_error>
 
 #include <zlib.h>
+#include <lzfse.h>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -646,8 +647,10 @@ constexpr std::uint32_t kIgnoredBlockType = 0x00000002u;
 constexpr std::uint32_t kAdcBlockType = 0x80000004u;
 constexpr std::uint32_t kZlibBlockType = 0x80000005u;
 constexpr std::uint32_t kBzip2BlockType = 0x80000006u;
+constexpr std::uint32_t kLzfseBlockType = 0x80000007u;
 constexpr std::uint32_t kCommentBlockType = 0x7ffffffeu;
 constexpr std::size_t kMaxUdifXmlBytes = 16u * 1024u * 1024u;
+constexpr std::uint64_t kMaxLzfseBlockBytes = 64ull * 1024ull * 1024ull;
 
 struct UdifRun {
     std::uint32_t type = 0;
@@ -878,7 +881,10 @@ bool validate_runs(
             error = message.str();
             return false;
         }
-        if (run.type != kZeroBlockType && run.type != kRawBlockType && run.type != kZlibBlockType) {
+        if (run.type != kZeroBlockType &&
+            run.type != kRawBlockType &&
+            run.type != kZlibBlockType &&
+            run.type != kLzfseBlockType) {
             std::ostringstream message;
             message << "unknown UDIF block type 0x" << std::hex << std::uppercase << run.type;
             error = message.str();
@@ -1068,6 +1074,83 @@ bool inflate_zlib_run(
     }
 }
 
+bool decode_lzfse_run(
+    std::ifstream& input,
+    std::fstream& output,
+    std::uint64_t compressed_length,
+    std::uint64_t expected_output,
+    std::uint64_t base_peak_bytes,
+    std::uint64_t& observed_peak_bytes,
+    std::string& error
+) {
+    if (compressed_length == 0 || expected_output == 0) {
+        error = "LZFSE UDIF block has an empty input or output span";
+        return false;
+    }
+
+    if (compressed_length > kMaxLzfseBlockBytes ||
+        expected_output > kMaxLzfseBlockBytes) {
+        error = "LZFSE UDIF block exceeds the 64 MiB safety limit";
+        return false;
+    }
+
+    if (compressed_length >
+            static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max()) ||
+        expected_output >
+            static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
+        error = "LZFSE UDIF block exceeds host addressable size";
+        return false;
+    }
+
+    const std::size_t src_size =
+        static_cast<std::size_t>(compressed_length);
+    const std::size_t dst_size =
+        static_cast<std::size_t>(expected_output);
+    const std::size_t scratch_size =
+        lzfse_decode_scratch_size();
+
+    std::vector<std::uint8_t> src(src_size);
+    std::vector<std::uint8_t> dst(dst_size);
+    std::vector<std::uint8_t> scratch(scratch_size + 1u);
+
+    const std::uint64_t phase_peak =
+        base_peak_bytes +
+        static_cast<std::uint64_t>(src.capacity()) +
+        static_cast<std::uint64_t>(dst.capacity()) +
+        static_cast<std::uint64_t>(scratch.capacity());
+
+    observed_peak_bytes =
+        std::max<std::uint64_t>(observed_peak_bytes, phase_peak);
+
+    if (!read_exact(input, src.data(), src.size(), error)) {
+        return false;
+    }
+
+    const std::size_t decoded = lzfse_decode_buffer(
+        dst.data(),
+        dst.size(),
+        src.data(),
+        src.size(),
+        scratch.data()
+    );
+
+    if (decoded == 0) {
+        error = "LZFSE UDIF block failed to decode";
+        return false;
+    }
+
+    if (decoded != dst.size()) {
+        error = "LZFSE UDIF block output length does not match its sector span";
+        return false;
+    }
+
+    if (!write_exact(output, dst.data(), dst.size(), error)) {
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 bool udif_decode_to_raw(
@@ -1174,6 +1257,20 @@ bool udif_decode_to_raw(
                     run.output_length(),
                     input_buffer,
                     output_buffer,
+                    error
+                )) return false;
+            continue;
+        }
+
+        if (run.type == kLzfseBlockType) {
+            const std::uint64_t base_peak = result.peak_buffer_bytes;
+            if (!decode_lzfse_run(
+                    input,
+                    output,
+                    run.compressed_length,
+                    run.output_length(),
+                    base_peak,
+                    result.peak_buffer_bytes,
                     error
                 )) return false;
             continue;
