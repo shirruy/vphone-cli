@@ -2070,6 +2070,10 @@ bool aea_profile1_encrypt_file_streaming(
         return false;
     }
 
+    // Windows does not allow MoveFileEx(REPLACE_EXISTING) while this process
+    // still holds the temporary file open without delete sharing.
+    reconcile.close();
+
     if (!stream_replace_atomic(temp_path, output_path, error)) {
         return false;
     }
