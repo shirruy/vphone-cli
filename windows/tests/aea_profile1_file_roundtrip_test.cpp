@@ -70,27 +70,33 @@ int main(int argc, char** argv) {
 
     vphone::AeaProfile1FileResult enc;
     std::string error;
-    CHECK(vphone::aea_profile1_encrypt_file(
-        plainPath,
-        archivePath,
-        key,
-        auth,
-        options,
-        enc,
-        error
-    ));
+    if (!vphone::aea_profile1_encrypt_file(
+            plainPath,
+            archivePath,
+            key,
+            auth,
+            options,
+            enc,
+            error
+        )) {
+        std::fprintf(stderr, "AEA FILE ENCRYPT ERROR: %s\n", error.c_str());
+        return 1;
+    }
     CHECK(enc.cluster_count == 3);
     CHECK(enc.input_size == plain.size());
 
     vphone::AeaProfile1FileResult dec;
     error.clear();
-    CHECK(vphone::aea_profile1_decrypt_file(
-        archivePath,
-        restoredPath,
-        key,
-        dec,
-        error
-    ));
+    if (!vphone::aea_profile1_decrypt_file(
+            archivePath,
+            restoredPath,
+            key,
+            dec,
+            error
+        )) {
+        std::fprintf(stderr, "AEA FILE DECRYPT ERROR: %s\n", error.c_str());
+        return 1;
+    }
     CHECK(dec.cluster_count == 3);
     CHECK(dec.output_size == plain.size());
 
