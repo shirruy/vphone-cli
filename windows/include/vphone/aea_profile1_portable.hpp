@@ -36,4 +36,28 @@ bool aea_profile1_decrypt(
     std::string& error
 );
 
+struct AeaProfile1FileResult {
+    std::uint64_t input_size{0};
+    std::uint64_t output_size{0};
+    std::size_t cluster_count{0};
+};
+
+bool aea_profile1_encrypt_file(
+    const std::string& input_path,
+    const std::string& output_path,
+    const std::vector<std::uint8_t>& symmetric_key,
+    const std::vector<std::uint8_t>& auth_data,
+    const AeaProfile1Options& options,
+    AeaProfile1FileResult& result,
+    std::string& error
+);
+
+bool aea_profile1_decrypt_file(
+    const std::string& input_path,
+    const std::string& output_path,
+    const std::vector<std::uint8_t>& symmetric_key,
+    AeaProfile1FileResult& result,
+    std::string& error
+);
+
 } // namespace vphone
