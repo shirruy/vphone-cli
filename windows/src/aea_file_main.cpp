@@ -136,7 +136,8 @@ int main(int argc, char** argv) {
         << "  \"mode\": \"" << mode << "\",\n"
         << "  \"input_size\": " << result.input_size << ",\n"
         << "  \"output_size\": " << result.output_size << ",\n"
-        << "  \"cluster_count\": " << result.cluster_count << "\n"
+        << "  \"cluster_count\": " << result.cluster_count << ",\n"
+        << "  \"peak_buffer_bytes\": " << result.peak_buffer_bytes << "\n"
         << "}\n";
 
     return 0;
