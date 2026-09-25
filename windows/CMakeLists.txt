@@ -189,6 +189,9 @@ if(WIN32)
     add_executable(vphone_aea_file_roundtrip_test tests/aea_profile1_file_roundtrip_test.cpp)
     target_link_libraries(vphone_aea_file_roundtrip_test PRIVATE vphone_aea_profile1_portable)
 
+    add_executable(vphone_aea_streaming_large_test tests/aea_profile1_streaming_large_test.cpp)
+    target_link_libraries(vphone_aea_streaming_large_test PRIVATE vphone_aea_profile1_portable)
+
     add_executable(vphone-aea-win src/aea_file_main.cpp)
     target_link_libraries(vphone-aea-win PRIVATE vphone_aea_profile1_portable)
 
@@ -299,6 +302,12 @@ if(WIN32)
         NAME aea_profile1_file_roundtrip
         COMMAND vphone_aea_file_roundtrip_test "${CMAKE_CURRENT_BINARY_DIR}"
     )
+
+    add_test(
+        NAME aea_profile1_streaming_large
+        COMMAND vphone_aea_streaming_large_test "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+    set_tests_properties(aea_profile1_streaming_large PROPERTIES TIMEOUT 180)
 endif()
 
 add_test(
