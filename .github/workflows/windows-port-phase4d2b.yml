@@ -1,0 +1,71 @@
+name: Windows Port Phase 4D2B
+
+on:
+  push:
+    branches:
+      - phase/04d-restore-image-backend
+  workflow_dispatch:
+
+jobs:
+  aea-file-interop:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Preflight
+        shell: pwsh
+        run: ./scripts/windows-preflight.ps1
+
+      - name: Census
+        shell: pwsh
+        run: ./scripts/phase1-census.ps1 -OutputDirectory build/phase4d2b-evidence
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S windows -B build/windows-phase4d2b
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/windows-phase4d2b --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/windows-phase4d2b -C Release --output-on-failure
+
+      - name: Independent AEA reference environment
+        shell: pwsh
+        run: ./scripts/setup-aea-reference.ps1 -VenvPath build/phase4d2b-reference-venv
+
+      - name: Bidirectional AEA interoperability
+        shell: pwsh
+        run: |
+          $tool = Get-ChildItem build/windows-phase4d2b -Recurse -Filter vphone-aea-win.exe | Select-Object -First 1
+          if (-not $tool) { throw "vphone-aea-win.exe not found" }
+
+          $python = Resolve-Path build/phase4d2b-reference-venv/Scripts/python.exe
+          & $python scripts/phase4d2b_interop.py --tool $tool.FullName --workdir build/phase4d2b-interop
+          if ($LASTEXITCODE -ne 0) { throw "independent AEA interoperability failed" }
+
+      - name: Capability boundary
+        shell: pwsh
+        run: |
+          $cli = Get-ChildItem build/windows-phase4d2b -Recurse -Filter vphone-cli-win.exe | Select-Object -First 1
+          if (-not $cli) { throw "vphone-cli-win.exe not found" }
+
+          $cap = ((& $cli.FullName restore-capabilities) -join [Environment]::NewLine) | ConvertFrom-Json
+
+          if ($cap.apfs_snapshot_rename -ne "supported") { throw "APFS snapshot regression" }
+          if ($cap.aea_profile1_symmetric_core -ne "supported") { throw "AEA core regression" }
+          if ($cap.aea_profile1_file_backend -ne "supported") { throw "AEA file backend missing" }
+          if ($cap.aea_independent_interop -ne "supported") { throw "AEA interop missing" }
+          if ($cap.aea_decrypt_encrypt -ne "unsupported") { throw "full AEA backend overclaimed" }
+
+          foreach ($name in @("disk_image_attach_convert","apfs_seal","canonical_metadata_archive")) {
+            if ($cap.$name -ne "unsupported") { throw "$name must remain unsupported" }
+          }
