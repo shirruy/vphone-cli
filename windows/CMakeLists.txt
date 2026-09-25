@@ -88,6 +88,19 @@ set(ZSTD_BUILD_DICTBUILDER OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(zstd)
 
 FetchContent_Declare(
+    bzip2
+    GIT_REPOSITORY https://github.com/libarchive/bzip2.git
+    GIT_TAG 1ea1ac188ad4b9cb662e3f8314673c63df95a589
+)
+set(ENABLE_LIB_ONLY ON CACHE BOOL "" FORCE)
+set(ENABLE_STATIC_LIB ON CACHE BOOL "" FORCE)
+set(ENABLE_SHARED_LIB OFF CACHE BOOL "" FORCE)
+set(ENABLE_APP OFF CACHE BOOL "" FORCE)
+set(ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(ENABLE_DOCS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(bzip2)
+
+FetchContent_Declare(
     lzfse
     GIT_REPOSITORY https://github.com/lzfse/lzfse.git
     GIT_TAG e634ca58b4821d9f3d560cdc6df5dec02ffc93fd
@@ -204,9 +217,15 @@ if(WIN32)
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)
     target_include_directories(vphone_udif_portable
         PUBLIC include
-        PRIVATE "${lzfse_SOURCE_DIR}/src"
+        PRIVATE
+            "${lzfse_SOURCE_DIR}/src"
+            "${bzip2_SOURCE_DIR}"
     )
-    target_link_libraries(vphone_udif_portable PUBLIC ZLIB::ZLIBSTATIC lzfse)
+    target_link_libraries(vphone_udif_portable PUBLIC
+        ZLIB::ZLIBSTATIC
+        lzfse
+        bz2_static
+    )
 
     add_executable(vphone-udif-win src/udif_main.cpp)
     target_link_libraries(vphone-udif-win PRIVATE vphone_udif_portable)
