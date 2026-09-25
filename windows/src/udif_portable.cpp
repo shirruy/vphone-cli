@@ -15,6 +15,7 @@
 
 #include <zlib.h>
 #include <lzfse.h>
+#include <bzlib.h>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -875,7 +876,7 @@ bool validate_runs(
             continue;
         }
 
-        if (run.type == kIgnoredBlockType || run.type == kAdcBlockType || run.type == kBzip2BlockType) {
+        if (run.type == kIgnoredBlockType || run.type == kAdcBlockType) {
             std::ostringstream message;
             message << "unsupported UDIF block type 0x" << std::hex << std::uppercase << run.type;
             error = message.str();
@@ -884,7 +885,8 @@ bool validate_runs(
         if (run.type != kZeroBlockType &&
             run.type != kRawBlockType &&
             run.type != kZlibBlockType &&
-            run.type != kLzfseBlockType) {
+            run.type != kLzfseBlockType &&
+            run.type != kBzip2BlockType) {
             std::ostringstream message;
             message << "unknown UDIF block type 0x" << std::hex << std::uppercase << run.type;
             error = message.str();
@@ -1151,6 +1153,87 @@ bool decode_lzfse_run(
     return true;
 }
 
+bool decode_bzip2_run(
+    std::ifstream& input,
+    std::fstream& output,
+    std::uint64_t compressed_length,
+    std::uint64_t expected_output,
+    std::vector<std::uint8_t>& input_buffer,
+    std::vector<std::uint8_t>& output_buffer,
+    std::string& error
+) {
+    bz_stream stream{};
+    const int init = BZ2_bzDecompressInit(&stream, 0, 0);
+    if (init != BZ_OK) {
+        error = "bzip2 UDIF decompressor initialization failed";
+        return false;
+    }
+
+    auto finish = [&]() { BZ2_bzDecompressEnd(&stream); };
+    std::uint64_t remaining_input = compressed_length;
+    std::uint64_t produced = 0;
+
+    while (true) {
+        if (stream.avail_in == 0 && remaining_input != 0) {
+            const std::size_t chunk = static_cast<std::size_t>(
+                std::min<std::uint64_t>(remaining_input, input_buffer.size())
+            );
+            if (!read_exact(input, input_buffer.data(), chunk, error)) {
+                finish();
+                return false;
+            }
+            stream.next_in = reinterpret_cast<char*>(input_buffer.data());
+            stream.avail_in = static_cast<unsigned int>(chunk);
+            remaining_input -= chunk;
+        }
+
+        stream.next_out = reinterpret_cast<char*>(output_buffer.data());
+        stream.avail_out = static_cast<unsigned int>(output_buffer.size());
+
+        const int ret = BZ2_bzDecompress(&stream);
+        const std::size_t have = output_buffer.size() - stream.avail_out;
+
+        if (have != 0) {
+            if (produced > expected_output || have > expected_output - produced) {
+                finish();
+                error = "bzip2 UDIF block expands beyond its declared sector span";
+                return false;
+            }
+            if (!write_exact(output, output_buffer.data(), have, error)) {
+                finish();
+                return false;
+            }
+            produced += have;
+        }
+
+        if (ret == BZ_STREAM_END) {
+            const bool exact_input = remaining_input == 0 && stream.avail_in == 0;
+            finish();
+            if (!exact_input) {
+                error = "bzip2 UDIF block has trailing compressed bytes";
+                return false;
+            }
+            if (produced != expected_output) {
+                error = "bzip2 UDIF block output length does not match its sector span";
+                return false;
+            }
+            return true;
+        }
+
+        if (ret != BZ_OK) {
+            finish();
+            error = "bzip2 UDIF block failed to decompress";
+            return false;
+        }
+
+        if (remaining_input == 0 && stream.avail_in == 0 && have == 0) {
+            finish();
+            error = "bzip2 UDIF block ended before BZ_STREAM_END";
+            return false;
+        }
+    }
+}
+
 } // namespace
 
 bool udif_decode_to_raw(
@@ -1271,6 +1354,19 @@ bool udif_decode_to_raw(
                     run.output_length(),
                     base_peak,
                     result.peak_buffer_bytes,
+                    error
+                )) return false;
+            continue;
+        }
+
+        if (run.type == kBzip2BlockType) {
+            if (!decode_bzip2_run(
+                    input,
+                    output,
+                    run.compressed_length,
+                    run.output_length(),
+                    input_buffer,
+                    output_buffer,
                     error
                 )) return false;
             continue;
