@@ -170,7 +170,9 @@ def main() -> int:
     workdir = Path(args.workdir).resolve()
     workdir.mkdir(parents=True, exist_ok=True)
 
-    raw = pattern_bytes(12 * 1024 * 1024)
+    raw_bytes = bytearray(pattern_bytes(12 * 1024 * 1024))
+    raw_bytes[: 1024 * 1024] = bytes(1024 * 1024)
+    raw = bytes(raw_bytes)
     raw_path = workdir / "source.raw"
     dmg = workdir / "compressed.dmg"
     restored = workdir / "restored.raw"
