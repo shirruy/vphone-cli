@@ -202,8 +202,11 @@ if(WIN32)
     target_link_libraries(vphone_apfs_snapshot_rename_test PRIVATE vphone_apfs_snapshot_portable)
 
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)
-    target_include_directories(vphone_udif_portable PUBLIC include)
-    target_link_libraries(vphone_udif_portable PUBLIC ZLIB::ZLIBSTATIC)
+    target_include_directories(vphone_udif_portable
+        PUBLIC include
+        PRIVATE "${lzfse_SOURCE_DIR}/src"
+    )
+    target_link_libraries(vphone_udif_portable PUBLIC ZLIB::ZLIBSTATIC lzfse)
 
     add_executable(vphone-udif-win src/udif_main.cpp)
     target_link_libraries(vphone-udif-win PRIVATE vphone_udif_portable)
