@@ -44,4 +44,11 @@ bool udif_extract_raw_data_fork(
     std::string& error
 );
 
+bool udif_decode_to_raw(
+    const std::string& input_path,
+    const std::string& output_path,
+    UdifFileResult& result,
+    std::string& error
+);
+
 } // namespace vphone

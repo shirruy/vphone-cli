@@ -1,0 +1,12 @@
+{
+  "generated_from_branch": "phase/04d3b-udif-zlib-decode",
+  "compile_units": 399,
+  "categories": {
+    "PORTABLE": 30,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D3B modifies existing Windows UDIF compile units and adds fail-closed whole-disk RAW/zero/zlib block-map decode. Aggregate disk-image attach/convert remains unsupported."
+}

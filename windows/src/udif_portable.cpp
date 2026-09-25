@@ -6,10 +6,14 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <filesystem>
 #include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <system_error>
+
+#include <zlib.h>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -630,6 +634,566 @@ bool udif_extract_raw_data_fork(
 
     result.input_size = total_size;
     result.output_size = info.data_fork_length;
+    result.sector_count = info.sector_count;
+    return true;
+}
+
+
+namespace {
+
+constexpr std::uint32_t kZeroBlockType = 0x00000000u;
+constexpr std::uint32_t kIgnoredBlockType = 0x00000002u;
+constexpr std::uint32_t kAdcBlockType = 0x80000004u;
+constexpr std::uint32_t kZlibBlockType = 0x80000005u;
+constexpr std::uint32_t kBzip2BlockType = 0x80000006u;
+constexpr std::uint32_t kCommentBlockType = 0x7ffffffeu;
+constexpr std::size_t kMaxUdifXmlBytes = 16u * 1024u * 1024u;
+
+struct UdifRun {
+    std::uint32_t type = 0;
+    std::uint64_t sector_number = 0;
+    std::uint64_t sector_count = 0;
+    std::uint64_t compressed_offset = 0;
+    std::uint64_t compressed_length = 0;
+
+    std::uint64_t output_offset() const { return sector_number * 512ull; }
+    std::uint64_t output_length() const { return sector_count * 512ull; }
+};
+
+struct MishDescriptor {
+    std::uint64_t sector_number = 0;
+    std::uint64_t sector_count = 0;
+    std::uint64_t data_offset = 0;
+    std::vector<UdifRun> runs;
+};
+
+int base64_value(unsigned char c) {
+    if (c >= 'A' && c <= 'Z') return static_cast<int>(c - 'A');
+    if (c >= 'a' && c <= 'z') return static_cast<int>(c - 'a') + 26;
+    if (c >= '0' && c <= '9') return static_cast<int>(c - '0') + 52;
+    if (c == '+') return 62;
+    if (c == '/') return 63;
+    return -1;
+}
+
+bool base64_decode(const std::string& text, std::vector<std::uint8_t>& out, std::string& error) {
+    out.clear();
+    std::array<int, 4> quartet{};
+    int q = 0;
+    bool saw_padding = false;
+
+    auto emit = [&]() -> bool {
+        if (quartet[0] < 0 || quartet[1] < 0) {
+            error = "invalid base64 padding";
+            return false;
+        }
+        const std::uint32_t value =
+            (static_cast<std::uint32_t>(quartet[0]) << 18) |
+            (static_cast<std::uint32_t>(quartet[1]) << 12) |
+            (static_cast<std::uint32_t>(quartet[2] < 0 ? 0 : quartet[2]) << 6) |
+            static_cast<std::uint32_t>(quartet[3] < 0 ? 0 : quartet[3]);
+        out.push_back(static_cast<std::uint8_t>((value >> 16) & 0xff));
+        if (quartet[2] >= 0) out.push_back(static_cast<std::uint8_t>((value >> 8) & 0xff));
+        if (quartet[3] >= 0) out.push_back(static_cast<std::uint8_t>(value & 0xff));
+        if (quartet[2] < 0 && quartet[3] >= 0) {
+            error = "invalid base64 padding order";
+            return false;
+        }
+        saw_padding = quartet[2] < 0 || quartet[3] < 0;
+        q = 0;
+        return true;
+    };
+
+    for (unsigned char c : text) {
+        if (c == ' ' || c == '\t' || c == '\r' || c == '\n') continue;
+        if (saw_padding) {
+            error = "non-whitespace after base64 padding";
+            return false;
+        }
+        if (c == '=') {
+            quartet[q++] = -1;
+        } else {
+            const int value = base64_value(c);
+            if (value < 0) {
+                error = "invalid base64 character in UDIF plist";
+                return false;
+            }
+            quartet[q++] = value;
+        }
+        if (q == 4 && !emit()) return false;
+    }
+
+    if (q != 0) {
+        error = "truncated base64 data in UDIF plist";
+        return false;
+    }
+    return true;
+}
+
+bool parse_mish(const std::vector<std::uint8_t>& blob, MishDescriptor& descriptor, std::string& error) {
+    descriptor = {};
+    if (blob.size() < 204) {
+        error = "mish block is shorter than its fixed header";
+        return false;
+    }
+    if (get_be32(blob.data()) != kMishMagic) {
+        error = "mish magic mismatch";
+        return false;
+    }
+    if (get_be32(blob.data() + 4) != 1) {
+        error = "unsupported mish version";
+        return false;
+    }
+
+    descriptor.sector_number = get_be64(blob.data() + 8);
+    descriptor.sector_count = get_be64(blob.data() + 16);
+    descriptor.data_offset = get_be64(blob.data() + 24);
+
+    const std::uint32_t run_count = get_be32(blob.data() + 200);
+    if (run_count > (std::numeric_limits<std::size_t>::max() - 204u) / 40u) {
+        error = "mish run count overflows host size";
+        return false;
+    }
+    const std::size_t expected = 204u + static_cast<std::size_t>(run_count) * 40u;
+    if (blob.size() < expected) {
+        error = "mish run table is truncated";
+        return false;
+    }
+
+    descriptor.runs.reserve(run_count);
+    for (std::uint32_t i = 0; i < run_count; ++i) {
+        const std::uint8_t* p = blob.data() + 204u + static_cast<std::size_t>(i) * 40u;
+        UdifRun run;
+        run.type = get_be32(p);
+        run.sector_number = get_be64(p + 8);
+        run.sector_count = get_be64(p + 16);
+        run.compressed_offset = get_be64(p + 24);
+        run.compressed_length = get_be64(p + 32);
+        if (run.sector_number > std::numeric_limits<std::uint64_t>::max() / 512ull ||
+            run.sector_count > std::numeric_limits<std::uint64_t>::max() / 512ull) {
+            error = "mish run sector range overflows byte addressing";
+            return false;
+        }
+        descriptor.runs.push_back(run);
+    }
+    return true;
+}
+
+bool read_udif_xml(std::ifstream& input, const UdifInfo& info, std::string& xml, std::string& error) {
+    if (info.xml_length == 0) {
+        error = "UDIF image has no XML resource fork";
+        return false;
+    }
+    if (info.xml_length > kMaxUdifXmlBytes) {
+        error = "UDIF XML resource fork exceeds the 16 MiB safety limit";
+        return false;
+    }
+    if (info.xml_offset > static_cast<std::uint64_t>(std::numeric_limits<std::streamoff>::max())) {
+        error = "UDIF XML offset exceeds streamoff range";
+        return false;
+    }
+    input.clear();
+    input.seekg(static_cast<std::streamoff>(info.xml_offset), std::ios::beg);
+    if (!input) {
+        error = "could not seek to UDIF XML resource fork";
+        return false;
+    }
+    xml.resize(static_cast<std::size_t>(info.xml_length));
+    return read_exact(input, xml.data(), xml.size(), error);
+}
+
+bool find_whole_disk_mish(
+    const std::string& xml,
+    std::uint64_t expected_sectors,
+    MishDescriptor& selected,
+    std::size_t& selected_blob_size,
+    std::string& error
+) {
+    const std::string open_tag = "<data>";
+    const std::string close_tag = "</data>";
+    std::size_t cursor = 0;
+    std::size_t matches = 0;
+    selected_blob_size = 0;
+
+    while (true) {
+        const std::size_t open = xml.find(open_tag, cursor);
+        if (open == std::string::npos) break;
+        const std::size_t payload_start = open + open_tag.size();
+        const std::size_t close = xml.find(close_tag, payload_start);
+        if (close == std::string::npos) {
+            error = "unterminated <data> element in UDIF plist";
+            return false;
+        }
+
+        std::vector<std::uint8_t> decoded;
+        std::string decode_error;
+        if (!base64_decode(xml.substr(payload_start, close - payload_start), decoded, decode_error)) {
+            error = decode_error;
+            return false;
+        }
+
+        if (decoded.size() >= 4 && get_be32(decoded.data()) == kMishMagic) {
+            MishDescriptor candidate;
+            if (!parse_mish(decoded, candidate, error)) return false;
+            if (candidate.sector_number == 0 && candidate.sector_count == expected_sectors) {
+                selected = std::move(candidate);
+                selected_blob_size = decoded.capacity();
+                ++matches;
+            }
+        }
+        cursor = close + close_tag.size();
+    }
+
+    if (matches == 0) {
+        error = "UDIF plist has no whole-disk mish descriptor";
+        return false;
+    }
+    if (matches != 1) {
+        error = "UDIF plist has multiple whole-disk mish descriptors";
+        return false;
+    }
+    return true;
+}
+
+bool validate_runs(
+    const MishDescriptor& descriptor,
+    const UdifInfo& info,
+    std::vector<UdifRun>& ordered,
+    std::string& error
+) {
+    ordered.clear();
+    bool saw_terminator = false;
+    const std::uint64_t total_output = info.sector_count * 512ull;
+
+    for (const UdifRun& run : descriptor.runs) {
+        if (run.type == kCommentBlockType) continue;
+        if (run.type == kTerminatorBlockType) {
+            saw_terminator = true;
+            continue;
+        }
+
+        if (run.type == kIgnoredBlockType || run.type == kAdcBlockType || run.type == kBzip2BlockType) {
+            std::ostringstream message;
+            message << "unsupported UDIF block type 0x" << std::hex << std::uppercase << run.type;
+            error = message.str();
+            return false;
+        }
+        if (run.type != kZeroBlockType && run.type != kRawBlockType && run.type != kZlibBlockType) {
+            std::ostringstream message;
+            message << "unknown UDIF block type 0x" << std::hex << std::uppercase << run.type;
+            error = message.str();
+            return false;
+        }
+
+        const std::uint64_t output_offset = run.output_offset();
+        const std::uint64_t output_length = run.output_length();
+        if (output_offset > total_output || output_length > total_output - output_offset) {
+            error = "UDIF block maps outside the declared disk size";
+            return false;
+        }
+
+        if (run.type == kRawBlockType && run.compressed_length != output_length) {
+            error = "raw UDIF block length does not match its sector span";
+            return false;
+        }
+        if (run.type == kZeroBlockType && run.compressed_length != 0) {
+            error = "zero-fill UDIF block unexpectedly carries payload";
+            return false;
+        }
+
+        if (run.type != kZeroBlockType) {
+            if (descriptor.data_offset > info.data_fork_length ||
+                run.compressed_offset > info.data_fork_length - descriptor.data_offset) {
+                error = "UDIF block payload offset is outside the data fork";
+                return false;
+            }
+            const std::uint64_t relative = descriptor.data_offset + run.compressed_offset;
+            if (run.compressed_length > info.data_fork_length - relative) {
+                error = "UDIF block payload exceeds the data fork";
+                return false;
+            }
+        }
+        ordered.push_back(run);
+    }
+
+    if (!saw_terminator) {
+        error = "UDIF mish run table has no terminator";
+        return false;
+    }
+
+    std::sort(ordered.begin(), ordered.end(), [](const UdifRun& a, const UdifRun& b) {
+        return a.output_offset() < b.output_offset();
+    });
+
+    std::uint64_t cursor = 0;
+    for (const UdifRun& run : ordered) {
+        const std::uint64_t start = run.output_offset();
+        if (start != cursor) {
+            error = start < cursor
+                ? "UDIF block map overlaps a previous output range"
+                : "UDIF block map leaves an uncovered output range";
+            return false;
+        }
+        cursor += run.output_length();
+    }
+    if (cursor != total_output) {
+        error = "UDIF block map does not cover the full disk image";
+        return false;
+    }
+    return true;
+}
+
+bool seek_input(std::ifstream& input, std::uint64_t offset, std::string& error) {
+    if (offset > static_cast<std::uint64_t>(std::numeric_limits<std::streamoff>::max())) {
+        error = "UDIF payload offset exceeds streamoff range";
+        return false;
+    }
+    input.clear();
+    input.seekg(static_cast<std::streamoff>(offset), std::ios::beg);
+    if (!input) {
+        error = "could not seek to UDIF payload";
+        return false;
+    }
+    return true;
+}
+
+bool seek_output(std::fstream& output, std::uint64_t offset, std::string& error) {
+    if (offset > static_cast<std::uint64_t>(std::numeric_limits<std::streamoff>::max())) {
+        error = "raw output offset exceeds streamoff range";
+        return false;
+    }
+    output.clear();
+    output.seekp(static_cast<std::streamoff>(offset), std::ios::beg);
+    if (!output) {
+        error = "could not seek in raw output";
+        return false;
+    }
+    return true;
+}
+
+bool write_zero_run(
+    std::fstream& output,
+    std::uint64_t count,
+    std::vector<std::uint8_t>& buffer,
+    std::string& error
+) {
+    std::fill(buffer.begin(), buffer.end(), 0);
+    std::uint64_t remaining = count;
+    while (remaining != 0) {
+        const std::size_t chunk = static_cast<std::size_t>(
+            std::min<std::uint64_t>(remaining, buffer.size())
+        );
+        if (!write_exact(output, buffer.data(), chunk, error)) return false;
+        remaining -= chunk;
+    }
+    return true;
+}
+
+bool inflate_zlib_run(
+    std::ifstream& input,
+    std::fstream& output,
+    std::uint64_t compressed_length,
+    std::uint64_t expected_output,
+    std::vector<std::uint8_t>& input_buffer,
+    std::vector<std::uint8_t>& output_buffer,
+    std::string& error
+) {
+    z_stream stream{};
+    if (inflateInit(&stream) != Z_OK) {
+        error = "zlib inflateInit failed";
+        return false;
+    }
+
+    auto finish = [&]() { inflateEnd(&stream); };
+    std::uint64_t remaining_input = compressed_length;
+    std::uint64_t produced = 0;
+
+    while (true) {
+        if (stream.avail_in == 0 && remaining_input != 0) {
+            const std::size_t chunk = static_cast<std::size_t>(
+                std::min<std::uint64_t>(remaining_input, input_buffer.size())
+            );
+            if (!read_exact(input, input_buffer.data(), chunk, error)) {
+                finish();
+                return false;
+            }
+            stream.next_in = reinterpret_cast<Bytef*>(input_buffer.data());
+            stream.avail_in = static_cast<uInt>(chunk);
+            remaining_input -= chunk;
+        }
+
+        stream.next_out = reinterpret_cast<Bytef*>(output_buffer.data());
+        stream.avail_out = static_cast<uInt>(output_buffer.size());
+        const int ret = inflate(&stream, Z_NO_FLUSH);
+        const std::size_t have = output_buffer.size() - stream.avail_out;
+
+        if (have != 0) {
+            if (produced > expected_output || have > expected_output - produced) {
+                finish();
+                error = "zlib UDIF block expands beyond its declared sector span";
+                return false;
+            }
+            if (!write_exact(output, output_buffer.data(), have, error)) {
+                finish();
+                return false;
+            }
+            produced += have;
+        }
+
+        if (ret == Z_STREAM_END) {
+            const bool exact_input = remaining_input == 0 && stream.avail_in == 0;
+            finish();
+            if (!exact_input) {
+                error = "zlib UDIF block has trailing compressed bytes";
+                return false;
+            }
+            if (produced != expected_output) {
+                error = "zlib UDIF block output length does not match its sector span";
+                return false;
+            }
+            return true;
+        }
+
+        if (ret != Z_OK) {
+            finish();
+            error = "zlib UDIF block failed to inflate";
+            return false;
+        }
+
+        if (remaining_input == 0 && stream.avail_in == 0 && have == 0) {
+            finish();
+            error = "zlib UDIF block ended before Z_STREAM_END";
+            return false;
+        }
+    }
+}
+
+} // namespace
+
+bool udif_decode_to_raw(
+    const std::string& input_path,
+    const std::string& output_path,
+    UdifFileResult& result,
+    std::string& error
+) {
+    result = {};
+    error.clear();
+
+    UdifInfo info;
+    if (!udif_inspect(input_path, info, error)) return false;
+    if (info.raw_data_fork) {
+        return udif_extract_raw_data_fork(input_path, output_path, result, error);
+    }
+
+    std::ifstream input(input_path, std::ios::binary);
+    if (!input) {
+        error = "could not open UDIF image for block-map decode";
+        return false;
+    }
+
+    std::uint64_t total_input_size = 0;
+    if (!stream_size(input, total_input_size, error)) return false;
+
+    std::string xml;
+    if (!read_udif_xml(input, info, xml, error)) return false;
+
+    MishDescriptor descriptor;
+    std::size_t selected_blob_size = 0;
+    if (!find_whole_disk_mish(xml, info.sector_count, descriptor, selected_blob_size, error)) {
+        return false;
+    }
+
+    std::vector<UdifRun> runs;
+    if (!validate_runs(descriptor, info, runs, error)) return false;
+
+    const std::uint64_t output_size = info.sector_count * 512ull;
+    if (output_size == 0) {
+        error = "UDIF image declares an empty disk";
+        return false;
+    }
+    if (output_size > static_cast<std::uint64_t>(std::numeric_limits<std::streamoff>::max())) {
+        error = "decoded disk size exceeds streamoff range";
+        return false;
+    }
+
+    const std::string temp_path = output_path + ".vphone.tmp";
+    std::remove(temp_path.c_str());
+    TempCleanup cleanup{temp_path};
+
+    {
+        std::ofstream create(temp_path, std::ios::binary | std::ios::trunc);
+        if (!create) {
+            error = "could not create temporary raw output";
+            return false;
+        }
+    }
+
+    std::error_code resize_error;
+    std::filesystem::resize_file(temp_path, output_size, resize_error);
+    if (resize_error) {
+        error = "could not size temporary raw output: " + resize_error.message();
+        return false;
+    }
+
+    std::fstream output(temp_path, std::ios::binary | std::ios::in | std::ios::out);
+    if (!output) {
+        error = "could not reopen temporary raw output";
+        return false;
+    }
+
+    std::vector<std::uint8_t> input_buffer(kCopyBufferSize);
+    std::vector<std::uint8_t> output_buffer(kCopyBufferSize);
+    result.peak_buffer_bytes =
+        static_cast<std::uint64_t>(input_buffer.capacity()) +
+        static_cast<std::uint64_t>(output_buffer.capacity()) +
+        static_cast<std::uint64_t>(xml.capacity()) +
+        static_cast<std::uint64_t>(selected_blob_size);
+
+    for (const UdifRun& run : runs) {
+        if (!seek_output(output, run.output_offset(), error)) return false;
+
+        if (run.type == kZeroBlockType) {
+            if (!write_zero_run(output, run.output_length(), output_buffer, error)) return false;
+            continue;
+        }
+
+        const std::uint64_t source_offset =
+            info.data_fork_offset + descriptor.data_offset + run.compressed_offset;
+        if (!seek_input(input, source_offset, error)) return false;
+
+        if (run.type == kRawBlockType) {
+            if (!copy_exact(input, output, run.compressed_length, input_buffer, error)) return false;
+            continue;
+        }
+
+        if (run.type == kZlibBlockType) {
+            if (!inflate_zlib_run(
+                    input,
+                    output,
+                    run.compressed_length,
+                    run.output_length(),
+                    input_buffer,
+                    output_buffer,
+                    error
+                )) return false;
+            continue;
+        }
+
+        error = "internal error: validated UDIF run type was not handled";
+        return false;
+    }
+
+    output.flush();
+    if (!output) {
+        error = "could not flush decoded raw image";
+        return false;
+    }
+    output.close();
+
+    if (!atomic_replace(temp_path, output_path, error)) return false;
+
+    result.input_size = total_input_size;
+    result.output_size = output_size;
     result.sector_count = info.sector_count;
     return true;
 }

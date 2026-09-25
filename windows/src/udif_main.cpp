@@ -10,6 +10,7 @@ void usage() {
         << "usage:\n"
         << "  vphone-udif-win raw-to-udrw <raw.img> <output.dmg>\n"
         << "  vphone-udif-win udrw-to-raw <input.dmg> <output.img>\n"
+        << "  vphone-udif-win dmg-to-raw <input.dmg> <output.img>\n"
         << "  vphone-udif-win inspect <input.dmg>\n";
 }
 
@@ -65,6 +66,20 @@ int main(int argc, char** argv) {
                 result,
                 error
             )) {
+            std::cerr << "ERROR: " << error << "\n";
+            return 1;
+        }
+        print_result(result);
+        return 0;
+    }
+
+    if (command == "dmg-to-raw") {
+        if (argc != 4) {
+            usage();
+            return 64;
+        }
+        vphone::UdifFileResult result;
+        if (!vphone::udif_decode_to_raw(argv[2], argv[3], result, error)) {
             std::cerr << "ERROR: " << error << "\n";
             return 1;
         }

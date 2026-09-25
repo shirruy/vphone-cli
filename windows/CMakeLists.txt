@@ -203,6 +203,7 @@ if(WIN32)
 
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)
     target_include_directories(vphone_udif_portable PUBLIC include)
+    target_link_libraries(vphone_udif_portable PUBLIC ZLIB::ZLIBSTATIC)
 
     add_executable(vphone-udif-win src/udif_main.cpp)
     target_link_libraries(vphone-udif-win PRIVATE vphone_udif_portable)
