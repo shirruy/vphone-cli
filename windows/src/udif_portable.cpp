@@ -887,7 +887,7 @@ bool validate_runs(
             continue;
         }
 
-        if (run.type == kIgnoredBlockType || run.type == kAdcBlockType) {
+        if (run.type == kIgnoredBlockType) {
             std::ostringstream message;
             message << "unsupported UDIF block type 0x" << std::hex << std::uppercase << run.type;
             error = message.str();
@@ -895,6 +895,7 @@ bool validate_runs(
         }
         if (run.type != kZeroBlockType &&
             run.type != kRawBlockType &&
+            run.type != kAdcBlockType &&
             run.type != kZlibBlockType &&
             run.type != kLzfseBlockType &&
             run.type != kBzip2BlockType) {
@@ -1006,6 +1007,174 @@ bool write_zero_run(
         remaining -= chunk;
     }
     return true;
+}
+
+bool decode_adc_run(
+    std::ifstream& input,
+    std::fstream& output,
+    std::uint64_t compressed_length,
+    std::uint64_t expected_output,
+    std::vector<std::uint8_t>& input_buffer,
+    std::vector<std::uint8_t>& output_buffer,
+    std::uint64_t base_peak_bytes,
+    std::uint64_t& observed_peak_bytes,
+    std::string& error
+) {
+    constexpr std::size_t kAdcHistoryBytes = 65536u;
+
+    if (expected_output == 0) {
+        error = "ADC UDIF block declares an empty output span";
+        return false;
+    }
+    if (compressed_length == 0) {
+        error = "ADC UDIF block has an empty compressed payload";
+        return false;
+    }
+    if (input_buffer.empty() || output_buffer.empty()) {
+        error = "ADC UDIF decoder buffers are empty";
+        return false;
+    }
+
+    std::vector<std::uint8_t> history(kAdcHistoryBytes);
+    observed_peak_bytes = std::max<std::uint64_t>(
+        observed_peak_bytes,
+        base_peak_bytes + static_cast<std::uint64_t>(history.capacity())
+    );
+
+    std::uint64_t remaining_input = compressed_length;
+    std::size_t input_pos = 0;
+    std::size_t input_size = 0;
+    std::size_t output_pos = 0;
+    std::size_t history_pos = 0;
+    std::size_t history_size = 0;
+    std::uint64_t produced = 0;
+
+    auto buffered_input = [&]() -> std::uint64_t {
+        return remaining_input +
+            static_cast<std::uint64_t>(input_size - input_pos);
+    };
+
+    auto read_byte = [&](std::uint8_t& value) -> bool {
+        if (input_pos == input_size) {
+            if (remaining_input == 0) {
+                error = "ADC UDIF block is truncated";
+                return false;
+            }
+
+            const std::size_t chunk = static_cast<std::size_t>(
+                std::min<std::uint64_t>(remaining_input, input_buffer.size())
+            );
+            if (!read_exact(input, input_buffer.data(), chunk, error)) {
+                return false;
+            }
+
+            input_pos = 0;
+            input_size = chunk;
+            remaining_input -= chunk;
+        }
+
+        value = input_buffer[input_pos++];
+        return true;
+    };
+
+    auto flush_output = [&]() -> bool {
+        if (output_pos == 0) return true;
+        if (!write_exact(output, output_buffer.data(), output_pos, error)) {
+            return false;
+        }
+        output_pos = 0;
+        return true;
+    };
+
+    auto emit_byte = [&](std::uint8_t value) -> bool {
+        if (produced >= expected_output) {
+            error = "ADC UDIF block expands beyond its declared sector span";
+            return false;
+        }
+
+        output_buffer[output_pos++] = value;
+        if (output_pos == output_buffer.size() && !flush_output()) {
+            return false;
+        }
+
+        history[history_pos] = value;
+        history_pos = (history_pos + 1u) % history.size();
+        if (history_size < history.size()) {
+            ++history_size;
+        }
+
+        ++produced;
+        return true;
+    };
+
+    auto copy_backref = [&](std::uint32_t offset, std::size_t count) -> bool {
+        const std::uint64_t distance = static_cast<std::uint64_t>(offset) + 1ull;
+        if (distance > static_cast<std::uint64_t>(history_size)) {
+            error = "ADC UDIF block contains a back-reference before the start of output";
+            return false;
+        }
+
+        for (std::size_t i = 0; i < count; ++i) {
+            const std::size_t distance_size = static_cast<std::size_t>(distance);
+            const std::size_t index =
+                (history_pos + history.size() - distance_size) % history.size();
+            const std::uint8_t value = history[index];
+            if (!emit_byte(value)) return false;
+        }
+        return true;
+    };
+
+    while (buffered_input() != 0) {
+        std::uint8_t control = 0;
+        if (!read_byte(control)) return false;
+
+        if ((control & 0x80u) != 0u) {
+            const std::size_t count =
+                static_cast<std::size_t>(control & 0x7fu) + 1u;
+
+            for (std::size_t i = 0; i < count; ++i) {
+                std::uint8_t value = 0;
+                if (!read_byte(value)) return false;
+                if (!emit_byte(value)) return false;
+            }
+            continue;
+        }
+
+        if ((control & 0x40u) != 0u) {
+            const std::size_t count =
+                static_cast<std::size_t>(control & 0x3fu) + 4u;
+
+            std::uint8_t high = 0;
+            std::uint8_t low = 0;
+            if (!read_byte(high) || !read_byte(low)) return false;
+
+            const std::uint32_t offset =
+                (static_cast<std::uint32_t>(high) << 8) |
+                static_cast<std::uint32_t>(low);
+
+            if (!copy_backref(offset, count)) return false;
+            continue;
+        }
+
+        const std::size_t count =
+            static_cast<std::size_t>((control & 0x3fu) >> 2) + 3u;
+
+        std::uint8_t low = 0;
+        if (!read_byte(low)) return false;
+
+        const std::uint32_t offset =
+            (static_cast<std::uint32_t>(control & 0x03u) << 8) |
+            static_cast<std::uint32_t>(low);
+
+        if (!copy_backref(offset, count)) return false;
+    }
+
+    if (produced != expected_output) {
+        error = "ADC UDIF block output length does not match its sector span";
+        return false;
+    }
+
+    return flush_output();
 }
 
 bool inflate_zlib_run(
@@ -1340,6 +1509,22 @@ bool udif_decode_to_raw(
 
         if (run.type == kRawBlockType) {
             if (!copy_exact(input, output, run.compressed_length, input_buffer, error)) return false;
+            continue;
+        }
+
+        if (run.type == kAdcBlockType) {
+            const std::uint64_t base_peak = result.peak_buffer_bytes;
+            if (!decode_adc_run(
+                    input,
+                    output,
+                    run.compressed_length,
+                    run.output_length(),
+                    input_buffer,
+                    output_buffer,
+                    base_peak,
+                    result.peak_buffer_bytes,
+                    error
+                )) return false;
             continue;
         }
 
