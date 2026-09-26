@@ -1,0 +1,60 @@
+name: Windows Port Phase 4D4B
+
+on:
+  push:
+    branches:
+      - phase/04d4b-fixed-vhd-attach-promote
+  workflow_dispatch:
+
+jobs:
+  phase4d4b:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S .\windows -B .\build\windows-phase4d4b-ci
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build .\build\windows-phase4d4b-ci --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir .\build\windows-phase4d4b-ci -C Release --output-on-failure
+
+      - name: Verify fixed VHD read-only attach promotion
+        shell: pwsh
+        run: |
+          $cli = Get-ChildItem `
+            .\build\windows-phase4d4b-ci `
+            -Filter vphone-cli-win.exe `
+            -File `
+            -Recurse |
+            Select-Object -First 1
+
+          if (-not $cli) {
+            throw "vphone-cli-win.exe missing"
+          }
+
+          $cap = (
+            (& $cli.FullName restore-capabilities) `
+            -join [Environment]::NewLine
+          ) | ConvertFrom-Json
+
+          if ($cap.disk_image_fixed_vhd_convert -ne "supported") {
+            throw "fixed VHD conversion missing"
+          }
+
+          if ($cap.disk_image_fixed_vhd_attach_readonly -ne "supported") {
+            throw "read-only attach not promoted"
+          }
+
+          if ($cap.disk_image_attach_convert -ne "unsupported") {
+            throw "aggregate attach/convert promoted prematurely"
+          }

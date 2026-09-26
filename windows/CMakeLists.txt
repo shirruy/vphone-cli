@@ -327,6 +327,25 @@ set_tests_properties(native_cli_firmware_capabilities PROPERTIES
     PASS_REGULAR_EXPRESSION "\"mbn\": \"supported\""
 )
 
+add_test(
+    NAME native_cli_fixed_vhd_attach_capability
+    COMMAND vphone-cli-win firmware-capabilities
+)
+set_tests_properties(
+    native_cli_fixed_vhd_attach_capability
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION "disk_image_fixed_vhd_attach_readonly.*supported"
+)
+
+add_test(
+    NAME native_cli_fixed_vhd_attach_restore_capability
+    COMMAND vphone-cli-win restore-capabilities
+)
+set_tests_properties(
+    native_cli_fixed_vhd_attach_restore_capability
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION "disk_image_fixed_vhd_attach_readonly.*supported"
+)
 add_test(NAME native_cli_archive_capabilities COMMAND vphone-cli-win archive-capabilities)
 set_tests_properties(native_cli_archive_capabilities PROPERTIES
     PASS_REGULAR_EXPRESSION "\"gnutar_uncompressed\": \"supported\""
@@ -437,3 +456,4 @@ set_tests_properties(cli_validate_protocol_request PROPERTIES
 
 add_test(NAME upstream_ftab_roundtrip COMMAND vphone_upstream_ftab_test)
 add_test(NAME upstream_mbn_stitch COMMAND vphone_upstream_mbn_test)
+
