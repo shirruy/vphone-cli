@@ -243,6 +243,7 @@ if(WIN32)
             "${lzfse_SOURCE_DIR}/src"
             "${bzip2_SOURCE_DIR}"
     )
+    target_compile_definitions(vphone_udif_portable PRIVATE NOMINMAX)
     target_link_libraries(vphone_udif_portable PUBLIC
         ZLIB::ZLIBSTATIC
         lzfse
