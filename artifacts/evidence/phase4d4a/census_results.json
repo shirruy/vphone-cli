@@ -1,0 +1,12 @@
+{
+  "generated_from_parent": "c9f22ab55ab0ac022eaabfbdf9ed40a00b430e6b",
+  "compile_units": 402,
+  "categories": {
+    "PORTABLE": 33,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D4A adds three Windows-native C++ compile units: fixed VHD backend, CLI, and roundtrip test."
+}
