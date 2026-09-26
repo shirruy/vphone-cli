@@ -45,6 +45,102 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ""
 Write-Host "[2/6] Clean Phase 5A configure..." -ForegroundColor Yellow
+# Select the generator from the Visual Studio installation actually present.
+# Local physical Windows currently uses VS 2022.
+# GitHub windows-latest may use VS 2026.
+
+$cmakeHelp = (
+    & cmake --help 2>&1
+) -join [Environment]::NewLine
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to query CMake generators."
+}
+
+$vswhereCandidates = @(
+    (Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"),
+    (Join-Path $env:ProgramFiles "Microsoft Visual Studio\Installer\vswhere.exe")
+)
+
+$vswhere = $vswhereCandidates |
+    Where-Object {
+        $_ -and (Test-Path $_)
+    } |
+    Select-Object -First 1
+
+if (-not $vswhere) {
+    throw "vswhere.exe was not found."
+}
+
+$vsRaw = & $vswhere `
+    -latest `
+    -products '*' `
+    -requires Microsoft.Component.MSBuild `
+    -format json `
+    -utf8
+
+if ($LASTEXITCODE -ne 0) {
+    throw "vswhere failed."
+}
+
+$vsInstances = @(
+    ($vsRaw -join [Environment]::NewLine) |
+    ConvertFrom-Json
+)
+
+$vsInstance = $vsInstances |
+    Select-Object -First 1
+
+if (-not $vsInstance) {
+    throw "No usable Visual Studio installation was detected."
+}
+
+if ([string]::IsNullOrWhiteSpace($vsInstance.installationVersion)) {
+    throw "Visual Studio installationVersion is missing."
+}
+
+$vsMajor = [int](
+    $vsInstance.installationVersion.Split('.')[0]
+)
+
+Write-Host ""
+Write-Host "Visual Studio path    : $($vsInstance.installationPath)" -ForegroundColor Cyan
+Write-Host "Visual Studio version : $($vsInstance.installationVersion)" -ForegroundColor Cyan
+Write-Host "Visual Studio major   : $vsMajor" -ForegroundColor Cyan
+
+if ($vsMajor -ge 18) {
+
+    $requiredGenerator = "Visual Studio 18 2026"
+
+    if (
+        $cmakeHelp -notmatch
+        [regex]::Escape($requiredGenerator)
+    ) {
+        throw "VS 2026 detected but CMake does not support '$requiredGenerator'."
+    }
+
+    $cmakeGenerator = $requiredGenerator
+}
+elseif ($vsMajor -eq 17) {
+
+    $requiredGenerator = "Visual Studio 17 2022"
+
+    if (
+        $cmakeHelp -notmatch
+        [regex]::Escape($requiredGenerator)
+    ) {
+        throw "VS 2022 detected but CMake does not support '$requiredGenerator'."
+    }
+
+    $cmakeGenerator = $requiredGenerator
+}
+else {
+    throw "Unsupported Visual Studio major version: $vsMajor"
+}
+
+Write-Host "CMake generator       : $cmakeGenerator" -ForegroundColor Green
+Write-Host ""
+
 
 $buildDir = Join-Path $repoRoot "build\windows-phase05a"
 
@@ -55,7 +151,7 @@ if (Test-Path $buildDir) {
 cmake `
     -S ".\windows" `
     -B $buildDir `
-    -G "Visual Studio 17 2022" `
+    -G $cmakeGenerator `
     -A x64
 
 if ($LASTEXITCODE -ne 0) {
