@@ -19,6 +19,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <initguid.h>
 #include <virtdisk.h>
 #include <bcrypt.h>
 #endif
