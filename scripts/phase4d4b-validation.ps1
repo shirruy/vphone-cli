@@ -16,7 +16,13 @@ function Invoke-Checked {
     }
 }
 
-Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+Set-Location $repoRoot
+
+# PowerShell provider location and .NET process current directory are not
+# guaranteed to remain synchronized. System.IO APIs resolve relative paths
+# against Environment.CurrentDirectory, so explicitly pin both to repo root.
+[Environment]::CurrentDirectory = $repoRoot
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
@@ -184,7 +190,7 @@ if (-not $diskTool) {
     throw "vphone-disk-image-win.exe missing."
 }
 
-$probeDir = ".\build\phase4d4b-physical"
+$probeDir = Join-Path $repoRoot "build\phase4d4b-physical"
 
 if (Test-Path $probeDir) {
     Remove-Item $probeDir -Recurse -Force
