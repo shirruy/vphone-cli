@@ -5,6 +5,50 @@
 
 namespace {
 
+std::string json_escape(const std::string& value) {
+    static constexpr char hex[] = "0123456789abcdef";
+
+    std::string out;
+    out.reserve(value.size() + 16);
+
+    for (unsigned char ch : value) {
+        switch (ch) {
+            case '"':
+                out += "\\\"";
+                break;
+            case '\\':
+                out += "\\\\";
+                break;
+            case '\b':
+                out += "\\b";
+                break;
+            case '\f':
+                out += "\\f";
+                break;
+            case '\n':
+                out += "\\n";
+                break;
+            case '\r':
+                out += "\\r";
+                break;
+            case '\t':
+                out += "\\t";
+                break;
+            default:
+                if (ch < 0x20) {
+                    out += "\\u00";
+                    out += hex[(ch >> 4) & 0x0f];
+                    out += hex[ch & 0x0f];
+                } else {
+                    out.push_back(static_cast<char>(ch));
+                }
+                break;
+        }
+    }
+
+    return out;
+}
+
 void usage() {
     std::cerr
         << "usage:\n"
@@ -61,7 +105,7 @@ int main(int argc, char** argv) {
         std::cout
             << "{\n"
             << "  \"operation\": \"probe-attach-readonly\",\n"
-            << "  \"physical_path\": \"" << physical_path << "\",\n"
+            << "  \"physical_path\": \"" << json_escape(physical_path) << "\",\n"
             << "  \"detached\": true\n"
             << "}\n";
         return 0;
