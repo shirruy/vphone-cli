@@ -156,6 +156,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--tool", required=True)
     parser.add_argument("--workdir", required=True)
+    parser.add_argument("--allow-adc", action="store_true")
     args = parser.parse_args()
 
     tool = Path(args.tool).resolve()
@@ -190,10 +191,11 @@ def main() -> int:
     run(tool, "dmg-to-raw", str(corrupt), str(sentinel), expect_success=False)
     assert sentinel.read_bytes() == b"UNCHANGED"
 
-    make_udif(unsupported, raw, payload_type=ADC)
-    sentinel.write_bytes(b"UNCHANGED")
-    run(tool, "dmg-to-raw", str(unsupported), str(sentinel), expect_success=False)
-    assert sentinel.read_bytes() == b"UNCHANGED"
+    if not args.allow_adc:
+        make_udif(unsupported, raw, payload_type=ADC)
+        sentinel.write_bytes(b"UNCHANGED")
+        run(tool, "dmg-to-raw", str(unsupported), str(sentinel), expect_success=False)
+        assert sentinel.read_bytes() == b"UNCHANGED"
 
     print("UDIF_BZIP2_ORACLE_PASS")
     print("source_sha256=" + sha256(source))
@@ -203,7 +205,7 @@ def main() -> int:
     print("payload_bytes=" + str(len(raw)))
     print("peak_buffer_bytes=" + str(result["peak_buffer_bytes"]))
     print("corrupt_bzip2_fail_closed=PASS")
-    print("unsupported_adc_fail_closed=PASS")
+    print("unsupported_adc_fail_closed=" + ("SKIPPED_PROMOTED" if args.allow_adc else "PASS"))
     return 0
 
 
