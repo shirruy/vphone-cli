@@ -91,14 +91,21 @@ FetchContent_Declare(
     bzip2
     GIT_REPOSITORY https://github.com/libarchive/bzip2.git
     GIT_TAG 1ea1ac188ad4b9cb662e3f8314673c63df95a589
+    SOURCE_SUBDIR vphone-no-cmake-subdir
 )
-set(ENABLE_LIB_ONLY ON CACHE BOOL "" FORCE)
-set(ENABLE_STATIC_LIB ON CACHE BOOL "" FORCE)
-set(ENABLE_SHARED_LIB OFF CACHE BOOL "" FORCE)
-set(ENABLE_APP OFF CACHE BOOL "" FORCE)
-set(ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(ENABLE_DOCS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(bzip2)
+
+add_library(vphone_bzip2_static STATIC
+    "${bzip2_SOURCE_DIR}/blocksort.c"
+    "${bzip2_SOURCE_DIR}/huffman.c"
+    "${bzip2_SOURCE_DIR}/crctable.c"
+    "${bzip2_SOURCE_DIR}/randtable.c"
+    "${bzip2_SOURCE_DIR}/compress.c"
+    "${bzip2_SOURCE_DIR}/decompress.c"
+    "${bzip2_SOURCE_DIR}/bzlib.c"
+)
+target_include_directories(vphone_bzip2_static PUBLIC "${bzip2_SOURCE_DIR}")
+target_compile_definitions(vphone_bzip2_static PUBLIC BZ2_STATICLIB)
 
 FetchContent_Declare(
     lzfse
@@ -224,7 +231,7 @@ if(WIN32)
     target_link_libraries(vphone_udif_portable PUBLIC
         ZLIB::ZLIBSTATIC
         lzfse
-        bz2_static
+        vphone_bzip2_static
     )
 
     add_executable(vphone-udif-win src/udif_main.cpp)
