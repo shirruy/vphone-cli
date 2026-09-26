@@ -1,0 +1,12 @@
+{
+  "generated_from_parent": "97e96cac8d0d9aca3a6a21bce53dc4a710eb91df",
+  "compile_units": 399,
+  "categories": {
+    "PORTABLE": 30,
+    "SHIMMABLE": 283,
+    "REWRITE": 63,
+    "APPLE_ONLY": 23
+  },
+  "unknown_count": 0,
+  "note": "Phase 4D4 baseline inherits the fully verified Phase 4D3E ADC UDIF decode state without adding compile units."
+}
