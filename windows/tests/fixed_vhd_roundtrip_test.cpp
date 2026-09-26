@@ -1,5 +1,6 @@
 #include "vphone/disk_image_windows.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstring>
