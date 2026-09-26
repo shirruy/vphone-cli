@@ -156,6 +156,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--tool", required=True)
     parser.add_argument("--workdir", required=True)
+    parser.add_argument("--allow-bzip2", action="store_true")
     args = parser.parse_args()
 
     tool = Path(args.tool).resolve()
@@ -190,10 +191,11 @@ def main() -> int:
     run(tool, "dmg-to-raw", str(corrupt), str(sentinel), expect_success=False)
     assert sentinel.read_bytes() == b"UNCHANGED"
 
-    make_udif(unsupported, raw, payload_type=BZIP2)
-    sentinel.write_bytes(b"UNCHANGED")
-    run(tool, "dmg-to-raw", str(unsupported), str(sentinel), expect_success=False)
-    assert sentinel.read_bytes() == b"UNCHANGED"
+    if not args.allow_bzip2:
+        make_udif(unsupported, raw, payload_type=BZIP2)
+        sentinel.write_bytes(b"UNCHANGED")
+        run(tool, "dmg-to-raw", str(unsupported), str(sentinel), expect_success=False)
+        assert sentinel.read_bytes() == b"UNCHANGED"
 
     print("UDIF_LZFSE_ORACLE_PASS")
     print("source_sha256=" + sha256(source))
@@ -203,7 +205,7 @@ def main() -> int:
     print("payload_bytes=" + str(len(raw)))
     print("peak_buffer_bytes=" + str(result["peak_buffer_bytes"]))
     print("corrupt_lzfse_fail_closed=PASS")
-    print("unsupported_bzip2_fail_closed=PASS")
+    print("unsupported_bzip2_fail_closed=" + ("SKIPPED_PROMOTED" if args.allow_bzip2 else "PASS"))
     return 0
 
 
