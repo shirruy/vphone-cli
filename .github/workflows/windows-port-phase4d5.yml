@@ -1,0 +1,37 @@
+name: Windows Port Phase 4D5
+
+on:
+  push:
+    branches:
+      - phase/04d5-boot-path-feasibility
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase4d5-feasibility:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Show exact commit
+        shell: pwsh
+        run: |
+          git rev-parse HEAD
+          git status --porcelain
+
+      - name: Run Phase 4D5 feasibility census
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process Bypass -Force
+          & .\scripts\phase4d5-feasibility.ps1
+
+      - name: Upload Phase 4D5 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase4d5-boot-path-feasibility-${{ github.sha }}
+          path: build/phase4d5-feasibility/
+          if-no-files-found: error
