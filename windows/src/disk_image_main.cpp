@@ -53,7 +53,8 @@ void usage() {
     std::cerr
         << "usage:\n"
         << "  vphone-disk-image-win convert-fixed <raw-input> <vhd-output>\n"
-        << "  vphone-disk-image-win probe-attach-readonly <fixed-vhd>\n";
+        << "  vphone-disk-image-win probe-attach-readonly <fixed-vhd>\n"
+        << "  vphone-disk-image-win convert-fixed-and-probe-readonly <raw-input> <vhd-output>\n";
 }
 
 } // namespace
@@ -74,7 +75,13 @@ int main(int argc, char** argv) {
 
         vphone::FixedVhdResult result;
         std::string error;
-        if (!vphone::raw_to_fixed_vhd(argv[2], argv[3], result, error)) {
+
+        if (!vphone::raw_to_fixed_vhd(
+                argv[2],
+                argv[3],
+                result,
+                error
+            )) {
             std::cerr << "ERROR: " << error << "\n";
             return 1;
         }
@@ -86,6 +93,7 @@ int main(int argc, char** argv) {
             << "  \"vhd_size\": " << result.vhd_size << ",\n"
             << "  \"footer_checksum\": " << result.footer_checksum << "\n"
             << "}\n";
+
         return 0;
     }
 
@@ -97,7 +105,12 @@ int main(int argc, char** argv) {
 
         std::string physical_path;
         std::string error;
-        if (!vphone::probe_fixed_vhd_attach_readonly(argv[2], physical_path, error)) {
+
+        if (!vphone::probe_fixed_vhd_attach_readonly(
+                argv[2],
+                physical_path,
+                error
+            )) {
             std::cerr << "ERROR: " << error << "\n";
             return 1;
         }
@@ -108,6 +121,60 @@ int main(int argc, char** argv) {
             << "  \"physical_path\": \"" << json_escape(physical_path) << "\",\n"
             << "  \"detached\": true\n"
             << "}\n";
+
+        return 0;
+    }
+
+    if (command == "convert-fixed-and-probe-readonly") {
+        if (argc != 4) {
+            usage();
+            return 64;
+        }
+
+        vphone::FixedVhdResult result;
+        std::string error;
+
+        if (!vphone::raw_to_fixed_vhd(
+                argv[2],
+                argv[3],
+                result,
+                error
+            )) {
+            std::cerr << "ERROR: conversion failed: "
+                      << error
+                      << "\n";
+            return 1;
+        }
+
+        std::string physical_path;
+
+        if (!vphone::probe_fixed_vhd_attach_readonly(
+                argv[3],
+                physical_path,
+                error
+            )) {
+            std::cerr << "ERROR: physical attach probe failed: "
+                      << error
+                      << "\n";
+            return 1;
+        }
+
+        if (physical_path.empty()) {
+            std::cerr << "ERROR: Windows returned no physical disk path\n";
+            return 1;
+        }
+
+        std::cout
+            << "{\n"
+            << "  \"operation\": \"convert-fixed-and-probe-readonly\",\n"
+            << "  \"raw_size\": " << result.raw_size << ",\n"
+            << "  \"vhd_size\": " << result.vhd_size << ",\n"
+            << "  \"footer_checksum\": " << result.footer_checksum << ",\n"
+            << "  \"physical_path\": \"" << json_escape(physical_path) << "\",\n"
+            << "  \"attached_readonly\": true,\n"
+            << "  \"detached\": true\n"
+            << "}\n";
+
         return 0;
     }
 

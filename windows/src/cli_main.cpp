@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
             << "  \"disk_image_udif_adc_decode\": \"supported\",\n"
             << "  \"disk_image_fixed_vhd_convert\": \"supported\",\n"
             << "  \"disk_image_fixed_vhd_attach_readonly\": \"supported\",\n"
-            << "  \"disk_image_attach_convert\": \"unsupported\",\n"
+            << "  \"disk_image_attach_convert\": \"supported\",\n"
             << "  \"apfs_seal\": \"unsupported\",\n"
             << "  \"canonical_metadata_archive\": \"unsupported\"\n"
             << "}\n";
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
             << "  \"disk_image_udif_adc_decode\": \"supported\",\n"
             << "  \"disk_image_fixed_vhd_convert\": \"supported\",\n"
             << "  \"disk_image_fixed_vhd_attach_readonly\": \"supported\",\n"
-            << "  \"disk_image_attach_convert\": \"unsupported\",\n"
+            << "  \"disk_image_attach_convert\": \"supported\",\n"
             << "  \"apfs_seal\": \"unsupported\",\n"
             << "  \"canonical_metadata_archive\": \"unsupported\"\n"
             << "}\n";

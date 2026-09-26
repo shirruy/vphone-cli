@@ -1,0 +1,78 @@
+name: Windows Port Phase 4D4C
+
+on:
+  push:
+    branches:
+      - phase/04d4c-fixed-vhd-attach-convert-aggregate
+  workflow_dispatch:
+
+jobs:
+  phase4d4c:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S .\windows -B .\build\windows-phase4d4c-ci
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build .\build\windows-phase4d4c-ci --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir .\build\windows-phase4d4c-ci -C Release --output-on-failure
+
+      - name: Verify aggregate fixed VHD attach convert promotion
+        shell: pwsh
+        run: |
+          $cli = Get-ChildItem `
+            .\build\windows-phase4d4c-ci `
+            -Filter vphone-cli-win.exe `
+            -File `
+            -Recurse |
+            Select-Object -First 1
+
+          if (-not $cli) {
+            throw "vphone-cli-win.exe missing"
+          }
+
+          $firmware = (
+            (& $cli.FullName firmware-capabilities) `
+            -join [Environment]::NewLine
+          ) | ConvertFrom-Json
+
+          $restore = (
+            (& $cli.FullName restore-capabilities) `
+            -join [Environment]::NewLine
+          ) | ConvertFrom-Json
+
+          foreach ($cap in @($firmware, $restore)) {
+
+            if ($cap.disk_image_fixed_vhd_convert -ne "supported") {
+              throw "fixed VHD conversion missing"
+            }
+
+            if ($cap.disk_image_fixed_vhd_attach_readonly -ne "supported") {
+              throw "fixed VHD read-only attach missing"
+            }
+
+            if ($cap.disk_image_attach_convert -ne "supported") {
+              throw "aggregate fixed VHD attach/convert not promoted"
+            }
+
+            if ($cap.apfs_seal -ne "unsupported") {
+              throw "APFS seal promoted prematurely"
+            }
+
+            if ($cap.canonical_metadata_archive -ne "unsupported") {
+              throw "canonical metadata archive promoted prematurely"
+            }
+          }
+
+          Write-Host "PHASE 4D4C CAPABILITY PROMOTION PASS"

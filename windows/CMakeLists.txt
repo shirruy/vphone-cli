@@ -346,6 +346,25 @@ set_tests_properties(
     PROPERTIES
     PASS_REGULAR_EXPRESSION "disk_image_fixed_vhd_attach_readonly.*supported"
 )
+add_test(
+    NAME native_cli_disk_image_attach_convert_capability
+    COMMAND vphone-cli-win firmware-capabilities
+)
+set_tests_properties(
+    native_cli_disk_image_attach_convert_capability
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION "disk_image_attach_convert.*supported"
+)
+
+add_test(
+    NAME native_cli_disk_image_attach_convert_restore_capability
+    COMMAND vphone-cli-win restore-capabilities
+)
+set_tests_properties(
+    native_cli_disk_image_attach_convert_restore_capability
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION "disk_image_attach_convert.*supported"
+)
 add_test(NAME native_cli_archive_capabilities COMMAND vphone-cli-win archive-capabilities)
 set_tests_properties(native_cli_archive_capabilities PROPERTIES
     PASS_REGULAR_EXPRESSION "\"gnutar_uncompressed\": \"supported\""
