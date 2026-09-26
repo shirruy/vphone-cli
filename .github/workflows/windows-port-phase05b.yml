@@ -1,0 +1,82 @@
+name: Windows Port Phase 5B
+
+on:
+  push:
+    branches:
+      - phase/05b-arm64-execution-provider
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-arm64-execution-provider:
+    runs-on: windows-latest
+    timeout-minutes: 75
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Exact commit
+        shell: pwsh
+        run: |
+          git rev-parse HEAD
+          git status --porcelain
+
+      - name: Install pinned QEMU ARM64 provider
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $url = "https://qemu.weilnetz.de/w64/2026/qemu-w64-setup-20260811.exe"
+
+          $expected = "5bcf9eed634e8575a37b74f445af41a2fe4106da512d0c30c368301d4c105037fdfab40a5287367a28a957624cddebbc8c07e16c88ab6634f554cdf3d16bf543"
+
+          $installer = Join-Path $env:RUNNER_TEMP "qemu.exe"
+
+          Invoke-WebRequest -Uri $url -OutFile $installer
+
+          $actual = (
+            Get-FileHash $installer -Algorithm SHA512
+          ).Hash.ToLowerInvariant()
+
+          if ($actual -ne $expected) {
+            throw "QEMU SHA512 mismatch."
+          }
+
+          $p = Start-Process `
+            -FilePath $installer `
+            -ArgumentList "/S" `
+            -PassThru `
+            -Wait
+
+          if ($p.ExitCode -ne 0) {
+            throw "QEMU installer failed."
+          }
+
+          $qemuDir = "C:\Program Files\qemu"
+
+          if (-not (Test-Path "$qemuDir\qemu-system-aarch64.exe")) {
+            throw "QEMU ARM64 binary missing after install."
+          }
+
+          $qemuDir | Out-File `
+            -FilePath $env:GITHUB_PATH `
+            -Encoding utf8 `
+            -Append
+
+      - name: Phase 5B physical-equivalent validation
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process Bypass -Force
+          & .\scripts\phase05b-arm64-execution-provider-validation.ps1
+
+      - name: Upload Phase 5B certification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase05b-arm64-provider-${{ github.sha }}
+          path: build/phase05b-arm64-execution-provider-evidence/
+          if-no-files-found: error

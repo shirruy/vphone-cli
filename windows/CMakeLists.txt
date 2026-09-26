@@ -313,6 +313,39 @@ set(VPHONE_PROTOCOL_FIXTURE
     "${CMAKE_CURRENT_SOURCE_DIR}/../protocol/fixtures/backend_request_v1_boot.json"
 )
 
+
+# Phase 5B ARM64 execution provider.
+add_library(
+    vphone_arm64_execution_provider
+    STATIC
+    src/arm64_execution_provider.cpp
+)
+target_include_directories(
+    vphone_arm64_execution_provider
+    PUBLIC
+    include
+)
+
+add_executable(
+    vphone-arm64-provider-win
+    src/arm64_execution_provider_main.cpp
+)
+target_link_libraries(
+    vphone-arm64-provider-win
+    PRIVATE
+    vphone_arm64_execution_provider
+)
+
+add_executable(
+    vphone_arm64_execution_provider_test
+    tests/arm64_execution_provider_test.cpp
+)
+target_link_libraries(
+    vphone_arm64_execution_provider_test
+    PRIVATE
+    vphone_arm64_execution_provider
+)
+
 enable_testing()
 
 add_test(NAME backend_contract COMMAND vphone_backend_contract_test)
@@ -486,3 +519,27 @@ set_tests_properties(cli_validate_protocol_request PROPERTIES
 add_test(NAME upstream_ftab_roundtrip COMMAND vphone_upstream_ftab_test)
 add_test(NAME upstream_mbn_stitch COMMAND vphone_upstream_mbn_test)
 
+
+
+# Phase 5B provider contract.
+add_test(
+    NAME arm64_execution_provider_contract
+    COMMAND vphone_arm64_execution_provider_test
+)
+set_tests_properties(
+    arm64_execution_provider_contract
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION
+    "ARM64_EXECUTION_PROVIDER_CONTRACT_PASS"
+)
+
+add_test(
+    NAME arm64_execution_provider_probe
+    COMMAND vphone-arm64-provider-win probe
+)
+set_tests_properties(
+    arm64_execution_provider_probe
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION
+    "\"available\": true"
+)
