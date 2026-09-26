@@ -1,3 +1,9 @@
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#endif
+
 #include "vphone/udif_portable.hpp"
 
 #include <algorithm>
@@ -18,8 +24,13 @@
 #include <bzlib.h>
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <windows.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 #endif
 
 namespace vphone {
