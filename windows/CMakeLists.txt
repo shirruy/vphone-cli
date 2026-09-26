@@ -255,6 +255,16 @@ if(WIN32)
 
     add_executable(vphone_udif_roundtrip_test tests/udif_udrw_roundtrip_test.cpp)
     target_link_libraries(vphone_udif_roundtrip_test PRIVATE vphone_udif_portable)
+
+    add_library(vphone_disk_image_windows STATIC src/disk_image_windows.cpp)
+    target_include_directories(vphone_disk_image_windows PUBLIC include)
+    target_link_libraries(vphone_disk_image_windows PUBLIC bcrypt virtdisk)
+
+    add_executable(vphone-disk-image-win src/disk_image_main.cpp)
+    target_link_libraries(vphone-disk-image-win PRIVATE vphone_disk_image_windows)
+
+    add_executable(vphone_fixed_vhd_roundtrip_test tests/fixed_vhd_roundtrip_test.cpp)
+    target_link_libraries(vphone_fixed_vhd_roundtrip_test PRIVATE vphone_disk_image_windows)
 endif()
 
 # Phase 1 upstream-derived portability proof.
@@ -369,6 +379,12 @@ if(WIN32)
         COMMAND vphone_udif_roundtrip_test "${CMAKE_CURRENT_BINARY_DIR}"
     )
     set_tests_properties(udif_udrw_roundtrip PROPERTIES TIMEOUT 180)
+
+    add_test(
+        NAME fixed_vhd_roundtrip
+        COMMAND vphone_fixed_vhd_roundtrip_test "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+    set_tests_properties(fixed_vhd_roundtrip PROPERTIES TIMEOUT 180)
 endif()
 
 add_test(
