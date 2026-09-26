@@ -94,7 +94,7 @@ if ($LASTEXITCODE -ne 0) { throw "PHASE 4D3D FAIL: pyliblzfse install failed." }
 
 $lzfseDir = Join-Path (Get-Location) "build\phase4d3d-lzfse-regression"
 if (Test-Path $lzfseDir) { Remove-Item $lzfseDir -Recurse -Force }
-python ".\scripts\phase4d3c_udif_lzfse_oracle.py" --tool $tool.FullName --workdir $lzfseDir
+python ".\scripts\phase4d3c_udif_lzfse_oracle.py" --tool $tool.FullName --workdir $lzfseDir --allow-bzip2
 if ($LASTEXITCODE -ne 0) { throw "PHASE 4D3D FAIL: Phase 4D3C oracle failed." }
 
 Write-Host ""
