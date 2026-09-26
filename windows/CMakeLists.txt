@@ -137,8 +137,12 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "" FORCE)
 FetchContent_MakeAvailable(lzfse)
 
 
+add_library(vphone_runtime_foundation STATIC src/runtime_foundation.cpp)
+target_include_directories(vphone_runtime_foundation PUBLIC include)
+
 add_library(vphone_backend STATIC src/backend_stub.cpp)
 target_include_directories(vphone_backend PUBLIC include)
+target_link_libraries(vphone_backend PUBLIC vphone_runtime_foundation)
 
 add_library(vphone_backend_protocol STATIC src/backend_protocol.cpp)
 target_include_directories(vphone_backend_protocol PUBLIC include)
@@ -155,6 +159,9 @@ target_link_libraries(vphone-vm-win PRIVATE vphone_backend vphone_backend_protoc
 
 add_executable(vphone_backend_contract_test tests/backend_contract_test.cpp)
 target_link_libraries(vphone_backend_contract_test PRIVATE vphone_backend)
+
+add_executable(vphone_runtime_foundation_test tests/runtime_foundation_test.cpp)
+target_link_libraries(vphone_runtime_foundation_test PRIVATE vphone_runtime_foundation)
 
 add_executable(vphone_backend_protocol_test tests/backend_protocol_test.cpp)
 target_link_libraries(vphone_backend_protocol_test PRIVATE vphone_backend_protocol)
@@ -309,6 +316,9 @@ set(VPHONE_PROTOCOL_FIXTURE
 enable_testing()
 
 add_test(NAME backend_contract COMMAND vphone_backend_contract_test)
+
+add_test(NAME runtime_foundation_contract COMMAND vphone_runtime_foundation_test)
+set_tests_properties(runtime_foundation_contract PROPERTIES PASS_REGULAR_EXPRESSION "RUNTIME_FOUNDATION_CONTRACT_PASS")
 
 add_test(NAME native_cli_core COMMAND vphone_native_cli_core_test)
 

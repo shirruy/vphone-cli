@@ -1,5 +1,6 @@
 #include "vphone/backend.hpp"
 #include "vphone/backend_protocol.hpp"
+#include "vphone/runtime_foundation.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -34,9 +35,17 @@ static void print_capabilities(vphone::IVirtualMachineBackend* backend) {
               << "}\n";
 }
 
+static void print_runtime_foundation() {
+    const auto status =
+        vphone::probe_runtime_foundation();
+
+    std::cout <<
+        vphone::runtime_foundation_json(status);
+}
+
 static void print_usage() {
     std::cout
-        << "usage: vphone-vm-win [probe|--capabilities|protocol-version|validate-request FILE|launch-request FILE|launch|--help]\n";
+        << "usage: vphone-vm-win [probe|--capabilities|runtime-foundation|protocol-version|validate-request FILE|launch-request FILE|launch|--help]\n";
 }
 
 int main(int argc, char** argv) {
@@ -51,6 +60,11 @@ int main(int argc, char** argv) {
 
     if (command == "probe" || command == "--capabilities" || command == "capabilities") {
         print_capabilities(backend);
+        return 0;
+    }
+
+    if (command == "runtime-foundation") {
+        print_runtime_foundation();
         return 0;
     }
 

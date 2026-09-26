@@ -1,0 +1,40 @@
+name: Windows Port Phase 5A
+
+on:
+  push:
+    branches:
+      - phase/05a-runtime-foundation-contract
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-runtime-foundation:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Exact commit
+        shell: pwsh
+        run: |
+          git rev-parse HEAD
+          git status --porcelain
+
+      - name: Phase 5A physical-equivalent validation
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process Bypass -Force
+          & .\scripts\phase05a-runtime-foundation-validation.ps1
+
+      - name: Upload Phase 5A certification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase05a-runtime-foundation-${{ github.sha }}
+          path: build/phase05a-runtime-foundation-evidence/
+          if-no-files-found: error
