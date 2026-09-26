@@ -7,6 +7,7 @@
 #include "vphone/disk_image_windows.hpp"
 
 #include <array>
+#include <ctime>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
