@@ -346,6 +346,42 @@ target_link_libraries(
     vphone_arm64_execution_provider
 )
 
+
+# Phase 5C Apple machine model foundation.
+add_library(
+    vphone_apple_machine_model
+    STATIC
+    src/apple_machine_model.cpp
+)
+
+target_include_directories(
+    vphone_apple_machine_model
+    PUBLIC
+    include
+)
+
+add_executable(
+    vphone-apple-machine-win
+    src/apple_machine_model_main.cpp
+)
+
+target_link_libraries(
+    vphone-apple-machine-win
+    PRIVATE
+    vphone_apple_machine_model
+)
+
+add_executable(
+    vphone_apple_machine_model_test
+    tests/apple_machine_model_test.cpp
+)
+
+target_link_libraries(
+    vphone_apple_machine_model_test
+    PRIVATE
+    vphone_apple_machine_model
+)
+
 enable_testing()
 
 add_test(NAME backend_contract COMMAND vphone_backend_contract_test)
@@ -542,4 +578,30 @@ set_tests_properties(
     PROPERTIES
     PASS_REGULAR_EXPRESSION
     "\"available\": true"
+)
+
+
+# Phase 5C Apple machine model contract.
+add_test(
+    NAME apple_machine_model_foundation
+    COMMAND vphone_apple_machine_model_test
+)
+
+set_tests_properties(
+    apple_machine_model_foundation
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION
+    "APPLE_MACHINE_MODEL_FOUNDATION_PASS"
+)
+
+add_test(
+    NAME apple_machine_model_cli_validation
+    COMMAND vphone-apple-machine-win validate
+)
+
+set_tests_properties(
+    apple_machine_model_cli_validation
+    PROPERTIES
+    PASS_REGULAR_EXPRESSION
+    "APPLE_MACHINE_MODEL_CONTRACT_PASS"
 )
