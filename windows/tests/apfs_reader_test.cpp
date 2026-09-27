@@ -145,28 +145,32 @@ int main() {
         );
     }
 
-    // OMAP B-tree leaf at block 4: fixed-KV, 1 entry mapping
-    // oid 100 -> paddr 3.
+    // OMAP B-tree leaf at block 4: fixed-KV, 3 entries for oid 100 at
+    // xids 2/1/5 (xid-aware lookup must pick xid 2 -> paddr 3; the
+    // older xid 1 and the future xid 5 must both lose).
     {
         std::vector<std::uint8_t> blk(block_size, 0);
         make_object_header(blk, 4, 3, 0x40000003u);
-        // btn: flags = leaf+fixed (0x6), level=0, nkeys=1,
-        // table_space off=0 len=0x10 (1 U16 slot + slack).
+        // btn: flags = leaf+fixed (0x6), level=0, nkeys=3,
+        // table_space off=0 len=0x10.
         put_le32(blk, 0x20, 0x00000006u);
-        put_le32(blk, 0x24, 1); // nkeys
+        put_le32(blk, 0x24, 3); // nkeys
+        // Authoritative fixed-KV TOC: 4-byte kvoff { k u16, v u16 }.
         put_le32(blk, 0x28, 0x00100000u); // tofs=0, tlen=0x10
-        // TOC entry 0: key offset 0 (2 bytes at 0x38).
-        blk[0x38] = 0x00;
-        blk[0x39] = 0x00;
-        // Key area starts at 0x38 + 0 + 0x10 = 0x48. Key: oid=100.
-        put_le64(blk, 0x48, 100);
-        // Value: fixed-KV leaf 16-byte record, paddr at +8. The walk
-        // enters via omap_collect_entries(is_root=true), so value_base
-        // is block_size - 0x28 = 0xfd8 and entry 0 sits at
-        // 0xfd8 - 1*16 = 0xfc8.
-        put_le32(blk, 0xfc8, 0);          // flags
-        put_le32(blk, 0xfc8 + 4, 4096);   // size
-        put_le64(blk, 0xfc8 + 8, 3);      // paddr
+        // TOC (4-byte kvoff entries) at 0x38:
+        //   e0: k=0x00 v=0x10   e1: k=0x10 v=0x20   e2: k=0x20 v=0x30
+        blk[0x38] = 0x00; blk[0x39] = 0x00; blk[0x3a] = 0x10; blk[0x3b] = 0x00;
+        blk[0x3c] = 0x10; blk[0x3d] = 0x00; blk[0x3e] = 0x20; blk[0x3f] = 0x00;
+        blk[0x40] = 0x20; blk[0x41] = 0x00; blk[0x42] = 0x30; blk[0x43] = 0x00;
+        // Key area at 0x48 (16-byte OMAP keys {oid,xid}).
+        put_le64(blk, 0x48, 100);        put_le64(blk, 0x48 + 8, 2);
+        put_le64(blk, 0x48 + 0x10, 100); put_le64(blk, 0x48 + 0x18, 1);
+        put_le64(blk, 0x48 + 0x20, 100); put_le64(blk, 0x48 + 0x28, 5);
+        // Values (root value_base = 0xfd8; paddr at +8 of each 16-byte
+        // slot, addresses taken only from kvoff.v):
+        put_le64(blk, 0xfc8 + 8, 3);   // e0: xid 2 -> 3   (winner)
+        put_le64(blk, 0xfb8 + 8, 14);  // e1: xid 1 -> 14  (older; loses)
+        put_le64(blk, 0xfa8 + 8, 15);  // e2: xid 5 -> 15  (future; loses)
         std::memcpy(
             image.data() + 4 * static_cast<std::size_t>(block_size),
             blk.data(),

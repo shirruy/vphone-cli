@@ -196,10 +196,22 @@ bool decode_btree_node(
     return true;
 }
 
-// Walk an OMAP B-tree and collect every oid -> paddr mapping.
-// Uses the authoritative variable-KV geometry: 8-byte TOC entries at
-// 0x38 + table_space.off, key_base = 0x38 + tofs + tlen, root
-// value_base = block_size - 0x28, non-root value_base = block_size.
+// Walk an OMAP B-tree and collect every {oid,xid} -> paddr mapping.
+//
+// Authoritative fixed-KV semantics (apfs-fuse BTreeNodeFix::GetEntry,
+// linux-apfs-rw apfs_node_locate_key/locate_value):
+//   - Every TOC entry is a 4-byte kvoff { uint16_t k; uint16_t v; }
+//     at btn_data + table_space.off + i*4.
+//   - key_ptr   = key_base + kvoff.k
+//   - value_ptr = value_base - kvoff.v
+//   - key_base  = 0x38 + table_space.off + table_space.len
+//   - value_base = block_size - 0x28 (root) or block_size (non-root)
+//   - OMAP key   = { oid u64, xid u64 }               (16 bytes)
+//   - OMAP value = { flags u32, size u32, paddr u64 } (16 bytes, leaf)
+//   - OMAP interior value = child OID u64             (8 bytes)
+//
+// Value offsets come only from the on-disk kvoff.v field; they are
+// never synthesized from entry index.
 bool omap_collect_entries(
     HANDLE file,
     std::uint32_t block_size,
@@ -238,6 +250,7 @@ bool omap_collect_entries(
 
     const std::uint8_t* p = buf.data();
     const bool fixed_kv = (node.flags & kBtreeFixedKvSize) != 0;
+
     const std::uint16_t tofs =
         static_cast<std::uint16_t>(p[0x28]) |
         (static_cast<std::uint16_t>(p[0x29]) << 8);
@@ -252,68 +265,35 @@ bool omap_collect_entries(
         : static_cast<std::uint64_t>(block_size);
 
     for (std::uint32_t i = 0; i < node.nkeys; ++i) {
-        // Fixed-KV nodes use 2-byte TOC entries (key offset only);
-        // variable-KV nodes use 8-byte entries.
-        const std::size_t entry_size = fixed_kv ? 2 : 8;
+        if (!fixed_kv) {
+            error = "variable-KV OMAP nodes are not supported yet";
+            return false;
+        }
+
         const std::uint64_t toc =
             static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + tofs +
-            static_cast<std::uint64_t>(i) * entry_size;
-        if (toc + entry_size > block_size) {
+            static_cast<std::uint64_t>(i) * 4;
+        if (toc + 4 > block_size) {
             error = "OMAP TOC entry exceeds block";
             return false;
         }
 
-        std::uint16_t key_off =
+        const std::uint16_t key_off =
             static_cast<std::uint16_t>(p[toc]) |
             (static_cast<std::uint16_t>(p[toc + 1]) << 8);
-        std::uint16_t key_len = 8;
-        std::uint16_t val_off = 0;
-        std::uint16_t val_len = 16;
-
-        if (!fixed_kv) {
-            key_len =
-                static_cast<std::uint16_t>(p[toc + 2]) |
-                (static_cast<std::uint16_t>(p[toc + 3]) << 8);
-            val_off =
-                static_cast<std::uint16_t>(p[toc + 4]) |
-                (static_cast<std::uint16_t>(p[toc + 5]) << 8);
-            val_len =
-                static_cast<std::uint16_t>(p[toc + 6]) |
-                (static_cast<std::uint16_t>(p[toc + 7]) << 8);
-        } else {
-            // Fixed-KV interior nodes store 8-byte child OIDs packed
-            // downward from value_base; entry i sits at
-            // value_base - (nkeys - i) * 8. Verified against the real
-            // omap root: children 51143/51203/51205 at 0xfc0/0xfc8/0xfd0.
-            // Fixed-KV leaf values remain 16-byte records with paddr
-            // at +8.
-            val_len = node.level > 0
-                ? 8
-                : static_cast<std::uint16_t>(node.val_size
-                        ? node.val_size : 16);
-            val_off = static_cast<std::uint16_t>(
-                (node.nkeys - i) * val_len);
-        }
+        const std::uint16_t val_off =
+            static_cast<std::uint16_t>(p[toc + 2]) |
+            (static_cast<std::uint16_t>(p[toc + 3]) << 8);
 
         const std::uint64_t kp = key_base + key_off;
         const std::uint64_t vp = value_base - val_off;
 
-        // Interior node: recurse into the child block. For fixed-KV the
-        // child address is the entry value itself (paddr), empirically
-        // an 8-byte field at the fixed value slot.
         if (node.level > 0) {
-            if (vp + 16 > block_size) {
+            if (vp + 8 > block_size) {
                 error = "OMAP interior value exceeds block";
                 return false;
             }
-            // Fixed-KV interior children are direct 8-byte OIDs at +0;
-            // fixed-KV leaf values are 16-byte records whose paddr
-            // sits at +8 (flags u32 + size u32 + paddr u64).
-            const std::uint64_t child = fixed_kv
-                ? (node.level > 0
-                        ? read_le64(p + vp)
-                        : read_le64(p + vp + 8))
-                : read_le64(p + vp);
+            const std::uint64_t child = read_le64(p + vp);
             if (!omap_collect_entries(
                     file,
                     block_size,
@@ -329,30 +309,22 @@ bool omap_collect_entries(
             continue;
         }
 
-        if (kp + 8 > block_size || vp + 16 > block_size) {
-            error = "OMAP entry exceeds block bounds";
+        if (kp + 16 > block_size || vp + 16 > block_size) {
+            error = "OMAP leaf entry exceeds block bounds";
             return false;
         }
 
         ApfsOmapEntry entry;
         entry.oid = read_le64(p + kp);
-        // Fixed-KV leaf values are 16-byte records:
-        // flags u32 + size u32 + paddr u64 (paddr at +8).
-        if (fixed_kv) {
-            entry.flags = read_le32(p + vp);
-            entry.size = read_le32(p + vp + 4);
-            entry.paddr = read_le64(p + vp + 8);
-        } else {
-            entry.paddr = read_le64(p + vp);
-            entry.size = read_le32(p + vp + 8);
-            entry.flags = read_le32(p + vp + 12);
-        }
+        entry.xid = read_le64(p + kp + 8);
+        entry.flags = read_le32(p + vp);
+        entry.size = read_le32(p + vp + 4);
+        entry.paddr = read_le64(p + vp + 8);
         out.push_back(entry);
     }
 
     return true;
 }
-
 } // namespace
 
 bool apfs_read_container(
@@ -512,13 +484,22 @@ bool apfs_read_container(
                         visited,
                         omap_error
                     )) {
+                    // OMAP lookup semantics (apfs-fuse ApfsNodeMapperBTree::
+                    // Lookup): entries are ordered by (oid, xid); resolve
+                    // the target oid at the newest xid <= the volume xid.
+                    const ApfsOmapEntry* best = nullptr;
                     for (const auto& e : omap_entries) {
                         if (e.oid == volume.root_tree_oid &&
+                            e.xid <= volume.xid &&
                             e.paddr < report.container.block_count) {
-                            resolved_root_block = e.paddr;
-                            root_resolved = true;
-                            break;
+                            if (!best || e.xid > best->xid) {
+                                best = &e;
+                            }
                         }
+                    }
+                    if (best) {
+                        resolved_root_block = best->paddr;
+                        root_resolved = true;
                     }
                 }
             }

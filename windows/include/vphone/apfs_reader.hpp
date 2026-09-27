@@ -26,6 +26,7 @@ struct ApfsBtreeNodeInfo {
 
 struct ApfsOmapEntry {
     std::uint64_t oid = 0;
+    std::uint64_t xid = 0;
     std::uint64_t paddr = 0;
     std::uint32_t size = 0;
     std::uint32_t flags = 0;
