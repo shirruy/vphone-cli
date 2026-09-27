@@ -18,5 +18,19 @@
     "root": "block 51202 (omap tree root, flags=0x5 root+fixed, level=1, nkeys=3, footer bt=0x12 ns=4096 ks=16 vs=16)",
     "leaf_values": "16-byte records: flags u32 + size u32 + paddr u64(+8) — verified against 51143 entries (oid 1250 -> 51189, etc.)",
     "children": "51143 (43 entries), 51203 (110 entries), 51205 (111 entries) — 8-byte child OIDs at value_base-(nkeys-i)*8, verified at 0xfc0/0xfc8/0xfd0"
+  },
+  "container_omap_census": {
+    "phase": "05G-prep",
+    "noise_note": "the ~200 other type-0xb hits in the census are APFS j-file metadata records containing the byte pattern 0x0000000B, not omap objects — only 1462/51201/51215 carry a valid omap om_tree_oid chain.",
+    "first_resolution": "both leaves currently decode entry[0] as oid=0 -> paddr=51214 (51214 is itself an APSB). The entry-to-value-slot mapping for these nkeys=1 roots may need the exact formula, but a live resolution path from container omap to an APSB block now exists.",
+    "container_omap_leaves": [
+      "block 1463: root+leaf+fixed (flags 0x7), nkeys=1, key_base 0xf8, value_base 0xfd8",
+      "block 51216: same geometry"
+    ],
+    "note": "container omap census complete",
+    "container_omap_objects": [
+      "block 1462 (oid 1462, om_tree_oid 1463) — matches NXSB+0xa0=1462",
+      "block 51215 (oid 51215, om_tree_oid 51216)"
+    ]
   }
 }
