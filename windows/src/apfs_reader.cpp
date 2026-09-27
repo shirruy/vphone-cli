@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <set>
+#include <algorithm>
 #include <limits>
 #include <sstream>
 
@@ -134,6 +135,43 @@ bool read_block(
         return false;
     }
 
+    return true;
+}
+
+// Read an arbitrary byte range from the image file.
+bool read_exact_range(
+    HANDLE file,
+    std::uint64_t offset,
+    std::uint8_t* buffer,
+    std::uint64_t size,
+    std::string& error = *(new std::string())
+) {
+    LARGE_INTEGER distance{};
+    distance.QuadPart =
+        static_cast<LONGLONG>(offset);
+    if (!SetFilePointerEx(file, distance, nullptr, FILE_BEGIN)) {
+        error = win_error("SetFilePointerEx");
+        return false;
+    }
+
+    std::uint64_t remaining = size;
+    while (remaining > 0) {
+        const DWORD chunk = static_cast<DWORD>(
+            std::min<std::uint64_t>(remaining, 0x40000000ull)
+        );
+        DWORD read_bytes = 0;
+        if (!ReadFile(
+                file,
+                buffer + (size - remaining),
+                chunk,
+                &read_bytes,
+                nullptr
+            ) || read_bytes != chunk) {
+            error = "physical read short/failed";
+            return false;
+        }
+        remaining -= chunk;
+    }
     return true;
 }
 
@@ -378,6 +416,13 @@ constexpr std::uint64_t kApfsTypeFileExtent = 8;
 constexpr std::uint16_t kDrecValBaseSize = 18;
 constexpr std::uint16_t kDrecFlagTypeMask = 0x000f;
 constexpr std::uint16_t kDrecTypeDir = 4;
+constexpr std::uint64_t kApfsTypeInode = 3;
+constexpr std::uint16_t kInodeValBaseSize = 0x5c;
+constexpr std::uint64_t kInoBsdCompressed = 0x20;
+constexpr std::uint16_t kInoExtTypeDstream = 8;
+constexpr std::uint16_t kDstreamSize = 40;
+
+constexpr std::uint64_t kExtentLenMask = 0x00FFFFFFFFFFFFFFull;
 // APSB apfs_incompatible_features @ +0x38.
 constexpr std::size_t kApsbIncompatOffset = 0x38;
 constexpr std::uint64_t kIncompatCaseInsensitive = 0x1;
@@ -725,6 +770,528 @@ bool fstree_resolve_launchdaemons(
     out_cnid = parent;
     return true;
 }
+
+// ---------------------------------------------------------------------------
+// Generic FSTREE record visitor for INODE / FILE_EXTENT lookups.
+// Reuses the same hardened walker (checksums, topology, kvloc, OMAP)
+// but exposes raw {record_type, obj_id, key_payload, key_len,
+// value_ptr, value_len} to the callback.
+// ---------------------------------------------------------------------------
+
+struct FstreeRawRecord {
+    std::uint64_t obj_id = 0;
+    std::uint64_t record_type = 0;
+    const std::uint8_t* key_extra = nullptr; // after the 8-byte header
+    std::uint16_t key_extra_len = 0;
+    const std::uint8_t* value = nullptr;
+    std::uint16_t value_len = 0;
+};
+
+template <typename RawMatchFn>
+bool fstree_visit_raw_records(
+    FstreeWalkCtx& ctx,
+    std::uint64_t node_oid,
+    std::uint16_t expected_level,
+    bool is_root,
+    RawMatchFn match,
+    std::string& error
+) {
+    if (node_oid == 0) {
+        error = "FSTREE node OID is zero";
+        return false;
+    }
+
+    std::uint64_t paddr = 0;
+    if (!omap_resolve(ctx, node_oid, paddr, error)) {
+        return false;
+    }
+
+    if (!ctx.visited.insert(node_oid).second) {
+        error = "FSTREE cycle detected";
+        return false;
+    }
+
+    std::vector<std::uint8_t> buf(ctx.block_size, 0);
+    if (!read_block(ctx.file, paddr, ctx.block_size, buf, error)) {
+        return false;
+    }
+    if (!apfs_block_checksum_ok(buf)) {
+        error = "FSTREE node failed Fletcher-64 checksum";
+        return false;
+    }
+
+    const std::uint32_t type = read_le32(buf.data() + 24);
+    const std::uint32_t kind = type & kObjectTypeMask;
+    if (kind != kBtreeType && kind != kBtreeTypeNode) {
+        error = "FSTREE node is not a B-tree object";
+        return false;
+    }
+    const std::uint32_t subtype = read_le32(buf.data() + 28);
+    if (subtype != kFstreeSubtype) {
+        error = "FSTREE child node subtype is not FSTREE";
+        return false;
+    }
+
+    const std::uint16_t raw_flags =
+        static_cast<std::uint16_t>(buf[0x20]) |
+        (static_cast<std::uint16_t>(buf[0x21]) << 8);
+    const std::uint16_t raw_level =
+        static_cast<std::uint16_t>(buf[0x22]) |
+        (static_cast<std::uint16_t>(buf[0x23]) << 8);
+    if (raw_level != expected_level) {
+        error = "FSTREE node level mismatch (expected exact descent)";
+        return false;
+    }
+    const bool has_root_flag = (raw_flags & kBtreeRoot) != 0;
+    const bool has_leaf_flag = (raw_flags & kBtreeLeaf) != 0;
+    if (is_root && !has_root_flag) {
+        error = "FSTREE root node missing ROOT flag";
+        return false;
+    }
+    if (!is_root && has_root_flag) {
+        error = "FSTREE non-root node carries ROOT flag";
+        return false;
+    }
+    if (raw_level == 0 && !has_leaf_flag) {
+        error = "FSTREE level-0 node missing LEAF flag";
+        return false;
+    }
+    if (raw_level > 0 && has_leaf_flag) {
+        error = "FSTREE interior node carries LEAF flag";
+        return false;
+    }
+
+    ApfsBtreeNodeInfo node;
+    if (!decode_btree_node(buf, ctx.block_size, node, error)) {
+        return false;
+    }
+
+    const std::uint8_t* p = buf.data();
+    if (node.flags & kBtreeFixedKvSize) {
+        error = "FSTREE catalog nodes must be variable-KV";
+        return false;
+    }
+
+    const std::uint16_t tofs =
+        static_cast<std::uint16_t>(p[0x28]) |
+        (static_cast<std::uint16_t>(p[0x29]) << 8);
+    const std::uint16_t tlen =
+        static_cast<std::uint16_t>(p[0x2a]) |
+        (static_cast<std::uint16_t>(p[0x2b]) << 8);
+
+    const std::uint64_t key_base =
+        static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + tofs + tlen;
+    const std::uint64_t value_base = is_root
+        ? static_cast<std::uint64_t>(ctx.block_size) - kBtreeInfoSize
+        : static_cast<std::uint64_t>(ctx.block_size);
+
+    for (std::uint32_t i = 0; i < node.nkeys; ++i) {
+        const std::uint64_t toc =
+            static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + tofs +
+            static_cast<std::uint64_t>(i) * 8;
+        if (toc + 8 > ctx.block_size) {
+            error = "FSTREE TOC entry exceeds block";
+            return false;
+        }
+
+        const std::uint16_t k_off =
+            static_cast<std::uint16_t>(p[toc]) |
+            (static_cast<std::uint16_t>(p[toc + 1]) << 8);
+        const std::uint16_t k_len =
+            static_cast<std::uint16_t>(p[toc + 2]) |
+            (static_cast<std::uint16_t>(p[toc + 3]) << 8);
+        const std::uint16_t v_off =
+            static_cast<std::uint16_t>(p[toc + 4]) |
+            (static_cast<std::uint16_t>(p[toc + 5]) << 8);
+        const std::uint16_t v_len =
+            static_cast<std::uint16_t>(p[toc + 6]) |
+            (static_cast<std::uint16_t>(p[toc + 7]) << 8);
+
+        if (k_off > ctx.block_size || k_len > ctx.block_size - k_off) {
+            error = "FSTREE key range exceeds block";
+            return false;
+        }
+        const std::uint64_t kp = key_base + k_off;
+        if (kp > ctx.block_size || k_len > ctx.block_size - kp) {
+            error = "FSTREE key base + range exceeds block";
+            return false;
+        }
+        if (v_off > value_base) {
+            error = "FSTREE value offset exceeds value base";
+            return false;
+        }
+        const std::uint64_t vp = value_base - v_off;
+        if (vp > ctx.block_size || v_len > ctx.block_size - vp) {
+            error = "FSTREE value range exceeds block";
+            return false;
+        }
+
+        if (node.level > 0) {
+            if (v_len != 8 || vp + 8 > ctx.block_size) {
+                error = "FSTREE interior value must be an 8-byte child OID";
+                return false;
+            }
+            if (node.level < 1) {
+                error = "FSTREE interior recursion underflow";
+                return false;
+            }
+            const std::uint64_t child_oid = read_le64(p + vp);
+            if (!fstree_visit_raw_records(
+                    ctx,
+                    child_oid,
+                    node.level - 1,
+                    false,
+                    match,
+                    error
+                )) {
+                return false;
+            }
+            continue;
+        }
+
+        if (k_len < 8) {
+            continue;
+        }
+
+        FstreeRawRecord rec;
+        const std::uint64_t hdr = read_le64(p + kp);
+        rec.obj_id = hdr & kObjIdMask;
+        rec.record_type = hdr >> kRecordTypeShift;
+        rec.key_extra = p + kp + 8;
+        rec.key_extra_len = k_len - 8;
+        rec.value = p + vp;
+        rec.value_len = v_len;
+
+        if (!match(rec)) {
+            error = "raw record match callback failed";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Resolve a plist file end-to-end: DIR_REC under a parent CNID, INODE,
+// dstream xfield, FILE_EXTENT chain, and byte reconstruction.
+bool fstree_read_plist_file(
+    FstreeWalkCtx& ctx,
+    std::uint64_t root_oid,
+    std::uint16_t root_level,
+    std::uint64_t parent_cnid,
+    ApfsReaderReport::PlistFileResult& result
+) {
+    // Phase 1: collect ALL plist DIR_REC candidates under the parent.
+    struct Candidate {
+        std::string name;
+        std::uint64_t cnid;
+    };
+    std::vector<Candidate> candidates;
+
+    ctx.visited.clear();
+    auto drec_match = [&](
+        std::uint64_t p_cnid,
+        const std::string& name,
+        std::uint64_t c_cnid,
+        std::uint16_t drec_type
+    ) -> bool {
+        if (p_cnid == parent_cnid && drec_type != 4 &&
+            name.size() > 6 &&
+            name.compare(name.size() - 6, 6, ".plist") == 0) {
+            candidates.push_back({name, c_cnid});
+        }
+        return true;
+    };
+
+    std::string error;
+    if (!fstree_visit_dir_records(
+            ctx,
+            root_oid,
+            root_level,
+            true,
+            drec_match,
+            error
+        )) {
+        result.status = "FAIL";
+        result.error = "DIR_REC scan: " + error;
+        return false;
+    }
+
+    if (candidates.empty()) {
+        result.status = "FAIL";
+        result.error = "no regular .plist file found under parent CNID";
+        return false;
+    }
+
+    // Phase 2: try each candidate until we find a non-compressed,
+    // regular file with a dstream xfield.
+    struct InodeInfo {
+        bool found = false;
+        std::uint64_t private_id = 0;
+        std::uint64_t parent_id = 0;
+        std::uint16_t mode = 0;
+        bool compressed = false;
+        std::uint64_t dstream_size = 0;
+        bool has_dstream = false;
+    } ino;
+
+    bool inode_ok = false;
+    std::uint64_t selected_cnid = 0;
+    std::string selected_name;
+
+    for (const auto& cand : candidates) {
+        ino = InodeInfo{};
+        ctx.visited.clear();
+
+        auto inode_match = [&](const FstreeRawRecord& rec) -> bool {
+            if (ino.found || rec.record_type != kApfsTypeInode ||
+                rec.obj_id != cand.cnid) {
+            return true;
+        }
+            if (rec.value_len < kInodeValBaseSize) {
+                return true;
+            }
+            ino.found = true;
+            ino.parent_id = read_le64(rec.value + 0x00);
+            ino.private_id = read_le64(rec.value + 0x08);
+            const std::uint32_t bsd_flags =
+                read_le32(rec.value + 0x44);
+            ino.mode =
+                static_cast<std::uint16_t>(rec.value[0x50]) |
+                (static_cast<std::uint16_t>(rec.value[0x51]) << 8);
+            ino.compressed = (bsd_flags & kInoBsdCompressed) != 0;
+
+            const std::uint16_t xfields_off = 0x5c;
+            if (rec.value_len > xfields_off + 2) {
+                std::uint64_t off = xfields_off;
+                const std::uint16_t xf_total =
+                    static_cast<std::uint16_t>(
+                        rec.value[off]) |
+                    (static_cast<std::uint16_t>(
+                         rec.value[off + 1]) << 8);
+                off += 2;
+                const std::uint64_t xf_end =
+                    std::min<std::uint64_t>(
+                        off + xf_total, rec.value_len);
+
+                while (off + 4 <= xf_end) {
+                    const std::uint8_t xt = rec.value[off];
+                    const std::uint8_t xlen = rec.value[off + 1];
+                    if (off + 4 + xlen > xf_end) {
+                        break;
+                    }
+                    if (xt == kInoExtTypeDstream &&
+                        xlen >= kDstreamSize) {
+                        ino.has_dstream = true;
+                        ino.dstream_size =
+                            read_le64(rec.value + off + 4);
+                    }
+                    off += 4 + xlen;
+                }
+            }
+            return true;
+        };
+
+        if (!fstree_visit_raw_records(
+                ctx,
+                root_oid,
+                root_level,
+                true,
+                inode_match,
+                error
+            )) {
+            continue; // try next candidate
+        }
+
+        if (!ino.found) {
+            continue;
+        }
+
+        if (ino.parent_id != parent_cnid) {            continue;
+        }
+        if ((ino.mode & 0xF000) != 0x8000) {            continue;
+        }
+        if (ino.compressed) {            continue; // skip compressed for the first gate
+        }
+        if (!ino.has_dstream) {            continue;
+        }
+
+        // Found a valid non-compressed regular file with dstream.
+        inode_ok = true;
+        selected_cnid = cand.cnid;
+        selected_name = cand.name;
+        break;
+    }
+
+    if (!inode_ok) {
+        result.status = "FAIL";
+        result.error =
+            "all " +
+            std::to_string(candidates.size()) +
+            " LaunchDaemons plists carry " +
+            "APFS_INOBSD_COMPRESSED; no uncompressed file exists " +
+            "in this directory for the first gate";
+        return false;
+    }
+
+    result.name = selected_name;
+    result.drec_cnid = selected_cnid;
+    result.inode_cnid = selected_cnid;
+    result.private_id = ino.private_id;
+
+    // Authoritative file size: dstream.size when present.
+    const std::uint64_t file_size = ino.dstream_size;
+    result.file_size = file_size;
+
+    // Phase 3: collect FILE_EXTENT records for private_id.
+    struct Extent {
+        std::uint64_t logical = 0;
+        std::uint64_t length = 0;
+        std::uint64_t phys = 0;
+    };
+    std::vector<Extent> extents;
+
+    ctx.visited.clear();
+    auto extent_match = [&](const FstreeRawRecord& rec) -> bool {
+        if (rec.record_type != kApfsTypeFileExtent ||
+            rec.obj_id != ino.private_id) {
+            return true;
+        }
+        if (rec.key_extra_len < 8 || rec.value_len < 24) {
+            return true; // malformed; skip
+        }
+        Extent e;
+        e.logical = read_le64(rec.key_extra);
+        const std::uint64_t len_flags = read_le64(rec.value);
+        e.length = len_flags & kExtentLenMask;
+        e.phys = read_le64(rec.value + 8);
+        extents.push_back(e);
+        return true;
+    };
+
+    if (!fstree_visit_raw_records(
+            ctx,
+            root_oid,
+            root_level,
+            true,
+            extent_match,
+            error
+        )) {
+        result.status = "FAIL";
+        result.error = "FILE_EXTENT scan: " + error;
+        return false;
+    }
+
+    if (extents.empty()) {
+        result.status = "FAIL";
+        result.error = "no FILE_EXTENT records found";
+        return false;
+    }
+
+    // Sort by logical address.
+    std::sort(
+        extents.begin(),
+        extents.end(),
+        [](const Extent& a, const Extent& b) {
+            return a.logical < b.logical;
+        }
+    );
+
+    // Validate: no zero-length, no overlap, phys in range.
+    for (std::size_t i = 0; i < extents.size(); ++i) {
+        const auto& e = extents[i];
+        if (e.length == 0) {
+            result.status = "FAIL";
+            result.error = "zero-length extent";
+            return false;
+        }
+        if (e.phys != 0 &&
+            (e.phys >= ctx.block_count ||
+             e.length / ctx.block_size > ctx.block_count - e.phys)) {
+            result.status = "FAIL";
+            result.error = "extent physical range exceeds container";
+            return false;
+        }
+        if (i > 0) {
+            const auto& prev = extents[i - 1];
+            if (e.logical < prev.logical + prev.length) {
+                result.status = "FAIL";
+                result.error = "overlapping extents";
+                return false;
+            }
+        }
+    }
+
+    result.extent_count = extents.size();
+
+    // Reconstruct bytes up to file_size.
+    result.bytes.assign(file_size, 0);
+    std::uint64_t copied = 0;
+    for (const auto& e : extents) {
+        if (copied >= file_size) {
+            break;
+        }
+        if (e.logical >= file_size) {
+            break; // beyond authoritative size
+        }
+        const std::uint64_t chunk =
+            std::min(e.length, file_size - e.logical);
+        if (e.phys == 0) {
+            // Hole: leave zeros.
+            copied = std::max(copied, e.logical + chunk);
+            continue;
+        }
+
+        const std::uint64_t phys_offset = e.phys * ctx.block_size;
+        std::uint64_t remaining = chunk;
+        std::uint64_t src = phys_offset;
+        std::uint64_t dst = e.logical;
+
+        while (remaining > 0 && dst < file_size) {
+            const std::uint64_t bytes_this =
+                std::min<std::uint64_t>(
+                    remaining,
+                    ctx.block_size - (src % ctx.block_size)
+                );
+            if (!read_exact_range(
+                    ctx.file,
+                    src,
+                    result.bytes.data() + dst,
+                    bytes_this
+                )) {
+                result.status = "FAIL";
+                result.error = "physical read failed";
+                return false;
+            }
+            src += bytes_this;
+            dst += bytes_this;
+            remaining -= bytes_this;
+        }
+        copied = std::max(copied, e.logical + chunk);
+    }
+
+    if (copied < file_size) {
+        result.status = "FAIL";
+        result.error =
+            "extent coverage gap: " +
+            std::to_string(copied) + "/" +
+            std::to_string(file_size);
+        return false;
+    }
+
+    // Format detection: binary plist (bplist00) or XML plist.
+    if (file_size >= 8 &&
+        std::memcmp(result.bytes.data(), "bplist00", 8) == 0) {
+        result.format = "binary-plist";
+    } else if (file_size >= 5 &&
+               std::memcmp(result.bytes.data(), "<?xml", 5) == 0) {
+        result.format = "xml-plist";
+    } else {
+        result.format = "unknown";
+    }
+
+    result.status = "READ_OK";
+    return true;
+}
 } // namespace
 
 bool apfs_read_container(
@@ -1027,6 +1594,19 @@ bool apfs_read_container(
                 } else {
                     report.launchdaemons_status =
                         "NOT_RESOLVED: " + walk_error;
+                }
+
+                // Read one real plist from LaunchDaemons end-to-end.
+                if (report.launchdaemons_cnid != 0 &&
+                    report.plist_file.status == "NOT_ATTEMPTED") {
+                    FstreeWalkCtx plist_ctx = walk_ctx;
+                    fstree_read_plist_file(
+                        plist_ctx,
+                        volume.root_tree_oid,
+                        fstree_info.level,
+                        report.launchdaemons_cnid,
+                        report.plist_file
+                    );
                 }
             }
 

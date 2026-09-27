@@ -50,6 +50,21 @@ struct ApfsReaderReport {
     // Structural path resolution result (empty when unresolved).
     std::string launchdaemons_status = "NOT_RESOLVED";
     std::uint64_t launchdaemons_cnid = 0;
+
+    // Selected plist file reconstruction result.
+    struct PlistFileResult {
+        std::string status = "NOT_ATTEMPTED";
+        std::string name;
+        std::uint64_t drec_cnid = 0;
+        std::uint64_t inode_cnid = 0;
+        std::uint64_t private_id = 0;
+        std::uint64_t file_size = 0;
+        std::uint64_t extent_count = 0;
+        std::string sha256;
+        std::string format;
+        std::vector<std::uint8_t> bytes;
+        std::string error;
+    } plist_file;
 };
 
 // Parse a raw APFS container image and resolve each volume superblock

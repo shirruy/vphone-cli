@@ -19,5 +19,17 @@
   "runtime": {
     "real_fixture": "launchdaemons.status=RESOLVED cnid=632 — unchanged under topology enforcement",
     "synthetic": "APFS_READER_TEST_PASS — all 5 FSTREE cases plus all prior OMAP/checksum/TOC regressions"
+  },
+  "superseded_by": {
+    "changes": [
+      "Case D isolated to LEAF-only flags (0x0002) — rejection reason is now specifically the interior-LEAF violation",
+      "Case E isolated to ROOT-only flags (0x0001) — rejection reason is now specifically the non-root ROOT violation",
+      "All negative cases assert exact expected error strings via expected_error substring matching",
+      "Case F added: root-without-ROOT caught by volume-level root validation (fail-closed integration check)",
+      "Production topology checks moved before decode_btree_node/footer so topology errors are not masked",
+      "Total FSTREE cases: 6 (1 positive + 5 negative with exact assertions)"
+    ],
+    "iteration": 11,
+    "commit": "2d2908f"
   }
 }

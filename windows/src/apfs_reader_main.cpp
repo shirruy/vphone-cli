@@ -2,6 +2,47 @@
 
 #include <iostream>
 #include <string>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <wincrypt.h>
+
+namespace {
+std::string sha256_hex(const std::vector<std::uint8_t>& data) {
+    HCRYPTPROV prov = 0;
+    HCRYPTHASH hash = 0;
+    std::string out;
+
+    if (!CryptAcquireContextW(
+            &prov, nullptr, nullptr, PROV_RSA_AES,
+            CRYPT_VERIFYCONTEXT)) {
+        return "";
+    }
+    if (CryptCreateHash(prov, CALG_SHA_256, 0, 0, &hash)) {
+        if (CryptHashData(
+                hash,
+                const_cast<BYTE*>(data.data()),
+                static_cast<DWORD>(data.size()),
+                0)) {
+            BYTE buf[32];
+            DWORD len = 32;
+            if (CryptGetHashParam(
+                    hash, HP_HASHVAL, buf, &len, 0) && len == 32) {
+                char hex[65];
+                for (DWORD i = 0; i < 32; ++i) {
+                    std::snprintf(
+                        hex + i * 2, 3, "%02x", buf[i]
+                    );
+                }
+                hex[64] = '\0';
+                out = hex;
+            }
+        }
+        CryptDestroyHash(hash);
+    }
+    CryptReleaseContext(prov, 0);
+    return out;
+}
+} // namespace
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -51,6 +92,20 @@ int main(int argc, char** argv) {
     std::cout << "  \"launchdaemons\": {\n";
     std::cout << "    \"status\": \"" << report.launchdaemons_status << "\",\n";
     std::cout << "    \"cnid\": " << report.launchdaemons_cnid << "\n";
+    std::cout << "  }\n";
+    std::cout << "  \"plist_file\": {\n";
+    std::cout << "    \"status\": \"" << report.plist_file.status << "\",\n";
+    std::cout << "    \"name\": \"" << report.plist_file.name << "\",\n";
+    std::cout << "    \"drec_cnid\": " << report.plist_file.drec_cnid << ",\n";
+    std::cout << "    \"inode_cnid\": " << report.plist_file.inode_cnid << ",\n";
+    std::cout << "    \"private_id\": " << report.plist_file.private_id << ",\n";
+    std::cout << "    \"file_size\": " << report.plist_file.file_size << ",\n";
+    std::cout << "    \"extent_count\": " << report.plist_file.extent_count << ",\n";
+    std::cout << "    \"sha256\": \"" << sha256_hex(report.plist_file.bytes) << "\",\n";
+    std::cout << "    \"format\": \"" << report.plist_file.format << "\"\n";
+    if (!report.plist_file.error.empty()) {
+        std::cout << "    ,\"error\": \"" << report.plist_file.error << "\"\n";
+    }
     std::cout << "  }\n";
     std::cout << "}\n";
     return 0;
