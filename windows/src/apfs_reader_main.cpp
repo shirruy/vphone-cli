@@ -48,6 +48,10 @@ int main(int argc, char** argv) {
         std::cout << "\n";
     }
     std::cout << "  ]\n";
+    std::cout << "  \"launchdaemons\": {\n";
+    std::cout << "    \"status\": \"" << report.launchdaemons_status << "\",\n";
+    std::cout << "    \"cnid\": " << report.launchdaemons_cnid << "\n";
+    std::cout << "  }\n";
     std::cout << "}\n";
     return 0;
 }

@@ -47,6 +47,9 @@ struct ApfsVolumeInfo {
 struct ApfsReaderReport {
     ApfsContainerInfo container;
     std::vector<ApfsVolumeInfo> volumes;
+    // Structural path resolution result (empty when unresolved).
+    std::string launchdaemons_status = "NOT_RESOLVED";
+    std::uint64_t launchdaemons_cnid = 0;
 };
 
 // Parse a raw APFS container image and resolve each volume superblock

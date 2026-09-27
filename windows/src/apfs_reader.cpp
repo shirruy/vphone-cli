@@ -15,11 +15,11 @@ namespace {
 constexpr std::uint32_t kNxsbMagic = 0x4253584Eu; // 'NXSB'
 constexpr std::uint32_t kApsbMagic = 0x42535041u; // 'APSB'
 constexpr std::uint32_t kOmapType = 0x0000000Bu;
+// APFS object types: OBJECT_TYPE_BTREE_NODE spans both observed
+// encodings (2 and 3) in real fixtures; omap/fstree objects carry
+// their own concrete kinds.
 constexpr std::uint32_t kBtreeType = 0x00000002u;
-// Some B-tree objects carry an additional low bit (observed type 0x3
-// on valid OMAP leaves in the real fixture); accept the base kind with
-// the optional bit set.
-constexpr std::uint32_t kBtreeTypeAlt = 0x00000003u;
+constexpr std::uint32_t kBtreeTypeNode = 0x00000003u;
 // Volume catalog root object subtype: FSTREE (apfs-fuse OBJ_FSTREE,
 // linux-apfs-rw APFS_OBJ_FSTREE).
 constexpr std::uint32_t kFstreeSubtype = 0x0000000Eu;
@@ -279,7 +279,7 @@ bool omap_collect_entries(
 
     const std::uint32_t type = read_le32(buf.data() + 24);
     const std::uint32_t type_kind = type & kObjectTypeMask;
-    if (type_kind != kBtreeType && type_kind != kBtreeTypeAlt) {
+    if (type_kind != kBtreeType && type_kind != kBtreeTypeNode) {
         error = "OMAP tree node is not a B-tree object";
         return false;
     }
@@ -364,6 +364,285 @@ bool omap_collect_entries(
         out.push_back(entry);
     }
 
+    return true;
+}
+// ---------------------------------------------------------------------------
+// FSTREE catalog walk (variable-KV) with structural DIR_REC path lookup.
+// ---------------------------------------------------------------------------
+
+constexpr std::uint64_t kApfsRootDirCnid = 2;
+constexpr std::uint64_t kObjIdMask = 0x0FFFFFFFFFFFFFFFull;
+constexpr std::uint64_t kRecordTypeShift = 60;
+constexpr std::uint64_t kApfsTypeDirRec = 9;
+// APSB apfs_incompatible_features @ +0x38.
+constexpr std::size_t kApsbIncompatOffset = 0x38;
+constexpr std::uint64_t kIncompatCaseInsensitive = 0x1;
+constexpr std::uint64_t kIncompatNormalizationInsensitive = 0x8;
+constexpr std::uint32_t kHashedNameLenMask = 0x000003ff;
+
+struct FstreeWalkCtx {
+    HANDLE file = INVALID_HANDLE_VALUE;
+    std::uint32_t block_size = 0;
+    std::uint64_t block_count = 0;
+    const std::vector<ApfsOmapEntry>* omap = nullptr;
+    std::uint64_t volume_xid = 0;
+    bool hashed_names = false;
+    std::set<std::uint64_t> visited;
+};
+
+// Resolve a virtual OID through the volume OMAP (greatest xid <= vol xid).
+bool omap_resolve(
+    const FstreeWalkCtx& ctx,
+    std::uint64_t oid,
+    std::uint64_t& paddr,
+    std::string& error
+) {
+    const ApfsOmapEntry* best = nullptr;
+    for (const auto& e : *ctx.omap) {
+        if (e.oid == oid && e.xid <= ctx.volume_xid &&
+            e.paddr < ctx.block_count) {
+            if (!best || e.xid > best->xid) {
+                best = &e;
+            }
+        }
+    }
+    if (!best) {
+        error = "OMAP could not resolve oid";
+        return false;
+    }
+    paddr = best->paddr;
+    return true;
+}
+
+// Visit every leaf DIR_REC record under a FSTREE node (recursing through
+// OMAP-resolved interior children) and invoke match(parent_cnid, name,
+// child_cnid). Returns false on any structural failure.
+template <typename MatchFn>
+bool fstree_visit_dir_records(
+    FstreeWalkCtx& ctx,
+    std::uint64_t node_oid,
+    std::uint16_t expected_level,
+    bool is_root,
+    MatchFn match,
+    std::string& error
+) {
+    if (expected_level == 0) {
+        error = "FSTREE level underflow";
+        return false;
+    }
+
+    std::uint64_t paddr = 0;
+    if (!omap_resolve(ctx, node_oid, paddr, error)) {
+        return false;
+    }
+
+    if (!ctx.visited.insert(node_oid).second) {
+        error = "FSTREE cycle detected";
+        return false;
+    }
+
+    std::vector<std::uint8_t> buf(ctx.block_size, 0);
+    if (!read_block(ctx.file, paddr, ctx.block_size, buf, error)) {
+        return false;
+    }
+    if (!apfs_block_checksum_ok(buf)) {
+        error = "FSTREE node failed Fletcher-64 checksum";
+        return false;
+    }
+
+    const std::uint32_t type = read_le32(buf.data() + 24);
+    const std::uint32_t kind = type & kObjectTypeMask;
+    if (kind != kBtreeType && kind != kBtreeTypeNode) {
+        error = "FSTREE node is not a B-tree object";
+        return false;
+    }
+
+    ApfsBtreeNodeInfo node;
+    if (!decode_btree_node(buf, ctx.block_size, node, error)) {
+        return false;
+    }
+    if (node.level + 1 != expected_level &&
+        !(is_root && node.level == expected_level)) {
+        // Level must strictly decrease on descent.
+        if (node.level >= expected_level && !is_root) {
+            error = "FSTREE node level did not decrease";
+            return false;
+        }
+    }
+
+    const std::uint8_t* p = buf.data();
+    if (node.flags & kBtreeFixedKvSize) {
+        error = "FSTREE catalog nodes must be variable-KV";
+        return false;
+    }
+
+    const std::uint16_t tofs =
+        static_cast<std::uint16_t>(p[0x28]) |
+        (static_cast<std::uint16_t>(p[0x29]) << 8);
+    const std::uint16_t tlen =
+        static_cast<std::uint16_t>(p[0x2a]) |
+        (static_cast<std::uint16_t>(p[0x2b]) << 8);
+
+    const std::uint64_t key_base =
+        static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + tofs + tlen;
+    const std::uint64_t value_base = is_root
+        ? static_cast<std::uint64_t>(ctx.block_size) - kBtreeInfoSize
+        : static_cast<std::uint64_t>(ctx.block_size);
+
+    for (std::uint32_t i = 0; i < node.nkeys; ++i) {
+        // Variable-KV TOC: 8-byte kvloc {k_off, k_len, v_off, v_len}.
+        const std::uint64_t toc =
+            static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + tofs +
+            static_cast<std::uint64_t>(i) * 8;
+        if (toc + 8 > ctx.block_size) {
+            error = "FSTREE TOC entry exceeds block";
+            return false;
+        }
+
+        const std::uint16_t k_off =
+            static_cast<std::uint16_t>(p[toc]) |
+            (static_cast<std::uint16_t>(p[toc + 1]) << 8);
+        const std::uint16_t k_len =
+            static_cast<std::uint16_t>(p[toc + 2]) |
+            (static_cast<std::uint16_t>(p[toc + 3]) << 8);
+        const std::uint16_t v_off =
+            static_cast<std::uint16_t>(p[toc + 4]) |
+            (static_cast<std::uint16_t>(p[toc + 5]) << 8);
+        const std::uint16_t v_len =
+            static_cast<std::uint16_t>(p[toc + 6]) |
+            (static_cast<std::uint16_t>(p[toc + 7]) << 8);
+
+        const std::uint64_t kp = key_base + k_off;
+        const std::uint64_t vp = value_base - v_off;
+
+        if (node.level > 0) {
+            // Interior: recurse into OMAP-resolved child.
+            if (v_len != 8 || vp + 8 > ctx.block_size) {
+                error = "FSTREE interior value must be an 8-byte child OID";
+                return false;
+            }
+            const std::uint64_t child_oid = read_le64(p + vp);
+            if (!fstree_visit_dir_records(
+                    ctx,
+                    child_oid,
+                    node.level,
+                    false,
+                    match,
+                    error
+                )) {
+                return false;
+            }
+            continue;
+        }
+
+        // Leaf: decode DIR_REC key only when type matches.
+        if (k_len < 10 || kp + k_len > ctx.block_size) {
+            continue; // non-leaf-format or out-of-bounds; skip
+        }
+
+        const std::uint64_t hdr = read_le64(p + kp);
+        const std::uint64_t parent_cnid = hdr & kObjIdMask;
+        const std::uint64_t rec_type = hdr >> kRecordTypeShift;
+        if (rec_type != kApfsTypeDirRec) {
+            continue;
+        }
+
+        // Name decode: hashed vs unhashed by volume features.
+        const char* name = nullptr;
+        std::size_t name_len = 0;
+        if (ctx.hashed_names) {
+            if (k_len < 12) {
+                continue;
+            }
+            const std::uint32_t len_hash = read_le32(p + kp + 8);
+            name_len = len_hash & kHashedNameLenMask;
+            name = reinterpret_cast<const char*>(p + kp + 12);
+        } else {
+            name_len =
+                static_cast<std::uint16_t>(p[kp + 8]) |
+                (static_cast<std::uint16_t>(p[kp + 9]) << 8);
+            name = reinterpret_cast<const char*>(p + kp + 10);
+        }
+
+        if (name_len == 0 || name_len > 255 ||
+            kp + (name - reinterpret_cast<const char*>(p)) + name_len >
+                ctx.block_size) {
+            continue;
+        }
+
+        // APFS drec names are stored NUL-padded within name_len; trim
+        // trailing NULs so string comparison matches the on-disk name.
+        while (name_len > 0 && name[name_len - 1] == '\0') {
+            --name_len;
+        }
+
+        // j_drec_val: file_id (u64) + flags (u16) + reserved.
+        if (v_len < 8 || vp + 8 > ctx.block_size) {
+            continue;
+        }
+        const std::uint64_t child_cnid = read_le64(p + vp);
+
+        if (!match(parent_cnid, std::string(name, name_len), child_cnid)) {
+            error = "path match callback failed";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Structural path resolution: 2 -> System -> Library -> LaunchDaemons.
+bool fstree_resolve_launchdaemons(
+    FstreeWalkCtx& ctx,
+    std::uint64_t root_oid,
+    std::uint16_t root_level,
+    std::uint64_t& out_cnid,
+    std::string& error
+) {
+    std::uint64_t parent = kApfsRootDirCnid;
+    static const char* const components[] = {"System", "Library", "LaunchDaemons"};
+
+    for (int ci = 0; ci < 3; ++ci) {
+        const std::string want = components[ci];
+        bool found = false;
+        std::uint64_t next = 0;
+
+        // Fresh visited set per component (leaves may legitimately be
+        // shared across lookups).
+        ctx.visited.clear();
+
+        auto matcher = [&](
+            std::uint64_t p_cnid,
+            const std::string& name,
+            std::uint64_t c_cnid
+        ) -> bool {
+            if (found || p_cnid != parent || name != want) {
+                return true; // keep scanning
+            }
+            found = true;
+            next = c_cnid;
+            return true;
+        };
+
+        if (!fstree_visit_dir_records(
+                ctx,
+                root_oid,
+                root_level,
+                true,
+                matcher,
+                error
+            )) {
+            return false;
+        }
+
+        if (!found) {
+            error = "path component not found: " + want;
+            return false;
+        }
+        parent = next;
+    }
+
+    out_cnid = parent;
     return true;
 }
 } // namespace
@@ -456,6 +735,12 @@ bool apfs_read_container(
                 continue;
             }
 
+            // Trust chain: verify the APSB checksum before reading any
+            // field that drives volume resolution.
+            if (!apfs_block_checksum_ok(block)) {
+                continue;
+            }
+
             ApfsVolumeInfo volume;
             volume.apsb_block = b;
             volume.apsb_oid = read_le64(block.data() + 8);
@@ -490,6 +775,12 @@ bool apfs_read_container(
 
             if ((read_le32(omap_block_buf.data() + 24) & kObjectTypeMask)
                     != kOmapType) {
+                continue;
+            }
+
+            // Trust chain: verify omap_phys_t checksum before reading
+            // om_tree_oid.
+            if (!apfs_block_checksum_ok(omap_block_buf)) {
                 continue;
             }
 
@@ -572,7 +863,7 @@ bool apfs_read_container(
                     read_le32(root_block_buf.data() + 28);
 
                 if (root_type_kind != kBtreeType &&
-                        root_type_kind != kBtreeTypeAlt) {
+                        root_type_kind != kBtreeTypeNode) {
                     continue;
                 }
                 if (root_subtype != kFstreeSubtype) {
@@ -625,6 +916,39 @@ bool apfs_read_container(
             volume.omap_block = omap_block;
             volume.root_tree_block = resolved_root_block;
             volume.root_tree_info = fstree_info;
+
+            // Structural /System/Library/LaunchDaemons resolution via
+            // DIR_REC parent/child CNIDs (first successful volume wins).
+            if (report.launchdaemons_cnid == 0) {
+                FstreeWalkCtx walk_ctx;
+                walk_ctx.file = file;
+                walk_ctx.block_size = report.container.block_size;
+                walk_ctx.block_count = report.container.block_count;
+                walk_ctx.omap = &omap_entries;
+                walk_ctx.volume_xid = volume.xid;
+
+                const std::uint64_t incompat =
+                    read_le64(block.data() + kApsbIncompatOffset);
+                walk_ctx.hashed_names =
+                    (incompat & kIncompatCaseInsensitive) != 0 ||
+                    (incompat & kIncompatNormalizationInsensitive) != 0;
+
+                std::uint64_t ld_cnid = 0;
+                std::string walk_error;
+                if (fstree_resolve_launchdaemons(
+                        walk_ctx,
+                        volume.root_tree_oid,
+                        fstree_info.level,
+                        ld_cnid,
+                        walk_error
+                    )) {
+                    report.launchdaemons_cnid = ld_cnid;
+                    report.launchdaemons_status = "RESOLVED";
+                } else {
+                    report.launchdaemons_status =
+                        "NOT_RESOLVED: " + walk_error;
+                }
+            }
 
             // apfs_volname is a fixed 256-byte null-padded array in the
             // APSB; observed at offset 0x2C0 in this image family.
