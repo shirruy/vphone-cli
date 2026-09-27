@@ -367,6 +367,282 @@ int main() {
         return 1;
     }
 
+    // -----------------------------------------------------------------
+    // FSTREE walk regressions: late-key acceptance, level-skip
+    // rejection, virtual-child resolution, topology flag validation.
+    // -----------------------------------------------------------------
+    {
+        constexpr std::uint32_t fbs = 4096;
+        constexpr std::uint64_t fbc = 12;
+        constexpr std::uint64_t kFstreeRootOid = 200;
+        constexpr std::uint64_t kFstreeMidOid = 201;
+        constexpr std::uint64_t kFstreeLeafOid = 202;
+        constexpr std::uint64_t kFstreeLeafBlock = 8;
+
+        struct FstreeImage {
+            std::uint16_t mid_flags = 0;
+            std::uint16_t mid_level = 1;
+            bool mid_level_set = false;
+            std::uint16_t leaf_flags = 2;
+        };
+
+        auto seal = [&](std::vector<std::uint8_t>& b) {
+            put_le64(b, 0, fletcher64(b));
+        };
+
+        auto build = [&](const FstreeImage& cfg)
+            -> std::vector<std::uint8_t> {
+            std::vector<std::uint8_t> img(
+                static_cast<std::size_t>(fbc) * fbs, 0);
+
+            auto put = [&](
+                std::uint64_t b,
+                const std::vector<std::uint8_t>& blk
+            ) {
+                std::memcpy(
+                    img.data() + static_cast<std::size_t>(b) * fbs,
+                    blk.data(),
+                    fbs
+                );
+            };
+
+            // NXSB block 0
+            {
+                std::vector<std::uint8_t> blk(fbs, 0);
+                put_le64(blk, 8, 1);
+                put_le64(blk, 16, 1);
+                put_le32(blk, 24, 0x80000001u);
+                put_le32(blk, 32, 0x4253584Eu);
+                put_le32(blk, 36, fbs);
+                put_le64(blk, 40, fbc);
+                seal(blk);
+                put(0, blk);
+            }
+
+            // APSB block 1: omap=4, root_tree_oid=200 (virtual)
+            {
+                std::vector<std::uint8_t> blk(fbs, 0);
+                put_le64(blk, 8, 42);
+                put_le64(blk, 16, 3);
+                put_le32(blk, 24, 0x80000009u);
+                put_le32(blk, 32, 0x42535041u);
+                put_le64(blk, 0x80, 4);
+                put_le64(blk, 0x88, kFstreeRootOid);
+                put_le64(blk, 0x90, 3);
+                std::memcpy(blk.data() + 0x2C0, "fstretest", 9);
+                seal(blk);
+                put(1, blk);
+            }
+
+            // omap_phys block 4
+            {
+                std::vector<std::uint8_t> blk(fbs, 0);
+                put_le64(blk, 8, 4);
+                put_le64(blk, 16, 3);
+                put_le32(blk, 24, 0x4000000Bu);
+                put_le64(blk, 0x30, 5);
+                seal(blk);
+                put(4, blk);
+            }
+
+            // OMAP leaf block 5: fixed-KV, maps 200->6, 201->7, 202->8.
+            // Virtual OIDs deliberately differ from physical paddrs.
+            {
+                std::vector<std::uint8_t> blk(fbs, 0);
+                put_le64(blk, 8, 5);
+                put_le64(blk, 16, 3);
+                put_le32(blk, 24, 0x40000003u);
+                put_le32(blk, 0x20, 0x00000006u); // leaf+fixed
+                put_le32(blk, 0x24, 3);
+                put_le32(blk, 0x28, 0x00100000u);
+                blk[0x38] = 0x00; blk[0x39] = 0x00; blk[0x3a] = 0x10; blk[0x3b] = 0x00;
+                blk[0x3c] = 0x10; blk[0x3d] = 0x00; blk[0x3e] = 0x20; blk[0x3f] = 0x00;
+                blk[0x40] = 0x20; blk[0x41] = 0x00; blk[0x42] = 0x30; blk[0x43] = 0x00;
+                put_le64(blk, 0x48, kFstreeRootOid); put_le64(blk, 0x48 + 8, 2);
+                put_le64(blk, 0x48 + 0x10, kFstreeMidOid); put_le64(blk, 0x48 + 0x18, 2);
+                put_le64(blk, 0x48 + 0x20, kFstreeLeafOid); put_le64(blk, 0x48 + 0x28, 2);
+                put_le64(blk, 0xfc8 + 8, 6);
+                put_le64(blk, 0xfb8 + 8, 7);
+                put_le64(blk, 0xfa8 + 8, 8);
+                seal(blk);
+                put(5, blk);
+            }
+
+            // FSTREE root block 6: variable-KV, level 2, ROOT flag,
+            // 1 entry -> child OID 201 (virtual).
+            {
+                std::vector<std::uint8_t> blk(fbs, 0);
+                put_le64(blk, 8, kFstreeRootOid);
+                put_le64(blk, 16, 3);
+                put_le32(blk, 24, 0x40000003u);
+                put_le32(blk, 28, 0x0000000Eu);
+                blk[0x20] = 0x01; blk[0x21] = 0x00; // flags: ROOT
+                blk[0x22] = 0x02; blk[0x23] = 0x00; // level = 2
+                put_le32(blk, 0x24, 1);
+                put_le32(blk, 0x28, 0x00100000u);
+                blk[0x38] = 0x00; blk[0x39] = 0x00; blk[0x3a] = 0x10; blk[0x3b] = 0x00;
+                blk[0x3c] = 0x10; blk[0x3d] = 0x00; blk[0x3e] = 0x08; blk[0x3f] = 0x00;
+                put_le64(blk, 0x48, (9ull << 60) | 1ull);
+                put_le64(blk, 0x48 + 8, 0);
+                put_le64(blk, 0xfc8, kFstreeMidOid);
+                put_le32(blk, fbs - 0x28, 0);
+                put_le32(blk, fbs - 0x28 + 4, fbs);
+                seal(blk);
+                put(6, blk);
+            }
+
+            // FSTREE mid block 7: variable-KV, level 1 (or override),
+            // 1 entry -> leaf block 8.
+            {
+                std::vector<std::uint8_t> blk(fbs, 0);
+                put_le64(blk, 8, kFstreeMidOid);
+                put_le64(blk, 16, 3);
+                put_le32(blk, 24, 0x40000003u);
+                put_le32(blk, 28, 0x0000000Eu);
+                const std::uint16_t mflags = cfg.mid_flags;
+                const std::uint16_t mlevel =
+                    cfg.mid_level_set ? cfg.mid_level : 1;
+                blk[0x20] = static_cast<std::uint8_t>(mflags & 0xff);
+                blk[0x21] = static_cast<std::uint8_t>(mflags >> 8);
+                blk[0x22] = static_cast<std::uint8_t>(mlevel & 0xff);
+                blk[0x23] = static_cast<std::uint8_t>(mlevel >> 8);
+                put_le32(blk, 0x24, 1);
+                put_le32(blk, 0x28, 0x00100000u);
+                blk[0x38] = 0x00; blk[0x39] = 0x00; blk[0x3a] = 0x10; blk[0x3b] = 0x00;
+                blk[0x3c] = 0x10; blk[0x3d] = 0x00; blk[0x3e] = 0x08; blk[0x3f] = 0x00;
+                put_le64(blk, 0x48, (9ull << 60) | 1ull);
+                put_le64(blk, 0x48 + 8, 0);
+                put_le64(blk, 0xff0, kFstreeLeafOid);
+                seal(blk);
+                put(7, blk);
+            }
+
+            // FSTREE leaf block 8: variable-KV, level 0, one DIR_REC
+            // "System\0" under parent CNID 2, key placed LATE
+            // (k_off = 0x0F00 pushes the key near block end).
+            {
+                std::vector<std::uint8_t> blk(fbs, 0);
+                put_le64(blk, 8, kFstreeLeafOid);
+                put_le64(blk, 16, 3);
+                put_le32(blk, 24, 0x40000003u);
+                put_le32(blk, 28, 0x0000000Eu);
+                blk[0x20] = static_cast<std::uint8_t>(cfg.leaf_flags & 0xff);
+                blk[0x21] = static_cast<std::uint8_t>(cfg.leaf_flags >> 8);
+                blk[0x22] = 0x00; blk[0x23] = 0x00;
+                put_le32(blk, 0x24, 1);
+                put_le32(blk, 0x28, 0x00100000u);
+                const std::uint16_t k_off = 0x0F00;
+                const std::uint16_t k_len = 10 + 7;
+                const std::uint16_t v_off = 0x18;
+                const std::uint16_t v_len = 18;
+                blk[0x38] = static_cast<std::uint8_t>(k_off & 0xff);
+                blk[0x39] = static_cast<std::uint8_t>(k_off >> 8);
+                blk[0x3a] = static_cast<std::uint8_t>(k_len & 0xff);
+                blk[0x3b] = static_cast<std::uint8_t>(k_len >> 8);
+                blk[0x3c] = static_cast<std::uint8_t>(v_off & 0xff);
+                blk[0x3d] = static_cast<std::uint8_t>(v_off >> 8);
+                blk[0x3e] = static_cast<std::uint8_t>(v_len & 0xff);
+                blk[0x3f] = static_cast<std::uint8_t>(v_len >> 8);
+                const std::uint64_t kp = 0x48 + k_off;
+                put_le64(blk, kp, (9ull << 60) | 2ull);
+                blk[kp + 8] = 0x07; blk[kp + 9] = 0x00;
+                std::memcpy(blk.data() + kp + 10, "System\0", 7);
+                put_le64(blk, 4096 - 0x18, 16);
+                put_le64(blk, 4096 - 0x18 + 8, 0);
+                put_le32(blk, 4096 - 0x18 + 16, 4);
+                seal(blk);
+                put(kFstreeLeafBlock, blk);
+            }
+
+            return img;
+        };
+
+        auto run_case = [&](
+            const std::vector<std::uint8_t>& blocks,
+            const char* suffix,
+            bool expect_reached_library
+        ) -> bool {
+            const std::string path =
+                std::string(temp_path) + "apfs_fstree_" + suffix + ".img";
+            if (!write_all(path, blocks)) {
+                std::fprintf(stderr, "write %s failed\n", suffix);
+                return false;
+            }
+            vphone::ApfsReaderReport rpt;
+            std::string err;
+            vphone::apfs_read_container(path, rpt, err);
+            DeleteFileA(path.c_str());
+            const bool reached_library =
+                rpt.launchdaemons_status.find(
+                    "component not found: Library"
+                ) != std::string::npos;
+            return reached_library == expect_reached_library;
+        };
+
+        // A: positive — late key accepted, virtual child resolved.
+        {
+            FstreeImage cfg;
+            if (!run_case(build(cfg), "latekey_ok", true)) {
+                std::fprintf(
+                    stderr,
+                    "late-key/virtual-child positive case failed\n"
+                );
+                return 1;
+            }
+        }
+
+        // B: negative — level skip 2 -> 0.
+        {
+            FstreeImage cfg;
+            cfg.mid_level_set = true;
+            cfg.mid_level = 0;
+            cfg.mid_flags = 2; // LEAF (consistent with level 0)
+            if (!run_case(build(cfg), "levelskip", false)) {
+                std::fprintf(stderr, "level-skip 2->0 not rejected\n");
+                return 1;
+            }
+        }
+
+        // C: negative — level-0 leaf without LEAF flag.
+        {
+            FstreeImage cfg;
+            cfg.leaf_flags = 0;
+            if (!run_case(build(cfg), "noflag", false)) {
+                std::fprintf(
+                    stderr,
+                    "level-0 without LEAF flag not rejected\n"
+                );
+                return 1;
+            }
+        }
+
+        // D: negative — interior carrying LEAF flag.
+        {
+            FstreeImage cfg;
+            cfg.mid_flags = 0x0003; // ROOT|LEAF on non-root
+            if (!run_case(build(cfg), "midleaf", false)) {
+                std::fprintf(
+                    stderr,
+                    "interior with LEAF flag not rejected\n"
+                );
+                return 1;
+            }
+        }
+
+        // E: negative — non-root carrying ROOT flag.
+        {
+            FstreeImage cfg;
+            cfg.mid_flags = 0x0001; // ROOT only
+            if (!run_case(build(cfg), "midroot", false)) {
+                std::fprintf(
+                    stderr,
+                    "non-root with ROOT flag not rejected\n"
+                );
+                return 1;
+            }
+        }
+    }
+
     std::printf("APFS_READER_TEST_PASS\n");
     return 0;
 }

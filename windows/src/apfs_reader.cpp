@@ -474,6 +474,28 @@ bool fstree_visit_dir_records(
         return false;
     }
 
+    // Topology flag contract: root-ness and leaf-ness must match the
+    // numeric level and the walk position. Value-base/footer geometry
+    // depends on root-ness; record semantics depend on leaf-ness.
+    const bool has_root_flag = (node.flags & kBtreeRoot) != 0;
+    const bool has_leaf_flag = (node.flags & kBtreeLeaf) != 0;
+    if (is_root && !has_root_flag) {
+        error = "FSTREE root node missing ROOT flag";
+        return false;
+    }
+    if (!is_root && has_root_flag) {
+        error = "FSTREE non-root node carries ROOT flag";
+        return false;
+    }
+    if (node.level == 0 && !has_leaf_flag) {
+        error = "FSTREE level-0 node missing LEAF flag";
+        return false;
+    }
+    if (node.level > 0 && has_leaf_flag) {
+        error = "FSTREE interior node carries LEAF flag";
+        return false;
+    }
+
     const std::uint8_t* p = buf.data();
     if (node.flags & kBtreeFixedKvSize) {
         error = "FSTREE catalog nodes must be variable-KV";
