@@ -24,6 +24,40 @@ void put_le64(std::vector<std::uint8_t>& b, std::size_t off, std::uint64_t v) {
     }
 }
 
+std::uint32_t read_le32(const std::vector<std::uint8_t>& b, std::size_t off) {
+    return
+        static_cast<std::uint32_t>(b[off]) |
+        (static_cast<std::uint32_t>(b[off + 1]) << 8) |
+        (static_cast<std::uint32_t>(b[off + 2]) << 16) |
+        (static_cast<std::uint32_t>(b[off + 3]) << 24);
+}
+
+std::uint64_t read_le64(const std::vector<std::uint8_t>& b, std::size_t off) {
+    std::uint64_t v = 0;
+    for (int i = 7; i >= 0; --i) {
+        v = (v << 8) | b[off + i];
+    }
+    return v;
+}
+
+// APFS Fletcher-64 (same algorithm as the reader).
+std::uint64_t fletcher64(const std::vector<std::uint8_t>& b) {
+    constexpr std::uint64_t modulus = 0xFFFFFFFFull;
+    std::uint64_t s1 = 0, s2 = 0;
+    for (std::size_t off = 8; off + 4 <= b.size(); off += 4) {
+        const std::uint64_t w = read_le32(b, off);
+        s1 = (s1 + w) % modulus;
+        s2 = (s2 + s1) % modulus;
+    }
+    const std::uint64_t c1 = modulus - ((s1 + s2) % modulus);
+    const std::uint64_t c2 = modulus - ((s1 + c1) % modulus);
+    return c1 | (c2 << 32);
+}
+
+void seal_checksum(std::vector<std::uint8_t>& b) {
+    put_le64(b, 0, fletcher64(b));
+}
+
 bool write_all(
     const std::string& path,
     const std::vector<std::uint8_t>& data
@@ -98,6 +132,7 @@ int main() {
         put_le32(blk, 32, 0x4253584Eu); // 'NXSB'
         put_le32(blk, 36, block_size);
         put_le64(blk, 40, block_count);
+        seal_checksum(blk);
         std::memcpy(
             image.data(),
             blk.data(),
@@ -115,6 +150,7 @@ int main() {
         put_le64(blk, 0x90, 3);         // extentref tree oid
         const char* name = "testvol";
         std::memcpy(blk.data() + 0x2C0, name, std::strlen(name));
+        seal_checksum(blk);
         std::memcpy(
             image.data() + block_size,
             blk.data(),
@@ -127,6 +163,7 @@ int main() {
         std::vector<std::uint8_t> blk(block_size, 0);
         make_object_header(blk, 2, 3, 0x4000000Bu);
         put_le64(blk, 0x30, 4);         // om_tree_oid -> block 4
+        seal_checksum(blk);
         std::memcpy(
             image.data() + 2 * static_cast<std::size_t>(block_size),
             blk.data(),
@@ -134,10 +171,18 @@ int main() {
         );
     }
 
-    // B-tree root at block 3.
+    // FSTREE root at block 3: B-tree kind, subtype 0x0E, root flag,
+    // footer with node_size matching block size.
     {
         std::vector<std::uint8_t> blk(block_size, 0);
         make_object_header(blk, 3, 3, 0x40000002u);
+        put_le32(blk, 28, 0x0000000Eu);              // subtype FSTREE
+        put_le32(blk, 0x20, 0x00000001u);            // root flag
+        put_le32(blk, 0x24, 0);                       // nkeys=0
+        // Footer at block_size - 0x28: bt_flags, node_size.
+        put_le32(blk, block_size - 0x28, 0);
+        put_le32(blk, block_size - 0x28 + 4, block_size);
+        seal_checksum(blk);
         std::memcpy(
             image.data() + 3 * static_cast<std::size_t>(block_size),
             blk.data(),
@@ -171,6 +216,7 @@ int main() {
         put_le64(blk, 0xfc8 + 8, 3);   // e0: xid 2 -> 3   (winner)
         put_le64(blk, 0xfb8 + 8, 14);  // e1: xid 1 -> 14  (older; loses)
         put_le64(blk, 0xfa8 + 8, 15);  // e2: xid 5 -> 15  (future; loses)
+        seal_checksum(blk);
         std::memcpy(
             image.data() + 4 * static_cast<std::size_t>(block_size),
             blk.data(),
@@ -189,6 +235,53 @@ int main() {
     if (!write_all(image_path, image)) {
         std::fprintf(stderr, "failed to write synthetic image\n");
         return 1;
+    }
+
+    // Regression: a fixed-KV node whose table_len is only nkeys*2
+    // (the stale 2-byte entry assumption) must fail closed. Build a
+    // second image variant with a deliberately undersized TOC.
+    {
+        std::vector<std::uint8_t> bad = image;
+        // OMAP leaf at block 4 in the bad image: nkeys=3 but
+        // table_len = 3*2 = 6 bytes.
+        std::vector<std::uint8_t> blk(block_size, 0);
+        make_object_header(blk, 4, 3, 0x40000003u);
+        put_le32(blk, 0x20, 0x00000006u);  // leaf+fixed
+        put_le32(blk, 0x24, 3);            // nkeys
+        put_le32(blk, 0x28, 0x00060000u);  // tofs=0, tlen=6 (undersized)
+        seal_checksum(blk);
+        std::memcpy(
+            bad.data() + 4 * static_cast<std::size_t>(block_size),
+            blk.data(),
+            block_size
+        );
+
+        const std::string bad_path =
+            std::string(temp_path) + "apfs_reader_test_bad.img";
+        if (!write_all(bad_path, bad)) {
+            std::fprintf(stderr, "failed to write bad image\n");
+            return 1;
+        }
+
+        vphone::ApfsReaderReport bad_report;
+        std::string bad_error;
+        // The OMAP walk must reject the undersized TOC, so the volume
+        // either fails container parse or reports root_tree_block 0.
+        const bool parsed =
+            vphone::apfs_read_container(bad_path, bad_report, bad_error);
+        const bool rejected =
+            !parsed ||
+            bad_report.volumes.empty() ||
+            bad_report.volumes[0].root_tree_block == 0;
+        DeleteFileA(bad_path.c_str());
+
+        if (!rejected) {
+            std::fprintf(
+                stderr,
+                "undersized 2-byte TOC was not rejected\n"
+            );
+            return 1;
+        }
     }
 
     vphone::ApfsReaderReport report;

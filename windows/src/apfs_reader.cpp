@@ -20,6 +20,9 @@ constexpr std::uint32_t kBtreeType = 0x00000002u;
 // on valid OMAP leaves in the real fixture); accept the base kind with
 // the optional bit set.
 constexpr std::uint32_t kBtreeTypeAlt = 0x00000003u;
+// Volume catalog root object subtype: FSTREE (apfs-fuse OBJ_FSTREE,
+// linux-apfs-rw APFS_OBJ_FSTREE).
+constexpr std::uint32_t kFstreeSubtype = 0x0000000Eu;
 // Authoritative APFS object-type constants (apfs-fuse, linux-apfs-rw,
 // Sleuth Kit): the concrete object kind occupies the low 16 bits;
 // storage class and flags are separate bit fields above it.
@@ -45,6 +48,7 @@ constexpr std::size_t kBtreeNodeHeaderSize = 0x38;
 // btree_info_t footer is 0x28 bytes at the end of a root node.
 constexpr std::size_t kBtreeInfoSize = 0x28;
 
+
 std::uint32_t read_le32(const std::uint8_t* p) {
     return
         static_cast<std::uint32_t>(p[0]) |
@@ -59,6 +63,37 @@ std::uint64_t read_le64(const std::uint8_t* p) {
         value = (value << 8) | p[i];
     }
     return value;
+}
+
+// APFS Fletcher-64 block checksum: the first 8 bytes of the object
+// header hold the checksum over the remaining block bytes in 32-bit
+// words. Same algorithm as apfs_snapshot_portable's
+// apfs_snapshot_checksum (obj_phys_t.o_cksum placement).
+std::uint64_t apfs_fletcher64(
+    const std::uint8_t* block,
+    std::size_t block_size
+) {
+    constexpr std::uint64_t modulus = 0xFFFFFFFFull;
+    std::uint64_t s1 = 0;
+    std::uint64_t s2 = 0;
+
+    for (std::size_t off = 8; off + 4 <= block_size; off += 4) {
+        const std::uint64_t word = read_le32(block + off);
+        s1 = (s1 + word) % modulus;
+        s2 = (s2 + s1) % modulus;
+    }
+
+    const std::uint64_t c1 = modulus - ((s1 + s2) % modulus);
+    const std::uint64_t c2 = modulus - ((s1 + c1) % modulus);
+    return c1 | (c2 << 32);
+}
+
+bool apfs_block_checksum_ok(const std::vector<std::uint8_t>& block) {
+    if (block.size() < 16) {
+        return false;
+    }
+    return apfs_fletcher64(block.data(), block.size()) ==
+           read_le64(block.data());
 }
 
 std::string win_error(const char* operation) {
@@ -168,10 +203,11 @@ bool decode_btree_node(
         return false;
     }
 
-    // Sanity: for variable-KV nodes each TOC entry is 8 bytes; for
-    // fixed-KV nodes the TOC is 2-byte key offsets only.
+    // Geometry: fixed-KV TOC entries are 4-byte kvoff {k,v} pairs
+    // (apfs-fuse BTreeNodeFix, linux-apfs-rw locate_key/locate_value);
+    // variable-KV TOC entries are 8 bytes {k_off,k_len,v_off,v_len}.
     const std::size_t entry_size =
-        (node.flags & kBtreeFixedKvSize) ? 2 : 8;
+        (node.flags & kBtreeFixedKvSize) ? 4 : 8;
     if (node.nkeys > 0 &&
         table_len < node.nkeys * entry_size) {
         error = "B-tree table space too small for declared key count";
@@ -233,6 +269,11 @@ bool omap_collect_entries(
 
     std::vector<std::uint8_t> buf(block_size, 0);
     if (!read_block(file, block, block_size, buf, error)) {
+        return false;
+    }
+
+    if (!apfs_block_checksum_ok(buf)) {
+        error = "OMAP node failed Fletcher-64 checksum";
         return false;
     }
 
@@ -471,6 +512,7 @@ bool apfs_read_container(
             std::set<std::uint64_t> visited;
             std::uint64_t resolved_root_block = 0;
             bool root_resolved = false;
+            ApfsBtreeNodeInfo fstree_info;
 
             if (om_tree_oid > 0 && om_tree_oid < report.container.block_count) {
                 std::string omap_error;
@@ -515,8 +557,41 @@ bool apfs_read_container(
                     break;
                 }
 
-                if ((read_le32(root_block_buf.data() + 24) & kObjectTypeMask)
-                        != kBtreeType) {
+                if (!apfs_block_checksum_ok(root_block_buf)) {
+                    continue;
+                }
+
+                // Verify the resolved block is the volume catalog root:
+                // B-tree object kind, FSTREE subtype, root flag set,
+                // footer present with node_size matching block size.
+                const std::uint32_t root_type =
+                    read_le32(root_block_buf.data() + 24);
+                const std::uint32_t root_type_kind =
+                    root_type & kObjectTypeMask;
+                const std::uint32_t root_subtype =
+                    read_le32(root_block_buf.data() + 28);
+
+                if (root_type_kind != kBtreeType &&
+                        root_type_kind != kBtreeTypeAlt) {
+                    continue;
+                }
+                if (root_subtype != kFstreeSubtype) {
+                    continue;
+                }
+
+                std::string fstree_error;
+                if (!decode_btree_node(
+                        root_block_buf,
+                        report.container.block_size,
+                        fstree_info,
+                        fstree_error
+                    )) {
+                    continue;
+                }
+                if (!(fstree_info.flags & kBtreeRoot) ||
+                    !fstree_info.has_footer ||
+                    fstree_info.node_size !=
+                        report.container.block_size) {
                     continue;
                 }
             } else {
@@ -547,19 +622,9 @@ bool apfs_read_container(
                 continue;
             }
 
-            ApfsBtreeNodeInfo root_info;
-            if (!decode_btree_node(
-                    root_block_buf,
-                    report.container.block_size,
-                    root_info,
-                    error
-                )) {
-                continue;
-            }
-
             volume.omap_block = omap_block;
             volume.root_tree_block = resolved_root_block;
-            volume.root_tree_info = root_info;
+            volume.root_tree_info = fstree_info;
 
             // apfs_volname is a fixed 256-byte null-padded array in the
             // APSB; observed at offset 0x2C0 in this image family.

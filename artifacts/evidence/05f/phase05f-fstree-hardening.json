@@ -1,0 +1,16 @@
+{
+  "items_4_and_5": "DIR_REC key formats (hashed/unhashed via volume incompatible-features) and structural parent-child traversal are queued for the FSTREE walk iteration — not yet implemented, matching reviewer ordering (hardening first)",
+  "phase": "05G-prep",
+  "gate": "fstree-hardening-before-catalog-walk",
+  "reviewer_items_applied": [
+    "Item 1: decode_btree_node fixed-KV entry_size 2 -> 4 bytes; undersized-TOC regression added (nkeys*2 < nkeys*4 fails closed)",
+    "Item 2: resolved catalog root now validated in code: subtype 0x0E FSTREE + root flag + footer present + node_size == block_size",
+    "Item 3: Fletcher-64 checksum wired into OMAP walker and resolved-root verification; fails closed on mismatch",
+    "Item 6: stale 2-byte comments removed; geometry comment updated to 4-byte kvoff"
+  ],
+  "runtime": {
+    "synthetic": "APFS_READER_TEST_PASS — includes: 3-entry xid-aware OMAP lookup, non-contiguous kvoff.v, FSTREE-root validation, undersized 2-byte TOC rejection, Fletcher-64 sealed blocks",
+    "real_fixture": "both APSB eras still resolve 1028 -> 51206 (level 2 FSTREE root, footer bt_flags=66 node_size=4096) with checksum + subtype validation active"
+  },
+  "date": "2026-09-27 17:19:20"
+}
