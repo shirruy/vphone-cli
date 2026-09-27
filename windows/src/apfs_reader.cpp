@@ -428,6 +428,11 @@ constexpr std::uint16_t kXfBlobHeaderSize = 4;
 constexpr std::uint16_t kXFieldMetaSize = 4;
 // Decmpfs PLAIN_ATTR marker byte (apfs-fuse Decmpfs.cpp assert).
 constexpr std::uint8_t kDecmpfsPlainMarker = 0xCC;
+// Decmpfs magic signature ("cmpf").
+constexpr std::uint32_t kDecmpfsSignature = 0x636D7066u;
+// XATTR storage mode flags.
+constexpr std::uint16_t kXattrDataStream = 0x0001;
+constexpr std::uint16_t kXattrDataEmbedded = 0x0002;
 // Decmpfs header: signature u32 + algo u32 + logical_size u64 = 16.
 constexpr std::uint16_t kDecmpfsHeaderSize = 16;
 // XATTR name "com.apple.decmpfs" = 17 chars + NUL = 18.
@@ -1043,6 +1048,7 @@ bool fstree_read_plist_file(
         bool compressed = false;
         std::uint64_t dstream_size = 0;
         bool has_dstream = false;
+        std::string parse_error;
     } ino;
 
     bool inode_ok = false;
@@ -1091,7 +1097,9 @@ bool fstree_read_plist_file(
 
                 // Metadata array must fit within the inode value.
                 if (meta_end > rec.value_len) {
-                    return true; // malformed xfield metadata bounds
+                    // Fail closed for the selected target inode.
+                    ino.parse_error = "xfield metadata bounds exceeded";
+                    return false;
                 }
 
                     // Values start after all metadata entries.
@@ -1112,7 +1120,8 @@ bool fstree_read_plist_file(
                             (static_cast<std::uint64_t>(x_size) + 7) &
                             ~static_cast<std::uint64_t>(7);
                         if (val_off + padded > rec.value_len) {
-                            return true; // malformed value bounds
+                            ino.parse_error = "xfield value bounds exceeded";
+                            return false;
                         }
 
                         if (x_type == kInoExtTypeDstream &&
@@ -1121,6 +1130,11 @@ bool fstree_read_plist_file(
                             ino.has_dstream = true;
                             ino.dstream_size =
                                 read_le64(rec.value + val_off);
+                        } else if (x_type == kInoExtTypeDstream &&
+                                   x_size < kDstreamSize) {
+                            ino.parse_error =
+                                "DSTREAM xfield value too short";
+                            return false;
                         }
 
                         val_off += padded;
@@ -1138,6 +1152,11 @@ bool fstree_read_plist_file(
                 error
             )) {
             continue; // try next candidate
+        }
+
+        if (!ino.parse_error.empty()) {
+            // Malformed xfields on the target inode: fail closed.
+            continue;
         }
 
         if (!ino.found) {
@@ -1220,6 +1239,21 @@ bool fstree_read_plist_file(
                 dcs.signature = read_le32(xd);
                 dcs.algo = read_le32(xd + 4);
                 dcs.logical_size = read_le64(xd + 8);
+
+                // Enforce XATTR storage mode: only DATA_EMBEDDED for
+                // the algo-9 inline proof. Reject DATA_STREAM and
+                // ambiguous modes before interpreting inline xdata.
+                if (dcs.xattr_flags & kXattrDataStream) {
+                    return true; // dstream-backed; not supported here
+                }
+                if (!(dcs.xattr_flags & kXattrDataEmbedded)) {
+                    return true; // no embedded data; reject
+                }
+
+                // Enforce decmpfs magic signature.
+                if (dcs.signature != kDecmpfsSignature) {
+                    return true; // not a decmpfs record
+                }
 
                 // Only algo 9 (PLAIN_ATTR) is proven for this gate.
                 if (dcs.algo == 9) {

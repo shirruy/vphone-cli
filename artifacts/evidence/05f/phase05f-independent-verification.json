@@ -1,0 +1,33 @@
+{
+  "item_4_pending": "18 synthetic regression cases remain",
+  "date": "2026-09-27 19:44:43",
+  "independent_verification": {
+    "json_parse_proof": "PowerShell ConvertFrom-Json: PASS",
+    "cli_sha256": "a5ff5c5e0b656c51befcae503d0ba878ff41a348b3b19dcfd01877a09e41b2eb",
+    "hash_match": "ALL THREE MATCH",
+    "python_sha256": "a5ff5c5e0b656c51befcae503d0ba878ff41a348b3b19dcfd01877a09e41b2eb",
+    "powershell_sha256": "a5ff5c5e0b656c51befcae503d0ba878ff41a348b3b19dcfd01877a09e41b2eb",
+    "file": "com.apple.driverkitd.plist",
+    "bytes": 721,
+    "python_plist_parse": "PASS",
+    "python_plist_keys": [
+      "EnablePressuredExit",
+      "Label",
+      "POSIXSpawnType",
+      "MachServices",
+      "EnableTransactions"
+    ]
+  },
+  "reviewer_items_applied": [
+    "Item 1: decmpfs signature 0x636D7066 enforced",
+    "Item 2: XATTR storage mode enforced (DATA_EMBEDDED only)",
+    "Item 3: inode xfield fail-closed (parse_error not silent continue)",
+    "Item 5: independent SHA-256 via Get-FileHash + Python hashlib",
+    "Item 5b: independent plist parse via Python plistlib",
+    "Item 6: JSON parse proof via ConvertFrom-Json",
+    "Item 7: --dump-plist CLI option for independent extraction"
+  ],
+  "gate": "read-only-hardening-independent-verification",
+  "phase": "05G-prep",
+  "note": "No Apple plist content committed. Temp file deleted. Only hash/metadata/keys recorded."
+}

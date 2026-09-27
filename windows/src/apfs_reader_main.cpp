@@ -45,16 +45,50 @@ std::string sha256_hex(const std::vector<std::uint8_t>& data) {
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
-        std::cerr << "usage: vphone-apfs-reader-win <raw-apfs-image>\n";
+    std::string dump_path;
+    if (argc == 4 && std::string(argv[1]) == "--dump-plist") {
+        dump_path = argv[2];
+    } else if (argc != 2) {
+        std::cerr
+            << "usage: vphone-apfs-reader-win <raw-apfs-image>\n"
+            << "       vphone-apfs-reader-win --dump-plist <path> <raw-apfs-image>\n";
         return 64;
     }
 
+    const char* image_path =
+        argc == 4 ? argv[3] : argv[1];
+
     vphone::ApfsReaderReport report;
     std::string error;
-    if (!vphone::apfs_read_container(argv[1], report, error)) {
+    if (!vphone::apfs_read_container(image_path, report, error)) {
         std::cerr << "ERROR: " << error << "\n";
         return 1;
+    }
+
+    if (!dump_path.empty() &&
+        report.plist_file.status == "READ_OK" &&
+        !report.plist_file.bytes.empty()) {
+        HANDLE f = CreateFileA(
+            dump_path.c_str(),
+            GENERIC_WRITE,
+            0,
+            nullptr,
+            CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr
+        );
+        if (f != INVALID_HANDLE_VALUE) {
+            DWORD written = 0;
+            WriteFile(
+                f,
+                report.plist_file.bytes.data(),
+                static_cast<DWORD>(
+                    report.plist_file.bytes.size()),
+                &written,
+                nullptr
+            );
+            CloseHandle(f);
+        }
     }
 
     std::cout << "{\n";
