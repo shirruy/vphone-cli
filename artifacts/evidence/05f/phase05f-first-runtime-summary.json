@@ -1,0 +1,25 @@
+{
+  "phase": "05F",
+  "milestone": "first-sptm-guest-execution",
+  "device": "iPhone15,3",
+  "board": "d74ap",
+  "chip": "t8120",
+  "build": "24A437",
+  "payload_mode": "sptm",
+  "runtime": {
+    "window_seconds": 30,
+    "classification": "PROCESS_ALIVE_NO_SERIAL_YET",
+    "serial_bytes": 0,
+    "serial_sha256": null,
+    "process_survived_window": true,
+    "exit_code": -1
+  },
+  "claims": {
+    "payload_admission": "PASS",
+    "guest_execution_attempt": "PASS",
+    "serial_activity": "NOT_OBSERVED",
+    "deterministic_serial": "NOT_YET_PROVEN",
+    "apple_guest_boot": "NOT_CLAIMED",
+    "graphical_guest": "NOT_TESTED"
+  }
+}

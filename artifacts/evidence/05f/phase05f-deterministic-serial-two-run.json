@@ -1,0 +1,44 @@
+{
+  "phase": "05F",
+  "gate": "deterministic-serial-two-run",
+  "qemu_sha256": "0ee9df59373d5d4ec26001b40daa24a59e319dc83d3bba39a44e53c2d0a3957c",
+  "window_seconds": 15,
+  "run_a": {
+    "bytes": 11530,
+    "sha256": "5e42ab856a8b8278d06eaeb82e92e5fb64ab447ab695ac180b53c7773fc956a1",
+    "natural_exit": false,
+    "exit_code": -1
+  },
+  "run_b": {
+    "bytes": 11505,
+    "sha256": "caf66d63f84be5c1df37b9cfa6576fd2a66f2c6b9667a9a59002df3c761fff8c",
+    "natural_exit": false,
+    "exit_code": -1
+  },
+  "comparison": {
+    "full_hash_match": false,
+    "common_prefix_bytes": 2436,
+    "min_bytes": 11505,
+    "prefix_match": false
+  },
+  "markers": {
+    "iBoot version: qemu-sptm": {
+      "A": false,
+      "B": false
+    },
+    "AppleARMBacklight": {
+      "A": false,
+      "B": false
+    },
+    "AMFI: Booted in a VM": {
+      "A": false,
+      "B": false
+    }
+  },
+  "claims": {
+    "first_serial_activity": "OBSERVED",
+    "deterministic_serial": "NOT_PROVEN",
+    "apple_guest_boot": "NOT_CLAIMED",
+    "graphical_guest": "NOT_TESTED"
+  }
+}

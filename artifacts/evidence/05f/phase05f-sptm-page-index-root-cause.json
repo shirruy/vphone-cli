@@ -1,0 +1,46 @@
+{
+  "next_single_step": "Find why only the RAMDisk entry (the only entry whose blob_head crosses 0x1000_0000_0000 + ramdisk size into a higher address after ROUND_NEXT_PAGE) loses its upper bits — audit set_adt_mmap/push_adt_mmap call chain for the RAMDisk END_ENTRY with special attention to any 32-bit intermediate in the blob arithmetic or ADT property write. Then apply the smallest fix in qemu-sptm hw/arm/xnuboot_sptm.c, rebuild only qemu, rerun the 15s first-exception gate.",
+  "date": "2026-09-27 06:43:29",
+  "apple_guest_boot": "NOT_CLAIMED",
+  "gate": "sptm-page-index-producer-root-cause",
+  "phase": "05F",
+  "root_cause": "RAMDisk DT memory-map entry address is truncated to 32 bits (0x100076a0000 -> 0x076a0000). All other entries are absolute. This single truncated entry, plus topOfKernelData being DRAM-relative, feeds the SPTM page-index producer at 0d5700 with a coordinate that underflows against physBase=0x10000000000, producing wrapped page index 0xfc0057a8, which translates to the faulting low address 0x3ef015ea0000 family.",
+  "proven": {
+    "consumer_probe": {
+      "static_pc": "0xfffffff0270d5700",
+      "subtraction": "0x15ea0000 - 0x10000000000 = UNDERFLOW",
+      "classification": "DRAM_BASE_SUBTRACTION_UNDERFLOW_CONFIRMED",
+      "stored_w8": "0xfc0057a8",
+      "x8_from_global_92188": "0x0000010000000000",
+      "x22": "0x0000000015ea0000"
+    },
+    "pristine_boot_args": {
+      "physBase": "0x0000010000000000",
+      "phys": "0x1000769c000",
+      "topOfKernelData": "0x0000000015ea0000",
+      "virtBase": "0xfffffff000000000",
+      "memSize": "0x0000000200000000",
+      "note": "topOfKernelData is DRAM-relative offset (end of RAMDisk blob), not absolute"
+    },
+    "guest_dt_mmap_entries": {
+      "TrustCache": "0x10003390000 (ABSOLUTE OK)",
+      "BootArgs": "0x1000769c000 (ABSOLUTE OK)",
+      "DeviceTree": "0x10006fc0000 (ABSOLUTE OK)",
+      "slide": "0 (OK)",
+      "TXM_ro": "0x1000330c000 (ABSOLUTE OK)",
+      "BootKC_rx": "0x10003394000 (ABSOLUTE OK)",
+      "SPTM_rw": "0x10007100000 (ABSOLUTE OK)",
+      "SPTM_ro": "0x10007004000 (ABSOLUTE OK)",
+      "RAMDisk": "0x076a0000 (TRUNCATED — should be 0x100076a0000)"
+    },
+    "producer_probe_entry": {
+      "static_pc": "0xfffffff0270d532c",
+      "x0_virtbase": "0xfffffff000000000",
+      "x1_physbase": "0x0000010000000000",
+      "x3_memsize": "0x0000000200000000",
+      "x4_dtree": "0xfffffff0070904a0",
+      "x2_topofkerneldata": "0x0000000015ea0000",
+      "runtime_pc": "0xfffffff0070d532c"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "phase": "05F",
+  "test": "upstream-parity-runtime",
+  "target": {
+    "device": "iPhone15,3",
+    "board": "d74ap",
+    "chip": "t8120",
+    "build": "24A437"
+  },
+  "runtime": {
+    "ram": "8G",
+    "boot_args": "rd=md0 serial=3 -v -noprogress wdt=-1 wlan-olyhal-abort",
+    "serial": "mon:stdio",
+    "nographic": true,
+    "runtime_seconds": 120,
+    "survived_window": false,
+    "exit_code": 1
+  },
+  "evidence": {
+    "console_bytes": 0,
+    "console_sha256": null,
+    "stderr_bytes": 154,
+    "classification": "EARLY_RUNTIME_BOUNDARY"
+  },
+  "claims": {
+    "payload_admission": "PASS",
+    "guest_execution_attempt": "PASS",
+    "darwin_kernel_serial": "NOT_OBSERVED",
+    "deterministic_serial": "NOT_YET_PROVEN",
+    "guest_boot": "NOT_CLAIMED"
+  }
+}

@@ -1,0 +1,120 @@
+# Phase 5F Minimum Guest Payload and Serial Milestone
+
+## Certified parent
+
+Phase 5E:
+
+0520f14ea99d9619929c01ce47df9832bc9625a0
+
+## Purpose
+
+Phase 5F moves beyond payload-free Darwin initialization.
+
+The first goal is not a graphical iOS guest.
+
+The first goal is to provide the smallest authorized guest payload set
+accepted by the Darwin machine and observe the first repeatable guest
+serial activity.
+
+## Payload isolation
+
+Apple guest payloads are not stored in this Git repository.
+
+Local payload storage is intentionally external to the source tree.
+
+The runtime probe does not download, decrypt, or extract Apple firmware.
+
+## Base non-SPTM contract
+
+The pinned Darwin machine requires:
+
+- bootkc
+- device tree
+- trust cache
+- ramdisk
+
+## SPTM contract
+
+When SPTM mode is selected, the runtime contract additionally requires:
+
+- SPTM
+- TXM
+
+## Current claims
+
+Native Windows Darwin-QEMU foundation:
+
+CERTIFIED IN PHASE 5E
+
+Apple payload admission:
+
+PASS (iPhone15,4 / t8120 / iOS 27.0 / 24A437)
+
+Apple kernel execution:
+
+PASS
+
+Serial activity:
+
+PASS (first UART bytes observed; iBoot, AppleImage4, AMFI, and IOKit
+backlight output reaches the serial log)
+
+Deterministic serial:
+
+PASS (deterministic meaningful serial milestone)
+
+Two 15-second runs of the identical payload set produced an
+identical 2436-byte prefix through the iBoot, AppleImage4, AMFI,
+and backlight milestones, and both runs reached the same terminal
+ACMTRM SEP-timeout state. Full-log hashes differ only because
+boot-time IOKit log lines race position; the meaningful milestone
+sequence and terminal state are repeatable. Whole-log byte equality
+is NOT_REQUIRED / NONDETERMINISTIC_BY_DESIGN_FOR_CURRENT_GATE
+because the acceptance contract requires repeatable meaningful
+guest milestones, not identical whole logs.
+
+## AppleImage4 fileset parser defect (found and fixed in this phase)
+
+`macho_find_fileset_entry` assumed the LC_FILESET_ENTRY entry name
+always begins exactly at `(char *)(f + 1)`. The Mach-O definition
+is an `lc_str` offset (`entry_id.offset`) relative to the command
+start. The parser now validates that `entry_id.offset < cmdsize`,
+requires a NUL terminator inside `cmdsize`, and fails closed on
+malformed entries. After the fix, the misleading
+`warning: couldn't find img4 kext` disappeared from stderr with the
+known-good BootKC, and serial output grew from 11,343 to 12,806
+bytes with additional AppleLockdownMode and ACMTRM PersistentStore
+milestones.
+
+## LLP64 page-rounding defect (found and fixed in this phase)
+
+The original `include/xnu/boot/xnuboot.h` defined `ONE_KB`,
+`ONE_MB`, and `ONE_GB` with `BIT()`, which is `1UL << n` and
+therefore 32-bit on Windows LLP64. Every `ROUND_NEXT_PAGE` applied
+to a guest physical address at or above 4 GB truncated that address
+to its low 32 bits. This corrupted `boot_args.topOfKernelData`
+(0x10015ea0000 became 0x15ea0000), the RAMDisk ADT memory-map entry
+(0x100076a0000 became 0x076a0000), and the BootArgs entry size.
+The SPTM page-index producer at runtime 0xfffffff0070d5700 then
+subtracted a DRAM offset from the absolute DRAM base, underflowed,
+wrapped the stored page index to 0xfc0057a8, and faulted at runtime
+0xfffffff0070a4f74. The fix changes the three macros to `BIT_ULL`;
+it is the same defect family as the Phase 5F `BIT(36)`/`BIT(63)`
+repairs and is held in the local qemu-sptm working tree diff.
+
+Apple guest boot:
+
+NOT CLAIMED
+
+Graphical guest:
+
+NOT TESTED
+
+## Runtime progression
+
+1. Validate local payload files and hashes.
+2. Start the Darwin machine with the minimum payload contract.
+3. Capture UART output to a deterministic serial log.
+4. Classify the first guest execution boundary.
+5. After first serial activity is observed, run the same payload set twice.
+6. Compare the two runs before making a deterministic serial milestone claim.
