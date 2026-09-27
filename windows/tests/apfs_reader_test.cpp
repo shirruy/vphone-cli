@@ -384,6 +384,7 @@ int main() {
             std::uint16_t mid_level = 1;
             bool mid_level_set = false;
             std::uint16_t leaf_flags = 2;
+            bool root_flags_missing = false;
         };
 
         auto seal = [&](std::vector<std::uint8_t>& b) {
@@ -476,7 +477,8 @@ int main() {
                 put_le64(blk, 16, 3);
                 put_le32(blk, 24, 0x40000003u);
                 put_le32(blk, 28, 0x0000000Eu);
-                blk[0x20] = 0x01; blk[0x21] = 0x00; // flags: ROOT
+                blk[0x20] = cfg.root_flags_missing ? 0x00 : 0x01;
+                blk[0x21] = 0x00;
                 blk[0x22] = 0x02; blk[0x23] = 0x00; // level = 2
                 put_le32(blk, 0x24, 1);
                 put_le32(blk, 0x28, 0x00100000u);
@@ -560,7 +562,7 @@ int main() {
         auto run_case = [&](
             const std::vector<std::uint8_t>& blocks,
             const char* suffix,
-            bool expect_reached_library
+            const char* expected_error  // null = positive case
         ) -> bool {
             const std::string path =
                 std::string(temp_path) + "apfs_fstree_" + suffix + ".img";
@@ -572,17 +574,23 @@ int main() {
             std::string err;
             vphone::apfs_read_container(path, rpt, err);
             DeleteFileA(path.c_str());
-            const bool reached_library =
-                rpt.launchdaemons_status.find(
+            if (expected_error == nullptr) {
+                // Positive: the walk must reach the Library lookup
+                // boundary (System was found and decoded).
+                return rpt.launchdaemons_status.find(
                     "component not found: Library"
                 ) != std::string::npos;
-            return reached_library == expect_reached_library;
+            }
+            // Negative: the specific failure must be the rejection
+            // reason, not just any failure.
+            return rpt.launchdaemons_status.find(expected_error) !=
+                   std::string::npos;
         };
 
         // A: positive — late key accepted, virtual child resolved.
         {
             FstreeImage cfg;
-            if (!run_case(build(cfg), "latekey_ok", true)) {
+            if (!run_case(build(cfg), "latekey_ok", nullptr)) {
                 std::fprintf(
                     stderr,
                     "late-key/virtual-child positive case failed\n"
@@ -597,7 +605,11 @@ int main() {
             cfg.mid_level_set = true;
             cfg.mid_level = 0;
             cfg.mid_flags = 2; // LEAF (consistent with level 0)
-            if (!run_case(build(cfg), "levelskip", false)) {
+            if (!run_case(
+                    build(cfg),
+                    "levelskip",
+                    "FSTREE node level mismatch (expected exact descent)"
+                )) {
                 std::fprintf(stderr, "level-skip 2->0 not rejected\n");
                 return 1;
             }
@@ -607,7 +619,11 @@ int main() {
         {
             FstreeImage cfg;
             cfg.leaf_flags = 0;
-            if (!run_case(build(cfg), "noflag", false)) {
+            if (!run_case(
+                    build(cfg),
+                    "noflag",
+                    "FSTREE level-0 node missing LEAF flag"
+                )) {
                 std::fprintf(
                     stderr,
                     "level-0 without LEAF flag not rejected\n"
@@ -616,11 +632,16 @@ int main() {
             }
         }
 
-        // D: negative — interior carrying LEAF flag.
+        // D: negative — interior carrying LEAF flag (isolated: no
+        // ROOT flag so only the LEAF violation can trigger).
         {
             FstreeImage cfg;
-            cfg.mid_flags = 0x0003; // ROOT|LEAF on non-root
-            if (!run_case(build(cfg), "midleaf", false)) {
+            cfg.mid_flags = 0x0002; // LEAF only, no ROOT
+            if (!run_case(
+                    build(cfg),
+                    "midleaf",
+                    "FSTREE interior node carries LEAF flag"
+                )) {
                 std::fprintf(
                     stderr,
                     "interior with LEAF flag not rejected\n"
@@ -633,10 +654,46 @@ int main() {
         {
             FstreeImage cfg;
             cfg.mid_flags = 0x0001; // ROOT only
-            if (!run_case(build(cfg), "midroot", false)) {
+            if (!run_case(
+                    build(cfg),
+                    "midroot",
+                    "FSTREE non-root node carries ROOT flag"
+                )) {
                 std::fprintf(
                     stderr,
                     "non-root with ROOT flag not rejected\n"
+                );
+                return 1;
+            }
+        }
+
+        // F: negative — root missing ROOT flag.
+        {
+            FstreeImage cfg;
+            cfg.root_flags_missing = true;
+            // The volume-level root validation (ROOT flag + footer
+            // geometry in apfs_read_container) rejects this before the
+            // FSTREE walker runs. Assert the fail-closed outcome: no
+            // volumes (root rejected) or no path resolution.
+            const std::string path =
+                std::string(temp_path) + "apfs_fstree_norootflag.img";
+            const auto blocks = build(cfg);
+            if (!write_all(path, blocks)) {
+                std::fprintf(stderr, "write norootflag failed\n");
+                return 1;
+            }
+            vphone::ApfsReaderReport rpt;
+            std::string err;
+            vphone::apfs_read_container(path, rpt, err);
+            DeleteFileA(path.c_str());
+            const bool rejected =
+                rpt.volumes.empty() ||
+                rpt.volumes[0].root_tree_block == 0 ||
+                rpt.launchdaemons_status != "RESOLVED";
+            if (!rejected) {
+                std::fprintf(
+                    stderr,
+                    "root without ROOT flag not rejected\n"
                 );
                 return 1;
             }

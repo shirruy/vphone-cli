@@ -463,13 +463,15 @@ bool fstree_visit_dir_records(
         return false;
     }
 
-    ApfsBtreeNodeInfo node;
-    if (!decode_btree_node(buf, ctx.block_size, node, error)) {
-        return false;
-    }
     // Exact level contract: root equals root_level; every child equals
     // parent_level - 1; leaves are level 0. No level skipping.
-    if (node.level != expected_level) {
+    const std::uint16_t raw_flags =
+        static_cast<std::uint16_t>(buf[0x20]) |
+        (static_cast<std::uint16_t>(buf[0x21]) << 8);
+    const std::uint16_t raw_level =
+        static_cast<std::uint16_t>(buf[0x22]) |
+        (static_cast<std::uint16_t>(buf[0x23]) << 8);
+    if (raw_level != expected_level) {
         error = "FSTREE node level mismatch (expected exact descent)";
         return false;
     }
@@ -477,8 +479,8 @@ bool fstree_visit_dir_records(
     // Topology flag contract: root-ness and leaf-ness must match the
     // numeric level and the walk position. Value-base/footer geometry
     // depends on root-ness; record semantics depend on leaf-ness.
-    const bool has_root_flag = (node.flags & kBtreeRoot) != 0;
-    const bool has_leaf_flag = (node.flags & kBtreeLeaf) != 0;
+    const bool has_root_flag = (raw_flags & kBtreeRoot) != 0;
+    const bool has_leaf_flag = (raw_flags & kBtreeLeaf) != 0;
     if (is_root && !has_root_flag) {
         error = "FSTREE root node missing ROOT flag";
         return false;
@@ -487,12 +489,17 @@ bool fstree_visit_dir_records(
         error = "FSTREE non-root node carries ROOT flag";
         return false;
     }
-    if (node.level == 0 && !has_leaf_flag) {
+    if (raw_level == 0 && !has_leaf_flag) {
         error = "FSTREE level-0 node missing LEAF flag";
         return false;
     }
-    if (node.level > 0 && has_leaf_flag) {
+    if (raw_level > 0 && has_leaf_flag) {
         error = "FSTREE interior node carries LEAF flag";
+        return false;
+    }
+
+    ApfsBtreeNodeInfo node;
+    if (!decode_btree_node(buf, ctx.block_size, node, error)) {
         return false;
     }
 
