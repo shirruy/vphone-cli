@@ -5,6 +5,7 @@
 #include "vphone/apfs_reader.hpp"
 
 #include <cstring>
+#include <set>
 #include <limits>
 #include <sstream>
 
@@ -15,10 +16,34 @@ constexpr std::uint32_t kNxsbMagic = 0x4253584Eu; // 'NXSB'
 constexpr std::uint32_t kApsbMagic = 0x42535041u; // 'APSB'
 constexpr std::uint32_t kOmapType = 0x0000000Bu;
 constexpr std::uint32_t kBtreeType = 0x00000002u;
-// APFS object headers carry persistence/encryption flags in the upper
-// bits of o_type (e.g. OBJ_PHYSICAL = 0x40000000). The concrete object
-// kind lives in the low bits.
-constexpr std::uint32_t kObjectTypeMask = 0x0FFFFFFFu;
+// Some B-tree objects carry an additional low bit (observed type 0x3
+// on valid OMAP leaves in the real fixture); accept the base kind with
+// the optional bit set.
+constexpr std::uint32_t kBtreeTypeAlt = 0x00000003u;
+// Authoritative APFS object-type constants (apfs-fuse, linux-apfs-rw,
+// Sleuth Kit): the concrete object kind occupies the low 16 bits;
+// storage class and flags are separate bit fields above it.
+constexpr std::uint32_t kObjectTypeMask = 0x0000FFFFu;
+constexpr std::uint32_t kObjStorageTypeMask = 0xC0000000u;
+constexpr std::uint32_t kObjVirtual = 0x00000000u;
+constexpr std::uint32_t kObjPhysical = 0x40000000u;
+constexpr std::uint32_t kObjEphemeral = 0x80000000u;
+constexpr std::uint32_t kObjNoHeader = 0x20000000u;
+constexpr std::uint32_t kObjEncrypted = 0x10000000u;
+constexpr std::uint32_t kObjNonpersistent = 0x08000000u;
+
+// B-tree node flags.
+constexpr std::uint16_t kBtreeRoot = 0x0001;
+constexpr std::uint16_t kBtreeLeaf = 0x0002;
+constexpr std::uint16_t kBtreeFixedKvSize = 0x0004;
+constexpr std::uint16_t kBtreeHashed = 0x0008;
+
+// btree_node_phys_t geometry: obj_phys_t(0x20) + flags(2) + level(2)
+// + nkeys(4) + table_space(4) + free_space(4) + key_free_list(4)
+// + val_free_list(4) = 0x38-byte header; btn_data follows.
+constexpr std::size_t kBtreeNodeHeaderSize = 0x38;
+// btree_info_t footer is 0x28 bytes at the end of a root node.
+constexpr std::size_t kBtreeInfoSize = 0x28;
 
 std::uint32_t read_le32(const std::uint8_t* p) {
     return
@@ -97,6 +122,232 @@ bool valid_block_geometry(
     if (data_size > file_size) {
         error = "APFS block count exceeds file size";
         return false;
+    }
+
+    return true;
+}
+
+// Decode the btree_node_phys_t header and, for root nodes, the
+// btree_info_t footer at block_size - 0x28. Fails closed when the
+// declared geometry exceeds the block.
+bool decode_btree_node(
+    const std::vector<std::uint8_t>& block,
+    std::uint32_t block_size,
+    ApfsBtreeNodeInfo& node,
+    std::string& error
+) {
+    if (block.size() < block_size ||
+        block_size < kBtreeNodeHeaderSize + kBtreeInfoSize) {
+        error = "block too small for B-tree node geometry";
+        return false;
+    }
+
+    const std::uint8_t* p = block.data();
+
+    node.flags =
+        static_cast<std::uint16_t>(p[0x20]) |
+        (static_cast<std::uint16_t>(p[0x21]) << 8);
+    node.level =
+        static_cast<std::uint16_t>(p[0x22]) |
+        (static_cast<std::uint16_t>(p[0x23]) << 8);
+    node.nkeys = read_le32(p + 0x24);
+
+    const std::uint16_t table_off =
+        static_cast<std::uint16_t>(p[0x28]) |
+        (static_cast<std::uint16_t>(p[0x29]) << 8);
+    const std::uint16_t table_len =
+        static_cast<std::uint16_t>(p[0x2a]) |
+        (static_cast<std::uint16_t>(p[0x2b]) << 8);
+
+    // Table space is relative to btn_data (0x38-byte header end).
+    const std::uint64_t toc_start =
+        static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + table_off;
+    const std::uint64_t toc_end = toc_start + table_len;
+    if (toc_end > block_size) {
+        error = "B-tree table space exceeds block";
+        return false;
+    }
+
+    // Sanity: for variable-KV nodes each TOC entry is 8 bytes; for
+    // fixed-KV nodes the TOC is 2-byte key offsets only.
+    const std::size_t entry_size =
+        (node.flags & kBtreeFixedKvSize) ? 2 : 8;
+    if (node.nkeys > 0 &&
+        table_len < node.nkeys * entry_size) {
+        error = "B-tree table space too small for declared key count";
+        return false;
+    }
+
+    // Root nodes carry a btree_info_t footer.
+    if (node.flags & kBtreeRoot) {
+        const std::size_t footer_off = block_size - kBtreeInfoSize;
+        node.has_footer = true;
+        node.bt_flags = read_le32(p + footer_off);
+        node.node_size = read_le32(p + footer_off + 4);
+        node.key_size = read_le32(p + footer_off + 8);
+        node.val_size = read_le32(p + footer_off + 12);
+
+        if (node.node_size != block_size) {
+            error = "B-tree root footer node size does not match block size";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Walk an OMAP B-tree and collect every oid -> paddr mapping.
+// Uses the authoritative variable-KV geometry: 8-byte TOC entries at
+// 0x38 + table_space.off, key_base = 0x38 + tofs + tlen, root
+// value_base = block_size - 0x28, non-root value_base = block_size.
+bool omap_collect_entries(
+    HANDLE file,
+    std::uint32_t block_size,
+    std::uint64_t block,
+    std::uint64_t block_count,
+    bool is_root,
+    std::vector<ApfsOmapEntry>& out,
+    std::set<std::uint64_t>& visited,
+    std::string& error
+) {
+    if (block >= block_count) {
+        error = "OMAP tree references block beyond container";
+        return false;
+    }
+    if (!visited.insert(block).second) {
+        error = "OMAP tree cycle detected";
+        return false;
+    }
+
+    std::vector<std::uint8_t> buf(block_size, 0);
+    if (!read_block(file, block, block_size, buf, error)) {
+        return false;
+    }
+
+    const std::uint32_t type = read_le32(buf.data() + 24);
+    const std::uint32_t type_kind = type & kObjectTypeMask;
+    if (type_kind != kBtreeType && type_kind != kBtreeTypeAlt) {
+        error = "OMAP tree node is not a B-tree object";
+        return false;
+    }
+
+    ApfsBtreeNodeInfo node;
+    if (!decode_btree_node(buf, block_size, node, error)) {
+        return false;
+    }
+
+    const std::uint8_t* p = buf.data();
+    const bool fixed_kv = (node.flags & kBtreeFixedKvSize) != 0;
+    const std::uint16_t tofs =
+        static_cast<std::uint16_t>(p[0x28]) |
+        (static_cast<std::uint16_t>(p[0x29]) << 8);
+    const std::uint16_t tlen =
+        static_cast<std::uint16_t>(p[0x2a]) |
+        (static_cast<std::uint16_t>(p[0x2b]) << 8);
+
+    const std::uint64_t key_base =
+        static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + tofs + tlen;
+    const std::uint64_t value_base = is_root
+        ? static_cast<std::uint64_t>(block_size) - kBtreeInfoSize
+        : static_cast<std::uint64_t>(block_size);
+
+    for (std::uint32_t i = 0; i < node.nkeys; ++i) {
+        // Fixed-KV nodes use 2-byte TOC entries (key offset only);
+        // variable-KV nodes use 8-byte entries.
+        const std::size_t entry_size = fixed_kv ? 2 : 8;
+        const std::uint64_t toc =
+            static_cast<std::uint64_t>(kBtreeNodeHeaderSize) + tofs +
+            static_cast<std::uint64_t>(i) * entry_size;
+        if (toc + entry_size > block_size) {
+            error = "OMAP TOC entry exceeds block";
+            return false;
+        }
+
+        std::uint16_t key_off =
+            static_cast<std::uint16_t>(p[toc]) |
+            (static_cast<std::uint16_t>(p[toc + 1]) << 8);
+        std::uint16_t key_len = 8;
+        std::uint16_t val_off = 0;
+        std::uint16_t val_len = 16;
+
+        if (!fixed_kv) {
+            key_len =
+                static_cast<std::uint16_t>(p[toc + 2]) |
+                (static_cast<std::uint16_t>(p[toc + 3]) << 8);
+            val_off =
+                static_cast<std::uint16_t>(p[toc + 4]) |
+                (static_cast<std::uint16_t>(p[toc + 5]) << 8);
+            val_len =
+                static_cast<std::uint16_t>(p[toc + 6]) |
+                (static_cast<std::uint16_t>(p[toc + 7]) << 8);
+        } else {
+            // Fixed-KV interior nodes store 8-byte child OIDs packed
+            // downward from value_base; entry i sits at
+            // value_base - (nkeys - i) * 8. Verified against the real
+            // omap root: children 51143/51203/51205 at 0xfc0/0xfc8/0xfd0.
+            // Fixed-KV leaf values remain 16-byte records with paddr
+            // at +8.
+            val_len = node.level > 0
+                ? 8
+                : static_cast<std::uint16_t>(node.val_size
+                        ? node.val_size : 16);
+            val_off = static_cast<std::uint16_t>(
+                (node.nkeys - i) * val_len);
+        }
+
+        const std::uint64_t kp = key_base + key_off;
+        const std::uint64_t vp = value_base - val_off;
+
+        // Interior node: recurse into the child block. For fixed-KV the
+        // child address is the entry value itself (paddr), empirically
+        // an 8-byte field at the fixed value slot.
+        if (node.level > 0) {
+            if (vp + 16 > block_size) {
+                error = "OMAP interior value exceeds block";
+                return false;
+            }
+            // Fixed-KV interior children are direct 8-byte OIDs at +0;
+            // fixed-KV leaf values are 16-byte records whose paddr
+            // sits at +8 (flags u32 + size u32 + paddr u64).
+            const std::uint64_t child = fixed_kv
+                ? (node.level > 0
+                        ? read_le64(p + vp)
+                        : read_le64(p + vp + 8))
+                : read_le64(p + vp);
+            if (!omap_collect_entries(
+                    file,
+                    block_size,
+                    child,
+                    block_count,
+                    false,
+                    out,
+                    visited,
+                    error
+                )) {
+                return false;
+            }
+            continue;
+        }
+
+        if (kp + 8 > block_size || vp + 16 > block_size) {
+            error = "OMAP entry exceeds block bounds";
+            return false;
+        }
+
+        ApfsOmapEntry entry;
+        entry.oid = read_le64(p + kp);
+        // Fixed-KV leaf values are 16-byte records:
+        // flags u32 + size u32 + paddr u64 (paddr at +8).
+        if (fixed_kv) {
+            entry.flags = read_le32(p + vp);
+            entry.size = read_le32(p + vp + 4);
+            entry.paddr = read_le64(p + vp + 8);
+        } else {
+            entry.paddr = read_le64(p + vp);
+            entry.size = read_le32(p + vp + 8);
+            entry.flags = read_le32(p + vp + 12);
+        }
+        out.push_back(entry);
     }
 
     return true;
@@ -197,12 +448,16 @@ bool apfs_read_container(
             volume.apsb_oid = read_le64(block.data() + 8);
             volume.xid = read_le64(block.data() + 16);
 
-            // apfs_omap_oid / apfs_root_tree_oid: observed at +0x80/+0x90.
+            // Authoritative APSB offsets (apfs-fuse, linux-apfs-rw,
+            // Sleuth Kit): omap @0x80, root_tree @0x88, extentref @0x90,
+            // snap_meta_tree @0x98. The previous revision read the
+            // extentref tree oid at +0x90 and mislabeled it the catalog
+            // root; +0x88 is the real apfs_root_tree_oid.
             const std::uint64_t omap_block = read_le64(block.data() + 0x80);
-            const std::uint64_t root_block = read_le64(block.data() + 0x90);
+            volume.root_tree_oid = read_le64(block.data() + 0x88);
+            volume.extentref_tree_oid = read_le64(block.data() + 0x90);
 
-            if (omap_block >= report.container.block_count ||
-                root_block >= report.container.block_count) {
+            if (omap_block >= report.container.block_count) {
                 continue;
             }
 
@@ -225,27 +480,105 @@ bool apfs_read_container(
                 continue;
             }
 
+            // omap_phys_t: om_tree_oid at +0x30 (after obj header +
+            // flags/snap_count/tree_type/snapshot_tree_type).
+            const std::uint64_t om_tree_oid =
+                read_le64(omap_block_buf.data() + 0x30);
+
             std::vector<std::uint8_t> root_block_buf(
                 report.container.block_size,
                 0
             );
-            if (!read_block(
-                    file,
-                    root_block,
-                    report.container.block_size,
-                    root_block_buf,
-                    error
-                )) {
-                break;
+
+            // Resolve the virtual root_tree_oid through the OMAP.
+            // If the OMAP walk yields the oid, use its paddr as the
+            // physical FSTREE root; otherwise fall back to treating the
+            // value as a physical block only when storage type is
+            // provably physical.
+            std::vector<ApfsOmapEntry> omap_entries;
+            std::set<std::uint64_t> visited;
+            std::uint64_t resolved_root_block = 0;
+            bool root_resolved = false;
+
+            if (om_tree_oid > 0 && om_tree_oid < report.container.block_count) {
+                std::string omap_error;
+                if (omap_collect_entries(
+                        file,
+                        report.container.block_size,
+                        om_tree_oid,
+                        report.container.block_count,
+                        true,
+                        omap_entries,
+                        visited,
+                        omap_error
+                    )) {
+                    for (const auto& e : omap_entries) {
+                        if (e.oid == volume.root_tree_oid &&
+                            e.paddr < report.container.block_count) {
+                            resolved_root_block = e.paddr;
+                            root_resolved = true;
+                            break;
+                        }
+                    }
+                }
             }
 
-            if ((read_le32(root_block_buf.data() + 24) & kObjectTypeMask)
-                    != kBtreeType) {
+            if (root_resolved) {
+                if (!read_block(
+                        file,
+                        resolved_root_block,
+                        report.container.block_size,
+                        root_block_buf,
+                        error
+                    )) {
+                    break;
+                }
+
+                if ((read_le32(root_block_buf.data() + 24) & kObjectTypeMask)
+                        != kBtreeType) {
+                    continue;
+                }
+            } else {
+                // OMAP did not resolve the oid; keep the raw oid in the
+                // report and skip B-tree validation rather than guessing.
+                volume.omap_block = omap_block;
+                volume.root_tree_block = 0;
+
+                if (0x2C0 + 256 <= block.size()) {
+                    const char* name =
+                        reinterpret_cast<const char*>(block.data() + 0x2C0);
+                    const std::size_t max_len = strnlen(name, 256);
+                    bool printable = max_len > 0;
+                    for (std::size_t i = 0; i < max_len; ++i) {
+                        const std::uint8_t ch =
+                            static_cast<std::uint8_t>(name[i]);
+                        if (ch < 0x20 || ch > 0x7e) {
+                            printable = false;
+                            break;
+                        }
+                    }
+                    if (printable) {
+                        volume.volume_name.assign(name, max_len);
+                    }
+                }
+
+                report.volumes.push_back(volume);
+                continue;
+            }
+
+            ApfsBtreeNodeInfo root_info;
+            if (!decode_btree_node(
+                    root_block_buf,
+                    report.container.block_size,
+                    root_info,
+                    error
+                )) {
                 continue;
             }
 
             volume.omap_block = omap_block;
-            volume.root_tree_block = root_block;
+            volume.root_tree_block = resolved_root_block;
+            volume.root_tree_info = root_info;
 
             // apfs_volname is a fixed 256-byte null-padded array in the
             // APSB; observed at offset 0x2C0 in this image family.

@@ -27,7 +27,19 @@ int main(int argc, char** argv) {
         std::cout << "      \"apsb_oid\": " << v.apsb_oid << ",\n";
         std::cout << "      \"xid\": " << v.xid << ",\n";
         std::cout << "      \"omap_block\": " << v.omap_block << ",\n";
+        std::cout << "      \"root_tree_oid\": " << v.root_tree_oid << ",\n";
+        std::cout << "      \"extentref_tree_oid\": " << v.extentref_tree_oid << ",\n";
         std::cout << "      \"root_tree_block\": " << v.root_tree_block << ",\n";
+        std::cout << "      \"root_tree\": {\n";
+        std::cout << "        \"flags\": " << v.root_tree_info.flags << ",\n";
+        std::cout << "        \"level\": " << v.root_tree_info.level << ",\n";
+        std::cout << "        \"nkeys\": " << v.root_tree_info.nkeys << ",\n";
+        std::cout << "        \"has_footer\": " << (v.root_tree_info.has_footer ? "true" : "false") << ",\n";
+        std::cout << "        \"bt_flags\": " << v.root_tree_info.bt_flags << ",\n";
+        std::cout << "        \"node_size\": " << v.root_tree_info.node_size << ",\n";
+        std::cout << "        \"key_size\": " << v.root_tree_info.key_size << ",\n";
+        std::cout << "        \"val_size\": " << v.root_tree_info.val_size << "\n";
+        std::cout << "      },\n";
         std::cout << "      \"volume_name\": \"" << v.volume_name << "\"\n";
         std::cout << "    }";
         if (i + 1 < report.volumes.size()) {

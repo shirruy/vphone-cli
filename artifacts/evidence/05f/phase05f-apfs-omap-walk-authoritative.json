@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-27 16:35:13",
+  "reviewer_corrections_applied": [
+    "APSB root_tree_oid offset 0x90 -> 0x88 (0x90 is extentref_tree_oid)",
+    "OBJECT_TYPE_MASK 0x0FFFFFFF -> 0x0000FFFF with storage flags decoded separately",
+    "btree_node_phys: 0x38-byte header, table space relative to btn_data, root footer value_base = block_size - 0x28",
+    "subtype naming corrected: 0x0e FSTREE, 0x0f BLOCKREFTREE (51196 was extentref, not catalog)"
+  ],
+  "remaining": {
+    "root_tree_oid_1028": "not present in the VOLUME omap (264 entries map file objects 1140-1254 to data blocks). Per linux-apfs-rw pattern, VIRTUAL objects resolve through the PARENT omap — the catalog root oid must be resolved through the CONTAINER omap.",
+    "container_omap": "NXSB container omap oid field not yet pinned (candidate +0xa8=1025 points at an empty block; exact nx_omap_oid offset still to decode from the authoritative NXSB layout)",
+    "synthetic_test": "PASS (APFS_READER_TEST_PASS) with corrected APSB offsets, omap tree walk, and root footer value_base"
+  },
+  "phase": "05G-prep",
+  "gate": "apfs-omap-walk-with-authoritative-layout",
+  "omap_walk_proven": {
+    "total_entries_collected": 264,
+    "root": "block 51202 (omap tree root, flags=0x5 root+fixed, level=1, nkeys=3, footer bt=0x12 ns=4096 ks=16 vs=16)",
+    "leaf_values": "16-byte records: flags u32 + size u32 + paddr u64(+8) — verified against 51143 entries (oid 1250 -> 51189, etc.)",
+    "children": "51143 (43 entries), 51203 (110 entries), 51205 (111 entries) — 8-byte child OIDs at value_base-(nkeys-i)*8, verified at 0xfc0/0xfc8/0xfd0"
+  }
+}

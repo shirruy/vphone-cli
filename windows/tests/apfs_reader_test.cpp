@@ -68,6 +68,12 @@ void make_object_header(
 int main() {
     const std::uint32_t block_size = 4096;
     const std::uint64_t block_count = 16;
+    // Synthetic layout:
+    //   block 0: NXSB
+    //   block 1: APSB (omap_oid=2, root_tree_oid=100 virtual)
+    //   block 2: OMAP (om_tree_oid=4)
+    //   block 3: catalog B-tree root (target of omap mapping)
+    //   block 4: omap B-tree (fixed-KV leaf, entry oid 100 -> paddr 3)
 
     // Build a minimal synthetic container:
     //   block 0:  NXSB (checkpoint era)
@@ -105,7 +111,8 @@ int main() {
         make_object_header(blk, 42, 3, 0x80000009);
         put_le32(blk, 32, 0x42535041u); // 'APSB'
         put_le64(blk, 0x80, 2);         // omap block
-        put_le64(blk, 0x90, 3);         // root tree block
+        put_le64(blk, 0x88, 100);       // root tree oid (virtual)
+        put_le64(blk, 0x90, 3);         // extentref tree oid
         const char* name = "testvol";
         std::memcpy(blk.data() + 0x2C0, name, std::strlen(name));
         std::memcpy(
@@ -119,6 +126,7 @@ int main() {
     {
         std::vector<std::uint8_t> blk(block_size, 0);
         make_object_header(blk, 2, 3, 0x4000000Bu);
+        put_le64(blk, 0x30, 4);         // om_tree_oid -> block 4
         std::memcpy(
             image.data() + 2 * static_cast<std::size_t>(block_size),
             blk.data(),
@@ -132,6 +140,35 @@ int main() {
         make_object_header(blk, 3, 3, 0x40000002u);
         std::memcpy(
             image.data() + 3 * static_cast<std::size_t>(block_size),
+            blk.data(),
+            block_size
+        );
+    }
+
+    // OMAP B-tree leaf at block 4: fixed-KV, 1 entry mapping
+    // oid 100 -> paddr 3.
+    {
+        std::vector<std::uint8_t> blk(block_size, 0);
+        make_object_header(blk, 4, 3, 0x40000003u);
+        // btn: flags = leaf+fixed (0x6), level=0, nkeys=1,
+        // table_space off=0 len=0x10 (1 U16 slot + slack).
+        put_le32(blk, 0x20, 0x00000006u);
+        put_le32(blk, 0x24, 1); // nkeys
+        put_le32(blk, 0x28, 0x00100000u); // tofs=0, tlen=0x10
+        // TOC entry 0: key offset 0 (2 bytes at 0x38).
+        blk[0x38] = 0x00;
+        blk[0x39] = 0x00;
+        // Key area starts at 0x38 + 0 + 0x10 = 0x48. Key: oid=100.
+        put_le64(blk, 0x48, 100);
+        // Value: fixed-KV leaf 16-byte record, paddr at +8. The walk
+        // enters via omap_collect_entries(is_root=true), so value_base
+        // is block_size - 0x28 = 0xfd8 and entry 0 sits at
+        // 0xfd8 - 1*16 = 0xfc8.
+        put_le32(blk, 0xfc8, 0);          // flags
+        put_le32(blk, 0xfc8 + 4, 4096);   // size
+        put_le64(blk, 0xfc8 + 8, 3);      // paddr
+        std::memcpy(
+            image.data() + 4 * static_cast<std::size_t>(block_size),
             blk.data(),
             block_size
         );
