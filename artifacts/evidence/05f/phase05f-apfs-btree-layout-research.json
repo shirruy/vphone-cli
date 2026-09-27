@@ -14,5 +14,10 @@
     "interior_child_pointering": "Level-1 root nkeys=7 implies 7 interior entries pointing to leaf children, but the child pointer values at candidate offsets (+0x28,+0xb0,+0xb8,+0xc0,+0xc8) do not resolve to valid B-tree leaf blocks (verified: blocks 2761/1261/459/306 are not B-tree nodes)."
   },
   "date": "2026-09-27 15:33:26",
-  "phase": "05G-prep"
+  "phase": "05G-prep",
+  "post_iteration4": {
+    "strict_btree_census": "Full-image strict scan (o_type bytes = 02 00 00 40/00 00, subtype<=0x11) found exactly 5 B-tree nodes: 1463(omap leaf,nkeys=1), 51196(catalog root,lvl=1,nkeys=7), 51202(omap tree,lvl=1,nkeys=3), 51206(sub=0xe,lvl=2,nkeys=3), 51216(omap leaf,nkeys=1)",
+    "block_51196_key_area": "Bytes 0x78-0xB0 contain six 16-byte records: 0x05BF,0x0EF2,0x4531,0x54D0,0x88C7,0xBA3B each followed by 0x20000000 flags. Hypothesized as omap-style entries, but blocks at those addresses are NOT B-tree nodes (verified zeroed/garbage), so this interpretation is also falsified.",
+    "conclusion": "Four distinct table-space interpretations tried; none yield valid children. Stopping per two-failed-workaround discipline. Awaiting reviewer btree_node_info layout (requested in iteration 4) or an authoritative APFS struct reference."
+  }
 }
