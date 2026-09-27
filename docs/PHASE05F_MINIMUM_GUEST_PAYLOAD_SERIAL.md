@@ -118,3 +118,28 @@ NOT TESTED
 4. Classify the first guest execution boundary.
 5. After first serial activity is observed, run the same payload set twice.
 6. Compare the two runs before making a deterministic serial milestone claim.
+
+## Post-closure blocker research: root shell requires a patched ramdisk
+
+The repeated terminal lines
+`ACMTRM: waitForSEPEndpoint: timed out waiting for AppleSEPManager`
+look like a device-model blocker, but an A/B experiment disproved that
+hypothesis: cherry-picking the upstream Apple AIC interrupt controller
+(bad6336) onto the pinned base changed nothing (33,052 vs 33,060
+serial bytes, identical terminal state). The upstream AIC source
+itself documents that a working AIC is not required to reach a root
+shell.
+
+The actual mechanism, per upstream darwin-vm get_files.sh, is that
+the root shell comes from a ramdisk patched on macOS: the stock
+LaunchDaemons directory is replaced with a com.jprx.bash plist, an
+iOS sysroot is extracted, every binary is ad-hoc codesigned, and a
+custom trustcache is rebuilt from the cdhashes. The Windows fixture
+uses the raw unpatched ramdisk, so iOS correctly runs the restore
+daemon (121 launchd messages, restore checkpoints, userspace sysctl)
+instead of the custom shell. Reaching a guest root shell on Windows
+therefore requires porting that ramdisk patch pipeline (APFS
+LaunchDaemons replacement, ad-hoc signing, trustcache rebuild) or
+supplying a pre-patched ramdisk. The AIC cherry-pick is retained
+because real interrupt semantics are required for the non-primary
+qemuport UARTs.

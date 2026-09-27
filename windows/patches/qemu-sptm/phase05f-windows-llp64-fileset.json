@@ -9,7 +9,7 @@
   ],
   "patch": "phase05f-windows-llp64-fileset.patch",
   "includes_phase05e_portability": true,
-  "sha256": "96d268b96d89985e6e42315db930d2ecd71b35f52acd4d85147fffde28638655",
+  "sha256": "a7947a4528cd605d791af43cfd405f076938075ddab8513278f73c406c09c810",
   "phase": "05F",
   "verified_by": [
     "test-xnu-llp64: 3/3 PASS on Windows MSYS2 MinGW64",
@@ -17,5 +17,9 @@
     "first-exception gate: no early Data Abort, 20+s exception-free",
     "serial gate: 12,806 bytes UART, img4 warning gone",
     "two-run gate: 2,436-byte identical prefix, same terminal state"
-  ]
+  ],
+  "aic_cherry_pick": {
+    "reason": "Real AIC v1-v3 interrupt semantics replacing zeroed stub; needed for non-primary qemuport UARTs. A/B-proven NOT to be the SEP/root-shell blocker.",
+    "source": "bad6336fb24211f8c4e8e946c259bd5b12417340"
+  }
 }
