@@ -426,6 +426,12 @@ constexpr std::uint64_t kApfsTypeXattr = 4;
 constexpr std::uint16_t kXfBlobHeaderSize = 4;
 // apfs_x_field: x_type u8 + x_flags u8 + x_size u16 = 4-byte metadata.
 constexpr std::uint16_t kXFieldMetaSize = 4;
+// Decmpfs PLAIN_ATTR marker byte (apfs-fuse Decmpfs.cpp assert).
+constexpr std::uint8_t kDecmpfsPlainMarker = 0xCC;
+// Decmpfs header: signature u32 + algo u32 + logical_size u64 = 16.
+constexpr std::uint16_t kDecmpfsHeaderSize = 16;
+// XATTR name "com.apple.decmpfs" = 17 chars + NUL = 18.
+constexpr std::uint16_t kDecmpfsNameLen = 18;
 
 constexpr std::uint64_t kExtentLenMask = 0x00FFFFFFFFFFFFFFull;
 // APSB apfs_incompatible_features @ +0x38.
@@ -1083,7 +1089,11 @@ bool fstree_read_plist_file(
                     static_cast<std::uint64_t>(num_exts) *
                         kXFieldMetaSize;
 
-                if (meta_end <= rec.value_len) {
+                // Metadata array must fit within the inode value.
+                if (meta_end > rec.value_len) {
+                    return true; // malformed xfield metadata bounds
+                }
+
                     // Values start after all metadata entries.
                     std::uint64_t val_off = meta_end;
 
@@ -1097,19 +1107,24 @@ bool fstree_read_plist_file(
                             static_cast<std::uint16_t>(meta[2]) |
                             (static_cast<std::uint16_t>(meta[3]) << 8);
 
+                        // Padded value size must fit remaining record.
+                        const std::uint64_t padded =
+                            (static_cast<std::uint64_t>(x_size) + 7) &
+                            ~static_cast<std::uint64_t>(7);
+                        if (val_off + padded > rec.value_len) {
+                            return true; // malformed value bounds
+                        }
+
                         if (x_type == kInoExtTypeDstream &&
                             x_size >= kDstreamSize &&
-                            val_off + 8 <= rec.value_len) {
+                            val_off + kDstreamSize <= rec.value_len) {
                             ino.has_dstream = true;
                             ino.dstream_size =
                                 read_le64(rec.value + val_off);
                         }
 
-                        // Advance by round_up(x_size, 8).
-                        val_off +=
-                            (x_size + 7) & ~static_cast<std::uint16_t>(7);
+                        val_off += padded;
                     }
-                }
             }
             return true;
         };
@@ -1134,7 +1149,8 @@ bool fstree_read_plist_file(
         if ((ino.mode & 0xF000) != 0x8000) {            continue;
         }
         if (ino.compressed) {
-            // Inspect the com.apple.decmpfs XATTR for this candidate.
+            // Resolve com.apple.decmpfs XATTR for this candidate,
+            // persist identity, extract PLAIN_ATTR bytes.
             struct DecmpfsInfo {
                 bool found = false;
                 std::uint16_t xattr_flags = 0;
@@ -1142,6 +1158,7 @@ bool fstree_read_plist_file(
                 std::uint32_t algo = 0;
                 std::uint64_t logical_size = 0;
                 std::vector<std::uint8_t> xdata;
+                bool traversal_ok = false;
             } dcs;
             
             ctx.visited.clear();
@@ -1152,7 +1169,9 @@ bool fstree_read_plist_file(
                     rec.obj_id != cand.cnid) {
                     return true;
                 }
-                if (rec.key_extra_len < 2) {
+                // Exact XATTR key validation: name_len >= 1,
+                // key_extra_len == 2 + name_len, final name byte NUL.
+                if (rec.key_extra_len < 3) {
                     return true;
                 }
                 const std::uint16_t name_len =
@@ -1160,23 +1179,27 @@ bool fstree_read_plist_file(
                         rec.key_extra[0]) |
                     (static_cast<std::uint16_t>(
                          rec.key_extra[1]) << 8);
-                if (name_len != 18 ||
-                    rec.key_extra_len < 2 + 18) {
+                if (name_len != kDecmpfsNameLen ||
+                    rec.key_extra_len != 2 + kDecmpfsNameLen) {
                     return true;
                 }
+                // Final name byte must be NUL (name_len includes it).
+                if (rec.key_extra[2 + kDecmpfsNameLen - 1] != 0) {
+                    return true;
+                }
+                // Logical name = name_len - 1 = 17 chars.
                 if (std::memcmp(
                         rec.key_extra + 2,
                         "com.apple.decmpfs",
-                        18) != 0 ||
-                    (rec.key_extra_len > 2 + 18 &&
-                     rec.key_extra[2 + 18] != '\0')) {
+                        kDecmpfsNameLen - 1) != 0) {
                     return true;
                 }
 
+                // Full XATTR value validation before accepting.
+                // apfs_xattr_val: flags u16 + xdata_len u16 + xdata[].
                 if (rec.value_len < 4) {
                     return true;
                 }
-                dcs.found = true;
                 dcs.xattr_flags =
                     static_cast<std::uint16_t>(rec.value[0]) |
                     (static_cast<std::uint16_t>(rec.value[1]) << 8);
@@ -1184,17 +1207,42 @@ bool fstree_read_plist_file(
                     static_cast<std::uint16_t>(rec.value[2]) |
                     (static_cast<std::uint16_t>(rec.value[3]) << 8);
 
-                if (xdata_len >= 16 &&
-                    4 + xdata_len <= rec.value_len) {
-                    dcs.signature = read_le32(rec.value + 4);
-                    dcs.algo = read_le32(rec.value + 8);
-                    dcs.logical_size = read_le64(rec.value + 12);
+                // xdata_len must exactly fill the remaining value.
+                if (xdata_len != rec.value_len - 4) {
+                    return true;
                 }
+                // Algo 9 proof requires header + marker + >=1 byte.
+                if (xdata_len < kDecmpfsHeaderSize + 1 + 1) {
+                    return true;
+                }
+
+                const std::uint8_t* xd = rec.value + 4;
+                dcs.signature = read_le32(xd);
+                dcs.algo = read_le32(xd + 4);
+                dcs.logical_size = read_le64(xd + 8);
+
+                // Only algo 9 (PLAIN_ATTR) is proven for this gate.
+                if (dcs.algo == 9) {
+                    // Verify marker byte at xdata[16].
+                    if (xd[kDecmpfsHeaderSize] != kDecmpfsPlainMarker) {
+                        return true;
+                    }
+                    // logical_size == xdata_len - 17 (header + marker).
+                    if (dcs.logical_size !=
+                        xdata_len - kDecmpfsHeaderSize - 1) {
+                        return true;
+                    }
+                    dcs.xdata.assign(
+                        xd + kDecmpfsHeaderSize + 1,
+                        xd + kDecmpfsHeaderSize + 1 + dcs.logical_size
+                    );
+                }
+                dcs.found = true;
                 return true;
             };
 
             std::string xa_error;
-            fstree_visit_raw_records(
+            dcs.traversal_ok = fstree_visit_raw_records(
                 ctx,
                 root_oid,
                 root_level,
@@ -1203,7 +1251,13 @@ bool fstree_read_plist_file(
                 xa_error
             );
 
-            if (dcs.found) {
+            if (dcs.traversal_ok && dcs.found && !dcs.xdata.empty()) {
+                // Persist the deterministic candidate identity.
+                result.name = cand.name;
+                result.drec_cnid = cand.cnid;
+                result.inode_cnid = cand.cnid;
+                result.private_id = ino.private_id;
+                result.file_size = dcs.logical_size;
                 result.decmpfs_found = true;
                 result.xattr_flags = dcs.xattr_flags;
                 result.decmpfs_signature = dcs.signature;
@@ -1213,6 +1267,23 @@ bool fstree_read_plist_file(
                     (dcs.xattr_flags & 0x2) != 0;
                 result.needs_resource_fork =
                     (dcs.algo % 2) == 0;
+                // PLAIN_ATTR: xdata bytes ARE the file content.
+                result.bytes = std::move(dcs.xdata);
+
+                // Format detection on extracted bytes.
+                if (result.bytes.size() >= 8 &&
+                    std::memcmp(
+                        result.bytes.data(), "bplist00", 8) == 0) {
+                    result.format = "binary-plist";
+                } else if (result.bytes.size() >= 5 &&
+                           std::memcmp(
+                               result.bytes.data(), "<?xml", 5) == 0) {
+                    result.format = "xml-plist";
+                } else {
+                    result.format = "unknown";
+                }
+                result.status = "READ_OK";
+                return true;
             }
             continue; // skip compressed for byte-read gate
         }

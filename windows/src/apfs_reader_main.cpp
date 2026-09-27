@@ -89,10 +89,12 @@ int main(int argc, char** argv) {
         std::cout << "\n";
     }
     std::cout << "  ]\n";
+    std::cout << "  ,";
     std::cout << "  \"launchdaemons\": {\n";
     std::cout << "    \"status\": \"" << report.launchdaemons_status << "\",\n";
     std::cout << "    \"cnid\": " << report.launchdaemons_cnid << "\n";
     std::cout << "  }\n";
+    std::cout << "  ,";
     std::cout << "  \"plist_file\": {\n";
     std::cout << "    \"status\": \"" << report.plist_file.status << "\",\n";
     std::cout << "    \"name\": \"" << report.plist_file.name << "\",\n";
