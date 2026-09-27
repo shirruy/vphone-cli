@@ -1,0 +1,221 @@
+name: Windows Port Phase 5E
+
+on:
+  push:
+    branches:
+      - phase/05e-qemu-sptm-windows-feasibility
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qemu-sptm-native-windows:
+    runs-on: windows-latest
+
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout exact VPhone commit
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup pinned MSYS2
+        uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            bison
+            diffutils
+            flex
+            git
+            grep
+            make
+            sed
+            mingw-w64-x86_64-binutils
+            mingw-w64-x86_64-ca-certificates
+            mingw-w64-x86_64-ccache
+            mingw-w64-x86_64-curl-winssl
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-glib2
+            mingw-w64-x86_64-libnfs
+            mingw-w64-x86_64-libssh
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-pixman
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python-certifi
+            mingw-w64-x86_64-python-setuptools
+            mingw-w64-x86_64-python-wheel
+            mingw-w64-x86_64-zstd
+
+      - name: Fetch exact qemu-sptm source
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          ROOT="$(cygpath -u "$GITHUB_WORKSPACE")"
+          WORK="$ROOT/build/phase05e-ci"
+          QEMU="$WORK/qemu-sptm"
+
+          mkdir -p "$WORK"
+
+          git init "$QEMU"
+          cd "$QEMU"
+
+          git remote add origin https://github.com/jprx/qemu-sptm.git
+
+          git \
+            -c core.longpaths=true \
+            fetch \
+            --depth 1 \
+            origin \
+            2867d847d3471560e773120ee50c42dbcbb6d60b
+
+          git checkout \
+            --detach \
+            FETCH_HEAD
+
+          git \
+            -c core.longpaths=true \
+            submodule \
+            update \
+            --init \
+            --recursive
+
+          ACTUAL="$(git rev-parse HEAD)"
+
+          test "$ACTUAL" = \
+            "2867d847d3471560e773120ee50c42dbcbb6d60b"
+
+      - name: Apply sealed Windows portability patch
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          ROOT="$(cygpath -u "$GITHUB_WORKSPACE")"
+          QEMU="$ROOT/build/phase05e-ci/qemu-sptm"
+          PATCH="$ROOT/windows/patches/qemu-sptm/phase05e-windows-portability.patch"
+
+          cd "$QEMU"
+
+          git apply \
+            --check \
+            "$PATCH"
+
+          git apply \
+            "$PATCH"
+
+          git diff \
+            --check \
+            -- \
+            hw/arm/apple_dtree.c \
+            hw/arm/apple_regs.c \
+            hw/arm/darwin.c \
+            hw/arm/xnuboot_sptm.c
+
+      - name: Configure and build native Windows qemu-sptm
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          ROOT="$(cygpath -u "$GITHUB_WORKSPACE")"
+          QEMU="$ROOT/build/phase05e-ci/qemu-sptm"
+          BUILD="$QEMU/build-win"
+
+          export PATH="/mingw64/bin:/usr/bin:$PATH"
+
+          rm -rf "$BUILD"
+          mkdir -p "$BUILD"
+
+          cd "$BUILD"
+
+          ../configure \
+            --target-list=aarch64-softmmu \
+            --disable-docs \
+            --disable-rust \
+            --disable-werror \
+            --disable-plugins
+
+          make -j"$(nproc)"
+
+          test -f ./qemu-system-aarch64.exe
+
+          ./qemu-system-aarch64.exe --version
+
+      - name: Verify Darwin machine registration
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          ROOT="$(cygpath -u "$GITHUB_WORKSPACE")"
+          BUILD="$ROOT/build/phase05e-ci/qemu-sptm/build-win"
+
+          export PATH="/mingw64/bin:/usr/bin:$PATH"
+
+          cd "$BUILD"
+
+          ./qemu-system-aarch64.exe \
+            -machine help \
+            | tee machine-help.txt
+
+          grep -Eq \
+            '^[[:space:]]*darwin([[:space:]]|$)' \
+            machine-help.txt
+
+      - name: Verify payload-free Darwin fail-closed boundary
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          ROOT="$(cygpath -u "$GITHUB_WORKSPACE")"
+          BUILD="$ROOT/build/phase05e-ci/qemu-sptm/build-win"
+
+          export PATH="/mingw64/bin:/usr/bin:$PATH"
+
+          cd "$BUILD"
+
+          set +e
+
+          ./qemu-system-aarch64.exe \
+            -machine darwin \
+            -accel tcg \
+            -display none \
+            -nodefaults \
+            -serial none \
+            -monitor none \
+            > phase05e-probe.stdout.log \
+            2> phase05e-probe.stderr.log
+
+          CODE="$?"
+
+          set -e
+
+          if [[ "$CODE" -eq 0 ]]; then
+            echo "ERROR: payload-free Darwin probe unexpectedly returned zero"
+            exit 91
+          fi
+
+          grep -F \
+            "error opening XNU kernel" \
+            phase05e-probe.stderr.log
+
+          echo "$CODE" \
+            > phase05e-probe.exit-code.txt
+
+          echo "PHASE05E_DARWIN_PAYLOAD_FREE_PASS"
+
+      - name: Upload Phase 5E CI evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase05e-qemu-sptm-${{ github.sha }}
+          path: |
+            build/phase05e-ci/qemu-sptm/build-win/machine-help.txt
+            build/phase05e-ci/qemu-sptm/build-win/phase05e-probe.stdout.log
+            build/phase05e-ci/qemu-sptm/build-win/phase05e-probe.stderr.log
+            build/phase05e-ci/qemu-sptm/build-win/phase05e-probe.exit-code.txt
+          if-no-files-found: error

@@ -1,0 +1,148 @@
+diff --git a/hw/arm/apple_dtree.c b/hw/arm/apple_dtree.c
+index 3c26a80..57f2ddb 100644
+--- a/hw/arm/apple_dtree.c
++++ b/hw/arm/apple_dtree.c
+@@ -69,18 +69,18 @@ size_t adt_get_prop_len(struct dtree_node *n, const char *prop_name) {
+ }
+ 
+ struct dtree_node *adt_find_node(struct dtree_node *root, const char *path) {
+-    char *token, *string, *tofree;
+-    struct dtree_node *cur_node, *cur_child;
++    gchar **tokens;
++    struct dtree_node *cur_node;
+ 
+-    tofree = string = strdup(path);
++    tokens = g_strsplit(path, kDTPathNameSeparator, -1);
+     cur_node = root;
+ 
+-    while (NULL != (token = strsep(&string, kDTPathNameSeparator))) {
++    for (gchar **token = tokens; *token != NULL; token++) {
+         bool found_it = false;
++        struct dtree_node *cur_child = first_child(cur_node);
+ 
+-        cur_child = first_child(cur_node);
+         for (size_t i = 0; i < cur_node->nChildren; i++) {
+-            if (0 == strcmp(adt_get_prop_val(cur_child, "name"), token)) {
++            if (0 == strcmp(adt_get_prop_val(cur_child, "name"), *token)) {
+                 cur_node = cur_child;
+                 found_it = true;
+                 break;
+@@ -90,11 +90,10 @@ struct dtree_node *adt_find_node(struct dtree_node *root, const char *path) {
+ 
+         if (!found_it) {
+             cur_node = NULL;
+-            goto out;
++            break;
+         }
+     }
+ 
+-out:
+-    free(tofree);
++    g_strfreev(tokens);
+     return cur_node;
+ }
+diff --git a/hw/arm/apple_regs.c b/hw/arm/apple_regs.c
+index 35c4460..2733ee2 100644
+--- a/hw/arm/apple_regs.c
++++ b/hw/arm/apple_regs.c
+@@ -23,7 +23,7 @@ void log_write(const char *, CPUARMState *, const ARMCPRegInfo *, u64 val);
+ 
+ #define APPLE_STATE(env) ((apple_state_t*)env->apple_state)
+ 
+-#define TAG_OFFSET_EL2_LOCK            BIT(63)
++#define TAG_OFFSET_EL2_LOCK            BIT_ULL(63)
+ 
+ #include "apple_regs_autogen.h"
+ 
+diff --git a/hw/arm/darwin.c b/hw/arm/darwin.c
+index 51d240b..6e86e77 100644
+--- a/hw/arm/darwin.c
++++ b/hw/arm/darwin.c
+@@ -83,27 +83,31 @@ static void do_darwin_reset(void *state) {
+ }
+ 
+ static mmap_file_t check_and_open(const char *path, const char *errmsg) {
+-    int fd;
+-    struct stat stats;
+-    void *mapping;
++    gchar *contents = NULL;
++    gsize length = 0;
++    GError *gerr = NULL;
+ 
+-    if (!path) goto fail;
+-
+-    fd = open(path, O_RDONLY | O_BINARY);
+-    if (fd < 0) goto fail;
++    if (!path) {
++        goto fail;
++    }
+ 
+-    fstat(fd, &stats);
+-    mapping = mmap(NULL, stats.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+-    if (MAP_FAILED == mapping) goto fail;
++    if (!g_file_get_contents(path, &contents, &length, &gerr)) {
++        if (gerr) {
++            fprintf(stderr, "error reading %s: %s\n", path, gerr->message);
++            g_clear_error(&gerr);
++        }
++        goto fail;
++    }
+ 
+-    if (is_im4p(mapping)) {
++    if (is_im4p(contents)) {
+         fprintf(stderr, "error: %s is an im4p, you need to unwrap it (eg. ipsw img4 im4p extract)\n", path);
++        g_free(contents);
+         goto fail;
+     }
+ 
+     return (mmap_file_t){
+-        .buf = mapping,
+-        .len = stats.st_size,
++        .buf = contents,
++        .len = length,
+     };
+ 
+ fail:
+@@ -286,13 +290,13 @@ static void darwin_init(MachineState *ms) {
+     qdev_connect_gpio_out(cpudev, GTIMER_HYPVIRT, qdev_get_gpio_in(cpudev, ARM_CPU_FIQ));
+ 
+     qemu_register_reset(do_darwin_reset, s);
+-    munmap(info->bootkc_f.buf, info->bootkc_f.len);
+-    munmap(info->dtree_f.buf, info->dtree_f.len);
+-    munmap(info->tc_f.buf, info->tc_f.len);
+-    munmap(info->ramdisk_f.buf, info->ramdisk_f.len);
++    g_free(info->bootkc_f.buf);
++    g_free(info->dtree_f.buf);
++    g_free(info->tc_f.buf);
++    g_free(info->ramdisk_f.buf);
+     if (info->sptm) {
+-        munmap(info->sptm_f.buf, info->sptm_f.len);
+-        munmap(info->txm_f.buf, info->txm_f.len);
++        g_free(info->sptm_f.buf);
++        g_free(info->txm_f.buf);
+     }
+ }
+ 
+diff --git a/hw/arm/xnuboot_sptm.c b/hw/arm/xnuboot_sptm.c
+index b96d421..3a82742 100644
+--- a/hw/arm/xnuboot_sptm.c
++++ b/hw/arm/xnuboot_sptm.c
+@@ -3,7 +3,6 @@
+ #include "hw/arm/machines-qom.h"
+ #include "system/address-spaces.h"
+ #include "cpu.h"
+-#include <sys/mman.h>
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ #include <inttypes.h>
+@@ -30,8 +29,8 @@
+ // BKC actual virt addr = sptm.virtlo + 2 * SPTM_EXPECTED_STRIDE
+ #define SPTM_EXPECTED_STRIDE    0x10000000
+ 
+-#define GET_L2_PT_INDEX(a)      (( ((a)) & ( (BIT(36)-1)) ))
+-#define STRIP_L2_PT_INDEX(a)    (( ((a)) & (~(BIT(36)-1)) ))
++#define GET_L2_PT_INDEX(a)      (( ((a)) & ( (BIT_ULL(36)-1)) ))
++#define STRIP_L2_PT_INDEX(a)    (( ((a)) & (~(BIT_ULL(36)-1)) ))
+ 
+ static void alloc_ram(Object *cpuobj, hwaddr base, size_t len) {
+     MemoryRegion *ram_main = get_system_memory();

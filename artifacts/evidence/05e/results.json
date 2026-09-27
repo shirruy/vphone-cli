@@ -1,0 +1,21 @@
+{
+  "phase": "05E",
+  "state": "PASS",
+  "assertions": {
+    "qemu_sptm_windows_source_build": "PASS",
+    "four_file_portability_patch": "PASS",
+    "native_windows_executable": "PASS",
+    "darwin_machine_registered": "PASS",
+    "darwin_machine_selection": "PASS",
+    "darwin_initialization_entered": "PASS",
+    "xnu_kernel_boundary_reached": "PASS",
+    "payload_free_fail_closed": "PASS"
+  },
+  "explicit_non_claims": {
+    "apple_firmware_preparation": "NOT_TESTED",
+    "apple_kernel_execution": "NOT_TESTED",
+    "apple_guest_boot": "NOT_TESTED",
+    "serial_boot_milestone": "NOT_TESTED",
+    "graphical_guest": "NOT_TESTED"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "os": "Microsoft Windows 11 Pro",
+  "os_version": "10.0.26200",
+  "architecture": "AMD64",
+  "cpu": "AMD Ryzen 5 9600X 6-Core Processor             ",
+  "powershell": "7.6.6",
+  "msys2": "C:\\msys64",
+  "gcc": "gcc.exe (Rev4, Built by MSYS2 project) 16.2.0",
+  "ninja": "1.13.2",
+  "vphone_branch": "phase/05e-qemu-sptm-windows-feasibility",
+  "vphone_head": "a35190c76e1371b098cfcb403e536a98658becb9",
+  "certified_phase05d": "a35190c76e1371b098cfcb403e536a98658becb9",
+  "darwin_vm_commit": "ffdf01874f5cc9cdfbfc7a3d117d4aef1e49b4d9",
+  "qemu_sptm_commit": "2867d847d3471560e773120ee50c42dbcbb6d60b",
+  "qemu_version": "QEMU emulator version 11.1.0",
+  "qemu_sha256": "d4d74db8c2ac45fb1b6ecabe32171823711e99a8a758f2ca4567f90753fbe875",
+  "patch_sha256": "3b869ccaef78395677ec02c4afc807562ec52a52c35a4d840e71ddc90a862d6e"
+}

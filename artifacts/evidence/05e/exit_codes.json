@@ -1,0 +1,7 @@
+{
+  "configure": 0,
+  "native_windows_build": 0,
+  "qemu_version": 0,
+  "machine_help": 0,
+  "payload_free_darwin_probe": 1
+}

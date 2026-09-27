@@ -1,0 +1,2 @@
+windows/patches/qemu-sptm/*.patch text eol=lf -whitespace
+artifacts/evidence/05e/*.patch text eol=lf -whitespace

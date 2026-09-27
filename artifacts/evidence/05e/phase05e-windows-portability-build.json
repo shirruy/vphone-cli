@@ -1,0 +1,52 @@
+{
+  "phase": "05E",
+  "gate": "qemu-sptm-native-windows-portability-build",
+  "vphone": {
+    "branch": "phase/05e-qemu-sptm-windows-feasibility",
+    "head": "a35190c76e1371b098cfcb403e536a98658becb9"
+  },
+  "qemu_sptm": {
+    "upstream_base": "2867d847d3471560e773120ee50c42dbcbb6d60b",
+    "portability_patch_files": [
+      "hw/arm/apple_dtree.c",
+      "hw/arm/apple_regs.c",
+      "hw/arm/darwin.c",
+      "hw/arm/xnuboot_sptm.c"
+    ],
+    "portability_patch": "C:\\Users\\rbjos\\source\\vphone-cli-windows\\artifacts\\evidence\\05e\\qemu-sptm-windows-portability.patch",
+    "portability_patch_sha256": "fd225b4aee22e40869faf4e1e488954a3a8926dbf52dc2698c3b9f1567261bf5"
+  },
+  "windows_checkout_artifacts": [
+    {
+      "path": "subprojects/libvduse/linux-headers/linux",
+      "upstream_git_mode": "120000",
+      "expected_target": "../../../linux-headers/linux/",
+      "classification": "VERIFIED_WINDOWS_CHECKOUT_ARTIFACT"
+    },
+    {
+      "path": "subprojects/libvduse/standard-headers/linux",
+      "upstream_git_mode": "120000",
+      "expected_target": "../../../include/standard-headers/linux/",
+      "classification": "VERIFIED_WINDOWS_CHECKOUT_ARTIFACT"
+    }
+  ],
+  "portability": {
+    "posix_mmap_dependency_removed": true,
+    "strsep_removed": true,
+    "windows_llp64_bit_masks_fixed": true
+  },
+  "build": {
+    "target": "aarch64-softmmu",
+    "executable": "C:\\Users\\rbjos\\source\\vphone-cli-windows\\build\\phase05e-qemu-sptm-source-build\\darwin-vm\\qemu-sptm\\build-win\\qemu-system-aarch64.exe",
+    "version": "QEMU emulator version 11.1.0",
+    "sha256": "d4d74db8c2ac45fb1b6ecabe32171823711e99a8a758f2ca4567f90753fbe875",
+    "darwin_machine_registered": true
+  },
+  "claims": {
+    "windows_source_build": "PASS",
+    "darwin_machine_registration": "PASS",
+    "apple_firmware_preparation": "NOT_TESTED",
+    "apple_guest_boot": "NOT_TESTED",
+    "deterministic_serial_milestone": "NOT_TESTED"
+  }
+}

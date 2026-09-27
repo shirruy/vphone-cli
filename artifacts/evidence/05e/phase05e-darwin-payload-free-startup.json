@@ -1,0 +1,47 @@
+{
+  "phase": "05E",
+  "gate": "darwin-machine-payload-free-startup",
+  "vphone": {
+    "branch": "phase/05e-qemu-sptm-windows-feasibility",
+    "head": "a35190c76e1371b098cfcb403e536a98658becb9"
+  },
+  "qemu_sptm": {
+    "upstream_base": "2867d847d3471560e773120ee50c42dbcbb6d60b",
+    "executable": "C:\\Users\\rbjos\\source\\vphone-cli-windows\\build\\phase05e-qemu-sptm-source-build\\darwin-vm\\qemu-sptm\\build-win\\qemu-system-aarch64.exe",
+    "version": "QEMU emulator version 11.1.0",
+    "sha256": "d4d74db8c2ac45fb1b6ecabe32171823711e99a8a758f2ca4567f90753fbe875",
+    "darwin_machine_registered": true
+  },
+  "probe": {
+    "machine": "darwin",
+    "accelerator": "tcg",
+    "bootkc_supplied": false,
+    "dtree_supplied": false,
+    "trust_cache_supplied": false,
+    "ramdisk_supplied": false,
+    "sptm_supplied": false,
+    "txm_supplied": false,
+    "process_started": true,
+    "process_exited": true,
+    "exit_code": 1,
+    "expected_marker": "error opening XNU kernel",
+    "expected_marker_observed": true,
+    "stdout_log": "C:\\Users\\rbjos\\source\\vphone-cli-windows\\build\\phase05e-qemu-sptm-source-build\\payload-free-darwin-probe\\darwin-probe-stdout.log",
+    "stderr_log": "C:\\Users\\rbjos\\source\\vphone-cli-windows\\build\\phase05e-qemu-sptm-source-build\\payload-free-darwin-probe\\darwin-probe-stderr.log"
+  },
+  "validation": {
+    "darwin_machine_selection": "PASS",
+    "darwin_machine_initialization_entered": "PASS",
+    "first_payload_boundary_reached": "PASS",
+    "missing_kernel_fail_closed": "PASS"
+  },
+  "claims": {
+    "darwin_payload_free_startup": "PASS",
+    "darwin_machine_initialization": "PASS",
+    "apple_firmware_preparation": "NOT_TESTED",
+    "apple_kernel_execution": "NOT_TESTED",
+    "apple_guest_boot": "NOT_TESTED",
+    "serial_boot_milestone": "NOT_TESTED",
+    "graphical_guest": "NOT_TESTED"
+  }
+}

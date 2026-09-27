@@ -1,0 +1,88 @@
+{
+  "phase": "05E",
+  "gate": "apple-backend-feasibility-census",
+  "branch": "phase/05e-qemu-sptm-windows-feasibility",
+  "certified_phase05d": "a35190c76e1371b098cfcb403e536a98658becb9",
+  "phase05e_start_sha": "a35190c76e1371b098cfcb403e536a98658becb9",
+  "stock_windows_qemu": {
+    "executable": "C:\\Program Files\\qemu\\qemu-system-aarch64.exe",
+    "version": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+    "sha256": "952f897511177803722efed6fefe79bc3e7e5a51a026112dfc40f9a37fb0dad2",
+    "virt_machine": true,
+    "vmapple_machine": false,
+    "darwin_machine": false,
+    "apple_machine_candidate": false,
+    "classification": "NO_STOCK_APPLE_MACHINE_CANDIDATE"
+  },
+  "external_candidates": {
+    "qemu_sptm": {
+      "repository": "jprx/qemu-sptm",
+      "branch": "main",
+      "sha": "bad6336fb24211f8c4e8e946c259bd5b12417340"
+    },
+    "darwin_vm": {
+      "repository": "jprx/darwin-vm",
+      "branch": "main",
+      "sha": "ffdf01874f5cc9cdfbfc7a3d117d4aef1e49b4d9"
+    }
+  },
+  "windows_build_environment": {
+    "tools": {
+      "git": {
+        "present": true,
+        "path": "C:\\Program Files\\Git\\cmd\\git.exe"
+      },
+      "gh": {
+        "present": true,
+        "path": "C:\\Program Files\\GitHub CLI\\gh.exe"
+      },
+      "python": {
+        "present": true,
+        "path": "C:\\Users\\rbjos\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+      },
+      "cmake": {
+        "present": true,
+        "path": "C:\\Program Files\\CMake\\bin\\cmake.exe"
+      },
+      "ninja": {
+        "present": true,
+        "path": "C:\\Users\\rbjos\\AppData\\Local\\Microsoft\\WinGet\\Links\\ninja.exe"
+      },
+      "meson": {
+        "present": false,
+        "path": null
+      },
+      "pkg-config": {
+        "present": false,
+        "path": null
+      },
+      "make": {
+        "present": false,
+        "path": null
+      },
+      "bash": {
+        "present": true,
+        "path": "C:\\Windows\\System32\\bash.exe"
+      },
+      "clang": {
+        "present": false,
+        "path": null
+      },
+      "gcc": {
+        "present": false,
+        "path": null
+      }
+    },
+    "msys2_present": false,
+    "msys2_root": null
+  },
+  "claims": {
+    "backend_census": "PASS",
+    "qemu_sptm_source_pinned": true,
+    "darwin_vm_source_pinned": true,
+    "qemu_sptm_windows_build": "NOT_TESTED",
+    "apple_firmware_preparation": "NOT_TESTED",
+    "apple_guest_boot": "NOT_TESTED",
+    "deterministic_serial_milestone": "NOT_TESTED"
+  }
+}

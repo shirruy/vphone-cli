@@ -1,0 +1,7 @@
+git checkout qemu-sptm commit 2867d847d3471560e773120ee50c42dbcbb6d60b
+git apply windows/patches/qemu-sptm/phase05e-windows-portability.patch
+../configure --target-list=aarch64-softmmu --disable-docs --disable-rust --disable-werror --disable-plugins
+make -j<nproc>
+qemu-system-aarch64.exe --version
+qemu-system-aarch64.exe -machine help
+qemu-system-aarch64.exe -machine darwin -accel tcg -display none -nodefaults -serial none -monitor none
