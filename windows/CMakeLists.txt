@@ -243,6 +243,19 @@ if(WIN32)
     add_executable(vphone_apfs_snapshot_rename_test tests/apfs_snapshot_rename_test.cpp)
     target_link_libraries(vphone_apfs_snapshot_rename_test PRIVATE vphone_apfs_snapshot_portable)
 
+    add_library(vphone_apfs_reader STATIC src/apfs_reader.cpp)
+    target_include_directories(vphone_apfs_reader PUBLIC include)
+
+    add_executable(vphone-apfs-reader-win src/apfs_reader_main.cpp)
+    target_link_libraries(vphone-apfs-reader-win PRIVATE vphone_apfs_reader)
+
+    add_executable(vphone_apfs_reader_test tests/apfs_reader_test.cpp)
+    target_link_libraries(vphone_apfs_reader_test PRIVATE vphone_apfs_reader)
+    add_test(NAME apfs_reader_test COMMAND vphone_apfs_reader_test)
+    set_tests_properties(apfs_reader_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "APFS_READER_TEST_PASS"
+    )
+
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)
     target_include_directories(vphone_udif_portable
         PUBLIC include
