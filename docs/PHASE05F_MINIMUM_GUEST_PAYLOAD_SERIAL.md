@@ -80,11 +80,19 @@ always begins exactly at `(char *)(f + 1)`. The Mach-O definition
 is an `lc_str` offset (`entry_id.offset`) relative to the command
 start. The parser now validates that `entry_id.offset < cmdsize`,
 requires a NUL terminator inside `cmdsize`, and fails closed on
-malformed entries. After the fix, the misleading
+malformed entries. Bounds checks use the on-disk ABI constant
+`MACHO_FSE_DISK_HEADER_SIZE` (32) rather than host `sizeof(fse_t)`,
+because Windows LLP64 keeps the `char *ptr` member in `union lc_str`,
+making host `sizeof(fse_t)` 40 while the on-disk header is 32; the
+real BootKC places every entry name at offset 32. After the fix, the
+misleading
 `warning: couldn't find img4 kext` disappeared from stderr with the
-known-good BootKC, and serial output grew from 11,343 to 12,806
-bytes with additional AppleLockdownMode and ACMTRM PersistentStore
-milestones.
+known-good BootKC, and serial output of 12,806 bytes with additional
+AppleLockdownMode and ACMTRM PersistentStore milestones was observed
+after the fix (compared with 11,343 bytes in the earlier run). This
+phase already demonstrates boot-time ordering nondeterminism, so the
+byte growth is an observation after the fix, not by itself proof
+that the parser fix caused the deeper progression.
 
 ## LLP64 page-rounding defect (found and fixed in this phase)
 

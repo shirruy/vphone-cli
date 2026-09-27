@@ -9,7 +9,7 @@
   ],
   "patch": "phase05f-windows-llp64-fileset.patch",
   "includes_phase05e_portability": true,
-  "sha256": "a7947a4528cd605d791af43cfd405f076938075ddab8513278f73c406c09c810",
+  "sha256": "b062e75c7cc8180e573b223caeebd4d49b09769f6409b7f26b2bbc451005415b",
   "phase": "05F",
   "verified_by": [
     "test-xnu-llp64: 3/3 PASS on Windows MSYS2 MinGW64",
@@ -21,5 +21,6 @@
   "aic_cherry_pick": {
     "reason": "Real AIC v1-v3 interrupt semantics replacing zeroed stub; needed for non-primary qemuport UARTs. A/B-proven NOT to be the SEP/root-shell blocker.",
     "source": "bad6336fb24211f8c4e8e946c259bd5b12417340"
-  }
+  },
+  "disk_abi_note": "macho_fse_entry_id bounds use MACHO_FSE_DISK_HEADER_SIZE (32) because host sizeof(fse_t) is 40 on LLP64 Windows (union lc_str keeps char* member)"
 }
