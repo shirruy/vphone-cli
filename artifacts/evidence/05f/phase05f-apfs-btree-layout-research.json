@@ -1,0 +1,18 @@
+{
+  "known_leaf_anchor": "SystemVersion.plist XML content found at raw offset 0x8dfa76c => block 36347. Scanning backward from block 36347 for the catalog leaf that references it may pin the key format empirically.",
+  "proven": {
+    "btree_1466": "type=0x2 subtype=0x10 flags=0x3(root+leaf) level=0 nkeys=0 (empty tree, likely volume-era reaper/extents)",
+    "container": "NXSB @block0, bs=4096, 59392 blocks, 8 checkpoint NXSB copies (blocks 0-14 even)",
+    "volume_omap": "block 51201, o_type=0x4000000b (OMAP|VIRTUAL), om_tree_oid=0 (empty root @51202 flags=0x3 nkeys=0)",
+    "volumes": "APSB @1461 (xid=9) and @51214 (xid=6), oid=1026, name=ramdisk",
+    "root_btree": "block 51196, o_type=0x40000002, subtype=0xf, flags=0x1(root), level=1, nkeys=7"
+  },
+  "gate": "apfs-btree-layout-research-state",
+  "unresolved": {
+    "btn_header_layout": "The exact B-tree node info field offsets for tofs/tlen are ambiguous from raw bytes: bytes 40-47 = 00 00 40 00 38 00 F0 0E. Candidate interpretations: (A) tofs@40 U16=0x0000 tlen@42 U16=0x0040; (B) tofs@44 U16=0x0038 tlen@46 U16=0x0EF0. Neither yields consistent 7-entry key offsets when decoded against the block.",
+    "next_probe": "Needs either the authoritative btree_node_info struct layout or a hex-dump-driven manual walkthrough of a leaf catalog node containing SystemVersion.plist (known-present at raw offset 0x8dfa76c = block 36347 + 0x76c).",
+    "interior_child_pointering": "Level-1 root nkeys=7 implies 7 interior entries pointing to leaf children, but the child pointer values at candidate offsets (+0x28,+0xb0,+0xb8,+0xc0,+0xc8) do not resolve to valid B-tree leaf blocks (verified: blocks 2761/1261/459/306 are not B-tree nodes)."
+  },
+  "date": "2026-09-27 15:33:26",
+  "phase": "05G-prep"
+}
