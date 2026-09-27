@@ -1,0 +1,17 @@
+{
+  "phase": "05G-prep",
+  "gate": "catalog-walker-production-hardening",
+  "reviewer_items_applied": [
+    "Item 1: negative checksum regression added — valid OMAP leaf sealed, one payload byte flipped, reader rejects (no trusted root/path)",
+    "Item 2: DIR_REC name bounds double-count fixed — direct name_off computation replaces kp + (name-p) expression",
+    "Item 3: exact on-disk name validation — embedded name_len must equal k_len - header (12 hashed / 10 unhashed); name >= 1; final byte exactly NUL; logical name = stored_len - 1; no arbitrary NUL trimming",
+    "Item 4: j_drec_val full base validation — v_len >= 18 (file_id u64 + date_added u64 + flags u16); drec_type parsed from flags & 0xf; System/Library/LaunchDaemons required DT_DIR (4)",
+    "Item 5: exact level contract — root == root_level, child == parent-1, leaf == 0; recursion underflow guard; no level skipping",
+    "Item 6: full bounds checks on every entry (k_off+k_len <= block, v_off <= value_base, vp+v_len <= block); all FSTREE nodes (root+interior+leaf) require subtype 0x0E"
+  ],
+  "date": "2026-09-27 17:57:24",
+  "runtime": {
+    "real_fixture": "launchdaemons.status=RESOLVED cnid=632 under the full strict validation (re-verified after all fixes)",
+    "synthetic": "APFS_READER_TEST_PASS including the new negative checksum flip-byte rejection"
+  }
+}

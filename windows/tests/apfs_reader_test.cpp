@@ -282,6 +282,44 @@ int main() {
             );
             return 1;
         }
+
+    // Negative checksum regression: seal a valid OMAP leaf, flip one
+    // payload byte without resealing, and prove the reader rejects it
+    // (no trusted root/path result).
+    {
+        std::vector<std::uint8_t> bad = image;
+        // Corrupt one payload byte of the OMAP leaf (block 4, key area).
+        const std::size_t corrupt_off =
+            4 * static_cast<std::size_t>(block_size) + 0x48;
+        bad[corrupt_off] ^= 0x5A;
+
+        const std::string bad_path =
+            std::string(temp_path) + "apfs_reader_test_cksum.img";
+        if (!write_all(bad_path, bad)) {
+            std::fprintf(stderr, "failed to write checksum-bad image\n");
+            return 1;
+        }
+
+        vphone::ApfsReaderReport bad_report;
+        std::string bad_error;
+        const bool cksum_rejected =
+            !vphone::apfs_read_container(
+                bad_path,
+                bad_report,
+                bad_error
+            ) ||
+            bad_report.volumes.empty() ||
+            bad_report.volumes[0].root_tree_block == 0;
+        DeleteFileA(bad_path.c_str());
+
+        if (!cksum_rejected) {
+            std::fprintf(
+                stderr,
+                "flipped checksum byte was not rejected\n"
+            );
+            return 1;
+        }
+    }
     }
 
     vphone::ApfsReaderReport report;

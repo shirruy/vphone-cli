@@ -374,6 +374,10 @@ constexpr std::uint64_t kApfsRootDirCnid = 2;
 constexpr std::uint64_t kObjIdMask = 0x0FFFFFFFFFFFFFFFull;
 constexpr std::uint64_t kRecordTypeShift = 60;
 constexpr std::uint64_t kApfsTypeDirRec = 9;
+constexpr std::uint64_t kApfsTypeFileExtent = 8;
+constexpr std::uint16_t kDrecValBaseSize = 18;
+constexpr std::uint16_t kDrecFlagTypeMask = 0x000f;
+constexpr std::uint16_t kDrecTypeDir = 4;
 // APSB apfs_incompatible_features @ +0x38.
 constexpr std::size_t kApsbIncompatOffset = 0x38;
 constexpr std::uint64_t kIncompatCaseInsensitive = 0x1;
@@ -426,11 +430,6 @@ bool fstree_visit_dir_records(
     MatchFn match,
     std::string& error
 ) {
-    if (expected_level == 0) {
-        error = "FSTREE level underflow";
-        return false;
-    }
-
     std::uint64_t paddr = 0;
     if (!omap_resolve(ctx, node_oid, paddr, error)) {
         return false;
@@ -456,18 +455,23 @@ bool fstree_visit_dir_records(
         error = "FSTREE node is not a B-tree object";
         return false;
     }
+    // Every FSTREE node (root, interior, leaf) must carry the FSTREE
+    // subtype, not merely a generic B-tree kind.
+    const std::uint32_t subtype = read_le32(buf.data() + 28);
+    if (subtype != kFstreeSubtype) {
+        error = "FSTREE child node subtype is not FSTREE";
+        return false;
+    }
 
     ApfsBtreeNodeInfo node;
     if (!decode_btree_node(buf, ctx.block_size, node, error)) {
         return false;
     }
-    if (node.level + 1 != expected_level &&
-        !(is_root && node.level == expected_level)) {
-        // Level must strictly decrease on descent.
-        if (node.level >= expected_level && !is_root) {
-            error = "FSTREE node level did not decrease";
-            return false;
-        }
+    // Exact level contract: root equals root_level; every child equals
+    // parent_level - 1; leaves are level 0. No level skipping.
+    if (node.level != expected_level) {
+        error = "FSTREE node level mismatch (expected exact descent)";
+        return false;
     }
 
     const std::uint8_t* p = buf.data();
@@ -512,8 +516,30 @@ bool fstree_visit_dir_records(
             static_cast<std::uint16_t>(p[toc + 6]) |
             (static_cast<std::uint16_t>(p[toc + 7]) << 8);
 
+        // Full bounds checks before any subtraction or pointer use:
+        // key offset+length within the block, value offset within
+        // value_base, value pointer+length within the block.
+        if (k_off > ctx.block_size ||
+            k_len > ctx.block_size - k_off) {
+            error = "FSTREE key range exceeds block";
+            return false;
+        }
         const std::uint64_t kp = key_base + k_off;
+        if (kp > ctx.block_size ||
+            k_len > ctx.block_size - kp) {
+            error = "FSTREE key base + range exceeds block";
+            return false;
+        }
+        if (v_off > value_base) {
+            error = "FSTREE value offset exceeds value base";
+            return false;
+        }
         const std::uint64_t vp = value_base - v_off;
+        if (vp > ctx.block_size ||
+            v_len > ctx.block_size - vp) {
+            error = "FSTREE value range exceeds block";
+            return false;
+        }
 
         if (node.level > 0) {
             // Interior: recurse into OMAP-resolved child.
@@ -521,11 +547,15 @@ bool fstree_visit_dir_records(
                 error = "FSTREE interior value must be an 8-byte child OID";
                 return false;
             }
+            if (node.level < 1) {
+                error = "FSTREE interior recursion underflow";
+                return false;
+            }
             const std::uint64_t child_oid = read_le64(p + vp);
             if (!fstree_visit_dir_records(
                     ctx,
                     child_oid,
-                    node.level,
+                    node.level - 1,
                     false,
                     match,
                     error
@@ -547,42 +577,61 @@ bool fstree_visit_dir_records(
             continue;
         }
 
-        // Name decode: hashed vs unhashed by volume features.
-        const char* name = nullptr;
-        std::size_t name_len = 0;
+        // Exact on-disk name validation: the embedded name_len must
+        // equal key_len - header, the name must be non-empty, and the
+        // final byte must be exactly NUL (one required terminator).
+        std::uint64_t name_off = 0;
+        std::size_t stored_len = 0;
         if (ctx.hashed_names) {
             if (k_len < 12) {
                 continue;
             }
             const std::uint32_t len_hash = read_le32(p + kp + 8);
-            name_len = len_hash & kHashedNameLenMask;
-            name = reinterpret_cast<const char*>(p + kp + 12);
+            stored_len = len_hash & kHashedNameLenMask;
+            name_off = kp + 12;
         } else {
-            name_len =
+            stored_len =
                 static_cast<std::uint16_t>(p[kp + 8]) |
                 (static_cast<std::uint16_t>(p[kp + 9]) << 8);
-            name = reinterpret_cast<const char*>(p + kp + 10);
+            name_off = kp + 10;
         }
 
-        if (name_len == 0 || name_len > 255 ||
-            kp + (name - reinterpret_cast<const char*>(p)) + name_len >
-                ctx.block_size) {
+        const std::uint64_t header_size =
+            ctx.hashed_names ? 12 : 10;
+        if (stored_len < 1 ||
+            stored_len != k_len - header_size) {
             continue;
         }
 
-        // APFS drec names are stored NUL-padded within name_len; trim
-        // trailing NULs so string comparison matches the on-disk name.
-        while (name_len > 0 && name[name_len - 1] == '\0') {
-            --name_len;
+        if (name_off > ctx.block_size ||
+            stored_len > ctx.block_size - name_off) {
+            continue;
         }
+        if (p[name_off + stored_len - 1] != '\0') {
+            continue; // exactly one required terminator
+        }
+        const std::size_t logical_len = stored_len - 1;
+        const char* name =
+            reinterpret_cast<const char*>(p + name_off);
 
-        // j_drec_val: file_id (u64) + flags (u16) + reserved.
-        if (v_len < 8 || vp + 8 > ctx.block_size) {
+        // j_drec_val base: file_id u64 + date_added u64 + flags u16
+        // = 18 bytes minimum before optional xfields.
+        if (v_len < kDrecValBaseSize) {
             continue;
         }
         const std::uint64_t child_cnid = read_le64(p + vp);
+        const std::uint16_t drec_flags =
+            static_cast<std::uint16_t>(p[vp + 16]) |
+            (static_cast<std::uint16_t>(p[vp + 17]) << 8);
+        const std::uint16_t drec_type =
+            drec_flags & kDrecFlagTypeMask;
 
-        if (!match(parent_cnid, std::string(name, name_len), child_cnid)) {
+        if (!match(
+                parent_cnid,
+                std::string(name, logical_len),
+                child_cnid,
+                drec_type
+            )) {
             error = "path match callback failed";
             return false;
         }
@@ -614,9 +663,11 @@ bool fstree_resolve_launchdaemons(
         auto matcher = [&](
             std::uint64_t p_cnid,
             const std::string& name,
-            std::uint64_t c_cnid
+            std::uint64_t c_cnid,
+            std::uint16_t drec_type
         ) -> bool {
-            if (found || p_cnid != parent || name != want) {
+            if (found || p_cnid != parent || name != want ||
+                drec_type != kDrecTypeDir) {
                 return true; // keep scanning
             }
             found = true;
