@@ -1,0 +1,26 @@
+{
+  "xfield_correction": "The previous parser incorrectly treated the xfield area as inline {type u8, length u8, value[]} entries. The authoritative layout is apfs_xf_blob {xf_num_exts u16, xf_used_data u16} followed by contiguous apfs_x_field {x_type u8, x_flags u8, x_size u16} metadata entries, with values starting after ALL metadata, each consuming round_up(x_size, 8) bytes. The corrected parser walks metadata first, then reads values at computed offsets.",
+  "decmpfs_finding": {
+    "signature": 1668116582,
+    "logical_size": 455,
+    "storage_mode": "DATA_EMBEDDED (0x2) — compressed data inline in XATTR value, no dstream/resource fork needed",
+    "xattr_name": "com.apple.decmpfs",
+    "signature_ascii": "cmpf",
+    "signature_hex": "0x636D7066",
+    "needs_resource_fork": false,
+    "implications": "No zlib/LZFSE/LZVN decoder is needed for this fixture. The file content can be reconstructed by reading xdata[16:] (after the decmpfs header: signature u32 + algo u32 + logical_size u64). The APFS_INOBSD_COMPRESSED flag is set but algorithm 9 means the payload is plain. This closes the read-only file byte chain: DIR_REC -> INODE -> XATTR(decmpfs) -> embedded plain bytes -> logical file content.",
+    "xattr_flags": 2,
+    "algorithm_name": "PLAIN_ATTR — data is NOT actually compressed; bytes are stored verbatim after the 16-byte decmpfs header",
+    "algorithm": 9
+  },
+  "date": "2026-09-27 19:13:20",
+  "reviewer_items_applied": [
+    "Item 1: inode xfield parser corrected to authoritative apfs_xf_blob layout (u16 xf_num_exts + u16 xf_used_data + contiguous 4-byte apfs_x_field metadata entries + round_up(x_size,8)-aligned values after all metadata)",
+    "Item 2: decmpfs XATTR resolved structurally — com.apple.decmpfs found via APFS_TYPE_XATTR (type 4) records with corrected name_len semantics (18 chars, NUL-optional in key tail)",
+    "Item 3: FILE_EXTENT physical range ceiling division fixed (blocks_needed = len/bs + (len%bs!=0))",
+    "Item 4: extent coverage cursor replaces max() gap detection; explicit gap/underlap rejection",
+    "Item 5: read_exact_range heap leak fixed (error param required)"
+  ],
+  "phase": "05G-prep",
+  "gate": "decmpfs-xattr-resolved"
+}

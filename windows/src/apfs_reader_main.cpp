@@ -106,6 +106,15 @@ int main(int argc, char** argv) {
     if (!report.plist_file.error.empty()) {
         std::cout << "    ,\"error\": \"" << report.plist_file.error << "\"\n";
     }
+    std::cout << "    ,\"decmpfs\": {\n";
+    std::cout << "      \"found\": " << (report.plist_file.decmpfs_found ? "true" : "false") << "\n";
+    std::cout << "      ,\"xattr_flags\": " << report.plist_file.xattr_flags << "\n";
+    std::cout << "      ,\"signature\": " << report.plist_file.decmpfs_signature << "\n";
+    std::cout << "      ,\"algo\": " << report.plist_file.decmpfs_algo << "\n";
+    std::cout << "      ,\"logical_size\": " << report.plist_file.decmpfs_logical_size << "\n";
+    std::cout << "      ,\"embedded\": " << (report.plist_file.xattr_embedded ? "true" : "false") << "\n";
+    std::cout << "      ,\"needs_resource_fork\": " << (report.plist_file.needs_resource_fork ? "true" : "false") << "\n";
+    std::cout << "    }\n";
     std::cout << "  }\n";
     std::cout << "}\n";
     return 0;

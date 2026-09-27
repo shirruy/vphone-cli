@@ -64,6 +64,14 @@ struct ApfsReaderReport {
         std::string format;
         std::vector<std::uint8_t> bytes;
         std::string error;
+        // Decmpfs XATTR inspection (filled when compressed).
+        bool decmpfs_found = false;
+        std::uint16_t xattr_flags = 0;
+        std::uint32_t decmpfs_signature = 0;
+        std::uint32_t decmpfs_algo = 0;
+        std::uint64_t decmpfs_logical_size = 0;
+        bool xattr_embedded = false;
+        bool needs_resource_fork = false;
     } plist_file;
 };
 

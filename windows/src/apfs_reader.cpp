@@ -144,7 +144,7 @@ bool read_exact_range(
     std::uint64_t offset,
     std::uint8_t* buffer,
     std::uint64_t size,
-    std::string& error = *(new std::string())
+    std::string& error
 ) {
     LARGE_INTEGER distance{};
     distance.QuadPart =
@@ -421,6 +421,11 @@ constexpr std::uint16_t kInodeValBaseSize = 0x5c;
 constexpr std::uint64_t kInoBsdCompressed = 0x20;
 constexpr std::uint16_t kInoExtTypeDstream = 8;
 constexpr std::uint16_t kDstreamSize = 40;
+constexpr std::uint64_t kApfsTypeXattr = 4;
+// apfs_xf_blob: xf_num_exts u16 + xf_used_data u16 = 4-byte header.
+constexpr std::uint16_t kXfBlobHeaderSize = 4;
+// apfs_x_field: x_type u8 + x_flags u8 + x_size u16 = 4-byte metadata.
+constexpr std::uint16_t kXFieldMetaSize = 4;
 
 constexpr std::uint64_t kExtentLenMask = 0x00FFFFFFFFFFFFFFull;
 // APSB apfs_incompatible_features @ +0x38.
@@ -1060,32 +1065,50 @@ bool fstree_read_plist_file(
                 (static_cast<std::uint16_t>(rec.value[0x51]) << 8);
             ino.compressed = (bsd_flags & kInoBsdCompressed) != 0;
 
+            // Authoritative xfield layout (apfs_xf_blob):
+            //   u16 xf_num_exts
+            //   u16 xf_used_data
+            //   apfs_x_field xf_data[]  (4-byte metadata entries)
+            //   value data follows after ALL metadata entries
+            // Each apfs_x_field: { x_type u8, x_flags u8, x_size u16 }
+            // Each value consumes round_up(x_size, 8) bytes.
             const std::uint16_t xfields_off = 0x5c;
-            if (rec.value_len > xfields_off + 2) {
-                std::uint64_t off = xfields_off;
-                const std::uint16_t xf_total =
-                    static_cast<std::uint16_t>(
-                        rec.value[off]) |
-                    (static_cast<std::uint16_t>(
-                         rec.value[off + 1]) << 8);
-                off += 2;
-                const std::uint64_t xf_end =
-                    std::min<std::uint64_t>(
-                        off + xf_total, rec.value_len);
+            if (rec.value_len >= xfields_off + kXfBlobHeaderSize) {
+                const std::uint8_t* xf = rec.value + xfields_off;
+                const std::uint16_t num_exts =
+                    static_cast<std::uint16_t>(xf[0]) |
+                    (static_cast<std::uint16_t>(xf[1]) << 8);
+                const std::uint64_t meta_end =
+                    xfields_off + kXfBlobHeaderSize +
+                    static_cast<std::uint64_t>(num_exts) *
+                        kXFieldMetaSize;
 
-                while (off + 4 <= xf_end) {
-                    const std::uint8_t xt = rec.value[off];
-                    const std::uint8_t xlen = rec.value[off + 1];
-                    if (off + 4 + xlen > xf_end) {
-                        break;
+                if (meta_end <= rec.value_len) {
+                    // Values start after all metadata entries.
+                    std::uint64_t val_off = meta_end;
+
+                    for (std::uint16_t xi = 0; xi < num_exts; ++xi) {
+                        const std::uint8_t* meta =
+                            xf + kXfBlobHeaderSize +
+                            static_cast<std::uint64_t>(xi) *
+                                kXFieldMetaSize;
+                        const std::uint8_t x_type = meta[0];
+                        const std::uint16_t x_size =
+                            static_cast<std::uint16_t>(meta[2]) |
+                            (static_cast<std::uint16_t>(meta[3]) << 8);
+
+                        if (x_type == kInoExtTypeDstream &&
+                            x_size >= kDstreamSize &&
+                            val_off + 8 <= rec.value_len) {
+                            ino.has_dstream = true;
+                            ino.dstream_size =
+                                read_le64(rec.value + val_off);
+                        }
+
+                        // Advance by round_up(x_size, 8).
+                        val_off +=
+                            (x_size + 7) & ~static_cast<std::uint16_t>(7);
                     }
-                    if (xt == kInoExtTypeDstream &&
-                        xlen >= kDstreamSize) {
-                        ino.has_dstream = true;
-                        ino.dstream_size =
-                            read_le64(rec.value + off + 4);
-                    }
-                    off += 4 + xlen;
                 }
             }
             return true;
@@ -1110,7 +1133,88 @@ bool fstree_read_plist_file(
         }
         if ((ino.mode & 0xF000) != 0x8000) {            continue;
         }
-        if (ino.compressed) {            continue; // skip compressed for the first gate
+        if (ino.compressed) {
+            // Inspect the com.apple.decmpfs XATTR for this candidate.
+            struct DecmpfsInfo {
+                bool found = false;
+                std::uint16_t xattr_flags = 0;
+                std::uint32_t signature = 0;
+                std::uint32_t algo = 0;
+                std::uint64_t logical_size = 0;
+                std::vector<std::uint8_t> xdata;
+            } dcs;
+            
+            ctx.visited.clear();
+            auto xattr_match = [&](
+                const FstreeRawRecord& rec
+            ) -> bool {
+                if (dcs.found || rec.record_type != kApfsTypeXattr ||
+                    rec.obj_id != cand.cnid) {
+                    return true;
+                }
+                if (rec.key_extra_len < 2) {
+                    return true;
+                }
+                const std::uint16_t name_len =
+                    static_cast<std::uint16_t>(
+                        rec.key_extra[0]) |
+                    (static_cast<std::uint16_t>(
+                         rec.key_extra[1]) << 8);
+                if (name_len != 18 ||
+                    rec.key_extra_len < 2 + 18) {
+                    return true;
+                }
+                if (std::memcmp(
+                        rec.key_extra + 2,
+                        "com.apple.decmpfs",
+                        18) != 0 ||
+                    (rec.key_extra_len > 2 + 18 &&
+                     rec.key_extra[2 + 18] != '\0')) {
+                    return true;
+                }
+
+                if (rec.value_len < 4) {
+                    return true;
+                }
+                dcs.found = true;
+                dcs.xattr_flags =
+                    static_cast<std::uint16_t>(rec.value[0]) |
+                    (static_cast<std::uint16_t>(rec.value[1]) << 8);
+                const std::uint16_t xdata_len =
+                    static_cast<std::uint16_t>(rec.value[2]) |
+                    (static_cast<std::uint16_t>(rec.value[3]) << 8);
+
+                if (xdata_len >= 16 &&
+                    4 + xdata_len <= rec.value_len) {
+                    dcs.signature = read_le32(rec.value + 4);
+                    dcs.algo = read_le32(rec.value + 8);
+                    dcs.logical_size = read_le64(rec.value + 12);
+                }
+                return true;
+            };
+
+            std::string xa_error;
+            fstree_visit_raw_records(
+                ctx,
+                root_oid,
+                root_level,
+                true,
+                xattr_match,
+                xa_error
+            );
+
+            if (dcs.found) {
+                result.decmpfs_found = true;
+                result.xattr_flags = dcs.xattr_flags;
+                result.decmpfs_signature = dcs.signature;
+                result.decmpfs_algo = dcs.algo;
+                result.decmpfs_logical_size = dcs.logical_size;
+                result.xattr_embedded =
+                    (dcs.xattr_flags & 0x2) != 0;
+                result.needs_resource_fork =
+                    (dcs.algo % 2) == 0;
+            }
+            continue; // skip compressed for byte-read gate
         }
         if (!ino.has_dstream) {            continue;
         }
@@ -1204,16 +1308,24 @@ bool fstree_read_plist_file(
             result.error = "zero-length extent";
             return false;
         }
+        // Overflow-safe ceiling division for block count.
+        const std::uint64_t blocks_needed =
+            e.length / ctx.block_size +
+            ((e.length % ctx.block_size) != 0 ? 1 : 0);
         if (e.phys != 0 &&
             (e.phys >= ctx.block_count ||
-             e.length / ctx.block_size > ctx.block_count - e.phys)) {
+             blocks_needed > ctx.block_count - e.phys)) {
             result.status = "FAIL";
             result.error = "extent physical range exceeds container";
             return false;
         }
         if (i > 0) {
             const auto& prev = extents[i - 1];
-            if (e.logical < prev.logical + prev.length) {
+            // Overflow-safe logical end check.
+            if (prev.length >
+                    std::numeric_limits<std::uint64_t>::max() -
+                    prev.logical ||
+                e.logical < prev.logical + prev.length) {
                 result.status = "FAIL";
                 result.error = "overlapping extents";
                 return false;
@@ -1223,21 +1335,33 @@ bool fstree_read_plist_file(
 
     result.extent_count = extents.size();
 
-    // Reconstruct bytes up to file_size.
+    // Reconstruct bytes up to file_size using a coverage cursor.
+    // Every byte range [0, file_size) must be explicitly covered by an
+    // extent (phys==0 holes leave zeros but still advance the cursor).
     result.bytes.assign(file_size, 0);
-    std::uint64_t copied = 0;
+    std::uint64_t expected = 0;
     for (const auto& e : extents) {
-        if (copied >= file_size) {
-            break;
-        }
         if (e.logical >= file_size) {
             break; // beyond authoritative size
+        }
+        if (e.logical > expected) {
+            result.status = "FAIL";
+            result.error = "extent coverage gap at logical offset " +
+                std::to_string(expected) + " (next extent at " +
+                std::to_string(e.logical) + ")";
+            return false;
+        }
+        if (e.logical < expected) {
+            // Overlap already rejected above; defensive.
+            result.status = "FAIL";
+            result.error = "extent underlap detected";
+            return false;
         }
         const std::uint64_t chunk =
             std::min(e.length, file_size - e.logical);
         if (e.phys == 0) {
-            // Hole: leave zeros.
-            copied = std::max(copied, e.logical + chunk);
+            // Hole: leave zeros, advance cursor.
+            expected = e.logical + chunk;
             continue;
         }
 
@@ -1256,7 +1380,8 @@ bool fstree_read_plist_file(
                     ctx.file,
                     src,
                     result.bytes.data() + dst,
-                    bytes_this
+                    bytes_this,
+                    result.error
                 )) {
                 result.status = "FAIL";
                 result.error = "physical read failed";
@@ -1266,14 +1391,14 @@ bool fstree_read_plist_file(
             dst += bytes_this;
             remaining -= bytes_this;
         }
-        copied = std::max(copied, e.logical + chunk);
+        expected = e.logical + chunk;
     }
 
-    if (copied < file_size) {
+    if (expected < file_size) {
         result.status = "FAIL";
         result.error =
-            "extent coverage gap: " +
-            std::to_string(copied) + "/" +
+            "extent coverage incomplete: " +
+            std::to_string(expected) + "/" +
             std::to_string(file_size);
         return false;
     }
