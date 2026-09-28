@@ -3210,13 +3210,19 @@ bool apfs_replace_plist_payload_safe(
         }
         if (copy_report.plist_file.status != "READ_OK" ||
             copy_report.plist_file.drec_cnid != target_cnid ||
-            copy_report.volumes.empty() ||
-            copy_report.volumes[0].apsb_block !=
-                result.apsb_block ||
-            copy_report.volumes[0].apsb_oid !=
-                result.apsb_oid ||
-            copy_report.volumes[0].xid != result.volume_xid ||
-            copy_report.volumes[0].root_tree_block !=
+            copy_report.plist_file.owner_volume_index >=
+                copy_report.volumes.size()) {
+            error =
+                "REFUSED: pre-write reread owner volume invalid";
+            return false;
+        }
+        const ApfsVolumeInfo& copy_owner =
+            copy_report.volumes[
+                copy_report.plist_file.owner_volume_index];
+        if (copy_owner.apsb_block != result.apsb_block ||
+            copy_owner.apsb_oid != result.apsb_oid ||
+            copy_owner.xid != result.volume_xid ||
+            copy_owner.root_tree_block !=
                 result.resolved_root_block ||
             copy_report.plist_file.xattr_leaf_paddr !=
                 result.target_leaf_block ||
@@ -3260,8 +3266,19 @@ bool apfs_replace_plist_payload_safe(
         read_le64(blk.data()));
 
     // Verify the decmpfs header fields at the value offset.
+    // Bounds-check the full XATTR header region before any field
+    // access: {flags u16, xdata_len u16} at val_off..val_off+4,
+    // then the 16-byte decmpfs header (sig, algo, logical_size)
+    // at val_off+4..val_off+20, then the 1-byte marker at
+    // val_off+20.
     const std::uint64_t val_off =
         result.xattr_val_off_in_leaf;
+    if (val_off + 21 > blk.size()) {
+        CloseHandle(out);
+        error =
+            "REFUSED: XATTR header exceeds leaf bounds";
+        return false;
+    }
     const std::uint16_t stored_xdata_len =
         static_cast<std::uint16_t>(blk[val_off + 2]) |
         (static_cast<std::uint16_t>(
@@ -3303,12 +3320,14 @@ bool apfs_replace_plist_payload_safe(
     dist.QuadPart = static_cast<LONGLONG>(
         result.target_leaf_block *
         report.container.block_size);
+    DWORD written = 0;
     if (!SetFilePointerEx(
             out, dist, nullptr, FILE_BEGIN) ||
         !WriteFile(
             out, blk.data(),
             static_cast<DWORD>(blk.size()),
-            nullptr, nullptr) ||
+            &written, nullptr) ||
+        written != blk.size() ||
         !FlushFileBuffers(out)) {
         CloseHandle(out);
         error = "REFUSED: write/flush failed";
@@ -3340,13 +3359,19 @@ bool apfs_replace_plist_payload_safe(
     }
     if (verify_report.plist_file.status != "READ_OK" ||
         verify_report.plist_file.drec_cnid != target_cnid ||
-        verify_report.volumes.empty() ||
-        verify_report.volumes[0].apsb_block !=
-            result.apsb_block ||
-        verify_report.volumes[0].apsb_oid !=
-            result.apsb_oid ||
-        verify_report.volumes[0].xid != result.volume_xid ||
-        verify_report.volumes[0].root_tree_block !=
+        verify_report.plist_file.owner_volume_index >=
+            verify_report.volumes.size()) {
+        error =
+            "REFUSED: certified reread owner volume invalid";
+        return false;
+    }
+    const ApfsVolumeInfo& verify_owner =
+        verify_report.volumes[
+            verify_report.plist_file.owner_volume_index];
+    if (verify_owner.apsb_block != result.apsb_block ||
+        verify_owner.apsb_oid != result.apsb_oid ||
+        verify_owner.xid != result.volume_xid ||
+        verify_owner.root_tree_block !=
             result.resolved_root_block ||
         verify_report.plist_file.xattr_leaf_paddr !=
             result.target_leaf_block) {
