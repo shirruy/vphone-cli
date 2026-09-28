@@ -548,8 +548,7 @@ std::vector<std::uint8_t> build_two_era_image() {
     // type, IDENTICAL xid to the active era — but its tree maps
     // oid 42 to the ORPHAN APSB (block 14), and the NXSB's direct
     // omap reference (offset 160) points at the legitimate block
-    // 16, NOT this rogue. A "first OMAP-type object at matching
-    // xid wins" scan would select this rogue and hijack authority;
+    // 16, NOT this rogue. A "first OMAP-type object at matching\n// xid wins" scan would select this rogue and hijack authority;
     // the pointer-rooted resolver must ignore it entirely.
     {
         std::vector<std::uint8_t> rogue_phys(kBlockSize, 0);
@@ -1232,15 +1231,13 @@ int main() {
         }
     }
 
-    // Multi-volume counterexample: two volumes where the plist
-    // owner is NOT volume 0. Proves the replacement checks the
-    // exact owner volume, not element 0.
+    // Genuine nonzero-owner multi-volume counterexample: the
+    // NON-OWNER volume (oid 43) sits at block 1 (LOWER block), the
+    // OWNER (oid 42, has the plist) at block 13 (HIGHER block).
+    // After disk-order sorting, owner_volume_index == 1.
     {
-        // Build a base image, then add a second APSB (oid 43,
-        // xid 3, block 19) that resolves FIRST (lower block
-        // number) but has no LaunchDaemons/plist. The plist lives
-        // in the oid-42 volume at block 13 (as in two-era).
-        std::vector<std::uint8_t> multi = build_two_era_image();
+        std::vector<std::uint8_t> multi =
+            build_two_era_image();
 
         auto put = [&](
             std::uint64_t block,
@@ -1250,50 +1247,49 @@ int main() {
                     static_cast<std::size_t>(block) * kBlockSize,
                 blk.data(), kBlockSize);
         };
+        auto get = [&](std::uint64_t block) {
+            std::vector<std::uint8_t> blk(kBlockSize, 0);
+            std::memcpy(
+                blk.data(),
+                multi.data() +
+                    static_cast<std::size_t>(block) * kBlockSize,
+                kBlockSize);
+            return blk;
+        };
 
-        // Second APSB at block 19: oid 43, valid, omap 4 (same
-        // volume OMAP infrastructure; its root tree resolves but
-        // the volume simply has no plist → reader reports it but
-        // the plist owner remains oid 42 at block 13.
+        // Non-owner APSB at block 1: oid 43, valid checksum,
+        // root_tree_oid that resolves to nothing (unique oid 999
+        // not in any OMAP) so it has no LaunchDaemons and no
+        // plist. Its low block number guarantees index 0 after
+        // sorting.
         {
             std::vector<std::uint8_t> apsb(kBlockSize, 0);
-            put_le64(apsb, 8, 43);
+            put_le64(apsb, 8, 43);           // oid 43
             put_le64(apsb, 16, kApsbXid);
             put_le32(apsb, 24, 0x80000009u);
             put_le32(apsb, 32, 0x42535041u);
-            put_le64(apsb, 0x80, 4);
-            put_le64(apsb, 0x88, kRootOid);
+            put_le64(apsb, 0x80, 4);         // volume omap
+            put_le64(apsb, 0x88, 999);       // unique root oid
             put_le64(apsb, 0x90, 3);
-            std::memcpy(
-                apsb.data() + 0x2C0, "second", 6);
+            std::memcpy(apsb.data() + 0x2C0, "novol", 5);
             seal(apsb);
-            put(19, apsb);
+            put(1, apsb);
         }
 
-        // Register oid 43 in the container OMAP tree (block 3)
-        // so the authority resolver accepts the second volume.
+        // Register oid 43 in the container OMAP tree (block 3).
         {
-            // Read current omap tree from block 3, append entry.
-            std::vector<std::uint8_t> omap_blk(kBlockSize, 0);
-            std::memcpy(
-                omap_blk.data(),
-                multi.data() + 3 * kBlockSize,
-                kBlockSize);
-            // Current: 1 entry {oid=42, xid=3} -> 13.
-            // Add second entry {oid=43, xid=3} -> 19.
-            // Update nkeys=2, TOC, key, value.
-            put_le32(omap_blk, 0x24, 2);
+            std::vector<std::uint8_t> omap_blk = get(3);
+            put_le32(omap_blk, 0x24, 2); // 2 entries
             // TOC entry 1 at 0x3c: {k=0x10, v=0x20}
             omap_blk[0x3c] = 0x10; omap_blk[0x3d] = 0x00;
             omap_blk[0x3e] = 0x20; omap_blk[0x3f] = 0x00;
             // Key 1 at 0x48 + 0x10 = 0x58: {43, 3}
             put_le64(omap_blk, 0x58, 43);
             put_le64(omap_blk, 0x60, kApsbXid);
-            // Value 1 at value_base(0xfd8) - 0x20 = 0xfb8:
-            // {flags=0, size=4096, paddr=19}
+            // Value 1 at 0xfd8 - 0x20 = 0xfb8: paddr=1
             put_le32(omap_blk, 0xfb8, 0);
             put_le32(omap_blk, 0xfbc, kBlockSize);
-            put_le64(omap_blk, 0xfc0, 19);
+            put_le64(omap_blk, 0xfc0, 1);
             seal(omap_blk);
             put(3, omap_blk);
         }
@@ -1317,55 +1313,159 @@ int main() {
                 rerr.c_str());
             return 1;
         }
-        // The plist owner must be the oid-42 volume (block 13),
-        // NOT volume 0 (the oid-43 volume at block 19 comes
-        // later in block order → sorted, oid-43@19 is index 1,
-        // oid-42@13 is index 0... wait, 13 < 19 so oid-42 IS
-        // index 0. We need the opposite: make oid-43 come FIRST.
-        // Since we placed oid-43 at block 19 and oid-42 at 13,
-        // the sort puts oid-42@13 first. To make the owner NOT
-        // volume 0, the second volume must have a LOWER block
-        // number. But block 19 > 13. Let's just verify the owner
-        // is correct and the replacement works — the structural
-        // point (no volumes[0] assumption) is enforced by the
-        // code using owner_volume_index everywhere.
-        if (rpt.volumes.empty()) {
+        // Verify genuine nonzero owner.
+        if (rpt.volumes.size() != 2) {
             std::fprintf(
-                stderr, "multi-vol: no volumes\n");
+                stderr,
+                "multi-vol: expected 2 volumes, got %zu\n",
+                rpt.volumes.size());
             return 1;
         }
-        if (rpt.plist_file.status != "READ_OK") {
+        if (rpt.volumes[0].apsb_oid != 43 ||
+            rpt.volumes[0].apsb_block != 1) {
             std::fprintf(
-                stderr, "multi-vol: plist not readable\n");
+                stderr,
+                "multi-vol: non-owner not at index 0\n");
+            return 1;
+        }
+        if (rpt.volumes[1].apsb_oid != 42 ||
+            rpt.volumes[1].apsb_block != 13) {
+            std::fprintf(
+                stderr,
+                "multi-vol: owner not at index 1\n");
+            return 1;
+        }
+        if (rpt.plist_file.status != "READ_OK" ||
+            rpt.plist_file.owner_volume_index != 1) {
+            std::fprintf(
+                stderr,
+                "multi-vol: owner_volume_index=%llu "
+                "(expected 1)\n",
+                static_cast<unsigned long long>(
+                    rpt.plist_file.owner_volume_index));
             return 1;
         }
 
+        // Replace the payload with DIFFERENT bytes (same size).
         const std::string multi_sha =
             sha256_hex(rpt.plist_file.bytes);
+        std::vector<std::uint8_t> replacement =
+            rpt.plist_file.bytes;
+        for (std::size_t i = 0; i < replacement.size();
+             ++i) {
+            replacement[i] =
+                static_cast<std::uint8_t>(
+                    replacement[i] ^ 0x5A);
+        }
+
+        // Save non-owner block for untouched verification.
+        const std::vector<std::uint8_t> non_owner_before =
+            get(1);
+
         DeleteFileA(multi_output.c_str());
         vphone::ApfsMutationResult r;
         std::string err;
         if (!vphone::apfs_replace_plist_payload_safe(
                 multi_source, multi_output, multi_sha,
-                kFileCnid, rpt.plist_file.bytes, r, err) ||
-            !r.success) {
-            // Same-payload replacement is a hash-unchanged
-            // refusal; that is expected. The important part is
-            // that owner provenance was checked BEFORE any
-            // write, which is proven by reaching the
-            // hash-unchanged refusal (not an owner error).
-            if (err.find("hash unchanged") ==
-                std::string::npos) {
+                kFileCnid, replacement, r, err) ||
+            !r.success || !r.reread_verified) {
+            std::fprintf(
+                stderr,
+                "multi-vol replacement failed: %s\n",
+                err.c_str());
+            return 1;
+        }
+
+        // Verify reread bytes match exactly.
+        {
+            vphone::ApfsReaderReport out;
+            std::string oerr;
+            if (!vphone::apfs_read_container(
+                    multi_output, out, oerr)) {
                 std::fprintf(
                     stderr,
-                    "multi-vol replacement: %s\n",
-                    err.c_str());
+                    "multi-vol reread failed: %s\n",
+                    oerr.c_str());
+                return 1;
+            }
+            if (out.plist_file.status != "READ_OK" ||
+                out.plist_file.owner_volume_index != 1 ||
+                out.plist_file.bytes.size() !=
+                    replacement.size() ||
+                std::memcmp(
+                    out.plist_file.bytes.data(),
+                    replacement.data(),
+                    replacement.size()) != 0) {
+                std::fprintf(
+                    stderr,
+                    "multi-vol reread mismatch\n");
+                return 1;
+            }
+            // Owner provenance on reread.
+            if (out.volumes[1].apsb_block != 13 ||
+                out.volumes[1].apsb_oid != 42) {
+                std::fprintf(
+                    stderr,
+                    "multi-vol reread owner mismatch\n");
                 return 1;
             }
         }
+
+        // Non-owner block 1 must remain byte-identical.
+        {
+            std::vector<std::uint8_t> after;
+            if (!read_all(multi_output, after) ||
+                after.size() != multi.size()) {
+                std::fprintf(
+                    stderr,
+                    "multi-vol output read failed\n");
+                return 1;
+            }
+            const std::size_t no_off =
+                static_cast<std::size_t>(1) * kBlockSize;
+            for (std::size_t i = 0; i < kBlockSize; ++i) {
+                if (after[no_off + i] !=
+                    non_owner_before[i]) {
+                    std::fprintf(
+                        stderr,
+                        "multi-vol NON-OWNER MODIFIED\n");
+                    return 1;
+                }
+            }
+        }
+
+        // Source must remain unchanged.
+        {
+            std::vector<std::uint8_t> after;
+            if (!read_all(multi_source, after) ||
+                after != multi) {
+                std::fprintf(
+                    stderr,
+                    "multi-vol SOURCE MODIFIED\n");
+                return 1;
+            }
+        }
+
+        // Negative: wrong source hash → fail closed before write.
+        DeleteFileA(multi_output.c_str());
+        vphone::ApfsMutationResult r2;
+        std::string err2;
+        if (vphone::apfs_replace_plist_payload_safe(
+                multi_source, multi_output,
+                "deadbeef", kFileCnid, replacement,
+                r2, err2) ||
+            err2 != "REFUSED: source hash mismatch") {
+            std::fprintf(
+                stderr,
+                "multi-vol negative: got '%s'\n",
+                err2.c_str());
+            return 1;
+        }
+
         DeleteFileA(multi_source.c_str());
         DeleteFileA(multi_output.c_str());
     }
+
 
     DeleteFileA(source.c_str());
     DeleteFileA(output.c_str());
