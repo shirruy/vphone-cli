@@ -3773,6 +3773,22 @@ bool apfs_resize_plist_payload_safe(
     ApfsMutationResult& result,
     std::string& error
 ) {
+    return apfs_resize_plist_payload_safe_with_post_write_hook(
+        source_image_path, output_image_path,
+        expected_source_sha256, target_cnid, new_payload,
+        nullptr, result, error);
+}
+
+bool apfs_resize_plist_payload_safe_with_post_write_hook(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    void (*post_write_hook)(const std::string& output_path),
+    ApfsMutationResult& result,
+    std::string& error
+) {
     result = {};
     error.clear();
 
@@ -4060,6 +4076,12 @@ bool apfs_resize_plist_payload_safe(
         return false;
     }
     CloseHandle(out);
+
+    // Test seam: allow tests to corrupt the output AFTER the
+    // mutation write but BEFORE the certified reread.
+    if (post_write_hook) {
+        post_write_hook(output_image_path);
+    }
 
     // Certified reread.
     ApfsReaderReport verify_report;

@@ -2403,6 +2403,326 @@ int main() {
         }
     }
 
+
+    // ================================================================
+    // FINAL 6 FIXTURES for Phase 5F closure.
+    // ================================================================
+    {
+        // Helper to build a leaf with a TOC mutation.
+        auto mutate_toc = [&](
+            std::vector<std::uint8_t> leaf,
+            std::uint32_t rec,
+            int field, // 0=key_off, 2=key_len, 4=val_off, 6=val_len
+            std::uint16_t value
+        ) -> std::vector<std::uint8_t> {
+            const std::uint32_t toc = 0x38 + rec * 8;
+            put_le16(leaf, toc + field, value);
+            seal(leaf);
+            return leaf;
+        };
+
+        // Build a base valid leaf for geometry tests.
+        auto build_simple_leaf = [&]() {
+            std::vector<std::uint8_t> blk(kBlockSize, 0);
+            put_le64(blk, 8, 300);
+            put_le64(blk, 16, 3);
+            put_le32(blk, 24, 0x40000003u);
+            put_le32(blk, 28, 0x0000000Eu);
+            blk[0x20] = 0x02; // LEAF
+            blk[0x22] = 0; // level 0
+            put_le32(blk, 0x24, 2);
+            put_le32(blk, 0x28, 0x00100000u);
+            // TOC entry 0: key {0, 8}, value {30, 30}
+            put_le16(blk, 0x38, 0);
+            put_le16(blk, 0x3a, 8);
+            put_le16(blk, 0x3c, 30);
+            put_le16(blk, 0x3e, 30);
+            // TOC entry 1: key {8, 8}, value {70, 40}
+            put_le16(blk, 0x40, 8);
+            put_le16(blk, 0x42, 8);
+            put_le16(blk, 0x44, 70);
+            put_le16(blk, 0x46, 40);
+            // Key base = 0x38 + 16 = 0x48
+            // Key 0 at 0x48..0x50, Key 1 at 0x50..0x58
+            for (int i = 0; i < 8; ++i) blk[0x48 + i] = static_cast<std::uint8_t>(i + 1);
+            for (int i = 0; i < 8; ++i) blk[0x50 + i] = static_cast<std::uint8_t>(i + 9);
+            // Value 0 at 4096-30=4066..4096
+            std::fill(blk.begin() + 4066, blk.begin() + 4096, 0x11);
+            // Value 1 at 4096-70=4026..4066
+            std::fill(blk.begin() + 4026, blk.begin() + 4066, 0x22);
+            seal(blk);
+            return blk;
+        };
+
+        // --- FRAGMENTED LEAF TESTS ---
+        {
+            // Build a fragmented leaf: 2 values with a gap between
+            // them. Value 0 at 4096-30=4066, value 1 at 4096-100=3996.
+            // Gap = [3996+40=4036, 4066) = 30 bytes of hole.
+            auto base = build_simple_leaf();
+            // Move value 1 to have val_off=100 (value at 3996..4036)
+            // This creates a 30-byte gap between 4036 and 4066.
+            auto frag = mutate_toc(base, 1, 4, 100); // val_off=100
+            // Also move the actual value bytes to match
+            {
+                auto tmp = frag;
+                std::fill(tmp.begin() + 3996, tmp.begin() + 4036, 0x22);
+                std::fill(tmp.begin() + 4036, tmp.begin() + 4066, 0x00);
+                seal(tmp);
+                frag = tmp;
+            }
+            vphone::ApfsLeafGeometry fg;
+            std::string ferr;
+            if (!vphone::apfs_parse_leaf_geometry(frag, 0, fg, ferr)) {
+                std::fprintf(stderr, "[frag] parse failed: %s\n", ferr.c_str());
+                return 1;
+            }
+            // Verify fragmentation: actual < packed
+            if (fg.actual_values_start >= fg.packed_values_start) {
+                std::fprintf(stderr, "[frag] not fragmented\n");
+                return 1;
+            }
+
+            // 1. Fragmented capacity: grow target by reclaiming the gap.
+            // Total existing = 30 + 40 = 70. Available = 4096 - key_end.
+            // key_end = 0x58 = 88. Available = 4008.
+            // Grow value 0 by 30 (the gap size): new = 30+30 = 60.
+            // Without repacking, 60 bytes won't fit in the contiguous
+            // space between 4036 and 4096 (only 60 bytes — wait, 4096-4036=60).
+            // But value 1 ends at 4036, so value 0 starts at 4096-60=4036.
+            // That touches value 1's end. With repack: total = 60+40=100
+            // which fits in 4008. Should succeed.
+            std::vector<std::uint8_t> v0_grown(60, 0x33);
+            std::vector<std::uint8_t> grown;
+            vphone::ApfsLeafGeometry grown_geo;
+            std::string grerr;
+            if (!vphone::apfs_reflow_leaf_value(
+                    frag, 0, v0_grown, grown, grown_geo, grerr)) {
+                std::fprintf(stderr, "[frag grow] failed: %s\n", grerr.c_str());
+                return 1;
+            }
+            // Verify: reparse and check values are correct
+            vphone::ApfsLeafGeometry check_geo;
+            std::string cerr_;
+            if (!vphone::apfs_parse_leaf_geometry(grown, 0, check_geo, cerr_)) {
+                std::fprintf(stderr, "[frag grow] reparse failed\n");
+                return 1;
+            }
+            // Verify value 1 is still 40 bytes of 0x22
+            {
+                std::vector<std::uint8_t> v1_check(
+                    grown.begin() + check_geo.records[1].abs_val_start,
+                    grown.begin() + check_geo.records[1].abs_val_end);
+                std::vector<std::uint8_t> v1_expected(40, 0x22);
+                if (v1_check != v1_expected) {
+                    std::fprintf(stderr, "[frag grow] neighbor corrupted\n");
+                    return 1;
+                }
+            }
+            std::printf("REFLOW_FRAGMENTED_CAPACITY_PASS "
+                "actual=%llu packed=%llu gap_reclaimed\n",
+                (unsigned long long)fg.actual_values_start,
+                (unsigned long long)fg.packed_values_start);
+
+            // 2. Fragmented shrink clean: shrink value 0 to 10 bytes.
+            std::vector<std::uint8_t> v0_small(10, 0x44);
+            std::vector<std::uint8_t> shrunk;
+            vphone::ApfsLeafGeometry shrunk_geo;
+            std::string srerr;
+            if (!vphone::apfs_reflow_leaf_value(
+                    frag, 0, v0_small, shrunk, shrunk_geo, srerr)) {
+                std::fprintf(stderr, "[frag shrink] failed: %s\n", srerr.c_str());
+                return 1;
+            }
+            // Verify: every byte in [old actual_start, value_base)
+            // that is NOT part of a new value must be zero.
+            {
+                vphone::ApfsLeafGeometry sg;
+                std::string se;
+                if (!vphone::apfs_parse_leaf_geometry(shrunk, 0, sg, se)) {
+                    std::fprintf(stderr, "[frag shrink] reparse failed\n");
+                    return 1;
+                }
+                // Build a map of bytes that are in-use
+                std::vector<bool> in_use(kBlockSize, false);
+                for (const auto& r : sg.records) {
+                    for (std::uint64_t i = r.abs_val_start;
+                         i < r.abs_val_end; ++i) {
+                        in_use[static_cast<std::size_t>(i)] = true;
+                    }
+                }
+                // Check every byte from old actual_start to value_base
+                for (std::uint64_t i = fg.actual_values_start;
+                     i < sg.value_base; ++i) {
+                    if (!in_use[static_cast<std::size_t>(i)] &&
+                        shrunk[static_cast<std::size_t>(i)] != 0) {
+                        std::fprintf(stderr,
+                            "[frag shrink] stale byte at %llu = 0x%02x\n",
+                            (unsigned long long)i,
+                            shrunk[static_cast<std::size_t>(i)]);
+                        return 1;
+                    }
+                }
+            }
+            std::printf("REFLOW_FRAGMENTED_SHRINK_CLEAN_PASS\n");
+        }
+
+        // --- CROSS-RECORD KEY/VALUE COLLISION ---
+        {
+            auto base = build_simple_leaf();
+            // Extend key 0 to reach into value 1's area (4026).
+            // Key base = 0x48. Key 0 end = 0x48 + key_len.
+            // Set key_len = 4026 - 0x48 = 3958 so key_end = 4026
+            // which equals value 1's start. This triggers the global
+            // key/value check but NOT key overlap (key 1 is at 8..16).
+            // Actually key 1 at offset 8 is WITHIN key 0's new range.
+            // We need to move key 1 beyond key 0.
+            // Better approach: use key_off for record 1 to place it
+            // beyond key 0's extended range.
+            auto bad = base;
+            // Record 0: key_len = 3958 (key 0 extends to 4026)
+            put_le16(bad, 0x38 + 2, 3958);
+            // Record 1: key_off = 3958 (starts right at 4026, beyond key 0)
+            put_le16(bad, 0x40, 3958);
+            // Now: key 0 = [0x48, 4026), key 1 = [4026, 4034)
+            // Value 0 = [4066, 4096), value 1 = [4026, 4066)
+            // Key 1 starts at 4026 which IS value 1's start.
+            // So key 1 overlaps value 1 → global KV check fires.
+            seal(bad);
+            vphone::ApfsLeafGeometry g;
+            std::string e;
+            if (vphone::apfs_parse_leaf_geometry(bad, 0, g, e)) {
+                std::fprintf(stderr, "[cross-record] accepted\n");
+                return 1;
+            }
+            if (e != "key/value regions overlap") {
+                std::fprintf(stderr, "[cross-record] wrong error: %s\n", e.c_str());
+                return 1;
+            }
+            std::printf("GEOMETRY_CROSS_RECORD_KEY_VALUE_COLLISION_REFUSED_PASS\n");
+        }
+
+        // --- ROOT FOOTER COLLISION ---
+        {
+            // Build a root leaf with footer
+            std::vector<std::uint8_t> blk(kBlockSize, 0);
+            put_le64(blk, 8, 300);
+            put_le64(blk, 16, 3);
+            put_le32(blk, 24, 0x40000003u);
+            put_le32(blk, 28, 0x0000000Eu);
+            blk[0x20] = 0x03; // ROOT+LEAF
+            blk[0x22] = 0;
+            put_le32(blk, 0x24, 1);
+            put_le32(blk, 0x28, 0x00080000u); // tlen=8
+            put_le16(blk, 0x38, 0); // key_off
+            put_le16(blk, 0x3a, 8); // key_len
+            put_le16(blk, 0x3c, 0); // val_off
+            put_le16(blk, 0x3e, 100); // val_len
+            for (int i = 0; i < 8; ++i) blk[0x40 + i] = static_cast<std::uint8_t>(i + 1);
+            // Root footer at 4096-40=4056, value_base=4056
+            // Value at 4056-0-100 = 3956..4056 — valid
+            // But now make val_len=200 to cross value_base into footer
+            put_le16(blk, 0x3e, 200); // val_len=200 crosses value_base
+            put_le32(blk, 4056 + 4, kBlockSize); // footer node_size
+            seal(blk);
+
+            vphone::ApfsLeafGeometry g;
+            std::string e;
+            if (vphone::apfs_parse_leaf_geometry(blk, 0, g, e)) {
+                std::fprintf(stderr, "[footer collision] accepted\n");
+                return 1;
+            }
+            // Should fail: value span crosses value_base
+            if (e != "value span crosses value_base") {
+                std::fprintf(stderr, "[footer collision] wrong error: %s\n", e.c_str());
+                return 1;
+            }
+            std::printf("GEOMETRY_FOOTER_COLLISION_REFUSED_PASS\n");
+        }
+
+        // --- POST-WRITE CERT FAILURE TEST ---
+        {
+            const std::string pw_src =
+                dir + "apfs_mut_pw_src.img";
+            const std::string pw_out =
+                dir + "apfs_mut_pw_out.img";
+            if (!write_all(pw_src, base)) {
+                std::fprintf(stderr, "pw src write failed\n");
+                return 1;
+            }
+
+            std::string pw_sha;
+            {
+                vphone::ApfsReaderReport rpt;
+                std::string rerr;
+                if (!vphone::apfs_read_container(pw_src, rpt, rerr)) {
+                    std::fprintf(stderr, "pw reader: %s\n", rerr.c_str());
+                    return 1;
+                }
+                pw_sha = sha256_hex(rpt.plist_file.bytes);
+            }
+
+            // Hook: corrupt the output after the write.
+            auto corrupt = [](const std::string& path) {
+                std::vector<std::uint8_t> blk(kBlockSize, 0);
+                std::ifstream tf(path, std::ios::binary);
+                if (!tf.good()) { std::fprintf(stderr, "pw hook: open failed\n"); std::exit(1); }
+                tf.seekg(0); // corrupt block 0 (NXSB)
+                tf.read(reinterpret_cast<char*>(blk.data()), kBlockSize);
+                if (!tf.good()) { std::fprintf(stderr, "pw hook: read failed\n"); std::exit(1); }
+                tf.close();
+                // Corrupt the NXSB checksum
+                put_le64(blk, 0, 0xDEADBEEF);
+                std::ofstream to(path, std::ios::binary | std::ios::in | std::ios::out);
+                if (!to.good()) { std::fprintf(stderr, "pw hook: write open failed\n"); std::exit(1); }
+                to.seekp(0);
+                to.write(reinterpret_cast<const char*>(blk.data()), kBlockSize);
+                if (!to.good()) { std::fprintf(stderr, "pw hook: write failed\n"); std::exit(1); }
+                to.flush();
+                if (!to.good()) { std::fprintf(stderr, "pw hook: flush failed\n"); std::exit(1); }
+                to.close();
+            };
+
+            DeleteFileA(pw_out.c_str());
+            std::vector<std::uint8_t> payload(12, 'Z');
+            vphone::ApfsMutationResult r;
+            std::string err;
+            const bool ok =
+                vphone::apfs_resize_plist_payload_safe_with_post_write_hook(
+                    pw_src, pw_out, pw_sha, kFileCnid,
+                    payload, corrupt, r, err);
+            if (ok) {
+                std::fprintf(stderr, "[pw] expected failure\n");
+                return 1;
+            }
+
+            // Verify output file was DELETED
+            const DWORD attr = GetFileAttributesA(pw_out.c_str());
+            if (attr != INVALID_FILE_ATTRIBUTES) {
+                std::fprintf(stderr, "[pw] output still exists\n");
+                return 1;
+            }
+
+            // Verify source unchanged
+            {
+                std::vector<std::uint8_t> after;
+                if (!read_all(pw_src, after) || after != base) {
+                    std::fprintf(stderr, "[pw] source modified\n");
+                    return 1;
+                }
+            }
+            std::printf("POSTWRITE_CERT_FAILURE_OUTPUT_REMOVED_PASS\n");
+            std::printf("POSTWRITE_CERT_FAILURE_SOURCE_UNCHANGED_PASS\n");
+
+            DeleteFileA(pw_src.c_str());
+            if (GetFileAttributesA(pw_out.c_str()) == INVALID_FILE_ATTRIBUTES) {
+                // already deleted by the API
+            } else {
+                DeleteFileA(pw_out.c_str());
+            }
+        }
+    }
+
     DeleteFileA(source.c_str());
     DeleteFileA(output.c_str());
     DeleteFileA(variant.c_str());

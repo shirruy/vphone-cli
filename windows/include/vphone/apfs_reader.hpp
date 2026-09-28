@@ -267,4 +267,19 @@ bool apfs_resize_plist_payload_safe(
     std::string& error
 );
 
+// Test seam variant: invokes the callback after the mutated leaf
+// is written+flushed but BEFORE the certified reread, allowing
+// tests to corrupt the output and prove post-write certification
+// failures trigger output cleanup.
+bool apfs_resize_plist_payload_safe_with_post_write_hook(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    void (*post_write_hook)(const std::string& output_path),
+    ApfsMutationResult& result,
+    std::string& error
+);
+
 } // namespace vphone
