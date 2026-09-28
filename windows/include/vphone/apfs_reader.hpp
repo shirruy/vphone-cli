@@ -10,6 +10,8 @@ struct ApfsContainerInfo {
     std::uint32_t block_size = 0;
     std::uint64_t block_count = 0;
     std::uint64_t omap_oid = 0;
+    // Active container checkpoint era from the NXSB object header.
+    std::uint64_t nxsb_xid = 0;
 };
 
 struct ApfsBtreeNodeInfo {

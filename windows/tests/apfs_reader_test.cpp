@@ -128,7 +128,7 @@ int main() {
     // NXSB at block 0.
     {
         std::vector<std::uint8_t> blk(block_size, 0);
-        make_object_header(blk, 1, 1, 0x80000001);
+        make_object_header(blk, 1, 3, 0x80000001);
         put_le32(blk, 32, 0x4253584Eu); // 'NXSB'
         put_le32(blk, 36, block_size);
         put_le64(blk, 40, block_count);
@@ -411,7 +411,7 @@ int main() {
             {
                 std::vector<std::uint8_t> blk(fbs, 0);
                 put_le64(blk, 8, 1);
-                put_le64(blk, 16, 1);
+                put_le64(blk, 16, 3);
                 put_le32(blk, 24, 0x80000001u);
                 put_le32(blk, 32, 0x4253584Eu);
                 put_le32(blk, 36, fbs);
@@ -1217,7 +1217,7 @@ int main() {
             // NXSB block 0.
             {
                 std::vector<std::uint8_t> blk(rbs, 0);
-                put_le64(blk, 8, 1); put_le64(blk, 16, 1);
+                put_le64(blk, 8, 1); put_le64(blk, 16, 3);
                 put_le32(blk, 24, 0x80000001u);
                 put_le32(blk, 32, 0x4253584Eu);
                 put_le32(blk, 36, rbs);

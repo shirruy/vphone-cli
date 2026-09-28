@@ -1682,11 +1682,18 @@ bool apfs_read_container(
             break;
         }
 
+        // The NXSB object xid is the active container checkpoint era
+        // bound. Capture it before the block buffer is reused.
+        const std::uint64_t nxsb_xid = read_le64(block.data() + 16);
+        report.container.nxsb_xid = nxsb_xid;
+
         block.assign(report.container.block_size, 0);
 
         // Scan for volume superblocks (APSB). The checkpoint area holds
-        // multiple NXSB eras; the newest era's APSB is the active volume.
-        // We scan every block once and keep all APSB objects found.
+        // multiple NXSB eras; keep every valid APSB, then select the
+        // newest era per apsb_oid that does not exceed the active
+        // NXSB checkpoint xid.
+        std::vector<ApfsVolumeInfo> scanned_volumes;
         for (std::uint64_t b = 0; b < report.container.block_count; ++b) {
             if (!read_block(
                     file,
@@ -1953,8 +1960,42 @@ bool apfs_read_container(
                 }
             }
 
-            report.volumes.push_back(volume);
+            scanned_volumes.push_back(volume);
         }
+
+        // Active-era selection: per apsb_oid, only the greatest xid
+        // <= nxsb_xid is active. Stale APSBs with the same oid remain
+        // intentionally excluded from the report and cannot win the
+        // LaunchDaemons/plist race by appearing earlier on disk.
+        std::set<std::uint64_t> seen_oids;
+        std::vector<ApfsVolumeInfo> active_era_volumes;
+        for (const auto& candidate : scanned_volumes) {
+            if (candidate.xid > nxsb_xid) {
+                continue;
+            }
+            bool newer_exists = false;
+            for (const auto& other : scanned_volumes) {
+                if (other.apsb_oid == candidate.apsb_oid &&
+                    other.xid > candidate.xid &&
+                    other.xid <= nxsb_xid) {
+                    newer_exists = true;
+                    break;
+                }
+            }
+            if (!newer_exists) {
+                active_era_volumes.push_back(candidate);
+            }
+        }
+        // Stable disk order for deterministic reporting.
+        std::sort(
+            active_era_volumes.begin(),
+            active_era_volumes.end(),
+            [](const ApfsVolumeInfo& a,
+               const ApfsVolumeInfo& b) {
+                return a.apsb_block < b.apsb_block;
+            }
+        );
+        report.volumes = std::move(active_era_volumes);
 
         error.clear();
         CloseHandle(file);
@@ -2370,11 +2411,45 @@ bool apfs_mutate_plist_byte_safe(
     result = {};
     error.clear();
 
-    // Safety: source and output must be distinct.
-    if (source_image_path == output_image_path) {
-        error =
-            "REFUSED: source and output must be distinct paths";
-        return false;
+    // Safety: source and output must be distinct underlying files.
+    // Raw string equality misses path aliases, case variants, and
+    // links that resolve to the same file. Compare volume serial
+    // numbers plus file indices from both opened handles.
+    {
+        HANDLE sa = CreateFileA(
+            source_image_path.c_str(), GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        HANDLE sb = CreateFileA(
+            output_image_path.c_str(), GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        bool same_file = false;
+        if (sa != INVALID_HANDLE_VALUE &&
+            sb != INVALID_HANDLE_VALUE) {
+            BY_HANDLE_FILE_INFORMATION ia {};
+            BY_HANDLE_FILE_INFORMATION ib {};
+            if (GetFileInformationByHandle(sa, &ia) &&
+                GetFileInformationByHandle(sb, &ib)) {
+                same_file =
+                    ia.dwVolumeSerialNumber ==
+                        ib.dwVolumeSerialNumber &&
+                    ia.nFileIndexHigh ==
+                        ib.nFileIndexHigh &&
+                    ia.nFileIndexLow ==
+                        ib.nFileIndexLow;
+            }
+        }
+        if (sa != INVALID_HANDLE_VALUE) CloseHandle(sa);
+        if (sb != INVALID_HANDLE_VALUE) CloseHandle(sb);
+        // Distinct strings that are the same file must refuse.
+        // A missing output is expected on first run and is not
+        // treated as same-file.
+        if (same_file) {
+            error =
+                "REFUSED: source and output must be distinct paths";
+            return false;
+        }
     }
 
     // Safety: source hash must be provided.

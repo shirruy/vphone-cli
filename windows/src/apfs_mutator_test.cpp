@@ -361,13 +361,144 @@ std::vector<std::uint8_t> build_image() {
     {
         std::vector<std::uint8_t> blk(kBlockSize, 0);
         put_le64(blk, 8, 1);
-        put_le64(blk, 16, 1);
+        put_le64(blk, 16, kApsbXid);
         put_le32(blk, 24, 0x80000001u);
         put_le32(blk, 32, 0x4253584Eu);
         put_le32(blk, 36, kBlockSize);
         put_le64(blk, 40, kBlockCount);
         seal(blk);
         put(0, blk);
+    }
+
+    return img;
+}
+
+// Build a two-era image proving active-era selection:
+// - block 7: stale APSB/xid-6-owned leaf with a valid-looking
+//   identical XATTR record (appears EARLIER on disk)
+// - block 8: active xid-9 leaf reachable via root 6 -> OMAP 5
+// The stale leaf is deliberately unreachable from the active
+// root tree but byte-pattern-identical in the XATTR key region.
+std::vector<std::uint8_t> build_two_era_image() {
+    std::vector<std::uint8_t> img = build_image();
+
+    auto put = [&](
+        std::uint64_t block,
+        const std::vector<std::uint8_t>& blk) {
+        std::memcpy(
+            img.data() +
+                static_cast<std::size_t>(block) * kBlockSize,
+            blk.data(), kBlockSize);
+    };
+    auto get = [&](std::uint64_t block) {
+        std::vector<std::uint8_t> blk(kBlockSize, 0);
+        std::memcpy(
+            blk.data(),
+            img.data() +
+                static_cast<std::size_t>(block) * kBlockSize,
+            kBlockSize);
+        return blk;
+    };
+
+    // Copy the active leaf (block 8) to block 7, retag it as a
+    // stale xid-6 object with a different leaf OID. Its payload
+    // differs in one byte ('S' at plist offset 9 instead of 'Y')
+    // so a stale write is detectable by hash/byte inspection.
+    {
+        std::vector<std::uint8_t> stale = get(8);
+        put_le64(stale, 8, 999);       // stale leaf OID
+        put_le64(stale, 16, 2);        // stale xid (< active 3)
+        // Locate the decmpfs payload marker 'Y' (plist byte 9)
+        // and flip it to 'S'.
+        bool flipped = false;
+        for (std::size_t i = 0; i + 1 < stale.size(); ++i) {
+            if (stale[i] == 0xCC &&
+                i + 10 < stale.size() &&
+                stale[i + 10] == 'Y') {
+                stale[i + 10] = 'S';
+                flipped = true;
+                break;
+            }
+        }
+        if (!flipped) {
+            std::fprintf(
+                stderr,
+                "two-era builder: payload marker not found\n");
+            std::exit(1);
+        }
+        seal(stale);
+        put(7, stale);
+    }
+
+    // Add a stale APSB with the same oid (42) but xid 6 at block 9.
+    // It is fully valid and points at a stale OMAP that resolves
+    // the same root oid to the stale leaf (block 7).
+    {
+        // Stale APSB at block 9.
+        std::vector<std::uint8_t> apsb(kBlockSize, 0);
+        put_le64(apsb, 8, kApsbOid);   // same volume oid
+        put_le64(apsb, 16, 2);         // stale xid (< active 3)
+        put_le32(apsb, 24, 0x80000009u);
+        put_le32(apsb, 32, 0x42535041u);
+        put_le64(apsb, 0x80, 10);      // stale omap block
+        put_le64(apsb, 0x88, kRootOid);
+        put_le64(apsb, 0x90, 3);
+        std::memcpy(apsb.data() + 0x2C0, "mutvol", 6);
+        seal(apsb);
+        put(9, apsb);
+
+        // Stale OMAP object at block 10.
+        std::vector<std::uint8_t> omap(kBlockSize, 0);
+        put_le64(omap, 8, 10);
+        put_le64(omap, 16, 2);
+        put_le32(omap, 24, 0x4000000Bu);
+        put_le64(omap, 0x30, 11);      // stale omap tree
+        seal(omap);
+        put(10, omap);
+
+        // Stale OMAP tree at block 11 mapping kRootOid -> block 12.
+        std::vector<std::uint8_t> tree(kBlockSize, 0);
+        put_le64(tree, 8, 11);
+        put_le64(tree, 16, 2);
+        put_le32(tree, 24, 0x40000003u);
+        put_le32(tree, 0x20, 0x00000006u);
+        put_le32(tree, 0x24, 2);
+        put_le32(tree, 0x28, 0x00100000u);
+        tree[0x38] = 0x00; tree[0x39] = 0x00;
+        tree[0x3a] = 0x10; tree[0x3b] = 0x00;
+        tree[0x3c] = 0x10; tree[0x3d] = 0x00;
+        tree[0x3e] = 0x20; tree[0x3f] = 0x00;
+        tree[0x40] = 0x20; tree[0x41] = 0x00;
+        tree[0x42] = 0x30; tree[0x43] = 0x00;
+        put_le64(tree, 0x48, kRootOid);
+        put_le64(tree, 0x50, 2);
+        put_le64(tree, 0x58, 999);     // stale leaf oid
+        put_le64(tree, 0x60, 2);
+        put_le64(tree, 0xfc8 + 8, 12);
+        put_le64(tree, 0xfb8 + 8, 7);
+        seal(tree);
+        put(11, tree);
+
+        // Stale root at block 12 pointing at stale leaf block 7.
+        std::vector<std::uint8_t> root(kBlockSize, 0);
+        put_le64(root, 8, kRootOid);
+        put_le64(root, 16, 2);
+        put_le32(root, 24, 0x40000003u);
+        put_le32(root, 28, 0x0000000Eu);
+        root[0x20] = 0x01;
+        root[0x22] = 0x01;
+        put_le32(root, 0x24, 1);
+        put_le32(root, 0x28, 0x00100000u);
+        root[0x38] = 0x00; root[0x39] = 0x00;
+        root[0x3a] = 0x10; root[0x3b] = 0x00;
+        root[0x3c] = 0x10; root[0x3d] = 0x00;
+        root[0x3e] = 0x08; root[0x3f] = 0x00;
+        put_le64(root, 0x48, (9ull << 60) | 1ull);
+        put_le64(root, 0xfc8, 999);
+        put_le32(root, kBlockSize - 0x28, 0);
+        put_le32(root, kBlockSize - 0x28 + 4, kBlockSize);
+        seal(root);
+        put(12, root);
     }
 
     return img;
@@ -619,6 +750,138 @@ int main() {
                 "got '%s'\n", err.c_str());
             return 1;
         }
+    }
+
+    // Two-era active-checkpoint proof: stale matching leaf appears
+    // EARLIER on disk (block 7) but the active era (NXSB xid 9)
+    // resolves to block 8. The mutation must write ONLY block 8;
+    // block 7 must remain byte-identical.
+    {
+        const auto two_era = build_two_era_image();
+        const std::string era_source =
+            dir + "apfs_mut_two_era_source.img";
+        const std::string era_output =
+            dir + "apfs_mut_two_era_output.img";
+        if (!write_all(era_source, two_era)) {
+            std::fprintf(
+                stderr, "two-era source write failed\n");
+            return 1;
+        }
+        DeleteFileA(era_output.c_str());
+
+        vphone::ApfsReaderReport rpt;
+        std::string rerr;
+        if (!vphone::apfs_read_container(
+                era_source, rpt, rerr)) {
+            std::fprintf(
+                stderr, "two-era reader failed: %s\n",
+                rerr.c_str());
+            return 1;
+        }
+        // Exactly one active volume (the xid-9 APSB at block 1);
+        // the stale xid-6 APSB at block 9 must be excluded.
+        if (rpt.volumes.size() != 1 ||
+            rpt.volumes[0].xid != kApsbXid ||
+            rpt.volumes[0].apsb_block != 1) {
+            std::fprintf(
+                stderr,
+                "two-era active selection wrong: %zu volumes, "
+                "first xid=%llu block=%llu\n",
+                rpt.volumes.size(),
+                rpt.volumes.empty() ? 0ull :
+                    static_cast<unsigned long long>(
+                        rpt.volumes[0].xid),
+                rpt.volumes.empty() ? 0ull :
+                    static_cast<unsigned long long>(
+                        rpt.volumes[0].apsb_block));
+            return 1;
+        }
+
+        const std::string era_sha =
+            sha256_hex(rpt.plist_file.bytes);
+        vphone::ApfsMutationResult r;
+        std::string err;
+        if (!vphone::apfs_mutate_plist_byte_safe(
+                era_source, era_output, era_sha, kFileCnid,
+                9, 'Y', 'Q', r, err) ||
+            !r.success || !r.reread_verified) {
+            std::fprintf(
+                stderr,
+                "two-era safe mutation failed: %s\n",
+                err.c_str());
+            return 1;
+        }
+
+        // The write must target the ACTIVE leaf (block 8), never
+        // the stale leaf (block 7).
+        if (r.target_leaf_block != 8) {
+            std::fprintf(
+                stderr,
+                "two-era wrote wrong leaf: %llu (expected 8)\n",
+                static_cast<unsigned long long>(
+                    r.target_leaf_block));
+            return 1;
+        }
+
+        // Stale leaf byte-identity proof.
+        std::vector<std::uint8_t> after;
+        if (!read_all(era_output, after) ||
+            after.size() != two_era.size()) {
+            std::fprintf(
+                stderr, "two-era output read failed\n");
+            return 1;
+        }
+        const std::size_t stale_off =
+            static_cast<std::size_t>(7) * kBlockSize;
+        for (std::size_t i = 0; i < kBlockSize; ++i) {
+            if (after[stale_off + i] !=
+                    two_era[stale_off + i]) {
+                std::fprintf(
+                    stderr,
+                    "two-era STALE LEAF MODIFIED at +%zu\n", i);
+                return 1;
+            }
+        }
+
+        // Active leaf must contain exactly one changed data byte
+        // plus the checksum word.
+        const std::size_t active_off =
+            static_cast<std::size_t>(8) * kBlockSize;
+        std::size_t changed = 0;
+        for (std::size_t i = 0; i < kBlockSize; ++i) {
+            if (after[active_off + i] !=
+                    two_era[active_off + i]) {
+                ++changed;
+            }
+        }
+        // 1 data byte + up to 8 checksum bytes (word may collide)
+        if (changed == 0 || changed > 9) {
+            std::fprintf(
+                stderr,
+                "two-era active leaf change count %zu "
+                "out of range\n", changed);
+            return 1;
+        }
+
+        // Era provenance on the reread must match the same
+        // APSB/xid/root chain.
+        vphone::ApfsReaderReport out_rpt;
+        std::string oerr;
+        if (!vphone::apfs_read_container(
+                era_output, out_rpt, oerr) ||
+            out_rpt.volumes.size() != 1 ||
+            out_rpt.volumes[0].xid != kApsbXid ||
+            out_rpt.volumes[0].apsb_block != 1 ||
+            out_rpt.volumes[0].root_tree_block != 6) {
+            std::fprintf(
+                stderr,
+                "two-era output provenance mismatch: %s\n",
+                oerr.c_str());
+            return 1;
+        }
+
+        DeleteFileA(era_source.c_str());
+        DeleteFileA(era_output.c_str());
     }
 
     DeleteFileA(source.c_str());
