@@ -1065,7 +1065,9 @@ bool fstree_read_plist_file(
             return true;
         }
             if (rec.value_len < kInodeValBaseSize) {
-                return true;
+                ino.parse_error =
+                    "INODE value shorter than base structure";
+                return false;
             }
             ino.found = true;
             ino.parent_id = read_le64(rec.value + 0x00);
@@ -1085,7 +1087,16 @@ bool fstree_read_plist_file(
             // Each apfs_x_field: { x_type u8, x_flags u8, x_size u16 }
             // Each value consumes round_up(x_size, 8) bytes.
             const std::uint16_t xfields_off = 0x5c;
-            if (rec.value_len >= xfields_off + kXfBlobHeaderSize) {
+            if (rec.value_len == xfields_off) {
+                // Base-only inode: valid, no xfields to parse.
+            } else if (rec.value_len > xfields_off &&
+                       rec.value_len < xfields_off + kXfBlobHeaderSize) {
+                // Partial xf_blob header (0x5d..0x5f): malformed.
+                ino.parse_error =
+                    "xfield partial xf_blob header";
+                return false;
+            } else if (rec.value_len >=
+                       xfields_off + kXfBlobHeaderSize) {
                 const std::uint8_t* xf = rec.value + xfields_off;
                 const std::uint16_t num_exts =
                     static_cast<std::uint16_t>(xf[0]) |
@@ -1152,6 +1163,17 @@ bool fstree_read_plist_file(
                             "xfield xf_used_data mismatch: consumed " +
                             std::to_string(consumed_padded) +
                             " expected " + std::to_string(used_data);
+                        return false;
+                    }
+
+                    // Collection-size contract: metadata area +
+                    // consumed padded values must fill the inode
+                    // value exactly (no silent trailing bytes).
+                    if (meta_end + consumed_padded != rec.value_len) {
+                        ino.parse_error =
+                            "xfield collection-size mismatch: " +
+                            std::to_string(meta_end + consumed_padded) +
+                            " != " + std::to_string(rec.value_len);
                         return false;
                     }
             }
@@ -1486,6 +1508,7 @@ bool fstree_read_plist_file(
                 result.error = "overlapping extents";
                 return false;
             }
+
         }
     }
 
