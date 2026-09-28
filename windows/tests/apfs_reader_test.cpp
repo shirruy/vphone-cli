@@ -723,6 +723,7 @@ int main() {
             InodeBadUsedData,        // consumed != xf_used_data
             InodeShortDstream,       // DSTREAM x_size < 40
             InodeTrailingBytes,      // collection-size mismatch
+            InodeMultiEntryU16,      // 2 entries, DSTREAM second, x_size>255
             XattrBadSignature,       // signature != 0x636D7066
             XattrBadMarker,          // xdata[16] != 0xCC
             XattrSizeMismatch,       // logical_size != xdata_len - 17
@@ -1012,6 +1013,36 @@ int main() {
                         inode_val[0x60] = 8;
                         inode_val[0x62] = 40;
                         put_le64(inode_val, 0x64, 100);
+                    } else if (cfg.mut == Mut::InodeMultiEntryU16) {
+                        // 2 entries: first is a harmless type with
+                        // x_size=257 (proves u16), padded to 264.
+                        // Second is DSTREAM (type 8, size 40).
+                        // xf_used_data = 264 + 40 = 304.
+                        inode_val.assign(
+                            0x5c + 4 + 2 * 4 + 264 + 40, 0);
+                        put_le64(inode_val, 0, 5);
+                        put_le64(inode_val, 8, kFileCnid);
+                        put_le32(inode_val, 0x50, 0x81a4);
+                        // xf_blob: 2 exts, used_data=304.
+                        put_le16_safe(inode_val, 0x5c, 2);
+                        put_le16_safe(inode_val, 0x5e, 304);
+                        // xfield[0]: type=1 (name), x_size=257.
+                        inode_val[0x60] = 1;   // type
+                        inode_val[0x61] = 0;   // flags
+                        inode_val[0x62] = 0x01; // size lo (257 = 0x0101)
+                        inode_val[0x63] = 0x01; // size hi
+                        // Value[0] at 0x68, 264 bytes (padded).
+                        // (zeros are fine for a harmless type)
+                        // xfield[1] at 0x64: type=8 (DSTREAM), size=40.
+                        inode_val[0x64] = 8;   // type
+                        inode_val[0x65] = 0;   // flags
+                        inode_val[0x66] = 40;  // size lo
+                        inode_val[0x67] = 0;   // size hi
+                        // Value[1] at 0x68+264 = 0x170, 40 bytes.
+                        put_le64(
+                            inode_val,
+                            0x5c + 4 + 2 * 4 + 264,
+                            100); // dstream size
                     } else {
                         // Valid inode with DSTREAM (or compressed for XATTR tests).
                         inode_val.assign(
@@ -1164,9 +1195,12 @@ int main() {
                         // phys at last block, length needs 2 blocks.
                         add_extent(0, 8192, rbc - 1); // needs 2 blocks
                     } else if (cfg.mut == Mut::ExtentLogicalOverflow) {
-                        // Two overlapping extents (logical overlap).
-                        add_extent(0, 100, 12);
-                        add_extent(50, 100, 14); // overlaps [50,100)
+                        // True u64 overflow: first extent logical at
+                        // UINT64_MAX-10 with length 20 (end overflows).
+                        add_extent(
+                            0xFFFFFFFFFFFFFFF6ull, 20, 12);
+                        add_extent(
+                            0xFFFFFFFFFFFFFFFBull, 1, 13);
                     } else {
                         // Valid: one extent covering [0,100).
                         add_extent(0, 100, 12);
@@ -1305,7 +1339,7 @@ int main() {
 
         auto assert_error = [&](
             const std::pair<std::string, std::string>& result,
-            const char* expected_substring,
+            const std::string& expected_error,
             const char* tag
         ) -> bool {
             if (result.first != "FAIL" && result.first != "UNSUPPORTED") {
@@ -1317,13 +1351,12 @@ int main() {
                 );
                 return false;
             }
-            if (result.second.find(expected_substring) ==
-                std::string::npos) {
+            if (result.second != expected_error) {
                 std::fprintf(
                     stderr,
-                    "[%s] error '%s' missing '%s'\n",
+                    "[%s] error mismatch:\n  expected: '%s'\n  actual:   '%s'\n",
                     tag, result.second.c_str(),
-                    expected_substring
+                    expected_error.c_str()
                 );
                 return false;
             }
@@ -1334,53 +1367,57 @@ int main() {
         struct TestCase {
             Mut mut;
             const char* tag;
-            const char* expected_error; // null = positive
+            std::string expected_error; // empty = positive
             bool expect_ok;
         };
 
         const TestCase cases[] = {
             // Positive baseline.
             {Mut::None, "valid",
-             nullptr, true},
+             "", true},
+            // Multi-entry xfield positive: 2 entries, DSTREAM second,
+            // x_size > 255 proving u16, 8-byte padding.
+            {Mut::InodeMultiEntryU16, "multi_u16",
+             "", true},
             // INODE/xfield.
             {Mut::InodeShortBase, "short_base",
-             "INODE value shorter than base structure", false},
+             "INODE parse: INODE value shorter than base structure", false},
             {Mut::InodeBaseOnly, "base_only",
-             "all", false}, // valid base but no dstream; generic reject
+             "no readable plist candidate: 1 evaluated, none produced a supported uncompressed dstream-backed or decmpfs-PLAIN file", false},
             {Mut::InodePartialXfHeader, "partial_xf",
-             "xfield partial xf_blob header", false},
+             "INODE parse: xfield partial xf_blob header", false},
             {Mut::InodeXfMetaOverflow, "meta_overflow",
-             "xfield metadata bounds exceeded", false},
+             "INODE parse: xfield metadata bounds exceeded", false},
             {Mut::InodeXfValOverflow, "val_overflow",
-             "xfield value bounds exceeded", false},
+             "INODE parse: xfield value bounds exceeded", false},
             {Mut::InodeBadUsedData, "bad_used_data",
-             "xfield xf_used_data mismatch", false},
+             "INODE parse: xfield xf_used_data mismatch: consumed 40 expected 48", false},
             {Mut::InodeShortDstream, "short_dstream",
-             "DSTREAM xfield value too short", false},
+             "INODE parse: DSTREAM xfield value too short", false},
             {Mut::InodeTrailingBytes, "trailing_bytes",
-             "xfield collection-size mismatch", false},
+             "INODE parse: xfield collection-size mismatch: 140 != 148", false},
             // XATTR/decmpfs (these need compressed inode path).
             {Mut::XattrBadSignature, "bad_sig",
-             "XATTR bad cmpf signature", false},
+             "XATTR parse: XATTR bad cmpf signature", false},
             {Mut::XattrBadMarker, "bad_marker",
-             "XATTR bad 0xCC marker", false},
+             "XATTR parse: XATTR bad 0xCC marker", false},
             {Mut::XattrSizeMismatch, "size_mismatch",
-             "XATTR logical-size mismatch", false},
+             "XATTR parse: XATTR logical-size mismatch", false},
             {Mut::XattrBadXdataLen, "bad_xdata_len",
-             "XATTR xdata_len mismatch", false},
+             "XATTR parse: XATTR xdata_len mismatch", false},
             {Mut::XattrDataStreamOnly, "datastream_only",
-             "XATTR DATA_STREAM not supported", false},
+             "XATTR parse: XATTR DATA_STREAM not supported", false},
             {Mut::XattrAmbiguous, "ambiguous",
-             "XATTR DATA_STREAM not supported", false},
+             "XATTR parse: XATTR DATA_STREAM not supported", false},
             // FILE_EXTENT.
             {Mut::ExtentBadKeyLen, "ext_bad_key",
-             "FILE_EXTENT malformed size", false},
+             "FILE_EXTENT parse: FILE_EXTENT malformed size: key=6 value=24", false},
             {Mut::ExtentLeadingGap, "ext_lead_gap",
-             "extent coverage gap", false},
+             "extent coverage gap at logical offset 0 (next extent at 50)", false},
             {Mut::ExtentMiddleGap, "ext_mid_gap",
-             "extent coverage gap", false},
+             "extent coverage gap at logical offset 40 (next extent at 60)", false},
             {Mut::ExtentHoleAccepted, "ext_hole",
-             nullptr, true}, // positive
+             "", true}, // positive
             {Mut::ExtentPhysOverrun, "ext_phys_overrun",
              "extent physical range exceeds container", false},
             {Mut::ExtentLogicalOverflow, "ext_logical_overflow",
@@ -1393,7 +1430,7 @@ int main() {
             const auto blocks = build_read_path_image(cfg);
             const auto result = run_read_path(blocks, tc.tag);
 
-            if (tc.expect_ok) {
+            if (tc.expected_error.empty()) {
                 if (result.first != "READ_OK") {
                     std::fprintf(
                         stderr,

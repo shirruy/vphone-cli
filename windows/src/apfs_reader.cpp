@@ -1397,11 +1397,10 @@ bool fstree_read_plist_file(
     if (!inode_ok) {
         result.status = "FAIL";
         result.error =
-            "all " +
+            "no readable plist candidate: " +
             std::to_string(candidates.size()) +
-            " LaunchDaemons plists carry " +
-            "APFS_INOBSD_COMPRESSED; no uncompressed file exists " +
-            "in this directory for the first gate";
+            " evaluated, none produced a supported " +
+            "uncompressed dstream-backed or decmpfs-PLAIN file";
         return false;
     }
 
