@@ -2454,152 +2454,265 @@ int main() {
             return blk;
         };
 
-        // --- FRAGMENTED LEAF TESTS ---
+        // --- FRAGMENTED LEAF TESTS (constrained capacity) ---
         {
-            // Build a fragmented leaf: 2 values with a gap between
-            // them. Value 0 at 4096-30=4066, value 1 at 4096-100=3996.
-            // Gap = [3996+40=4036, 4066) = 30 bytes of hole.
-            auto base = build_simple_leaf();
-            // Move value 1 to have val_off=100 (value at 3996..4036)
-            // This creates a 30-byte gap between 4036 and 4066.
-            auto frag = mutate_toc(base, 1, 4, 100); // val_off=100
-            // Also move the actual value bytes to match
-            {
-                auto tmp = frag;
-                std::fill(tmp.begin() + 3996, tmp.begin() + 4036, 0x22);
-                std::fill(tmp.begin() + 4036, tmp.begin() + 4066, 0x00);
-                seal(tmp);
-                frag = tmp;
-            }
+            // Build a constrained leaf where legacy contiguous free
+            // is only 6 bytes, but a 30-byte internal fragmentation
+            // gap exists. Grow delta (20) > legacy free (6).
+            std::vector<std::uint8_t> blk(kBlockSize, 0);
+            put_le64(blk, 8, 300);
+            put_le64(blk, 16, 3);
+            put_le32(blk, 24, 0x40000003u);
+            put_le32(blk, 28, 0x0000000Eu);
+            blk[0x20] = 0x02; // LEAF
+            blk[0x22] = 0;
+            put_le32(blk, 0x24, 2);
+            // tlen = 16 (2 entries * 8 bytes)
+            put_le32(blk, 0x28, 0x00100000u);
+
+            // We want:
+            // key_region_end ≈ 3990
+            // actual_values_start ≈ 3996 (value B starts here)
+            // gap = 30 bytes (value B ends at 4026, value A starts at 4056)
+            // value_base = 4096
+            //
+            // Key region: key_base=0x48, keys fill [0x48, key_end)
+            // We need key_end ≈ 3990. Key 0 has key_len = 3990-72 = 3918.
+            // But key 1 needs to be after key 0. Place key 1 at 3918.
+            // Key 1 key_len = 8 (ends at 3990).
+            //
+            // Values: value A (record 0) at [4056,4096) = 40 bytes
+            // value B (record 1) at [3996,4026) = 30 bytes
+            // gap = [4026, 4056) = 30 bytes
+            //
+            // TOC: record 0 = target (value A)
+            // record 1 = neighbor (value B)
+
+            // TOC entry 0: key {0, 3910}, value {40, 40}
+            put_le16(blk, 0x38, 0);         // key_off
+            put_le16(blk, 0x3a, 3910);      // key_len
+            put_le16(blk, 0x3c, 40);        // val_off
+            put_le16(blk, 0x3e, 40);        // val_len
+            // TOC entry 1: key {3910, 8}, value {100, 30}
+            put_le16(blk, 0x40, 3910);      // key_off
+            put_le16(blk, 0x42, 8);         // key_len
+            put_le16(blk, 0x44, 100);       // val_off
+            put_le16(blk, 0x46, 30);        // val_len
+
+            // Key 0 at key_base(0x48) + 0 = [72, 3982)
+            std::fill(blk.begin() + 72, blk.begin() + 3982, 0x41);
+            // Key 1 at key_base + 3910 = [3982, 3990)
+            std::fill(blk.begin() + 3982, blk.begin() + 3990, 0x42);
+            // Value A (record 0) at 4096-40=4056..4096
+            std::fill(blk.begin() + 4056, blk.begin() + 4096, 0x11);
+            // Value B (record 1) at 4096-100=3996..4026
+            std::fill(blk.begin() + 3996, blk.begin() + 4026, 0x22);
+            // Gap at [4026, 4056) — leave as zeros
+            seal(blk);
+
+            // Parse and verify constrained geometry
             vphone::ApfsLeafGeometry fg;
             std::string ferr;
-            if (!vphone::apfs_parse_leaf_geometry(frag, 0, fg, ferr)) {
-                std::fprintf(stderr, "[frag] parse failed: %s\n", ferr.c_str());
-                return 1;
-            }
-            // Verify fragmentation: actual < packed
-            if (fg.actual_values_start >= fg.packed_values_start) {
-                std::fprintf(stderr, "[frag] not fragmented\n");
+            if (!vphone::apfs_parse_leaf_geometry(blk, 0, fg, ferr)) {
+                std::fprintf(stderr, "[frag2] parse failed: %s\n", ferr.c_str());
                 return 1;
             }
 
-            // 1. Fragmented capacity: grow target by reclaiming the gap.
-            // Total existing = 30 + 40 = 70. Available = 4096 - key_end.
-            // key_end = 0x58 = 88. Available = 4008.
-            // Grow value 0 by 30 (the gap size): new = 30+30 = 60.
-            // Without repacking, 60 bytes won't fit in the contiguous
-            // space between 4036 and 4096 (only 60 bytes — wait, 4096-4036=60).
-            // But value 1 ends at 4036, so value 0 starts at 4096-60=4036.
-            // That touches value 1's end. With repack: total = 60+40=100
-            // which fits in 4008. Should succeed.
-            std::vector<std::uint8_t> v0_grown(60, 0x33);
-            std::vector<std::uint8_t> grown;
+            // Assertions: legacy_free < grow_delta
+            const std::uint64_t legacy_free =
+                fg.actual_values_start - fg.key_region_end;
+            const std::uint64_t old_target_size = 40;
+            const std::uint64_t new_target_size = 60; // grow by 20
+            const std::uint64_t grow_delta =
+                new_target_size - old_target_size;
+            if (!(grow_delta > legacy_free)) {
+                std::fprintf(stderr,
+                    "[frag2] grow_delta(%llu) <= legacy_free(%llu)\n"
+                    "  fixture does not prove fragmentation reclaim\n",
+                    (unsigned long long)grow_delta,
+                    (unsigned long long)legacy_free);
+                return 1;
+            }
+            // Assert new_total <= available
+            const std::uint64_t new_total =
+                new_target_size + 30; // + neighbor 30 bytes
+            const std::uint64_t available =
+                fg.value_base - fg.key_region_end;
+            if (new_total > available) {
+                std::fprintf(stderr,
+                    "[frag2] new_total(%llu) > available(%llu)\n",
+                    (unsigned long long)new_total,
+                    (unsigned long long)available);
+                return 1;
+            }
+
+            // Perform reflow: grow target from 40 to 60
+            std::vector<std::uint8_t> v_grown(60, 0x33);
+            std::vector<std::uint8_t> grown_leaf;
             vphone::ApfsLeafGeometry grown_geo;
             std::string grerr;
             if (!vphone::apfs_reflow_leaf_value(
-                    frag, 0, v0_grown, grown, grown_geo, grerr)) {
-                std::fprintf(stderr, "[frag grow] failed: %s\n", grerr.c_str());
+                    blk, 0, v_grown, grown_leaf, grown_geo, grerr)) {
+                std::fprintf(stderr,
+                    "[frag2] reflow failed: %s\n", grerr.c_str());
                 return 1;
             }
-            // Verify: reparse and check values are correct
-            vphone::ApfsLeafGeometry check_geo;
-            std::string cerr_;
-            if (!vphone::apfs_parse_leaf_geometry(grown, 0, check_geo, cerr_)) {
-                std::fprintf(stderr, "[frag grow] reparse failed\n");
-                return 1;
-            }
-            // Verify value 1 is still 40 bytes of 0x22
+
+            // Verify neighbor value preserved
             {
+                vphone::ApfsLeafGeometry cg;
+                std::string ce;
+                if (!vphone::apfs_parse_leaf_geometry(grown_leaf, 0, cg, ce)) {
+                    std::fprintf(stderr, "[frag2] reparse failed: %s\n", ce.c_str());
+                    return 1;
+                }
                 std::vector<std::uint8_t> v1_check(
-                    grown.begin() + check_geo.records[1].abs_val_start,
-                    grown.begin() + check_geo.records[1].abs_val_end);
-                std::vector<std::uint8_t> v1_expected(40, 0x22);
+                    grown_leaf.begin() + cg.records[1].abs_val_start,
+                    grown_leaf.begin() + cg.records[1].abs_val_end);
+                std::vector<std::uint8_t> v1_expected(30, 0x22);
                 if (v1_check != v1_expected) {
-                    std::fprintf(stderr, "[frag grow] neighbor corrupted\n");
+                    std::fprintf(stderr, "[frag2] neighbor corrupted\n");
                     return 1;
                 }
             }
-            std::printf("REFLOW_FRAGMENTED_CAPACITY_PASS "
-                "actual=%llu packed=%llu gap_reclaimed\n",
-                (unsigned long long)fg.actual_values_start,
-                (unsigned long long)fg.packed_values_start);
 
-            // 2. Fragmented shrink clean: shrink value 0 to 10 bytes.
-            std::vector<std::uint8_t> v0_small(10, 0x44);
+            std::printf("REFLOW_FRAGMENTED_CAPACITY_PASS "
+                "legacy_free=%llu grow_delta=%llu fragmented_gap=30 "
+                "new_total=%llu available=%llu\n",
+                (unsigned long long)legacy_free,
+                (unsigned long long)grow_delta,
+                (unsigned long long)new_total,
+                (unsigned long long)available);
+
+            // --- FRAGMENTED SHRINK CLEAN ---
+            std::vector<std::uint8_t> v_small(10, 0x44);
             std::vector<std::uint8_t> shrunk;
             vphone::ApfsLeafGeometry shrunk_geo;
             std::string srerr;
             if (!vphone::apfs_reflow_leaf_value(
-                    frag, 0, v0_small, shrunk, shrunk_geo, srerr)) {
-                std::fprintf(stderr, "[frag shrink] failed: %s\n", srerr.c_str());
+                    blk, 0, v_small, shrunk, shrunk_geo, srerr)) {
+                std::fprintf(stderr, "[frag2 shrink] failed: %s\n", srerr.c_str());
                 return 1;
             }
-            // Verify: every byte in [old actual_start, value_base)
-            // that is NOT part of a new value must be zero.
+            // Verify released bytes are zero
             {
                 vphone::ApfsLeafGeometry sg;
                 std::string se;
                 if (!vphone::apfs_parse_leaf_geometry(shrunk, 0, sg, se)) {
-                    std::fprintf(stderr, "[frag shrink] reparse failed\n");
+                    std::fprintf(stderr, "[frag2 shrink] reparse failed\n");
                     return 1;
                 }
-                // Build a map of bytes that are in-use
                 std::vector<bool> in_use(kBlockSize, false);
                 for (const auto& r : sg.records) {
-                    for (std::uint64_t i = r.abs_val_start;
-                         i < r.abs_val_end; ++i) {
-                        in_use[static_cast<std::size_t>(i)] = true;
+                    for (std::uint64_t j = r.abs_val_start;
+                         j < r.abs_val_end; ++j) {
+                        in_use[static_cast<std::size_t>(j)] = true;
                     }
                 }
-                // Check every byte from old actual_start to value_base
-                for (std::uint64_t i = fg.actual_values_start;
-                     i < sg.value_base; ++i) {
-                    if (!in_use[static_cast<std::size_t>(i)] &&
-                        shrunk[static_cast<std::size_t>(i)] != 0) {
+                for (std::uint64_t j = fg.actual_values_start;
+                     j < sg.value_base; ++j) {
+                    if (!in_use[static_cast<std::size_t>(j)] &&
+                        shrunk[static_cast<std::size_t>(j)] != 0) {
                         std::fprintf(stderr,
-                            "[frag shrink] stale byte at %llu = 0x%02x\n",
-                            (unsigned long long)i,
-                            shrunk[static_cast<std::size_t>(i)]);
+                            "[frag2 shrink] stale byte at %llu\n",
+                            (unsigned long long)j);
                         return 1;
                     }
                 }
             }
             std::printf("REFLOW_FRAGMENTED_SHRINK_CLEAN_PASS\n");
         }
-
-        // --- CROSS-RECORD KEY/VALUE COLLISION ---
+        // --- CROSS-RECORD KEY/VALUE COLLISION (clean) ---
         {
-            auto base = build_simple_leaf();
-            // Extend key 0 to reach into value 1's area (4026).
-            // Key base = 0x48. Key 0 end = 0x48 + key_len.
-            // Set key_len = 4026 - 0x48 = 3958 so key_end = 4026
-            // which equals value 1's start. This triggers the global
-            // key/value check but NOT key overlap (key 1 is at 8..16).
-            // Actually key 1 at offset 8 is WITHIN key 0's new range.
-            // We need to move key 1 beyond key 0.
-            // Better approach: use key_off for record 1 to place it
-            // beyond key 0's extended range.
-            auto bad = base;
-            // Record 0: key_len = 3958 (key 0 extends to 4026)
-            put_le16(bad, 0x38 + 2, 3958);
-            // Record 1: key_off = 3958 (starts right at 4026, beyond key 0)
-            put_le16(bad, 0x40, 3958);
-            // Now: key 0 = [0x48, 4026), key 1 = [4026, 4034)
-            // Value 0 = [4066, 4096), value 1 = [4026, 4066)
-            // Key 1 starts at 4026 which IS value 1's start.
-            // So key 1 overlaps value 1 → global KV check fires.
-            seal(bad);
+            // 3 records with:
+            // - every own key/value pair non-overlapping
+            // - all keys mutually disjoint
+            // - all values mutually disjoint
+            // - ONLY record 0's key overlaps record 2's value
+            std::vector<std::uint8_t> blk(kBlockSize, 0);
+            put_le64(blk, 8, 300);
+            put_le64(blk, 16, 3);
+            put_le32(blk, 24, 0x40000003u);
+            put_le32(blk, 28, 0x0000000Eu);
+            blk[0x20] = 0x02; // LEAF
+            blk[0x22] = 0;
+            put_le32(blk, 0x24, 3);
+            put_le32(blk, 0x28, 0x00180000u); // tlen=24 (3*8)
+
+            // key_base = 0x38 + 24 = 0x50 (80)
+            // value_base = 4096
+            //
+            // Record 0: key [4030,4038) → key_off = 4030-80 = 3950, len=8
+            //            value [4080,4096) → val_off = 16, len = 16
+            // Record 1: key [80,88) → key_off = 0, len = 8
+            //            value [4060,4070) → val_off = 36, len = 10
+            // Record 2: key [88,96) → key_off = 8, len = 8
+            //            value [4026,4046) → val_off = 70, len = 20
+            //
+            // Own-record checks:
+            //   rec 0: key [4030,4038) vs val [4080,4096) → NO overlap
+            //   rec 1: key [80,88) vs val [4060,4070) → NO overlap
+            //   rec 2: key [88,96) vs val [4026,4046) → NO overlap
+            // Cross-record:
+            //   rec 0 key [4030,4038) vs rec 2 val [4026,4046) → OVERLAP!
+            // Keys disjoint: [80,88), [88,96), [4030,4038) → disjoint
+            // Values disjoint: [4026,4046), [4060,4070), [4080,4096) → disjoint
+
+            // TOC entry 0
+            put_le16(blk, 0x38, 3950); // key_off
+            put_le16(blk, 0x3a, 8);    // key_len
+            put_le16(blk, 0x3c, 16);   // val_off
+            put_le16(blk, 0x3e, 16);   // val_len
+            // TOC entry 1
+            put_le16(blk, 0x40, 0);    // key_off
+            put_le16(blk, 0x42, 8);    // key_len
+            put_le16(blk, 0x44, 36);   // val_off
+            put_le16(blk, 0x46, 10);   // val_len
+            // TOC entry 2
+            put_le16(blk, 0x48, 8);    // key_off
+            put_le16(blk, 0x4a, 8);    // key_len
+            put_le16(blk, 0x4c, 70);   // val_off
+            put_le16(blk, 0x4e, 20);   // val_len
+
+            // Write key bytes
+            std::fill(blk.begin() + 80, blk.begin() + 88, 0x01);   // key 1
+            std::fill(blk.begin() + 88, blk.begin() + 96, 0x02);   // key 2
+            std::fill(blk.begin() + 4030, blk.begin() + 4038, 0x03); // key 0
+            // Write value bytes
+            std::fill(blk.begin() + 4080, blk.begin() + 4096, 0xAA); // val 0
+            std::fill(blk.begin() + 4060, blk.begin() + 4070, 0xBB); // val 1
+            std::fill(blk.begin() + 4026, blk.begin() + 4046, 0xCC); // val 2
+            seal(blk);
+
+            // Verify fixture properties before calling parser
+            {
+                // Own-record: no overlap
+                // rec 0: key [4030,4038), val [4080,4096)
+                if (4038 > 4080) { std::fprintf(stderr, "[cross] rec0 own overlap\n"); return 1; }
+                // rec 1: key [80,88), val [4060,4070)
+                if (88 > 4060) { std::fprintf(stderr, "[cross] rec1 own overlap\n"); return 1; }
+                // rec 2: key [88,96), val [4026,4046)
+                if (96 > 4026) { std::fprintf(stderr, "[cross] rec2 own overlap\n"); return 1; }
+                // Cross-record: rec 0 key [4030,4038) overlaps rec 2 val [4026,4046)
+                if (!(4030 < 4046 && 4026 < 4038)) {
+                    std::fprintf(stderr, "[cross] no cross overlap\n");
+                    return 1;
+                }
+            }
+
             vphone::ApfsLeafGeometry g;
             std::string e;
-            if (vphone::apfs_parse_leaf_geometry(bad, 0, g, e)) {
-                std::fprintf(stderr, "[cross-record] accepted\n");
+            if (vphone::apfs_parse_leaf_geometry(blk, 0, g, e)) {
+                std::fprintf(stderr, "[cross] accepted\n");
                 return 1;
             }
             if (e != "key/value regions overlap") {
-                std::fprintf(stderr, "[cross-record] wrong error: %s\n", e.c_str());
+                std::fprintf(stderr, "[cross] wrong error: %s\n", e.c_str());
                 return 1;
             }
             std::printf("GEOMETRY_CROSS_RECORD_KEY_VALUE_COLLISION_REFUSED_PASS\n");
+        }
+
         }
 
         // --- ROOT FOOTER COLLISION ---
@@ -2721,7 +2834,7 @@ int main() {
                 DeleteFileA(pw_out.c_str());
             }
         }
-    }
+
 
     DeleteFileA(source.c_str());
     DeleteFileA(output.c_str());
