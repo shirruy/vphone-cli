@@ -1860,7 +1860,46 @@ int main() {
             // > 65518 must fail at the LENGTH gate first.
             vphone::ApfsMutationResult r;
             std::string err;
-            // 65519 bytes: exceeds uint16 - 17.
+            // 65515 bytes: first illegal (max legal = 65514).
+            DeleteFileA(rs_out.c_str());
+            std::vector<std::uint8_t> b65515(65515, 'F');
+            if (vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid,
+                    b65515, r, err)) {
+                std::fprintf(
+                    stderr,
+                    "[boundary 65515] expected refusal\n");
+                return 1;
+            }
+            if (err != "REFUSED: replacement payload exceeds "
+                       "embedded XATTR value length limit") {
+                std::fprintf(
+                    stderr,
+                    "[boundary 65515] wrong error: %s\n",
+                    err.c_str());
+                return 1;
+            }
+            // 65518 bytes: exceeds 65514 (old wrong bound was
+            // 65518 which forgot the 4-byte XATTR wrapper).
+            DeleteFileA(rs_out.c_str());
+            std::vector<std::uint8_t> b65518(65518, 'E');
+            if (vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid,
+                    b65518, r, err)) {
+                std::fprintf(
+                    stderr,
+                    "[boundary 65518] expected refusal\n");
+                return 1;
+            }
+            if (err != "REFUSED: replacement payload exceeds "
+                       "embedded XATTR value length limit") {
+                std::fprintf(
+                    stderr,
+                    "[boundary 65518] wrong error: %s\n",
+                    err.c_str());
+                return 1;
+            }
+            // 65519 bytes: also exceeds.
             std::vector<std::uint8_t> over(65519, 'O');
             if (vphone::apfs_resize_plist_payload_safe(
                     rs_src, rs_out, rs_sha, kFileCnid,
@@ -1871,7 +1910,7 @@ int main() {
                 return 1;
             }
             if (err != "REFUSED: replacement payload exceeds "
-                       "embedded XATTR length limit") {
+                       "embedded XATTR value length limit") {
                 std::fprintf(
                     stderr,
                     "[overflow 65519] wrong error: %s\n",
@@ -1890,7 +1929,7 @@ int main() {
                     return 1;
             }
             if (err != "REFUSED: replacement payload exceeds "
-                       "embedded XATTR length limit") {
+                       "embedded XATTR value length limit") {
                 std::fprintf(
                     stderr,
                     "[overflow 65535] wrong error: %s\n",

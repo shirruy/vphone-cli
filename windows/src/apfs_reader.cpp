@@ -3520,7 +3520,18 @@ bool apfs_parse_leaf_geometry(
 
         rec.abs_key_start = out.key_base + rec.key_off;
         rec.abs_key_end = rec.abs_key_start + rec.key_len;
+        // P2-4: Validate BEFORE unsigned subtraction.
+        if (rec.val_off > out.value_base) {
+            error = "value offset exceeds value_base";
+            return false;
+        }
         rec.abs_val_start = out.value_base - rec.val_off;
+        // P2-4: Validate key offset is within the legal key
+        // region before computing absolute endpoints.
+        if (rec.key_off > block_size - out.key_base) {
+            error = "key offset beyond legal key region";
+            return false;
+        }
         rec.abs_val_end = rec.abs_val_start + rec.val_len;
 
         // BLOCKER 5: Individual span validation.
@@ -3588,6 +3599,23 @@ bool apfs_parse_leaf_geometry(
             : 0;
     out.packed_values_start =
         out.value_base - total_value_bytes;
+
+    // P1-2: Track the ACTUAL lowest value address (differs from
+    // packed_values_start when the leaf is fragmented).
+    std::uint64_t actual_min_val = out.value_base;
+    for (const auto& rec : out.records) {
+        if (rec.abs_val_start < actual_min_val) {
+            actual_min_val = rec.abs_val_start;
+        }
+    }
+    out.actual_values_start = actual_min_val;
+
+    // P2-3: Global key/value collision — ALL keys must end
+    // before ALL values begin.
+    if (max_key_end > actual_min_val) {
+        error = "key/value regions overlap";
+        return false;
+    }
 
     out.valid = true;
     return true;
@@ -3670,10 +3698,13 @@ bool apfs_reflow_leaf_value(
     // Build the new leaf.
     new_leaf = old_leaf;
     // BLOCKER 6: Clear the union of old and new packed regions.
-    const std::uint64_t old_packed_start = geo.packed_values_start;
+    // P1-2: Use ACTUAL lowest value address, not theoretical
+    // packed position, to catch fragmented leaves where values
+    // exist below the computed packed region.
+    const std::uint64_t old_actual_start = geo.actual_values_start;
     const std::uint64_t clear_start =
-        old_packed_start < new_packed_start
-            ? old_packed_start
+        old_actual_start < new_packed_start
+            ? old_actual_start
             : new_packed_start;
     std::fill(
         new_leaf.begin() + static_cast<std::ptrdiff_t>(clear_start),
@@ -3691,6 +3722,28 @@ bool apfs_reflow_leaf_value(
         const std::uint64_t toc_off =
             0x38 + geo.table_space_off +
             static_cast<std::uint64_t>(i) * 8;
+        // Validate before narrowing: value length must fit
+        // uint16_t TOC val_len field.
+        if (values[i].size() >
+            static_cast<std::size_t>(
+                std::numeric_limits<
+                    std::uint16_t>::max())) {
+            error =
+                "REFUSED: record value length exceeds TOC limit";
+            return false;
+        }
+        // Validate before narrowing: value offset must fit
+        // uint16_t TOC v_off field.
+        const std::uint64_t off_check =
+            geo.value_base - new_val_start[i];
+        if (off_check >
+            static_cast<std::uint64_t>(
+                std::numeric_limits<
+                    std::uint16_t>::max())) {
+            error =
+                "REFUSED: value offset exceeds TOC limit";
+            return false;
+        }
         const std::uint16_t new_v_off =
             static_cast<std::uint16_t>(geo.value_base - new_val_start[i]);
         const std::uint16_t new_v_len =
@@ -3814,18 +3867,24 @@ bool apfs_resize_plist_payload_safe(
         report.plist_file.xattr_val_off;
     result.old_plist_sha256 = actual_hash;
 
-    // BLOCKER 1: Embedded decmpfs XATTR length overflow check.
-    // Fail closed BEFORE any copy, narrowing conversion, or
-    // allocation.
+    // BLOCKER 1: Embedded XATTR value length overflow check.
+    // The complete XATTR record value is: 4-byte wrapper +
+    // 16-byte decmpfs header + 1-byte marker + payload. Both the
+    // xdata_len field AND the B-tree TOC val_len field are
+    // uint16_t, so the FULL value (4 + 17 + payload) must fit.
     {
+        constexpr std::size_t kXattrValueHeaderSize = 4;
         constexpr std::size_t kDecmpfsOverhead = 17;
-        if (new_payload.size() >
+        constexpr std::size_t kMaxEmbeddedPayload =
             static_cast<std::size_t>(
-                std::numeric_limits<std::uint16_t>::max()) -
-                kDecmpfsOverhead) {
+                std::numeric_limits<
+                    std::uint16_t>::max()) -
+            kXattrValueHeaderSize - kDecmpfsOverhead;
+        if (new_payload.size() >
+            kMaxEmbeddedPayload) {
             error =
-                "REFUSED: replacement payload exceeds embedded "
-                "XATTR length limit";
+                "REFUSED: replacement payload exceeds "
+                "embedded XATTR value length limit";
             return false;
         }
     }

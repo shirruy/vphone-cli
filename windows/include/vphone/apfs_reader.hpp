@@ -68,6 +68,10 @@ struct ApfsLeafGeometry {
     std::vector<RecordSpan> records;
     // Derived free space (from geometry, not zero bytes).
     std::uint64_t packed_values_start = 0;
+    // Actual lowest byte address occupied by any existing value
+    // (differs from packed_values_start when the leaf is
+    // fragmented).
+    std::uint64_t actual_values_start = 0;
     std::uint64_t key_region_end = 0;
     std::uint64_t free_bytes = 0;
 };
