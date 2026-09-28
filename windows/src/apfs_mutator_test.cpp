@@ -1851,6 +1851,80 @@ int main() {
             std::printf("RESIZE_INSUFFICIENT_PASS err=\"%s\"\n", err.c_str());
         }
 
+        // E. XATTR length overflow boundary tests.
+        {
+            DeleteFileA(rs_out.c_str());
+            // Max legal embedded payload = 65535 - 17 = 65518.
+            // This will fail at the leaf-capacity gate (4096
+            // block), which is correct behavior. But payloads
+            // > 65518 must fail at the LENGTH gate first.
+            vphone::ApfsMutationResult r;
+            std::string err;
+            // 65519 bytes: exceeds uint16 - 17.
+            std::vector<std::uint8_t> over(65519, 'O');
+            if (vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid,
+                    over, r, err)) {
+                std::fprintf(
+                    stderr,
+                    "[overflow 65519] expected refusal\n");
+                return 1;
+            }
+            if (err != "REFUSED: replacement payload exceeds "
+                       "embedded XATTR length limit") {
+                std::fprintf(
+                    stderr,
+                    "[overflow 65519] wrong error: %s\n",
+                    err.c_str());
+                return 1;
+            }
+            // 65535: also exceeds.
+            DeleteFileA(rs_out.c_str());
+            std::vector<std::uint8_t> way(65535, 'W');
+            if (vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid,
+                    way, r, err)) {
+                std::fprintf(
+                    stderr,
+                    "[overflow 65535] expected refusal\n");
+                    return 1;
+            }
+            if (err != "REFUSED: replacement payload exceeds "
+                       "embedded XATTR length limit") {
+                std::fprintf(
+                    stderr,
+                    "[overflow 65535] wrong error: %s\n",
+                    err.c_str());
+                return 1;
+            }
+            // 100000: very large.
+            DeleteFileA(rs_out.c_str());
+            std::vector<std::uint8_t> vlarge(100000, 'V');
+            if (vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid,
+                    vlarge, r, err)) {
+                std::fprintf(
+                    stderr,
+                    "[overflow 100000] expected refusal\n");
+                return 1;
+            }
+            std::printf(
+                "RESIZE_XATTR_LENGTH_OVERFLOW_PASS "
+                "err=\"%s\"\n",
+                err.c_str());
+            // Source must be unchanged.
+            {
+                std::vector<std::uint8_t> after;
+                if (!read_all(rs_src, after) ||
+                    after != base) {
+                    std::fprintf(
+                        stderr,
+                        "[overflow] source modified\n");
+                    return 1;
+                }
+            }
+        }
+
         // D. Source immutability.
         {
             std::vector<std::uint8_t> after;

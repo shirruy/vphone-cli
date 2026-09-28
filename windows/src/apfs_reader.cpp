@@ -3442,7 +3442,6 @@ bool apfs_parse_leaf_geometry(
     const std::uint32_t block_size =
         static_cast<std::uint32_t>(leaf_block.size());
 
-    // Node header fields.
     out.leaf_paddr = leaf_paddr;
     out.block_size = block_size;
     out.node_flags =
@@ -3459,7 +3458,6 @@ bool apfs_parse_leaf_geometry(
         static_cast<std::uint16_t>(leaf_block[0x2a]) |
         (static_cast<std::uint16_t>(leaf_block[0x2b]) << 8);
 
-    // Only variable-KV level-0 leaves are supported.
     if (out.node_flags & kBtreeFixedKvSize) {
         error = "fixed-KV leaf not supported for reflow";
         return false;
@@ -3473,7 +3471,6 @@ bool apfs_parse_leaf_geometry(
         return false;
     }
 
-    // Geometry: TOC at 0x38 + table_space_off, key_base after TOC.
     out.key_base =
         0x38 + out.table_space_off + out.table_space_len;
     out.has_root_footer = (out.node_flags & kBtreeRoot) != 0;
@@ -3488,10 +3485,8 @@ bool apfs_parse_leaf_geometry(
         error = "leaf has no records";
         return false;
     }
-    // Validate TOC fits.
     const std::uint64_t toc_end =
-        0x38 + out.table_space_off +
-        out.table_space_len;
+        0x38 + out.table_space_off + out.table_space_len;
     if (toc_end > block_size) {
         error = "TOC exceeds leaf bounds";
         return false;
@@ -3500,66 +3495,99 @@ bool apfs_parse_leaf_geometry(
     // Parse each record's geometry.
     out.records.resize(out.nkeys);
     std::uint64_t max_key_end = out.key_base;
-    std::uint64_t min_val_start = out.value_base;
+    std::uint64_t total_value_bytes = 0;
     for (std::uint32_t i = 0; i < out.nkeys; ++i) {
         const std::uint64_t toc_off =
             0x38 + out.table_space_off +
-            static_cast<std::uint64_t>(i) *
-                out.toc_entry_size;
-        if (toc_off + out.toc_entry_size > toc_end) {
+            static_cast<std::uint64_t>(i) * 8;
+        if (toc_off + 8 > toc_end) {
             error = "TOC entry exceeds table space";
             return false;
         }
         auto& rec = out.records[i];
         rec.key_off =
-            static_cast<std::uint16_t>(
-                leaf_block[toc_off]) |
-            (static_cast<std::uint16_t>(
-                 leaf_block[toc_off + 1]) << 8);
+            static_cast<std::uint16_t>(leaf_block[toc_off]) |
+            (static_cast<std::uint16_t>(leaf_block[toc_off + 1]) << 8);
         rec.key_len =
-            static_cast<std::uint16_t>(
-                leaf_block[toc_off + 2]) |
-            (static_cast<std::uint16_t>(
-                 leaf_block[toc_off + 3]) << 8);
+            static_cast<std::uint16_t>(leaf_block[toc_off + 2]) |
+            (static_cast<std::uint16_t>(leaf_block[toc_off + 3]) << 8);
         rec.val_off =
-            static_cast<std::uint16_t>(
-                leaf_block[toc_off + 4]) |
-            (static_cast<std::uint16_t>(
-                 leaf_block[toc_off + 5]) << 8);
+            static_cast<std::uint16_t>(leaf_block[toc_off + 4]) |
+            (static_cast<std::uint16_t>(leaf_block[toc_off + 5]) << 8);
         rec.val_len =
-            static_cast<std::uint16_t>(
-                leaf_block[toc_off + 6]) |
-            (static_cast<std::uint16_t>(
-                 leaf_block[toc_off + 7]) << 8);
+            static_cast<std::uint16_t>(leaf_block[toc_off + 6]) |
+            (static_cast<std::uint16_t>(leaf_block[toc_off + 7]) << 8);
 
         rec.abs_key_start = out.key_base + rec.key_off;
         rec.abs_key_end = rec.abs_key_start + rec.key_len;
         rec.abs_val_start = out.value_base - rec.val_off;
         rec.abs_val_end = rec.abs_val_start + rec.val_len;
 
-        if (rec.abs_key_end > block_size ||
-            rec.abs_val_end > block_size ||
-            rec.abs_val_start > out.value_base) {
-            error = "record span exceeds leaf bounds";
+        // BLOCKER 5: Individual span validation.
+        if (rec.abs_key_end > block_size) {
+            error = "key span exceeds leaf bounds";
             return false;
         }
+        if (rec.abs_val_end > out.value_base) {
+            error = "value span crosses value_base";
+            return false;
+        }
+        if (rec.abs_val_end > block_size) {
+            error = "value span exceeds leaf bounds";
+            return false;
+        }
+        if (rec.key_len == 0 && rec.val_len == 0) {
+            error = "zero-length key and value";
+            return false;
+        }
+
+        total_value_bytes += rec.val_len;
         if (rec.abs_key_end > max_key_end) {
             max_key_end = rec.abs_key_end;
         }
-        if (rec.abs_val_start < min_val_start) {
-            min_val_start = rec.abs_val_start;
+    }
+
+    // BLOCKER 5: Cross-record interval validation.
+    for (std::uint32_t i = 0; i < out.nkeys; ++i) {
+        for (std::uint32_t j = i + 1; j < out.nkeys; ++j) {
+            const auto& a = out.records[i];
+            const auto& b = out.records[j];
+            // Key overlap check (keys must be disjoint).
+            if (a.abs_key_start < b.abs_key_end &&
+                b.abs_key_start < a.abs_key_end) {
+                error = "overlapping key spans";
+                return false;
+            }
+            // Value overlap check (values must be disjoint).
+            if (a.abs_val_start < b.abs_val_end &&
+                b.abs_val_start < a.abs_val_end) {
+                error = "overlapping value spans";
+                return false;
+            }
+        }
+        // Key/value region collision.
+        if (out.records[i].abs_key_end >
+                out.records[i].abs_val_start &&
+            out.records[i].abs_key_start <
+                out.records[i].abs_val_start) {
+            error = "key/value region collision";
+            return false;
         }
     }
 
-    // Derive free space from geometry: the gap between the last
-    // key end and the first value start.
+    // BLOCKER 4: True reflow capacity from value region minus
+    // actual value bytes (repack reclaims fragmentation).
     out.key_region_end = max_key_end;
-    out.packed_values_start = min_val_start;
-    if (min_val_start <= max_key_end) {
-        out.free_bytes = 0;
-    } else {
-        out.free_bytes = min_val_start - max_key_end;
-    }
+    const std::uint64_t available_value_region =
+        out.value_base > max_key_end
+            ? out.value_base - max_key_end
+            : 0;
+    out.free_bytes =
+        available_value_region > total_value_bytes
+            ? available_value_region - total_value_bytes
+            : 0;
+    out.packed_values_start =
+        out.value_base - total_value_bytes;
 
     out.valid = true;
     return true;
@@ -3577,8 +3605,7 @@ bool apfs_reflow_leaf_value(
     new_leaf.clear();
 
     ApfsLeafGeometry geo;
-    if (!apfs_parse_leaf_geometry(
-            old_leaf, 0, geo, error)) {
+    if (!apfs_parse_leaf_geometry(old_leaf, 0, geo, error)) {
         return false;
     }
     if (target_toc_index >= geo.nkeys) {
@@ -3588,14 +3615,23 @@ bool apfs_reflow_leaf_value(
 
     const std::uint64_t old_target_vlen =
         geo.records[target_toc_index].val_len;
-    const std::int64_t delta =
-        static_cast<std::int64_t>(new_value.size()) -
-        static_cast<std::int64_t>(old_target_vlen);
 
-    // Check capacity: free space must absorb the delta.
-    if (delta > 0 &&
-        static_cast<std::uint64_t>(delta) > geo.free_bytes) {
-        error = "REFUSED: resized XATTR does not fit target leaf";
+    // BLOCKER 4: Compute new total value bytes using the true
+    // reflow capacity model. The delta approach is wrong for
+    // fragmented leaves where repacking reclaims holes.
+    std::uint64_t new_total = new_value.size();
+    for (std::uint32_t i = 0; i < geo.nkeys; ++i) {
+        if (i != target_toc_index) {
+            new_total += geo.records[i].val_len;
+        }
+    }
+    const std::uint64_t available_region =
+        geo.value_base > geo.key_region_end
+            ? geo.value_base - geo.key_region_end
+            : 0;
+    if (new_total > available_region) {
+        error =
+            "REFUSED: resized XATTR does not fit target leaf";
         return false;
     }
 
@@ -3605,52 +3641,43 @@ bool apfs_reflow_leaf_value(
     for (std::uint32_t i = 0; i < n; ++i) {
         const auto& rec = geo.records[i];
         values[i].assign(
-            old_leaf.begin() +
-                static_cast<std::ptrdiff_t>(
-                    rec.abs_val_start),
-            old_leaf.begin() +
-                static_cast<std::ptrdiff_t>(
-                    rec.abs_val_end));
+            old_leaf.begin() + static_cast<std::ptrdiff_t>(rec.abs_val_start),
+            old_leaf.begin() + static_cast<std::ptrdiff_t>(rec.abs_val_end));
     }
-    // Replace the target value.
     values[target_toc_index] = new_value;
 
-    // Repack ALL values deterministically from value_base backward.
-    // Pack in reverse order: record 0 is closest to value_base.
-    // Actually, APFS packs: record 0 at value_base - v0_len, record
-    // 1 below that, etc. So we pack from the LAST record down.
+    // BLOCKER 3: Preserve original packing order: record 0 is
+    // nearest value_base, record 1 below it, etc. Pack forward.
     std::vector<std::uint64_t> new_val_start(n);
     std::uint64_t cursor = geo.value_base;
-    for (std::int32_t i = static_cast<std::int32_t>(n) - 1;
-         i >= 0; --i) {
-        const std::uint32_t idx =
-            static_cast<std::uint32_t>(i);
-        cursor -= values[idx].size();
-        new_val_start[idx] = cursor;
+    for (std::uint32_t i = 0; i < n; ++i) {
+        cursor -= values[i].size();
+        new_val_start[i] = cursor;
     }
 
-    // Validate: packed region must not overlap key region or TOC.
-    const std::uint64_t packed_start = cursor;
-    if (packed_start <= geo.key_region_end) {
-        error =
-            "REFUSED: resized XATTR does not fit target leaf";
+    const std::uint64_t new_packed_start = cursor;
+    // Validate: packed region must not overlap key/TOC region.
+    if (new_packed_start <= geo.key_region_end) {
+        error = "REFUSED: resized XATTR does not fit target leaf";
         return false;
     }
-    if (geo.has_root_footer &&
-        packed_start <= geo.footer_offset) {
-        error = "reflow overlaps root footer";
-        return false;
-    }
+    // BLOCKER 2: Root footer occupies [value_base, block_size).
+    // Packed values are entirely BELOW value_base, which is below
+    // the footer. The only requirement is: packed_start > key_end.
+    // No additional footer check needed because value_base IS the
+    // footer start boundary, and values never cross it.
 
-    // Build the new leaf: start from a copy of the old, clear the
-    // value region, then write new values and update TOC.
+    // Build the new leaf.
     new_leaf = old_leaf;
-    // Clear the old packed value region.
+    // BLOCKER 6: Clear the union of old and new packed regions.
+    const std::uint64_t old_packed_start = geo.packed_values_start;
+    const std::uint64_t clear_start =
+        old_packed_start < new_packed_start
+            ? old_packed_start
+            : new_packed_start;
     std::fill(
-        new_leaf.begin() +
-            static_cast<std::ptrdiff_t>(packed_start),
-        new_leaf.begin() +
-            static_cast<std::ptrdiff_t>(geo.value_base),
+        new_leaf.begin() + static_cast<std::ptrdiff_t>(clear_start),
+        new_leaf.begin() + static_cast<std::ptrdiff_t>(geo.value_base),
         0);
     // Write each value at its new position.
     for (std::uint32_t i = 0; i < n; ++i) {
@@ -3665,28 +3692,19 @@ bool apfs_reflow_leaf_value(
             0x38 + geo.table_space_off +
             static_cast<std::uint64_t>(i) * 8;
         const std::uint16_t new_v_off =
-            static_cast<std::uint16_t>(
-                geo.value_base - new_val_start[i]);
+            static_cast<std::uint16_t>(geo.value_base - new_val_start[i]);
         const std::uint16_t new_v_len =
-            static_cast<std::uint16_t>(
-                values[i].size());
-        new_leaf[toc_off + 4] =
-            static_cast<std::uint8_t>(new_v_off & 0xff);
-        new_leaf[toc_off + 5] =
-            static_cast<std::uint8_t>(new_v_off >> 8);
-        new_leaf[toc_off + 6] =
-            static_cast<std::uint8_t>(new_v_len & 0xff);
-        new_leaf[toc_off + 7] =
-            static_cast<std::uint8_t>(new_v_len >> 8);
+            static_cast<std::uint16_t>(values[i].size());
+        new_leaf[toc_off + 4] = static_cast<std::uint8_t>(new_v_off & 0xff);
+        new_leaf[toc_off + 5] = static_cast<std::uint8_t>(new_v_off >> 8);
+        new_leaf[toc_off + 6] = static_cast<std::uint8_t>(new_v_len & 0xff);
+        new_leaf[toc_off + 7] = static_cast<std::uint8_t>(new_v_len >> 8);
     }
 
     // Reseal Fletcher-64.
-    const std::uint64_t ck =
-        apfs_fletcher64(
-            new_leaf.data(), new_leaf.size());
+    const std::uint64_t ck = apfs_fletcher64(new_leaf.data(), new_leaf.size());
     for (int i = 0; i < 8; ++i) {
-        new_leaf[i] = static_cast<std::uint8_t>(
-            (ck >> (i * 8)) & 0xFF);
+        new_leaf[i] = static_cast<std::uint8_t>((ck >> (i * 8)) & 0xFF);
     }
 
     geometry_out = geo;
@@ -3796,6 +3814,22 @@ bool apfs_resize_plist_payload_safe(
         report.plist_file.xattr_val_off;
     result.old_plist_sha256 = actual_hash;
 
+    // BLOCKER 1: Embedded decmpfs XATTR length overflow check.
+    // Fail closed BEFORE any copy, narrowing conversion, or
+    // allocation.
+    {
+        constexpr std::size_t kDecmpfsOverhead = 17;
+        if (new_payload.size() >
+            static_cast<std::size_t>(
+                std::numeric_limits<std::uint16_t>::max()) -
+                kDecmpfsOverhead) {
+            error =
+                "REFUSED: replacement payload exceeds embedded "
+                "XATTR length limit";
+            return false;
+        }
+    }
+
     // Copy source → output.
     if (!CopyFileA(
             source_image_path.c_str(),
@@ -3904,6 +3938,7 @@ bool apfs_resize_plist_payload_safe(
     const std::uint32_t sig = kDecmpfsSignature;
     const std::uint32_t algo = 9;
     const std::uint64_t logical = new_payload.size();
+
     const std::uint16_t new_xdata_len =
         static_cast<std::uint16_t>(16 + 1 + new_payload.size());
     std::vector<std::uint8_t> new_value(4 + new_xdata_len, 0);
