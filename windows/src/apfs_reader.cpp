@@ -1666,15 +1666,23 @@ bool resolve_checkpoint_apsb_paddr(
         return false;
     }
 
-    // Find the active checkpoint map in the descriptor area. The
-    // area alternates {checkpoint map, NXSB copy} pairs per era;
-    // select the checksum-valid map whose xid matches the active
-    // NXSB era. Scan bounded to 8 descriptor blocks.
+    // Descriptor bounds come from the NXSB checkpoint geometry
+    // (xp_desc_blocks at offset 104), not a hardcoded constant.
+    // Find the active checkpoint map: checksum-valid, type
+    // checkpoint-map, xid exactly matching the active NXSB era.
     std::vector<std::uint8_t> cp(block_size, 0);
     bool map_found = false;
     std::uint64_t map_block = 0;
+    const std::uint32_t xp_desc_blocks =
+        read_le32(nxsb_block.data() + 104);
+    if (xp_desc_blocks == 0 ||
+        xp_desc_blocks > block_count ||
+        xp_desc_base > block_count - xp_desc_blocks) {
+        error = "NXSB checkpoint descriptor geometry invalid";
+        return false;
+    }
     for (std::uint64_t b = xp_desc_base;
-         b < xp_desc_base + 8 && b < block_count;
+         b < xp_desc_base + xp_desc_blocks;
          ++b) {
         if (!read_block(
                 file, b, block_size, cp, error)) {
@@ -1705,7 +1713,7 @@ bool resolve_checkpoint_apsb_paddr(
     const std::uint32_t cp_count =
         read_le32(cp.data() + 0x24);
     if (cp_count == 0 ||
-        cp_count > (block_size - 0x40) / 32) {
+        cp_count > (block_size - 0x40) / 40) {
         error = "checkpoint map entry count invalid";
         return false;
     }
@@ -1714,17 +1722,19 @@ bool resolve_checkpoint_apsb_paddr(
     // Resolve the container omap_phys object. Two supported paths:
     // A) the checkpoint map carries an entry mapping nx_omap_oid to
     //    a physical block (explicit checkpoint-reference layout), or
-    // B) the omap_phys object itself carries the NXSB era xid; the
-    //    newest OMAP-type object at that exact era is the container
-    //    OMAP (Apple ramdisk layout: nx_omap_oid uses ephemeral
-    //    storage-class bits that do not appear as literal map oids).
+    // B) the NXSB carries a direct physical omap block reference at
+    //    offset 160 in this image family (Apple ramdisk layout).
+    // Both paths are strictly pointer-rooted; there is no global
+    // omap_phys scan. The OMAP tree traversal below is rooted ONLY
+    // in the selected omap_phys om_tree_oid; loose OMAP leaves are
+    // never consulted. Unresolvable references FAIL CLOSED.
     // In both paths the OMAP tree traversal below is rooted ONLY in
     // the selected omap_phys om_tree_oid; loose OMAP leaves are
     // never consulted.
     std::uint64_t omap_phys_block = 0;
     for (std::uint32_t e = 0; e < cp_count; ++e) {
         const std::uint64_t off =
-            0x40 + static_cast<std::uint64_t>(e) * 32;
+            0x40 + static_cast<std::uint64_t>(e) * 40;
         const std::uint64_t oid_v =
             read_le64(cp.data() + off);
         const std::uint64_t paddr =
@@ -1756,34 +1766,22 @@ bool resolve_checkpoint_apsb_paddr(
         break;
     }
     if (omap_phys_block == 0) {
-        // Path B: locate the omap_phys object at the active era.
-        // Require an exact xid match so stale-era OMAP objects
-        // cannot win; fail closed when none exists.
-        std::vector<std::uint8_t> probe(block_size, 0);
-        for (std::uint64_t b = 0; b < block_count; ++b) {
-            std::string probe_error;
-            if (!read_block(
-                    file, b, block_size, probe, probe_error)) {
-                continue;
-            }
-            if (!apfs_block_checksum_ok(probe)) {
-                continue;
-            }
-            if ((read_le32(probe.data() + 24) &
-                 kObjectTypeMask) != kOmapType) {
-                continue;
-            }
-            if (read_le64(probe.data() + 16) != nxsb_xid) {
-                continue;
-            }
-            omap_phys_block = b;
-            break;
-        }
+        // Path B: direct physical reference from the NXSB at
+        // offset 160 in this image family (Apple ramdisk layout).
+        // The target is fully validated as an OMAP object below;
+        // a wrong pointer fails closed instead of scanning the
+        // container for alternatives. No global omap scan exists.
+        const std::uint64_t nx_omap_phys =
+            read_le64(nxsb_block.data() + 160);
         if (omap_phys_block == 0) {
-            error =
-                "no container omap object matches the active "
-                "NXSB era";
-            return false;
+            if (nx_omap_phys == 0 ||
+                nx_omap_phys >= block_count) {
+                error =
+                    "NXSB provides no resolvable container omap "
+                    "reference";
+                return false;
+            }
+            omap_phys_block = nx_omap_phys;
         }
     }
     out.omap_phys_block = omap_phys_block;

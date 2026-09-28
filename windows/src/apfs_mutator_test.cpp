@@ -27,6 +27,8 @@ constexpr std::uint64_t kLaunchDaemonsCnid = 5;
 constexpr std::uint64_t kCheckpointMapBlock = 15;
 constexpr std::uint64_t kContainerOmapPhysBlock = 16;
 constexpr std::uint64_t kRogueOmapBlock = 17;
+constexpr std::uint64_t kRogueOmapPhysBlock = 2;
+constexpr std::uint64_t kRogueOmapPhysTreeBlock = 18;
 
 std::uint64_t fletcher64(const std::vector<std::uint8_t>& b) {
     constexpr std::uint64_t modulus = 0xFFFFFFFFull;
@@ -360,12 +362,13 @@ std::vector<std::uint8_t> build_image() {
         put_le64(blk, 16, kApsbXid);
         put_le32(blk, 24, 0x4000000Cu); // checkpoint map type
         put_le32(blk, 0x24, 1);          // 1 entry
-        // Entry layout: {oid u64, paddr u64, flags u64,
-        // size u64} at 0x40 (32 bytes).
+        // Entry layout (authoritative 40 bytes):
+        // {oid, paddr, flags, size, pad} at 0x40.
         put_le64(blk, 0x40, 1000);       // omap object oid
         put_le64(blk, 0x48, kContainerOmapPhysBlock);
         put_le64(blk, 0x50, 0);           // flags: physical
         put_le64(blk, 0x58, kBlockSize);  // size
+        put_le64(blk, 0x60, 0);           // pad
         seal(blk);
         put(kCheckpointMapBlock, blk);
     }
@@ -432,6 +435,7 @@ std::vector<std::uint8_t> build_image() {
         put_le64(blk, 136, 1000);  // nx_omap_oid (virtual)
         put_le32(blk, 104, 1);     // xp_desc area = 1 checkpoint pair
         put_le64(blk, 112, kCheckpointMapBlock); // xp_desc_base
+        put_le64(blk, 160, kContainerOmapPhysBlock); // omap ref
         seal(blk);
         put(0, blk);
     }
@@ -485,6 +489,18 @@ std::vector<std::uint8_t> build_two_era_image() {
         seal(cont_omap);
         put(3, cont_omap);
     }
+    // Force Path B: remove the checkpoint map's literal
+    // nx_omap_oid entry so omap_phys resolution must come from the
+    // NXSB direct reference (offset 160), not a map lookup.
+    {
+        std::vector<std::uint8_t> cmap = get(kCheckpointMapBlock);
+        // Entry for an unrelated oid so the map stays structurally
+        // valid but Path A cannot resolve the container omap.
+        put_le64(cmap, 0x40, 4242);
+        put_le32(cmap, 0x24, 1);
+        seal(cmap);
+        put(kCheckpointMapBlock, cmap);
+    }
     // Orphan APSB: same oid, same xid as active, valid checksum,
     // physically before the active APSB — but NOT referenced by the
     // container OMAP. A "newest valid wins" selector would pick it;
@@ -525,6 +541,47 @@ std::vector<std::uint8_t> build_two_era_image() {
         put_le32(rogue, 0xfd8 + 4, kBlockSize);
         seal(rogue);
         put(kRogueOmapBlock, rogue);
+    }
+
+    // Same-XID rogue omap_phys: physically EARLIER (block 2) than
+    // the legitimate omap_phys (block 16), checksum-valid, OMAP
+    // type, IDENTICAL xid to the active era — but its tree maps
+    // oid 42 to the ORPHAN APSB (block 14), and the NXSB's direct
+    // omap reference (offset 160) points at the legitimate block
+    // 16, NOT this rogue. A "first OMAP-type object at matching
+    // xid wins" scan would select this rogue and hijack authority;
+    // the pointer-rooted resolver must ignore it entirely.
+    {
+        std::vector<std::uint8_t> rogue_phys(kBlockSize, 0);
+        put_le64(rogue_phys, 8, 999);
+        put_le64(rogue_phys, 16, kApsbXid); // SAME xid as active
+        put_le32(rogue_phys, 24, 0x4000000Bu);
+        put_le64(
+            rogue_phys, 0x30,
+            kRogueOmapPhysTreeBlock); // om_tree_oid -> 18
+        seal(rogue_phys);
+        put(kRogueOmapPhysBlock, rogue_phys);
+
+        // Rogue omap_phys tree at block 18: maps oid 42 -> 14
+        // (the orphan APSB).
+        std::vector<std::uint8_t> rogue_tree(kBlockSize, 0);
+        put_le64(rogue_tree, 8, 998);
+        put_le64(rogue_tree, 16, kApsbXid);
+        put_le32(rogue_tree, 24, 0x40000002u);
+        put_le32(rogue_tree, 28, 0x0000000Bu); // OMAP subtype
+        put_le32(rogue_tree, 0x20, 0x00000007u); // root+leaf+fixed
+        put_le32(rogue_tree, 0x24, 1);
+        put_le32(rogue_tree, 0x28, 0x00100000u);
+        rogue_tree[0x38] = 0x00; rogue_tree[0x39] = 0x00;
+        rogue_tree[0x3a] = 0x10; rogue_tree[0x3b] = 0x00;
+        put_le64(rogue_tree, 0x48, kApsbOid);
+        put_le64(rogue_tree, 0x50, kApsbXid);
+        put_le32(rogue_tree, 0xfc8, 0);
+        put_le32(rogue_tree, 0xfcc, kBlockSize);
+        put_le64(rogue_tree, 0xfd0, 14); // -> orphan APSB
+        put_le32(rogue_tree, 0xfd8 + 4, kBlockSize);
+        seal(rogue_tree);
+        put(kRogueOmapPhysTreeBlock, rogue_tree);
     }
 
     // Copy the active leaf (block 8) to block 7, retag it as a

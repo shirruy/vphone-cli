@@ -126,10 +126,12 @@ void write_rooted_authority(
         put_le64(blk, 16, nxsb_xid);
         put_le32(blk, 24, 0x4000000Cu);
         put_le32(blk, 0x24, 1);
+        // 40-byte entry: {oid, paddr, flags, size, pad}
         put_le64(blk, 0x40, 2000); // container omap oid
         put_le64(blk, 0x48, 13);
         put_le64(blk, 0x50, 0);
         put_le64(blk, 0x58, block_size);
+        put_le64(blk, 0x60, 0);
         seal_checksum(blk);
         put_at(12, blk);
     }
@@ -173,6 +175,8 @@ void write_rooted_authority(
             blk.data(), image.data(), block_size);
         put_le64(blk, 136, 2000); // nx_omap_oid
         put_le64(blk, 112, 12);   // xp_desc_base -> map
+        put_le32(blk, 104, 1);    // xp_desc_blocks
+        put_le64(blk, 160, 13);   // direct omap_phys ref
         seal_checksum(blk);
         put_at(0, blk);
     }
