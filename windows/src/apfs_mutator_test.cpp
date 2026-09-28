@@ -1523,6 +1523,7 @@ int main() {
         std::uint64_t src_root_oid = 0;
         std::uint64_t src_root_block = 0;
         std::uint64_t src_leaf = 0;
+        std::uint64_t src_cnid = 0;
         {
             vphone::ApfsReaderReport rpt;
             std::string rerr;
@@ -1551,7 +1552,20 @@ int main() {
             src_root_oid = src_owner.root_tree_oid;
             src_root_block = src_owner.root_tree_block;
             src_leaf = rpt.plist_file.xattr_leaf_paddr;
+            src_cnid = rpt.plist_file.drec_cnid;
 
+            // Runtime-verify the fixture's expectations.
+            if (src_leaf != 8) {
+                std::fprintf(stderr, "tp: src_leaf=%llu expected 8\n",
+                    (unsigned long long)src_leaf);
+                return 1;
+            }
+            if (src_cnid != kFileCnid) {
+                std::fprintf(stderr, "tp: src_cnid=%llu expected %llu\n",
+                    (unsigned long long)src_cnid,
+                    (unsigned long long)kFileCnid);
+                return 1;
+            }
             // Runtime-verify the fixture's original root block.
             if (src_root_block != 6) {
                 std::fprintf(stderr, "tp: original root=%llu expected 6\n",
@@ -1562,7 +1576,9 @@ int main() {
 
         // Save target leaf (block 8) before.
         std::vector<std::uint8_t> leaf_before(kBlockSize, 0);
-        std::memcpy(leaf_before.data(), multi.data() + 8 * kBlockSize, kBlockSize);
+        std::memcpy(leaf_before.data(),
+            multi.data() + static_cast<std::size_t>(src_leaf) * kBlockSize,
+            kBlockSize);
 
         // Tamper hook: duplicate root block 6 -> 19, redirect OMAP
         // mapping, reseal. Post-flush state is validated.
@@ -1650,7 +1666,7 @@ int main() {
             }
             const auto& out_owner =
                 out_rpt.volumes[out_rpt.plist_file.owner_volume_index];
-            if (out_rpt.plist_file.drec_cnid != kFileCnid) {
+            if (out_rpt.plist_file.drec_cnid != src_cnid) {
                 std::fprintf(stderr, "[tamper] CNID changed\n");
                 return 1;
             }
@@ -1697,6 +1713,10 @@ int main() {
                 std::fprintf(stderr, "[tamper] XATTR leaf changed\n");
                 return 1;
             }
+            if (out_rpt.plist_file.owner_volume_index != src_owner_idx) {
+                std::fprintf(stderr, "[tamper] owner index changed\n");
+                return 1;
+            }
         }
 
         // Target leaf (block 8) must be byte-identical.
@@ -1705,7 +1725,7 @@ int main() {
             std::vector<std::uint8_t> leaf_after(kBlockSize, 0);
             std::ifstream tf(tp_out, std::ios::binary);
             if (!tf.good()) { std::fprintf(stderr, "[tamper] leaf open failed\n"); return 1; }
-            tf.seekg(8 * kBlockSize);
+            tf.seekg(static_cast<std::streamoff>(src_leaf * kBlockSize));
             tf.read(reinterpret_cast<char*>(leaf_after.data()), kBlockSize);
             tf.close();
             target_unchanged = (leaf_after == leaf_before);
@@ -1736,7 +1756,7 @@ int main() {
             (unsigned long long)src_root_block,
             (unsigned long long)tampered_root_block,
             (unsigned long long)src_leaf,
-            (unsigned long long)kFileCnid,
+            (unsigned long long)src_cnid,
             source_unchanged ? 1 : 0,
             target_unchanged ? 1 : 0);
 
