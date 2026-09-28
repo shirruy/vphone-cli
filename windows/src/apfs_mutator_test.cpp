@@ -400,6 +400,17 @@ std::vector<std::uint8_t> build_two_era_image() {
         return blk;
     };
 
+    // CRITICAL RACE LAYOUT: move the ACTIVE APSB to block 13 so the
+    // STALE APSB (block 9, xid 2) is PHYSICALLY BEFORE it on disk.
+    // A scan-order-first-wins implementation would traverse the
+    // stale chain first and populate plist provenance from it.
+    {
+        std::vector<std::uint8_t> active_apsb = get(1);
+        put(13, active_apsb);
+        std::vector<std::uint8_t> blank(kBlockSize, 0);
+        put(1, blank);
+    }
+
     // Copy the active leaf (block 8) to block 7, retag it as a
     // stale xid-6 object with a different leaf OID. Its payload
     // differs in one byte ('S' at plist offset 9 instead of 'Y')
@@ -782,7 +793,7 @@ int main() {
         // the stale xid-6 APSB at block 9 must be excluded.
         if (rpt.volumes.size() != 1 ||
             rpt.volumes[0].xid != kApsbXid ||
-            rpt.volumes[0].apsb_block != 1) {
+            rpt.volumes[0].apsb_block != 13) {
             std::fprintf(
                 stderr,
                 "two-era active selection wrong: %zu volumes, "
@@ -871,7 +882,7 @@ int main() {
                 era_output, out_rpt, oerr) ||
             out_rpt.volumes.size() != 1 ||
             out_rpt.volumes[0].xid != kApsbXid ||
-            out_rpt.volumes[0].apsb_block != 1 ||
+            out_rpt.volumes[0].apsb_block != 13 ||
             out_rpt.volumes[0].root_tree_block != 6) {
             std::fprintf(
                 stderr,
@@ -882,6 +893,36 @@ int main() {
 
         DeleteFileA(era_source.c_str());
         DeleteFileA(era_output.c_str());
+    }
+
+    // Negative: corrupted NXSB checksum must fail closed before any
+    // era selection or traversal.
+    {
+        std::vector<std::uint8_t> bad = build_image();
+        bad[0x200] ^= 0xFF; // corrupt after checksum seal
+        const std::string bad_path =
+            dir + "apfs_mut_bad_nxsb.img";
+        if (!write_all(bad_path, bad)) {
+            std::fprintf(stderr, "bad nxsb write failed\n");
+            return 1;
+        }
+        vphone::ApfsReaderReport rpt;
+        std::string rerr;
+        if (vphone::apfs_read_container(bad_path, rpt, rerr)) {
+            std::fprintf(
+                stderr,
+                "[bad_nxsb_checksum] expected reader failure\n");
+            return 1;
+        }
+        if (rerr !=
+            "container superblock failed Fletcher-64 checksum") {
+            std::fprintf(
+                stderr,
+                "[bad_nxsb_checksum] error mismatch: '%s'\n",
+                rerr.c_str());
+            return 1;
+        }
+        DeleteFileA(bad_path.c_str());
     }
 
     DeleteFileA(source.c_str());

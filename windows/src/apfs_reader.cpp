@@ -1663,6 +1663,14 @@ bool apfs_read_container(
             break;
         }
 
+        // Trust chain: verify the NXSB checksum before reading any
+        // field that drives active-era selection. A corrupted NXSB
+        // must fail closed rather than supply a stale/forged xid.
+        if (!apfs_block_checksum_ok(block)) {
+            error = "container superblock failed Fletcher-64 checksum";
+            break;
+        }
+
         report.container.block_size = read_le32(block.data() + 36);
         report.container.block_count = read_le64(block.data() + 40);
 
@@ -1860,105 +1868,17 @@ bool apfs_read_container(
                     continue;
                 }
             } else {
-                // OMAP did not resolve the oid; keep the raw oid in the
-                // report and skip B-tree validation rather than guessing.
+                // OMAP did not resolve the oid; keep the raw oid in
+                // the candidate. Active-era filtering happens later.
                 volume.omap_block = omap_block;
                 volume.root_tree_block = 0;
-
-                if (0x2C0 + 256 <= block.size()) {
-                    const char* name =
-                        reinterpret_cast<const char*>(block.data() + 0x2C0);
-                    const std::size_t max_len = strnlen(name, 256);
-                    bool printable = max_len > 0;
-                    for (std::size_t i = 0; i < max_len; ++i) {
-                        const std::uint8_t ch =
-                            static_cast<std::uint8_t>(name[i]);
-                        if (ch < 0x20 || ch > 0x7e) {
-                            printable = false;
-                            break;
-                        }
-                    }
-                    if (printable) {
-                        volume.volume_name.assign(name, max_len);
-                    }
-                }
-
-                report.volumes.push_back(volume);
+                scanned_volumes.push_back(volume);
                 continue;
             }
 
             volume.omap_block = omap_block;
             volume.root_tree_block = resolved_root_block;
             volume.root_tree_info = fstree_info;
-
-            // Structural /System/Library/LaunchDaemons resolution via
-            // DIR_REC parent/child CNIDs (first successful volume wins).
-            if (report.launchdaemons_cnid == 0) {
-                FstreeWalkCtx walk_ctx;
-                walk_ctx.file = file;
-                walk_ctx.block_size = report.container.block_size;
-                walk_ctx.block_count = report.container.block_count;
-                walk_ctx.omap = &omap_entries;
-                walk_ctx.volume_xid = volume.xid;
-
-                const std::uint64_t incompat =
-                    read_le64(block.data() + kApsbIncompatOffset);
-                walk_ctx.hashed_names =
-                    (incompat & kIncompatCaseInsensitive) != 0 ||
-                    (incompat & kIncompatNormalizationInsensitive) != 0;
-
-                std::uint64_t ld_cnid = 0;
-                std::string walk_error;
-                if (fstree_resolve_launchdaemons(
-                        walk_ctx,
-                        volume.root_tree_oid,
-                        fstree_info.level,
-                        ld_cnid,
-                        walk_error
-                    )) {
-                    report.launchdaemons_cnid = ld_cnid;
-                    report.launchdaemons_status = "RESOLVED";
-                } else {
-                    report.launchdaemons_status =
-                        "NOT_RESOLVED: " + walk_error;
-                }
-
-                // Read one real plist from LaunchDaemons end-to-end.
-                if (report.launchdaemons_cnid != 0 &&
-                    report.plist_file.status == "NOT_ATTEMPTED") {
-                    FstreeWalkCtx plist_ctx = walk_ctx;
-                    report.plist_file.owner_volume_index =
-                        report.volumes.size();
-                    fstree_read_plist_file(
-                        plist_ctx,
-                        volume.root_tree_oid,
-                        fstree_info.level,
-                        report.launchdaemons_cnid,
-                        report.plist_file
-                    );
-                }
-            }
-
-            // apfs_volname is a fixed 256-byte null-padded array in the
-            // APSB; observed at offset 0x2C0 in this image family.
-            if (0x2C0 + 256 <= block.size()) {
-                const char* name =
-                    reinterpret_cast<const char*>(block.data() + 0x2C0);
-                const std::size_t max_len =
-                    strnlen(name, 256);
-                bool printable = max_len > 0;
-                for (std::size_t i = 0; i < max_len; ++i) {
-                    const std::uint8_t ch =
-                        static_cast<std::uint8_t>(name[i]);
-                    if (ch < 0x20 || ch > 0x7e) {
-                        printable = false;
-                        break;
-                    }
-                }
-                if (printable) {
-                    volume.volume_name.assign(name, max_len);
-                }
-            }
 
             scanned_volumes.push_back(volume);
         }
@@ -1996,6 +1916,136 @@ bool apfs_read_container(
             }
         );
         report.volumes = std::move(active_era_volumes);
+
+        // Pass B: structural resolution on ACTIVE volumes only.
+        // LaunchDaemons traversal and plist reconstruction can no
+        // longer observe a stale candidate: the candidate set is
+        // final before any FSTREE walk runs.
+        for (std::size_t vi = 0; vi < report.volumes.size();
+             ++vi) {
+            const ApfsVolumeInfo& volume = report.volumes[vi];
+            // apfs_volname is a fixed 256-byte null-padded array in
+            // the APSB; observed at offset 0x2C0 in this image family.
+            std::vector<std::uint8_t> apsb_buf(
+                report.container.block_size, 0);
+            if (!read_block(
+                    file,
+                    volume.apsb_block,
+                    report.container.block_size,
+                    apsb_buf,
+                    error
+                )) {
+                break;
+            }
+            {
+                const char* name =
+                    reinterpret_cast<const char*>(
+                        apsb_buf.data() + 0x2C0);
+                const std::size_t max_len =
+                    strnlen(name, 256);
+                bool printable = max_len > 0;
+                for (std::size_t i = 0; i < max_len; ++i) {
+                    const std::uint8_t ch =
+                        static_cast<std::uint8_t>(name[i]);
+                    if (ch < 0x20 || ch > 0x7e) {
+                        printable = false;
+                        break;
+                    }
+                }
+                if (printable) {
+                    report.volumes[vi].volume_name.assign(
+                        name, max_len);
+                }
+            }
+
+            if (volume.root_tree_block == 0 ||
+                report.launchdaemons_cnid != 0) {
+                continue;
+            }
+
+            // Re-resolve the OMAP entries for this active volume so
+            // the walk context uses the same era the filter chose.
+            std::vector<std::uint8_t> omap_buf(
+                report.container.block_size, 0);
+            if (!read_block(
+                    file,
+                    volume.omap_block,
+                    report.container.block_size,
+                    omap_buf,
+                    error
+                )) {
+                break;
+            }
+            const std::uint64_t om_tree_oid =
+                read_le64(omap_buf.data() + 0x30);
+
+            std::vector<ApfsOmapEntry> omap_entries;
+            std::set<std::uint64_t> visited;
+            if (om_tree_oid > 0 &&
+                om_tree_oid < report.container.block_count) {
+                std::string omap_error;
+                if (!omap_collect_entries(
+                        file,
+                        report.container.block_size,
+                        om_tree_oid,
+                        report.container.block_count,
+                        true,
+                        omap_entries,
+                        visited,
+                        omap_error
+                    )) {
+                    // Keep going: an unresolvable OMAP simply means
+                    // this volume cannot win the plist race.
+                    continue;
+                }
+            }
+
+            FstreeWalkCtx walk_ctx;
+            walk_ctx.file = file;
+            walk_ctx.block_size = report.container.block_size;
+            walk_ctx.block_count = report.container.block_count;
+            walk_ctx.omap = &omap_entries;
+            walk_ctx.volume_xid = volume.xid;
+
+            const std::uint64_t incompat =
+                read_le64(apsb_buf.data() + kApsbIncompatOffset);
+            walk_ctx.hashed_names =
+                (incompat & kIncompatCaseInsensitive) != 0 ||
+                (incompat & kIncompatNormalizationInsensitive) != 0;
+
+            std::uint64_t ld_cnid = 0;
+            std::string walk_error;
+            if (fstree_resolve_launchdaemons(
+                    walk_ctx,
+                    volume.root_tree_oid,
+                    volume.root_tree_info.level,
+                    ld_cnid,
+                    walk_error
+                )) {
+                report.launchdaemons_cnid = ld_cnid;
+                report.launchdaemons_status = "RESOLVED";
+            } else {
+                report.launchdaemons_status =
+                    "NOT_RESOLVED: " + walk_error;
+                continue;
+            }
+
+            // Read one real plist from LaunchDaemons end-to-end.
+            // owner_volume_index is recorded against the FINAL
+            // active-era volume list, so it can never point at a
+            // filtered-out stale candidate.
+            if (report.plist_file.status == "NOT_ATTEMPTED") {
+                FstreeWalkCtx plist_ctx = walk_ctx;
+                report.plist_file.owner_volume_index = vi;
+                fstree_read_plist_file(
+                    plist_ctx,
+                    volume.root_tree_oid,
+                    volume.root_tree_info.level,
+                    report.launchdaemons_cnid,
+                    report.plist_file
+                );
+            }
+        }
 
         error.clear();
         CloseHandle(file);
@@ -2554,6 +2604,34 @@ bool apfs_mutate_plist_byte_safe(
             FALSE)) {
         error = "REFUSED: copy source to output failed";
         return false;
+    }
+
+    // Pre-write reread: the copied output must resolve through the
+    // certified reader to the SAME structural provenance before any
+    // write handle is opened. This catches a torn/partial copy and
+    // proves the copy inherited the exact active-era chain.
+    {
+        ApfsReaderReport copy_report;
+        std::string copy_error;
+        if (!apfs_read_container(
+                output_image_path, copy_report, copy_error)) {
+            error =
+                "REFUSED: pre-write reread failed: " +
+                copy_error;
+            return false;
+        }
+        if (copy_report.plist_file.status != "READ_OK" ||
+            copy_report.plist_file.drec_cnid != target_cnid ||
+            copy_report.plist_file.xattr_leaf_paddr !=
+                result.target_leaf_block ||
+            copy_report.plist_file.xattr_key_off !=
+                result.xattr_key_off_in_leaf ||
+            copy_report.plist_file.xattr_val_off !=
+                result.xattr_val_off_in_leaf) {
+            error =
+                "REFUSED: pre-write reread provenance mismatch";
+            return false;
+        }
     }
 
     // Step 3: Open output for writing.
