@@ -1090,6 +1090,9 @@ bool fstree_read_plist_file(
                 const std::uint16_t num_exts =
                     static_cast<std::uint16_t>(xf[0]) |
                     (static_cast<std::uint16_t>(xf[1]) << 8);
+                const std::uint16_t used_data =
+                    static_cast<std::uint16_t>(xf[2]) |
+                    (static_cast<std::uint16_t>(xf[3]) << 8);
                 const std::uint64_t meta_end =
                     xfields_off + kXfBlobHeaderSize +
                     static_cast<std::uint64_t>(num_exts) *
@@ -1104,6 +1107,7 @@ bool fstree_read_plist_file(
 
                     // Values start after all metadata entries.
                     std::uint64_t val_off = meta_end;
+                    std::uint64_t consumed_padded = 0;
 
                     for (std::uint16_t xi = 0; xi < num_exts; ++xi) {
                         const std::uint8_t* meta =
@@ -1138,25 +1142,43 @@ bool fstree_read_plist_file(
                         }
 
                         val_off += padded;
+                        consumed_padded += padded;
+                    }
+
+                    // Cross-check: consumed padded values must equal
+                    // xf_used_data.
+                    if (consumed_padded != used_data) {
+                        ino.parse_error =
+                            "xfield xf_used_data mismatch: consumed " +
+                            std::to_string(consumed_padded) +
+                            " expected " + std::to_string(used_data);
+                        return false;
                     }
             }
             return true;
         };
 
-        if (!fstree_visit_raw_records(
+        const bool inode_walked = fstree_visit_raw_records(
                 ctx,
                 root_oid,
                 root_level,
                 true,
                 inode_match,
                 error
-            )) {
-            continue; // try next candidate
-        }
+            );
 
-        if (!ino.parse_error.empty()) {
-            // Malformed xfields on the target inode: fail closed.
-            continue;
+        if (!inode_walked) {
+            if (!ino.parse_error.empty()) {
+                // Target inode parse failure: fail closed with the
+                // exact error, do NOT continue to another candidate.
+                result.status = "FAIL";
+                result.error = "INODE parse: " + ino.parse_error;
+                return false;
+            }
+            // Walker structural failure: also fail closed.
+            result.status = "FAIL";
+            result.error = "INODE walk: " + error;
+            return false;
         }
 
         if (!ino.found) {
@@ -1178,6 +1200,7 @@ bool fstree_read_plist_file(
                 std::uint64_t logical_size = 0;
                 std::vector<std::uint8_t> xdata;
                 bool traversal_ok = false;
+                std::string parse_error;
             } dcs;
             
             ctx.visited.clear();
@@ -1228,11 +1251,13 @@ bool fstree_read_plist_file(
 
                 // xdata_len must exactly fill the remaining value.
                 if (xdata_len != rec.value_len - 4) {
-                    return true;
+                    dcs.parse_error = "XATTR xdata_len mismatch";
+                    return false;
                 }
                 // Algo 9 proof requires header + marker + >=1 byte.
                 if (xdata_len < kDecmpfsHeaderSize + 1 + 1) {
-                    return true;
+                    dcs.parse_error = "XATTR xdata too short for decmpfs";
+                    return false;
                 }
 
                 const std::uint8_t* xd = rec.value + 4;
@@ -1244,27 +1269,32 @@ bool fstree_read_plist_file(
                 // the algo-9 inline proof. Reject DATA_STREAM and
                 // ambiguous modes before interpreting inline xdata.
                 if (dcs.xattr_flags & kXattrDataStream) {
-                    return true; // dstream-backed; not supported here
+                    dcs.parse_error = "XATTR DATA_STREAM not supported";
+                    return false;
                 }
                 if (!(dcs.xattr_flags & kXattrDataEmbedded)) {
-                    return true; // no embedded data; reject
+                    dcs.parse_error = "XATTR missing DATA_EMBEDDED";
+                    return false;
                 }
 
                 // Enforce decmpfs magic signature.
                 if (dcs.signature != kDecmpfsSignature) {
-                    return true; // not a decmpfs record
+                    dcs.parse_error = "XATTR bad cmpf signature";
+                    return false;
                 }
 
                 // Only algo 9 (PLAIN_ATTR) is proven for this gate.
                 if (dcs.algo == 9) {
                     // Verify marker byte at xdata[16].
                     if (xd[kDecmpfsHeaderSize] != kDecmpfsPlainMarker) {
-                        return true;
+                        dcs.parse_error = "XATTR bad 0xCC marker";
+                        return false;
                     }
                     // logical_size == xdata_len - 17 (header + marker).
                     if (dcs.logical_size !=
                         xdata_len - kDecmpfsHeaderSize - 1) {
-                        return true;
+                        dcs.parse_error = "XATTR logical-size mismatch";
+                        return false;
                     }
                     dcs.xdata.assign(
                         xd + kDecmpfsHeaderSize + 1,
@@ -1284,6 +1314,17 @@ bool fstree_read_plist_file(
                 xattr_match,
                 xa_error
             );
+
+            if (!dcs.traversal_ok && !dcs.parse_error.empty()) {
+                result.status = "FAIL";
+                result.error = "XATTR parse: " + dcs.parse_error;
+                return false;
+            }
+            if (!dcs.traversal_ok) {
+                result.status = "FAIL";
+                result.error = "XATTR walk: " + xa_error;
+                return false;
+            }
 
             if (dcs.traversal_ok && dcs.found && !dcs.xdata.empty()) {
                 // Persist the deterministic candidate identity.
@@ -1358,6 +1399,7 @@ bool fstree_read_plist_file(
         std::uint64_t phys = 0;
     };
     std::vector<Extent> extents;
+    std::string extent_parse_error;
 
     ctx.visited.clear();
     auto extent_match = [&](const FstreeRawRecord& rec) -> bool {
@@ -1365,8 +1407,12 @@ bool fstree_read_plist_file(
             rec.obj_id != ino.private_id) {
             return true;
         }
-        if (rec.key_extra_len < 8 || rec.value_len < 24) {
-            return true; // malformed; skip
+        if (rec.key_extra_len != 8 || rec.value_len != 24) {
+            extent_parse_error =
+                "FILE_EXTENT malformed size: key=" +
+                std::to_string(rec.key_extra_len) +
+                " value=" + std::to_string(rec.value_len);
+            return false;
         }
         Extent e;
         e.logical = read_le64(rec.key_extra);
@@ -1385,6 +1431,11 @@ bool fstree_read_plist_file(
             extent_match,
             error
         )) {
+        if (!extent_parse_error.empty()) {
+            result.status = "FAIL";
+            result.error = "FILE_EXTENT parse: " + extent_parse_error;
+            return false;
+        }
         result.status = "FAIL";
         result.error = "FILE_EXTENT scan: " + error;
         return false;

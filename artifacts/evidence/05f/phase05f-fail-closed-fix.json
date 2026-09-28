@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-27 20:07:55",
+  "phase": "05G-prep",
+  "gate": "fail-closed-error-propagation-fix",
+  "verification": {
+    "real_fixture": "launchdaemons RESOLVED cnid=632; plist READ_OK 721 bytes sha256=a5ff5c5e...e41b2eb binary-plist",
+    "synthetic": "APFS_READER_TEST_PASS"
+  },
+  "reviewer_items_fixed": [
+    "Item 1: inode xfield fail-closed — walker failure now distinguishes parse_error (target inode malformed) from structural walk failure; both return false from fstree_read_plist_file with exact error; no continue-to-next-candidate on target parse failure",
+    "Item 2: XATTR decmpfs fail-closed — bad xdata_len, bad storage mode, bad cmpf signature, bad 0xCC marker, and logical-size mismatch all produce dcs.parse_error + return false; propagated as FAIL from the function",
+    "Item 3: xf_used_data cross-checked against consumed padded value bytes; mismatch produces explicit parse error",
+    "Item 4: FILE_EXTENT malformed records (key_extra_len != 8 or value_len != 24) now produce extent_parse_error + return false; propagated as FILE_EXTENT parse FAIL"
+  ]
+}
