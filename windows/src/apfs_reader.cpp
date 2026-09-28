@@ -3084,6 +3084,22 @@ bool apfs_replace_plist_payload_safe(
     ApfsMutationResult& result,
     std::string& error
 ) {
+    return apfs_replace_plist_payload_safe_with_hook(
+        source_image_path, output_image_path,
+        expected_source_sha256, target_cnid, new_payload,
+        nullptr, result, error);
+}
+
+bool apfs_replace_plist_payload_safe_with_hook(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    void (*post_copy_hook)(const std::string& output_path),
+    ApfsMutationResult& result,
+    std::string& error
+) {
     result = {};
     error.clear();
 
@@ -3195,6 +3211,12 @@ bool apfs_replace_plist_payload_safe(
             FALSE)) {
         error = "REFUSED: copy source to output failed";
         return false;
+    }
+
+    // Test seam: allow tests to tamper with the copied output
+    // before the pre-write provenance reread validates it.
+    if (post_copy_hook) {
+        post_copy_hook(output_image_path);
     }
 
     // Pre-write reread provenance check (identical to single-byte).

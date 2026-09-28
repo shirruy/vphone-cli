@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <array>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -1464,6 +1465,126 @@ int main() {
 
         DeleteFileA(multi_source.c_str());
         DeleteFileA(multi_output.c_str());
+    }
+
+    // Provenance-tamper negative (reviewer-required): use the
+    // post-copy hook to tamper the owner APSB xid in the OUTPUT
+    // after CopyFile but before the pre-write provenance reread.
+    // The function must FAIL CLOSED with the exact provenance
+    // mismatch error and leave the target leaf + source untouched.
+    {
+        std::vector<std::uint8_t> multi =
+            build_two_era_image();
+        {
+            auto put = [&](
+                std::uint64_t block,
+                const std::vector<std::uint8_t>& blk) {
+                std::memcpy(
+                    multi.data() +
+                        static_cast<std::size_t>(block) *
+                            kBlockSize,
+                    blk.data(), kBlockSize);
+            };
+            std::vector<std::uint8_t> apsb(kBlockSize, 0);
+            put_le64(apsb, 8, 43);
+            put_le64(apsb, 16, kApsbXid);
+            put_le32(apsb, 24, 0x80000009u);
+            put_le32(apsb, 32, 0x42535041u);
+            put_le64(apsb, 0x80, 4);
+            put_le64(apsb, 0x88, 999);
+            put_le64(apsb, 0x90, 3);
+            seal(apsb);
+            put(1, apsb);
+            std::vector<std::uint8_t> omap_blk(kBlockSize, 0);
+            std::memcpy(omap_blk.data(), multi.data() + 3 * kBlockSize, kBlockSize);
+            put_le32(omap_blk, 0x24, 2);
+            omap_blk[0x3c] = 0x10; omap_blk[0x3d] = 0x00;
+            omap_blk[0x3e] = 0x20; omap_blk[0x3f] = 0x00;
+            put_le64(omap_blk, 0x58, 43);
+            put_le64(omap_blk, 0x60, kApsbXid);
+            put_le32(omap_blk, 0xfb8, 0);
+            put_le32(omap_blk, 0xfbc, kBlockSize);
+            put_le64(omap_blk, 0xfc0, 1);
+            seal(omap_blk);
+            put(3, omap_blk);
+        }
+
+        const std::string tp_src = dir + "apfs_mut_tp_src.img";
+        const std::string tp_out = dir + "apfs_mut_tp_out.img";
+        if (!write_all(tp_src, multi)) return 1;
+
+        std::string tp_sha;
+        std::vector<std::uint8_t> tp_payload;
+        {
+            vphone::ApfsReaderReport rpt;
+            std::string rerr;
+            if (!vphone::apfs_read_container(tp_src, rpt, rerr)) {
+                std::fprintf(stderr, "tp reader: %s\n", rerr.c_str());
+                return 1;
+            }
+            tp_sha = sha256_hex(rpt.plist_file.bytes);
+            tp_payload = rpt.plist_file.bytes;
+            for (auto& b : tp_payload) b ^= 0x5A;
+        }
+
+        // Save target leaf (block 8) before.
+        std::vector<std::uint8_t> leaf_before(kBlockSize, 0);
+        std::memcpy(leaf_before.data(), multi.data() + 8 * kBlockSize, kBlockSize);
+
+        // Tamper hook: modifies owner APSB (block 13) xid 3→2.
+        auto tamper = [](const std::string& path) {
+            std::vector<std::uint8_t> blk(kBlockSize, 0);
+            std::ifstream tf(path, std::ios::binary);
+            tf.seekg(13 * kBlockSize);
+            tf.read(reinterpret_cast<char*>(blk.data()), kBlockSize);
+            tf.close();
+            put_le64(blk, 16, 2);
+            seal(blk);
+            std::ofstream to(path, std::ios::binary | std::ios::in | std::ios::out);
+            to.seekp(13 * kBlockSize);
+            to.write(reinterpret_cast<const char*>(blk.data()), kBlockSize);
+            to.close();
+        };
+
+        DeleteFileA(tp_out.c_str());
+        vphone::ApfsMutationResult r;
+        std::string err;
+        // The hook fires after CopyFile but before pre-write reread.
+        const bool ok = vphone::apfs_replace_plist_payload_safe_with_hook(
+            tp_src, tp_out, tp_sha, kFileCnid, tp_payload,
+            tamper, r, err);
+        if (ok || err.find("owner volume invalid") == std::string::npos) {
+            std::fprintf(stderr, "[tamper] expected owner volume invalid, got ok=%d err='%s'\n",
+                ok ? 1 : 0, err.c_str());
+            return 1;
+        }
+
+        // Target leaf must be untouched (the function refused before writing).
+        {
+            std::vector<std::uint8_t> leaf_after(kBlockSize, 0);
+            std::ifstream tf(tp_out, std::ios::binary);
+            if (tf.good()) {
+                tf.seekg(8 * kBlockSize);
+                tf.read(reinterpret_cast<char*>(leaf_after.data()), kBlockSize);
+                tf.close();
+                if (leaf_after != leaf_before) {
+                    std::fprintf(stderr, "[tamper] target leaf modified\n");
+                    return 1;
+                }
+            }
+        }
+
+        // Source must remain unchanged.
+        {
+            std::vector<std::uint8_t> after;
+            if (!read_all(tp_src, after) || after != multi) {
+                std::fprintf(stderr, "[tamper] source modified\n");
+                return 1;
+            }
+        }
+
+        DeleteFileA(tp_src.c_str());
+        DeleteFileA(tp_out.c_str());
     }
 
 

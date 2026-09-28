@@ -150,6 +150,22 @@ bool apfs_replace_plist_payload_safe(
     std::string& error
 );
 
+// Test seam variant: invokes the callback after the source→output
+// copy but before the pre-write provenance reread, allowing tests
+// to tamper with the copied output and prove the function fails
+// closed on provenance mismatch. Production code must use the
+// non-callback variant.
+bool apfs_replace_plist_payload_safe_with_hook(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    void (*post_copy_hook)(const std::string& output_path),
+    ApfsMutationResult& result,
+    std::string& error
+);
+
 // Legacy in-place variant (refuses if source == output).
 // Kept for backward compatibility but prefer the safe API.
 // Refuses to write when any precondition differs.
