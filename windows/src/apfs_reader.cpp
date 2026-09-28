@@ -3075,4 +3075,308 @@ bool apfs_mutate_plist_byte_safe(
     return true;
 }
 
+bool apfs_replace_plist_payload_safe(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    ApfsMutationResult& result,
+    std::string& error
+) {
+    result = {};
+    error.clear();
+
+    // Safety: distinct underlying files (same identity check as
+    // the single-byte gate).
+    {
+        HANDLE sa = CreateFileA(
+            source_image_path.c_str(), GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        HANDLE sb = CreateFileA(
+            output_image_path.c_str(), GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        bool same_file = false;
+        if (sa != INVALID_HANDLE_VALUE &&
+            sb != INVALID_HANDLE_VALUE) {
+            BY_HANDLE_FILE_INFORMATION ia {};
+            BY_HANDLE_FILE_INFORMATION ib {};
+            if (GetFileInformationByHandle(sa, &ia) &&
+                GetFileInformationByHandle(sb, &ib)) {
+                same_file =
+                    ia.dwVolumeSerialNumber ==
+                        ib.dwVolumeSerialNumber &&
+                    ia.nFileIndexHigh == ib.nFileIndexHigh &&
+                    ia.nFileIndexLow == ib.nFileIndexLow;
+            }
+        }
+        if (sa != INVALID_HANDLE_VALUE) CloseHandle(sa);
+        if (sb != INVALID_HANDLE_VALUE) CloseHandle(sb);
+        if (same_file) {
+            error =
+                "REFUSED: source and output must be distinct paths";
+            return false;
+        }
+    }
+
+    if (expected_source_sha256.empty()) {
+        error = "REFUSED: expected source SHA-256 is required";
+        return false;
+    }
+    if (new_payload.empty()) {
+        error = "REFUSED: replacement payload is empty";
+        return false;
+    }
+
+    // Certified read of the source.
+    ApfsReaderReport report;
+    if (!apfs_read_container(
+            source_image_path, report, error)) {
+        error = "REFUSED: source reader failed: " + error;
+        return false;
+    }
+    if (report.plist_file.status != "READ_OK" ||
+        report.plist_file.drec_cnid != target_cnid) {
+        error =
+            "REFUSED: source plist not readable or CNID mismatch";
+        return false;
+    }
+    const std::string actual_hash = compute_sha256_hex(
+        report.plist_file.bytes.data(),
+        report.plist_file.bytes.size());
+    if (actual_hash != expected_source_sha256) {
+        error = "REFUSED: source hash mismatch";
+        return false;
+    }
+    if (new_payload.size() !=
+        report.plist_file.bytes.size()) {
+        error =
+            "REFUSED: size-changing replacement not supported "
+ "in this gate (expected same-size payload)";
+        return false;
+    }
+    if (report.plist_file.xattr_leaf_paddr == 0) {
+        error =
+            "REFUSED: XATTR leaf provenance not recorded";
+        return false;
+    }
+
+    // Record provenance from the owner volume.
+    if (report.plist_file.owner_volume_index >=
+        report.volumes.size()) {
+        error = "REFUSED: plist owner volume not recorded";
+        return false;
+    }
+    const ApfsVolumeInfo& owner_vol =
+        report.volumes[
+            report.plist_file.owner_volume_index];
+    result.apsb_block = owner_vol.apsb_block;
+    result.apsb_oid = owner_vol.apsb_oid;
+    result.volume_xid = owner_vol.xid;
+    result.root_tree_oid = owner_vol.root_tree_oid;
+    result.resolved_root_block = owner_vol.root_tree_block;
+    result.target_cnid = target_cnid;
+    result.target_leaf_block =
+        report.plist_file.xattr_leaf_paddr;
+    result.xattr_key_off_in_leaf =
+        report.plist_file.xattr_key_off;
+    result.xattr_val_off_in_leaf =
+        report.plist_file.xattr_val_off;
+    result.old_plist_sha256 = actual_hash;
+    result.data_offset_in_block =
+        report.plist_file.xattr_data_start_off;
+
+    // Copy source → output.
+    if (!CopyFileA(
+            source_image_path.c_str(),
+            output_image_path.c_str(),
+            FALSE)) {
+        error = "REFUSED: copy source to output failed";
+        return false;
+    }
+
+    // Pre-write reread provenance check (identical to single-byte).
+    {
+        ApfsReaderReport copy_report;
+        std::string copy_error;
+        if (!apfs_read_container(
+                output_image_path, copy_report, copy_error)) {
+            error =
+                "REFUSED: pre-write reread failed: " +
+                copy_error;
+            return false;
+        }
+        if (copy_report.plist_file.status != "READ_OK" ||
+            copy_report.plist_file.drec_cnid != target_cnid ||
+            copy_report.volumes.empty() ||
+            copy_report.volumes[0].apsb_block !=
+                result.apsb_block ||
+            copy_report.volumes[0].apsb_oid !=
+                result.apsb_oid ||
+            copy_report.volumes[0].xid != result.volume_xid ||
+            copy_report.volumes[0].root_tree_block !=
+                result.resolved_root_block ||
+            copy_report.plist_file.xattr_leaf_paddr !=
+                result.target_leaf_block ||
+            copy_report.plist_file.xattr_key_off !=
+                result.xattr_key_off_in_leaf ||
+            copy_report.plist_file.xattr_val_off !=
+                result.xattr_val_off_in_leaf) {
+            error =
+                "REFUSED: pre-write reread provenance mismatch";
+            return false;
+        }
+    }
+
+    // Open output, read leaf, replace payload in place.
+    HANDLE out = CreateFileA(
+        output_image_path.c_str(),
+        GENERIC_READ | GENERIC_WRITE,
+        0, nullptr, OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (out == INVALID_HANDLE_VALUE) {
+        error = "REFUSED: cannot open output for writing";
+        return false;
+    }
+
+    std::vector<std::uint8_t> blk(
+        report.container.block_size, 0);
+    if (!read_block(
+            out, result.target_leaf_block,
+            report.container.block_size, blk, error)) {
+        CloseHandle(out);
+        error = "REFUSED: target leaf read failed";
+        return false;
+    }
+    if (!apfs_block_checksum_ok(blk)) {
+        CloseHandle(out);
+        error =
+            "REFUSED: target leaf checksum mismatch pre-write";
+        return false;
+    }
+    result.old_block_checksum = format_u64_hex(
+        read_le64(blk.data()));
+
+    // Verify the decmpfs header fields at the value offset.
+    const std::uint64_t val_off =
+        result.xattr_val_off_in_leaf;
+    const std::uint16_t stored_xdata_len =
+        static_cast<std::uint16_t>(blk[val_off + 2]) |
+        (static_cast<std::uint16_t>(
+             blk[val_off + 3]) << 8);
+    const std::uint64_t payload_off = val_off + 21;
+    if (stored_xdata_len != 17 + new_payload.size() ||
+        payload_off + new_payload.size() > blk.size()) {
+        CloseHandle(out);
+        error =
+            "REFUSED: decmpfs payload geometry mismatch";
+        return false;
+    }
+
+    // Replace the payload bytes.
+    std::memcpy(
+        blk.data() + payload_off,
+        new_payload.data(),
+        new_payload.size());
+    // Update logical_size (xdata+8) and keep marker (xdata+16).
+    const std::uint64_t new_logical =
+        new_payload.size();
+    for (int i = 0; i < 8; ++i) {
+        blk[val_off + 4 + 8 + i] =
+            static_cast<std::uint8_t>(
+                (new_logical >> (i * 8)) & 0xFF);
+    }
+
+    // Reseal.
+    const std::uint64_t new_ck =
+        apfs_fletcher64(blk.data(), blk.size());
+    for (int i = 0; i < 8; ++i) {
+        blk[i] = static_cast<std::uint8_t>(
+            (new_ck >> (i * 8)) & 0xFF);
+    }
+    result.new_block_checksum = format_u64_hex(new_ck);
+
+    // Write + flush + verify block.
+    LARGE_INTEGER dist {};
+    dist.QuadPart = static_cast<LONGLONG>(
+        result.target_leaf_block *
+        report.container.block_size);
+    if (!SetFilePointerEx(
+            out, dist, nullptr, FILE_BEGIN) ||
+        !WriteFile(
+            out, blk.data(),
+            static_cast<DWORD>(blk.size()),
+            nullptr, nullptr) ||
+        !FlushFileBuffers(out)) {
+        CloseHandle(out);
+        error = "REFUSED: write/flush failed";
+        return false;
+    }
+    std::vector<std::uint8_t> vblk(
+        report.container.block_size, 0);
+    if (!read_block(
+            out, result.target_leaf_block,
+            report.container.block_size, vblk, error) ||
+        !apfs_block_checksum_ok(vblk)) {
+        CloseHandle(out);
+        error =
+            "REFUSED: post-write block verify failed";
+        return false;
+    }
+    CloseHandle(out);
+
+    // Certified reread of the output.
+    ApfsReaderReport verify_report;
+    std::string verify_error;
+    if (!apfs_read_container(
+            output_image_path,
+            verify_report, verify_error)) {
+        error =
+            "REFUSED: certified reread failed: " +
+            verify_error;
+        return false;
+    }
+    if (verify_report.plist_file.status != "READ_OK" ||
+        verify_report.plist_file.drec_cnid != target_cnid ||
+        verify_report.volumes.empty() ||
+        verify_report.volumes[0].apsb_block !=
+            result.apsb_block ||
+        verify_report.volumes[0].apsb_oid !=
+            result.apsb_oid ||
+        verify_report.volumes[0].xid != result.volume_xid ||
+        verify_report.volumes[0].root_tree_block !=
+            result.resolved_root_block ||
+        verify_report.plist_file.xattr_leaf_paddr !=
+            result.target_leaf_block) {
+        error =
+            "REFUSED: certified reread provenance mismatch";
+        return false;
+    }
+    if (verify_report.plist_file.bytes.size() !=
+            new_payload.size() ||
+        std::memcmp(
+            verify_report.plist_file.bytes.data(),
+            new_payload.data(),
+            new_payload.size()) != 0) {
+        error =
+            "REFUSED: reread payload mismatch";
+        return false;
+    }
+    result.new_plist_sha256 = compute_sha256_hex(
+        verify_report.plist_file.bytes.data(),
+        verify_report.plist_file.bytes.size());
+    result.reread_plist_sha256 = result.new_plist_sha256;
+    result.reread_verified = true;
+    if (result.new_plist_sha256 ==
+        expected_source_sha256) {
+        error =
+            "REFUSED: reread hash unchanged after replacement";
+        return false;
+    }
+    result.success = true;
+    return true;
+}
+
 } // namespace vphone

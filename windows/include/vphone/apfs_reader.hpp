@@ -133,6 +133,23 @@ bool apfs_mutate_plist_byte_safe(
     std::string& error
 );
 
+// Full plist payload replacement (same-size only for this gate):
+// replaces the entire embedded decmpfs PLAIN_ATTR payload with new
+// bytes of EXACTLY the same length, updates the decmpfs logical
+// size field if needed, reseals the leaf Fletcher-64 checksum, and
+// verifies via certified reread. Preserves all single-byte-gate
+// invariants: rooted authority, source→output isolation, file
+// identity safety, provenance, and fail-closed behavior.
+bool apfs_replace_plist_payload_safe(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    ApfsMutationResult& result,
+    std::string& error
+);
+
 // Legacy in-place variant (refuses if source == output).
 // Kept for backward compatibility but prefer the safe API.
 // Refuses to write when any precondition differs.

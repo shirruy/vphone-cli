@@ -1158,6 +1158,80 @@ int main() {
         DeleteFileA(bad_path.c_str());
     }
 
+    // Full payload replacement (same-size): replace the entire
+    // 11-byte synthetic plist payload with different bytes of the
+    // same length, then verify certified reread returns exactly
+    // the new payload.
+    {
+        DeleteFileA(output.c_str());
+        std::vector<std::uint8_t> replacement;
+        replacement.push_back('b');
+        replacement.push_back('p');
+        replacement.push_back('l');
+        replacement.push_back('i');
+        replacement.push_back('s');
+        replacement.push_back('t');
+        replacement.push_back('0');
+        replacement.push_back('0');
+        replacement.push_back('X');
+        replacement.push_back('Q');
+        replacement.push_back('Z');
+        vphone::ApfsMutationResult r;
+        std::string err;
+        if (!vphone::apfs_replace_plist_payload_safe(
+                source, output, plist_sha, kFileCnid,
+                replacement, r, err) ||
+            !r.success || !r.reread_verified) {
+            std::fprintf(
+                stderr,
+                "full payload replacement failed: %s\n",
+                err.c_str());
+            return 1;
+        }
+        vphone::ApfsReaderReport out;
+        std::string rerr;
+        if (!vphone::apfs_read_container(
+                output, out, rerr)) {
+            std::fprintf(
+                stderr,
+                "replacement reread failed: %s\n",
+                rerr.c_str());
+            return 1;
+        }
+        if (out.plist_file.status != "READ_OK" ||
+            out.plist_file.bytes.size() != 11 ||
+            out.plist_file.bytes[9] != 'Q' ||
+            out.plist_file.bytes[10] != 'Z' ||
+            sha256_hex(out.plist_file.bytes) !=
+                r.reread_plist_sha256) {
+            std::fprintf(
+                stderr,
+                "replacement reread mismatch\n");
+            return 1;
+        }
+
+        // Size-change refusal.
+        if (!write_all(variant, base)) {
+            std::fprintf(
+                stderr, "size-change variant write failed\n");
+            return 1;
+        }
+        DeleteFileA(variant_out.c_str());
+        std::vector<std::uint8_t> wrong_size(12, 'A');
+        vphone::ApfsMutationResult r2;
+        std::string err2;
+        if (vphone::apfs_replace_plist_payload_safe(
+                variant, variant_out, plist_sha, kFileCnid,
+                wrong_size, r2, err2) ||
+            err2.find("size-changing") == std::string::npos) {
+            std::fprintf(
+                stderr,
+                "[size_change] expected refusal, got '%s'\n",
+                err2.c_str());
+            return 1;
+        }
+    }
+
     DeleteFileA(source.c_str());
     DeleteFileA(output.c_str());
     DeleteFileA(variant.c_str());
