@@ -75,6 +75,41 @@ struct ApfsReaderReport {
     } plist_file;
 };
 
+// Structural mutation result.
+struct ApfsMutationResult {
+    bool success = false;
+    std::string error;
+    // Era/identity chain.
+    std::uint64_t apsb_block = 0;
+    std::uint64_t apsb_oid = 0;
+    std::uint64_t volume_xid = 0;
+    std::uint64_t root_tree_oid = 0;
+    std::uint64_t resolved_root_block = 0;
+    std::uint64_t target_cnid = 0;
+    std::uint64_t target_leaf_block = 0;
+    // Mutation details.
+    std::uint64_t data_offset_in_block = 0;
+    std::uint8_t old_byte = 0;
+    std::uint8_t new_byte = 0;
+    std::string old_plist_sha256;
+    std::string new_plist_sha256;
+    std::string old_block_checksum;
+    std::string new_block_checksum;
+};
+
+// Structural single-byte mutation through the certified read chain.
+// Refuses to write when any precondition differs.
+bool apfs_mutate_plist_byte(
+    const std::string& image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    std::uint64_t plist_byte_offset,
+    std::uint8_t expected_old_byte,
+    std::uint8_t new_byte,
+    ApfsMutationResult& result,
+    std::string& error
+);
+
 // Parse a raw APFS container image and resolve each volume superblock
 // (APSB) through the container checkpoint area. Fails closed on invalid
 // magic, impossible block geometry, or missing object headers.

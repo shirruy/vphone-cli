@@ -5,6 +5,7 @@
 #include "vphone/apfs_reader.hpp"
 
 #include <cstring>
+#include <wincrypt.h>
 #include <set>
 #include <algorithm>
 #include <limits>
@@ -1944,6 +1945,397 @@ bool apfs_read_container(
 
     CloseHandle(file);
     return false;
+}
+
+// ---------------------------------------------------------------------------
+// Structural mutation: single-byte change through the certified read chain.
+// ---------------------------------------------------------------------------
+
+namespace {
+
+std::string compute_sha256_hex(
+    const std::uint8_t* data,
+    std::size_t size
+) {
+    HCRYPTPROV prov = 0;
+    HCRYPTHASH hash = 0;
+    std::string out;
+    if (!CryptAcquireContextW(
+            &prov, nullptr, nullptr, PROV_RSA_AES,
+            CRYPT_VERIFYCONTEXT)) {
+        return "";
+    }
+    if (CryptCreateHash(prov, CALG_SHA_256, 0, 0, &hash)) {
+        if (CryptHashData(
+                hash, const_cast<BYTE*>(data),
+                static_cast<DWORD>(size), 0)) {
+            BYTE buf[32];
+            DWORD len = 32;
+            if (CryptGetHashParam(
+                    hash, HP_HASHVAL, buf, &len, 0) &&
+                len == 32) {
+                char hex[65];
+                for (DWORD i = 0; i < 32; ++i) {
+                    std::snprintf(
+                        hex + i * 2, 3, "%02x", buf[i]);
+                }
+                hex[64] = '\0';
+                out = hex;
+            }
+        }
+        CryptDestroyHash(hash);
+    }
+    CryptReleaseContext(prov, 0);
+    return out;
+}
+
+std::string format_u64_hex(std::uint64_t v) {
+    char buf[32];
+    std::snprintf(
+        buf, sizeof(buf), "0x%016llx",
+        static_cast<unsigned long long>(v));
+    return buf;
+}
+
+} // namespace
+
+bool apfs_mutate_plist_byte(
+    const std::string& image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    std::uint64_t plist_byte_offset,
+    std::uint8_t expected_old_byte,
+    std::uint8_t new_byte,
+    ApfsMutationResult& result,
+    std::string& error
+) {
+    result = {};
+    error.clear();
+
+    // Precondition: refuse if expected source hash is empty.
+    if (expected_source_sha256.empty()) {
+        error = "REFUSED: expected source SHA-256 is required";
+        return false;
+    }
+
+    // Open the image for read/write.
+    HANDLE file = CreateFileA(
+        image_path.c_str(),
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr
+    );
+    if (file == INVALID_HANDLE_VALUE) {
+        error = "REFUSED: cannot open image for read/write";
+        return false;
+    }
+
+    // Run the certified reader to resolve the structural chain.
+    ApfsReaderReport report;
+    std::string read_error;
+    {
+        // Open a read-only handle with full sharing for the
+        // reader, then close it before writing.
+        HANDLE reader_handle = CreateFileA(
+            image_path.c_str(),
+            GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            nullptr,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr
+        );
+        if (reader_handle == INVALID_HANDLE_VALUE) {
+            CloseHandle(file);
+            error = "REFUSED: cannot open reader handle";
+            return false;
+        }
+        CloseHandle(reader_handle);
+
+        // apfs_read_container opens its own handle with
+        // FILE_SHARE_READ; this conflicts with our writer handle.
+        // Close our writer handle temporarily during the read.
+        CloseHandle(file);
+
+        if (!apfs_read_container(
+                image_path, report, read_error)) {
+            error = "REFUSED: reader failed: " + read_error;
+            return false;
+        }
+
+        // Re-open for writing.
+        file = CreateFileA(
+            image_path.c_str(),
+            GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_READ,
+            nullptr,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr
+        );
+        if (file == INVALID_HANDLE_VALUE) {
+            error = "REFUSED: cannot reopen for writing";
+            return false;
+        }
+    }
+
+    // Verify plist was found and matches target CNID.
+    if (report.plist_file.status != "READ_OK") {
+        CloseHandle(file);
+        error = "REFUSED: plist not readable: " +
+            report.plist_file.status;
+        return false;
+    }
+    if (report.plist_file.drec_cnid != target_cnid) {
+        CloseHandle(file);
+        error = "REFUSED: target CNID mismatch: expected " +
+            std::to_string(target_cnid) + " got " +
+            std::to_string(
+                report.plist_file.drec_cnid);
+        return false;
+    }
+
+    // Verify source plist hash matches expectation.
+    const std::string actual_hash = compute_sha256_hex(
+        report.plist_file.bytes.data(),
+        report.plist_file.bytes.size()
+    );
+    if (actual_hash != expected_source_sha256) {
+        CloseHandle(file);
+        error = "REFUSED: source plist hash mismatch: expected " +
+            expected_source_sha256 + " got " + actual_hash;
+        return false;
+    }
+
+    // Verify byte offset is within the plist.
+    if (plist_byte_offset >=
+        report.plist_file.bytes.size()) {
+        CloseHandle(file);
+        error = "REFUSED: byte offset beyond plist size";
+        return false;
+    }
+
+    // Verify expected old byte.
+    if (report.plist_file.bytes[plist_byte_offset] !=
+        expected_old_byte) {
+        CloseHandle(file);
+        error = "REFUSED: expected old byte mismatch: expected 0x" +
+            std::to_string(expected_old_byte) + " got 0x" +
+            std::to_string(
+                report.plist_file.bytes[plist_byte_offset]);
+        return false;
+    }
+
+    // Record era/identity from the reader's resolution.
+    // Use the first volume with a resolved root tree.
+    for (const auto& vol : report.volumes) {
+        if (vol.root_tree_block != 0) {
+            result.apsb_block = vol.apsb_block;
+            result.apsb_oid = vol.apsb_oid;
+            result.volume_xid = vol.xid;
+            result.root_tree_oid = vol.root_tree_oid;
+            result.resolved_root_block = vol.root_tree_block;
+            break;
+        }
+    }
+    result.target_cnid = target_cnid;
+    result.old_plist_sha256 = actual_hash;
+    result.old_byte = expected_old_byte;
+    result.new_byte = new_byte;
+
+    // Now we need to find the physical block and offset of the
+    // plist byte. The reader found it via the XATTR; we need to
+    // locate the FSTREE leaf block containing the XATTR record.
+    //
+    // We scan for the XATTR record by walking the same FSTREE
+    // chain and recording the physical paddr of the leaf node
+    // that contains the decmpfs XATTR for target_cnid.
+    //
+    // For now, we use a focused search: scan blocks that are
+    // valid FSTREE leaf nodes containing the XATTR key for the
+    // target CNID.
+
+    std::uint64_t target_block = 0;
+    std::uint64_t plist_data_block_offset = 0;
+    std::uint64_t plist_size = report.plist_file.bytes.size();
+
+    // Read blocks to find the one containing the decmpfs XATTR
+    // for the target CNID. We check for the exact XATTR key bytes.
+    const std::uint64_t xattr_key = (4ull << 60) | target_cnid;
+
+    for (std::uint64_t b = 0;
+         b < report.container.block_count; ++b) {
+        std::vector<std::uint8_t> blk(
+            report.container.block_size, 0);
+        if (!read_block(
+                file, b,
+                report.container.block_size, blk, error)) {
+            continue;
+        }
+
+        // Check B-tree + FSTREE.
+        const std::uint32_t type =
+            read_le32(blk.data() + 24);
+        const std::uint32_t kind = type & kObjectTypeMask;
+        const std::uint32_t sub =
+            read_le32(blk.data() + 28);
+        if ((kind != kBtreeType &&
+             kind != kBtreeTypeNode) ||
+            sub != kFstreeSubtype) {
+            continue;
+        }
+
+        // Check for our XATTR key bytes in the block.
+        // Key is 8 bytes LE.
+        for (std::size_t i = 0;
+             i + 8 <= blk.size(); ++i) {
+            if (read_le64(blk.data() + i) == xattr_key) {
+                // Verify this is actually within a key area (not
+                // a random data match). Check if the next bytes
+                // after the key header look like the XATTR name.
+                if (i + 8 + 2 + 18 <= blk.size()) {
+                    const std::uint16_t name_len =
+                        static_cast<std::uint16_t>(
+                            blk[i + 8]) |
+                        (static_cast<std::uint16_t>(
+                             blk[i + 9]) << 8);
+                    if (name_len == 18 &&
+                        std::memcmp(
+                            blk.data() + i + 10,
+                            "com.apple.decmpfs",
+                            17) == 0 &&
+                        blk[i + 10 + 17] == 0) {
+                        // Found it. Now find the plist data
+                        // (bplist00 magic) after the XATTR value.
+                        for (std::size_t j = i;
+                             j + 8 <= blk.size(); ++j) {
+                            if (std::memcmp(
+                                    blk.data() + j,
+                                    "bplist00", 8) == 0) {
+                                target_block = b;
+                                plist_data_block_offset = j;
+                                break;
+                            }
+                        }
+                        if (target_block != 0) break;
+                    }
+                }
+            }
+        }
+        if (target_block != 0) break;
+    }
+
+    if (target_block == 0) {
+        CloseHandle(file);
+        error =
+            "REFUSED: could not structurally locate target block";
+        return false;
+    }
+
+    result.target_leaf_block = target_block;
+    result.data_offset_in_block =
+        plist_data_block_offset + plist_byte_offset;
+
+    // Verify block checksum before writing.
+    std::vector<std::uint8_t> blk(
+        report.container.block_size, 0);
+    if (!read_block(
+            file, target_block,
+            report.container.block_size, blk, error)) {
+        CloseHandle(file);
+        error = "REFUSED: target block read failed";
+        return false;
+    }
+    if (!apfs_block_checksum_ok(blk)) {
+        CloseHandle(file);
+        error = "REFUSED: target block checksum mismatch";
+        return false;
+    }
+
+    result.old_block_checksum = format_u64_hex(
+        read_le64(blk.data()));
+
+    // Verify the byte at the target offset matches.
+    if (blk[result.data_offset_in_block] !=
+        expected_old_byte) {
+        CloseHandle(file);
+        error =
+            "REFUSED: byte at structural offset mismatch";
+        return false;
+    }
+
+    // Apply mutation.
+    blk[result.data_offset_in_block] = new_byte;
+
+    // Recompute checksum.
+    const std::uint64_t new_checksum =
+        apfs_fletcher64(
+            blk.data(), blk.size());
+    for (int i = 0; i < 8; ++i) {
+        blk[i] = static_cast<std::uint8_t>(
+            (new_checksum >> (i * 8)) & 0xFF);
+    }
+
+    result.new_block_checksum =
+        format_u64_hex(new_checksum);
+
+    // Write block.
+    LARGE_INTEGER distance{};
+    distance.QuadPart = static_cast<LONGLONG>(
+        target_block * report.container.block_size);
+    if (!SetFilePointerEx(
+            file, distance, nullptr, FILE_BEGIN)) {
+        CloseHandle(file);
+        error = "REFUSED: seek failed";
+        return false;
+    }
+    DWORD written = 0;
+    if (!WriteFile(
+            file, blk.data(),
+            static_cast<DWORD>(blk.size()),
+            &written, nullptr) ||
+        written != blk.size()) {
+        CloseHandle(file);
+        error = "REFUSED: write failed";
+        return false;
+    }
+    if (!FlushFileBuffers(file)) {
+        CloseHandle(file);
+        error = "REFUSED: flush failed";
+        return false;
+    }
+
+    // Reread and verify.
+    std::vector<std::uint8_t> verify_blk(
+        report.container.block_size, 0);
+    if (!read_block(
+            file, target_block,
+            report.container.block_size,
+            verify_blk, error) ||
+        !apfs_block_checksum_ok(verify_blk) ||
+        verify_blk[result.data_offset_in_block] !=
+            new_byte) {
+        CloseHandle(file);
+        error =
+            "REFUSED: post-write reread verification failed";
+        return false;
+    }
+
+    CloseHandle(file);
+
+    // Compute new plist hash (simulate: original with one byte
+    // changed).
+    std::vector<std::uint8_t> new_plist =
+        report.plist_file.bytes;
+    new_plist[plist_byte_offset] = new_byte;
+    result.new_plist_sha256 = compute_sha256_hex(
+        new_plist.data(), new_plist.size());
+
+    result.success = true;
+    return true;
 }
 
 } // namespace vphone

@@ -245,12 +245,16 @@ if(WIN32)
 
     add_library(vphone_apfs_reader STATIC src/apfs_reader.cpp)
     target_include_directories(vphone_apfs_reader PUBLIC include)
+    target_link_libraries(vphone_apfs_reader PRIVATE advapi32)
 
     add_executable(vphone-apfs-reader-win src/apfs_reader_main.cpp)
     target_link_libraries(vphone-apfs-reader-win PRIVATE vphone_apfs_reader)
 
     add_executable(vphone_apfs_reader_test tests/apfs_reader_test.cpp)
     target_link_libraries(vphone_apfs_reader_test PRIVATE vphone_apfs_reader)
+
+    add_executable(vphone_apfs_mutator_test src/apfs_mutator_test.cpp)
+    target_link_libraries(vphone_apfs_mutator_test PRIVATE vphone_apfs_reader)
     add_test(NAME apfs_reader_test COMMAND vphone_apfs_reader_test)
     set_tests_properties(apfs_reader_test PROPERTIES
         PASS_REGULAR_EXPRESSION "APFS_READER_TEST_PASS"
