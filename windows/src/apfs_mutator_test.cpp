@@ -1515,6 +1515,14 @@ int main() {
 
         std::string tp_sha;
         std::vector<std::uint8_t> tp_payload;
+        // Runtime provenance capture from the SOURCE read.
+        std::uint64_t src_owner_idx = 0;
+        std::uint64_t src_apsb_block = 0;
+        std::uint64_t src_apsb_oid = 0;
+        std::uint64_t src_xid = 0;
+        std::uint64_t src_root_oid = 0;
+        std::uint64_t src_root_block = 0;
+        std::uint64_t src_leaf = 0;
         {
             vphone::ApfsReaderReport rpt;
             std::string rerr;
@@ -1522,24 +1530,44 @@ int main() {
                 std::fprintf(stderr, "tp reader: %s\n", rerr.c_str());
                 return 1;
             }
+            if (rpt.plist_file.status != "READ_OK") {
+                std::fprintf(stderr, "tp: plist not READ_OK\n");
+                return 1;
+            }
             tp_sha = sha256_hex(rpt.plist_file.bytes);
             tp_payload = rpt.plist_file.bytes;
             for (auto& b : tp_payload) b ^= 0x5A;
+
+            // Capture the ACTUAL owner volume provenance at runtime.
+            if (rpt.plist_file.owner_volume_index >= rpt.volumes.size()) {
+                std::fprintf(stderr, "tp: owner index out of range\n");
+                return 1;
+            }
+            const auto& src_owner = rpt.volumes[rpt.plist_file.owner_volume_index];
+            src_owner_idx = rpt.plist_file.owner_volume_index;
+            src_apsb_block = src_owner.apsb_block;
+            src_apsb_oid = src_owner.apsb_oid;
+            src_xid = src_owner.xid;
+            src_root_oid = src_owner.root_tree_oid;
+            src_root_block = src_owner.root_tree_block;
+            src_leaf = rpt.plist_file.xattr_leaf_paddr;
+
+            // Runtime-verify the fixture's original root block.
+            if (src_root_block != 6) {
+                std::fprintf(stderr, "tp: original root=%llu expected 6\n",
+                    (unsigned long long)src_root_block);
+                return 1;
+            }
         }
 
         // Save target leaf (block 8) before.
         std::vector<std::uint8_t> leaf_before(kBlockSize, 0);
         std::memcpy(leaf_before.data(), multi.data() + 8 * kBlockSize, kBlockSize);
 
-        // Tamper hook: redirect the root-tree mapping so the
-        // copied output remains fully READ_OK (same CNID, same
-        // payload, same owner APSB/oid/xid, same XATTR leaf) but
-        // resolves a DIFFERENT physical root_tree_block (19 instead
-        // of 6). This forces the exact pre-write provenance-mismatch
-        // comparator to fire.
+        // Tamper hook: duplicate root block 6 -> 19, redirect OMAP
+        // mapping, reseal. Post-flush state is validated.
         auto tamper = [](const std::string& path) {
-            // 1. Duplicate the active root-tree block (block 6)
-            //    into unused block 19, byte-identical.
+            // 1. Duplicate root block 6 -> 19.
             std::vector<std::uint8_t> root_blk(kBlockSize, 0);
             {
                 std::ifstream tf(path, std::ios::binary);
@@ -1556,12 +1584,11 @@ int main() {
                 to.write(reinterpret_cast<const char*>(root_blk.data()), kBlockSize);
                 if (!to.good()) { std::fprintf(stderr, "tamper: write dup failed\n"); std::exit(1); }
                 to.flush();
+                if (!to.good()) { std::fprintf(stderr, "tamper: flush dup failed\n"); std::exit(1); }
                 to.close();
             }
 
-            // 2. Redirect the volume OMAP tree (block 5) mapping
-            //    for kRootOid from paddr 6 to paddr 19.
-            //    The OMAP root-leaf value paddr is at 0xfd0.
+            // 2. Redirect OMAP mapping paddr 6 -> 19 at 0xfd0.
             std::vector<std::uint8_t> omap_blk(kBlockSize, 0);
             {
                 std::ifstream tf(path, std::ios::binary);
@@ -1580,18 +1607,16 @@ int main() {
                 to.write(reinterpret_cast<const char*>(omap_blk.data()), kBlockSize);
                 if (!to.good()) { std::fprintf(stderr, "tamper: omap write failed\n"); std::exit(1); }
                 to.flush();
+                if (!to.good()) { std::fprintf(stderr, "tamper: omap flush failed\n"); std::exit(1); }
                 to.close();
             }
         };
 
-        // Save original root tree block number for evidence.
-        const std::uint64_t original_root_block = 6;
         const std::uint64_t tampered_root_block = 19;
 
         DeleteFileA(tp_out.c_str());
         vphone::ApfsMutationResult r;
         std::string err;
-        // The hook fires after CopyFile but before pre-write reread.
         const bool ok = vphone::apfs_replace_plist_payload_safe_with_hook(
             tp_src, tp_out, tp_sha, kFileCnid, tp_payload,
             tamper, r, err);
@@ -1605,8 +1630,8 @@ int main() {
             return 1;
         }
 
-        // Prove the tampered output remains fully READ_OK with the
-        // SAME CNID/payload/owner but DIFFERENT root_tree_block.
+        // Prove the tampered output remains READ_OK with same
+        // owner provenance except root_tree_block 6 -> 19.
         {
             vphone::ApfsReaderReport out_rpt;
             std::string oerr;
@@ -1618,33 +1643,64 @@ int main() {
                 std::fprintf(stderr, "[tamper] plist not READ_OK\n");
                 return 1;
             }
+            // Validate via owner_volume_index, not hardcoded [1].
+            if (out_rpt.plist_file.owner_volume_index >= out_rpt.volumes.size()) {
+                std::fprintf(stderr, "[tamper] output owner index out of range\n");
+                return 1;
+            }
+            const auto& out_owner =
+                out_rpt.volumes[out_rpt.plist_file.owner_volume_index];
             if (out_rpt.plist_file.drec_cnid != kFileCnid) {
                 std::fprintf(stderr, "[tamper] CNID changed\n");
                 return 1;
             }
-            if (sha256_hex(out_rpt.plist_file.bytes) != tp_sha) {
+            const std::string out_sha =
+                sha256_hex(out_rpt.plist_file.bytes);
+            if (out_sha != tp_sha) {
                 std::fprintf(stderr, "[tamper] payload hash changed\n");
                 return 1;
             }
-            if (out_rpt.volumes.size() < 2 ||
-                out_rpt.volumes[1].apsb_oid != 42 ||
-                out_rpt.volumes[1].xid != kApsbXid) {
-                std::fprintf(stderr, "[tamper] owner APSB/oid/xid changed\n");
+            // Prove the requested replacement never reached disk.
+            const std::string replacement_sha =
+                sha256_hex(tp_payload);
+            if (out_sha == replacement_sha) {
+                std::fprintf(stderr, "[tamper] replacement payload reached disk!\n");
                 return 1;
             }
-            if (out_rpt.volumes[1].root_tree_block != tampered_root_block) {
+            if (out_owner.apsb_block != src_apsb_block) {
+                std::fprintf(stderr, "[tamper] APSB block changed\n");
+                return 1;
+            }
+            if (out_owner.apsb_oid != src_apsb_oid) {
+                std::fprintf(stderr, "[tamper] APSB oid changed\n");
+                return 1;
+            }
+            if (out_owner.xid != src_xid) {
+                std::fprintf(stderr, "[tamper] xid changed\n");
+                return 1;
+            }
+            if (out_owner.root_tree_oid != src_root_oid) {
+                std::fprintf(stderr, "[tamper] root_tree_oid changed\n");
+                return 1;
+            }
+            if (out_owner.root_tree_block != tampered_root_block) {
                 std::fprintf(stderr, "[tamper] root_tree_block=%llu expected %llu\n",
-                    (unsigned long long)out_rpt.volumes[1].root_tree_block,
+                    (unsigned long long)out_owner.root_tree_block,
                     (unsigned long long)tampered_root_block);
                 return 1;
             }
-            if (out_rpt.plist_file.xattr_leaf_paddr != 8) {
+            if (src_root_block != 6) {
+                std::fprintf(stderr, "[tamper] source root was not 6\n");
+                return 1;
+            }
+            if (out_rpt.plist_file.xattr_leaf_paddr != src_leaf) {
                 std::fprintf(stderr, "[tamper] XATTR leaf changed\n");
                 return 1;
             }
         }
 
         // Target leaf (block 8) must be byte-identical.
+        bool target_unchanged = false;
         {
             std::vector<std::uint8_t> leaf_after(kBlockSize, 0);
             std::ifstream tf(tp_out, std::ios::binary);
@@ -1652,20 +1708,37 @@ int main() {
             tf.seekg(8 * kBlockSize);
             tf.read(reinterpret_cast<char*>(leaf_after.data()), kBlockSize);
             tf.close();
-            if (leaf_after != leaf_before) {
+            target_unchanged = (leaf_after == leaf_before);
+            if (!target_unchanged) {
                 std::fprintf(stderr, "[tamper] target leaf modified\n");
                 return 1;
             }
         }
 
         // Source must remain unchanged.
+        bool source_unchanged = false;
         {
             std::vector<std::uint8_t> after;
-            if (!read_all(tp_src, after) || after != multi) {
+            source_unchanged = read_all(tp_src, after) && after == multi;
+            if (!source_unchanged) {
                 std::fprintf(stderr, "[tamper] source modified\n");
                 return 1;
             }
         }
+
+        // Emit evidence line with runtime values.
+        std::printf(
+            "PROVENANCE_TAMPER_PASS owner=%llu apsb=%llu root=%llu->%llu "
+            "leaf=%llu cnid=%llu err=\"REFUSED: pre-write reread provenance mismatch\" "
+            "source_unchanged=%d target_unchanged=%d\n",
+            (unsigned long long)src_owner_idx,
+            (unsigned long long)src_apsb_block,
+            (unsigned long long)src_root_block,
+            (unsigned long long)tampered_root_block,
+            (unsigned long long)src_leaf,
+            (unsigned long long)kFileCnid,
+            source_unchanged ? 1 : 0,
+            target_unchanged ? 1 : 0);
 
         DeleteFileA(tp_src.c_str());
         DeleteFileA(tp_out.c_str());
