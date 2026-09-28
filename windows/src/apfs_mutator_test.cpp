@@ -1531,20 +1531,62 @@ int main() {
         std::vector<std::uint8_t> leaf_before(kBlockSize, 0);
         std::memcpy(leaf_before.data(), multi.data() + 8 * kBlockSize, kBlockSize);
 
-        // Tamper hook: modifies owner APSB (block 13) xid 3→2.
+        // Tamper hook: redirect the root-tree mapping so the
+        // copied output remains fully READ_OK (same CNID, same
+        // payload, same owner APSB/oid/xid, same XATTR leaf) but
+        // resolves a DIFFERENT physical root_tree_block (19 instead
+        // of 6). This forces the exact pre-write provenance-mismatch
+        // comparator to fire.
         auto tamper = [](const std::string& path) {
-            std::vector<std::uint8_t> blk(kBlockSize, 0);
-            std::ifstream tf(path, std::ios::binary);
-            tf.seekg(13 * kBlockSize);
-            tf.read(reinterpret_cast<char*>(blk.data()), kBlockSize);
-            tf.close();
-            put_le64(blk, 16, 2);
-            seal(blk);
-            std::ofstream to(path, std::ios::binary | std::ios::in | std::ios::out);
-            to.seekp(13 * kBlockSize);
-            to.write(reinterpret_cast<const char*>(blk.data()), kBlockSize);
-            to.close();
+            // 1. Duplicate the active root-tree block (block 6)
+            //    into unused block 19, byte-identical.
+            std::vector<std::uint8_t> root_blk(kBlockSize, 0);
+            {
+                std::ifstream tf(path, std::ios::binary);
+                if (!tf.good()) { std::fprintf(stderr, "tamper: open failed\n"); std::exit(1); }
+                tf.seekg(6 * kBlockSize);
+                tf.read(reinterpret_cast<char*>(root_blk.data()), kBlockSize);
+                if (!tf.good()) { std::fprintf(stderr, "tamper: read root failed\n"); std::exit(1); }
+                tf.close();
+            }
+            {
+                std::ofstream to(path, std::ios::binary | std::ios::in | std::ios::out);
+                if (!to.good()) { std::fprintf(stderr, "tamper: open write failed\n"); std::exit(1); }
+                to.seekp(19 * kBlockSize);
+                to.write(reinterpret_cast<const char*>(root_blk.data()), kBlockSize);
+                if (!to.good()) { std::fprintf(stderr, "tamper: write dup failed\n"); std::exit(1); }
+                to.flush();
+                to.close();
+            }
+
+            // 2. Redirect the volume OMAP tree (block 5) mapping
+            //    for kRootOid from paddr 6 to paddr 19.
+            //    The OMAP root-leaf value paddr is at 0xfd0.
+            std::vector<std::uint8_t> omap_blk(kBlockSize, 0);
+            {
+                std::ifstream tf(path, std::ios::binary);
+                if (!tf.good()) { std::fprintf(stderr, "tamper: omap open failed\n"); std::exit(1); }
+                tf.seekg(5 * kBlockSize);
+                tf.read(reinterpret_cast<char*>(omap_blk.data()), kBlockSize);
+                if (!tf.good()) { std::fprintf(stderr, "tamper: omap read failed\n"); std::exit(1); }
+                tf.close();
+            }
+            put_le64(omap_blk, 0xfd0, 19);
+            seal(omap_blk);
+            {
+                std::ofstream to(path, std::ios::binary | std::ios::in | std::ios::out);
+                if (!to.good()) { std::fprintf(stderr, "tamper: omap write open failed\n"); std::exit(1); }
+                to.seekp(5 * kBlockSize);
+                to.write(reinterpret_cast<const char*>(omap_blk.data()), kBlockSize);
+                if (!to.good()) { std::fprintf(stderr, "tamper: omap write failed\n"); std::exit(1); }
+                to.flush();
+                to.close();
+            }
         };
+
+        // Save original root tree block number for evidence.
+        const std::uint64_t original_root_block = 6;
+        const std::uint64_t tampered_root_block = 19;
 
         DeleteFileA(tp_out.c_str());
         vphone::ApfsMutationResult r;
@@ -1553,24 +1595,66 @@ int main() {
         const bool ok = vphone::apfs_replace_plist_payload_safe_with_hook(
             tp_src, tp_out, tp_sha, kFileCnid, tp_payload,
             tamper, r, err);
-        if (ok || err.find("owner volume invalid") == std::string::npos) {
-            std::fprintf(stderr, "[tamper] expected owner volume invalid, got ok=%d err='%s'\n",
+        if (ok || err != "REFUSED: pre-write reread provenance mismatch") {
+            std::fprintf(stderr, "[tamper] expected exact provenance mismatch, got ok=%d err='%s'\n",
                 ok ? 1 : 0, err.c_str());
             return 1;
         }
+        if (r.success) {
+            std::fprintf(stderr, "[tamper] result reports success\n");
+            return 1;
+        }
 
-        // Target leaf must be untouched (the function refused before writing).
+        // Prove the tampered output remains fully READ_OK with the
+        // SAME CNID/payload/owner but DIFFERENT root_tree_block.
+        {
+            vphone::ApfsReaderReport out_rpt;
+            std::string oerr;
+            if (!vphone::apfs_read_container(tp_out, out_rpt, oerr)) {
+                std::fprintf(stderr, "[tamper] output not readable: %s\n", oerr.c_str());
+                return 1;
+            }
+            if (out_rpt.plist_file.status != "READ_OK") {
+                std::fprintf(stderr, "[tamper] plist not READ_OK\n");
+                return 1;
+            }
+            if (out_rpt.plist_file.drec_cnid != kFileCnid) {
+                std::fprintf(stderr, "[tamper] CNID changed\n");
+                return 1;
+            }
+            if (sha256_hex(out_rpt.plist_file.bytes) != tp_sha) {
+                std::fprintf(stderr, "[tamper] payload hash changed\n");
+                return 1;
+            }
+            if (out_rpt.volumes.size() < 2 ||
+                out_rpt.volumes[1].apsb_oid != 42 ||
+                out_rpt.volumes[1].xid != kApsbXid) {
+                std::fprintf(stderr, "[tamper] owner APSB/oid/xid changed\n");
+                return 1;
+            }
+            if (out_rpt.volumes[1].root_tree_block != tampered_root_block) {
+                std::fprintf(stderr, "[tamper] root_tree_block=%llu expected %llu\n",
+                    (unsigned long long)out_rpt.volumes[1].root_tree_block,
+                    (unsigned long long)tampered_root_block);
+                return 1;
+            }
+            if (out_rpt.plist_file.xattr_leaf_paddr != 8) {
+                std::fprintf(stderr, "[tamper] XATTR leaf changed\n");
+                return 1;
+            }
+        }
+
+        // Target leaf (block 8) must be byte-identical.
         {
             std::vector<std::uint8_t> leaf_after(kBlockSize, 0);
             std::ifstream tf(tp_out, std::ios::binary);
-            if (tf.good()) {
-                tf.seekg(8 * kBlockSize);
-                tf.read(reinterpret_cast<char*>(leaf_after.data()), kBlockSize);
-                tf.close();
-                if (leaf_after != leaf_before) {
-                    std::fprintf(stderr, "[tamper] target leaf modified\n");
-                    return 1;
-                }
+            if (!tf.good()) { std::fprintf(stderr, "[tamper] leaf open failed\n"); return 1; }
+            tf.seekg(8 * kBlockSize);
+            tf.read(reinterpret_cast<char*>(leaf_after.data()), kBlockSize);
+            tf.close();
+            if (leaf_after != leaf_before) {
+                std::fprintf(stderr, "[tamper] target leaf modified\n");
+                return 1;
             }
         }
 
