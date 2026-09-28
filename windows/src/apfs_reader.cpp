@@ -3685,7 +3685,7 @@ bool apfs_reflow_leaf_value(
 
     const std::uint64_t new_packed_start = cursor;
     // Validate: packed region must not overlap key/TOC region.
-    if (new_packed_start <= geo.key_region_end) {
+    if (new_packed_start < geo.key_region_end) {
         error = "REFUSED: resized XATTR does not fit target leaf";
         return false;
     }
@@ -4070,6 +4070,7 @@ bool apfs_resize_plist_payload_safe(
         error =
             "REFUSED: certified reread failed: " +
             verify_error;
+        DeleteFileA(output_image_path.c_str());
         return false;
     }
     if (verify_report.plist_file.status != "READ_OK" ||
@@ -4078,6 +4079,7 @@ bool apfs_resize_plist_payload_safe(
             verify_report.volumes.size()) {
         error =
             "REFUSED: certified reread identity mismatch";
+        DeleteFileA(output_image_path.c_str());
         return false;
     }
     const ApfsVolumeInfo& verify_owner =
@@ -4092,6 +4094,7 @@ bool apfs_resize_plist_payload_safe(
             result.target_leaf_block) {
         error =
             "REFUSED: certified reread provenance mismatch";
+        DeleteFileA(output_image_path.c_str());
         return false;
     }
     if (verify_report.plist_file.bytes.size() !=
@@ -4102,6 +4105,7 @@ bool apfs_resize_plist_payload_safe(
             new_payload.size()) != 0) {
         error =
             "REFUSED: reread payload mismatch";
+        DeleteFileA(output_image_path.c_str());
         return false;
     }
     result.new_plist_sha256 = compute_sha256_hex(
@@ -4113,6 +4117,7 @@ bool apfs_resize_plist_payload_safe(
         expected_source_sha256) {
         error =
             "REFUSED: reread hash unchanged after replacement";
+        DeleteFileA(output_image_path.c_str());
         return false;
     }
     result.success = true;
