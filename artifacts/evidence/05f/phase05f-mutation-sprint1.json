@@ -1,0 +1,33 @@
+{
+  "before_after": {
+    "mutated_plist_sha256": "187dfd9175c359682ecf106ef7784bb44133c468d7748ca5d5a0fcbd9a4da432",
+    "mutated_image_sha256": "see evidence file",
+    "original_plist_sha256": "a5ff5c5e0b656c51befcae503d0ba878ff41a348b3b19dcfd01877a09e41b2eb",
+    "original_image_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069",
+    "byte_count_unchanged": true,
+    "plist_bytes": 721
+  },
+  "gate": "mutation-sprint-1-single-byte",
+  "verification": {
+    "original_fixture_untouched": true,
+    "certified_reader": "READ_OK on mutated copy (launchdaemons RESOLVED cnid=632, plist_file READ_OK)",
+    "checksum_valid": true,
+    "structural_intact": true
+  },
+  "date": "2026-09-27 21:33:07",
+  "phase": "05G-mutation",
+  "mutation": {
+    "target_cnid": 639,
+    "plist_data_offset_in_block": 1643,
+    "old_byte": "0x69",
+    "target_block": 36400,
+    "new_checksum": "0x127960c4a5870495",
+    "block_type": "FSTREE leaf node containing decmpfs XATTR",
+    "target_file": "com.apple.driverkitd.plist",
+    "parent_cnid": 632,
+    "mutation_offset_in_plist": 100,
+    "old_checksum": "0x5f7960c657870493",
+    "new_byte": "0x68",
+    "mutation_offset_in_block": 1743
+  }
+}
