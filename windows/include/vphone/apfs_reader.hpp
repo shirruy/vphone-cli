@@ -38,6 +38,40 @@ struct ApfsOmapEntry {
     std::uint32_t flags = 0;
 };
 
+// Parsed B-tree leaf geometry for variable-KV records.
+struct ApfsLeafGeometry {
+    bool valid = false;
+    std::uint64_t leaf_paddr = 0;
+    std::uint32_t block_size = 0;
+    std::uint16_t node_flags = 0;
+    std::uint16_t node_level = 0;
+    std::uint32_t nkeys = 0;
+    std::uint16_t table_space_off = 0;
+    std::uint16_t table_space_len = 0;
+    // Variable-KV TOC entries are 8 bytes.
+    std::uint16_t toc_entry_size = 8;
+    std::uint64_t key_base = 0;
+    std::uint64_t value_base = 0;
+    bool has_root_footer = false;
+    std::uint64_t footer_offset = 0;
+    // Per-record parsed geometry (index parallel to TOC).
+    struct RecordSpan {
+        std::uint16_t key_off = 0;
+        std::uint16_t key_len = 0;
+        std::uint16_t val_off = 0;
+        std::uint16_t val_len = 0;
+        std::uint64_t abs_key_start = 0;
+        std::uint64_t abs_key_end = 0;
+        std::uint64_t abs_val_start = 0;
+        std::uint64_t abs_val_end = 0;
+    };
+    std::vector<RecordSpan> records;
+    // Derived free space (from geometry, not zero bytes).
+    std::uint64_t packed_values_start = 0;
+    std::uint64_t key_region_end = 0;
+    std::uint64_t free_bytes = 0;
+};
+
 struct ApfsVolumeInfo {
     std::uint64_t apsb_block = 0;
     std::uint64_t apsb_oid = 0;
@@ -186,6 +220,46 @@ bool apfs_mutate_plist_byte(
 bool apfs_read_container(
     const std::string& path,
     ApfsReaderReport& report,
+    std::string& error
+);
+
+// Parse variable-KV B-tree leaf geometry from a raw block.
+// Derives all offsets, spans, boundaries, and free space from the
+// actual TOC/record layout — never from zero bytes. Fails closed
+// on fixed-KV nodes, level != 0, or malformed geometry.
+bool apfs_parse_leaf_geometry(
+    const std::vector<std::uint8_t>& leaf_block,
+    std::uint64_t leaf_paddr,
+    ApfsLeafGeometry& out,
+    std::string& error
+);
+
+// Leaf-local reflow: replace one variable-KV record's value with a
+// different-sized value by repacking ALL values deterministically
+// from value_base backward. Keys, TOC key fields, nkeys, and node
+// identity are preserved. Returns the new leaf block.
+// Fails closed on: insufficient space, overlap, unsupported layout.
+bool apfs_reflow_leaf_value(
+    const std::vector<std::uint8_t>& old_leaf,
+    std::uint32_t target_toc_index,
+    const std::vector<std::uint8_t>& new_value,
+    std::vector<std::uint8_t>& new_leaf,
+    ApfsLeafGeometry& geometry_out,
+    std::string& error
+);
+
+// Size-changing embedded decmpfs plist replacement. Supports
+// grow, shrink, and same-size through leaf-local reflow when the
+// resized value fits within the target leaf's derived capacity.
+// Fails closed on insufficient space, malformed geometry, or
+// provenance mismatch. Preserves all single-byte-gate invariants.
+bool apfs_resize_plist_payload_safe(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    ApfsMutationResult& result,
     std::string& error
 );
 

@@ -1764,6 +1764,105 @@ int main() {
         DeleteFileA(tp_out.c_str());
     }
 
+    // Size-changing replacement: grow, shrink, insufficient space.
+    {
+        const std::string rs_src = dir + "apfs_mut_resize_src.img";
+        const std::string rs_out = dir + "apfs_mut_resize_out.img";
+        if (!write_all(rs_src, base)) {
+            std::fprintf(stderr, "resize src write failed\n");
+            return 1;
+        }
+        std::string rs_sha;
+        {
+            vphone::ApfsReaderReport rpt;
+            std::string rerr;
+            if (!vphone::apfs_read_container(rs_src, rpt, rerr)) {
+                std::fprintf(stderr, "resize reader: %s\n", rerr.c_str());
+                return 1;
+            }
+            rs_sha = sha256_hex(rpt.plist_file.bytes);
+        }
+
+        // A. Grow by 1: 11 -> 12.
+        {
+            DeleteFileA(rs_out.c_str());
+            std::vector<std::uint8_t> grow12 = {'b','p','l','i','s','t','0','0','X','Q','Z','W'};
+            vphone::ApfsMutationResult r;
+            std::string err;
+            if (!vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid, grow12, r, err) ||
+                !r.success || !r.reread_verified) {
+                std::fprintf(stderr, "[resize grow+1] failed: %s\n", err.c_str());
+                return 1;
+            }
+            vphone::ApfsReaderReport out;
+            std::string oerr;
+            if (!vphone::apfs_read_container(rs_out, out, oerr) ||
+                out.plist_file.status != "READ_OK" ||
+                out.plist_file.bytes.size() != 12 ||
+                out.plist_file.drec_cnid != kFileCnid ||
+                std::memcmp(out.plist_file.bytes.data(), grow12.data(), 12) != 0 ||
+                out.plist_file.decmpfs_logical_size != 12) {
+                std::fprintf(stderr, "[resize grow+1] reread mismatch\n");
+                return 1;
+            }
+            std::printf("RESIZE_GROW1_PASS old=11 new=12 sha=%s\n", r.reread_plist_sha256.c_str());
+        }
+
+        // B. Shrink: 11 -> 5.
+        {
+            DeleteFileA(rs_out.c_str());
+            std::vector<std::uint8_t> shrink5 = {'b','p','l','i','s'};
+            vphone::ApfsMutationResult r;
+            std::string err;
+            if (!vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid, shrink5, r, err) ||
+                !r.success || !r.reread_verified) {
+                std::fprintf(stderr, "[resize shrink] failed: %s\n", err.c_str());
+                return 1;
+            }
+            vphone::ApfsReaderReport out;
+            std::string oerr;
+            if (!vphone::apfs_read_container(rs_out, out, oerr) ||
+                out.plist_file.status != "READ_OK" ||
+                out.plist_file.bytes.size() != 5 ||
+                std::memcmp(out.plist_file.bytes.data(), shrink5.data(), 5) != 0) {
+                std::fprintf(stderr, "[resize shrink] reread mismatch\n");
+                return 1;
+            }
+            std::printf("RESIZE_SHRINK_PASS old=11 new=5 sha=%s\n", r.reread_plist_sha256.c_str());
+        }
+
+        // C. Insufficient space: absurdly large payload.
+        {
+            DeleteFileA(rs_out.c_str());
+            std::vector<std::uint8_t> huge(8000, 'H');
+            vphone::ApfsMutationResult r;
+            std::string err;
+            if (vphone::apfs_resize_plist_payload_safe(
+                    rs_src, rs_out, rs_sha, kFileCnid, huge, r, err)) {
+                std::fprintf(stderr, "[resize huge] expected refusal\n");
+                return 1;
+            }
+            if (err.find("does not fit") == std::string::npos) {
+                std::fprintf(stderr, "[resize huge] wrong error: %s\n", err.c_str());
+                return 1;
+            }
+            std::printf("RESIZE_INSUFFICIENT_PASS err=\"%s\"\n", err.c_str());
+        }
+
+        // D. Source immutability.
+        {
+            std::vector<std::uint8_t> after;
+            if (!read_all(rs_src, after) || after != base) {
+                std::fprintf(stderr, "[resize] source modified\n");
+                return 1;
+            }
+        }
+        DeleteFileA(rs_src.c_str());
+        DeleteFileA(rs_out.c_str());
+    }
+
 
     DeleteFileA(source.c_str());
     DeleteFileA(output.c_str());

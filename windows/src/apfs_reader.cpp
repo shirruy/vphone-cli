@@ -3426,4 +3426,603 @@ bool apfs_replace_plist_payload_safe_with_hook(
     return true;
 }
 
+bool apfs_parse_leaf_geometry(
+    const std::vector<std::uint8_t>& leaf_block,
+    std::uint64_t leaf_paddr,
+    ApfsLeafGeometry& out,
+    std::string& error
+) {
+    out = ApfsLeafGeometry{};
+    error.clear();
+
+    if (leaf_block.size() < 64) {
+        error = "leaf block too small for geometry";
+        return false;
+    }
+    const std::uint32_t block_size =
+        static_cast<std::uint32_t>(leaf_block.size());
+
+    // Node header fields.
+    out.leaf_paddr = leaf_paddr;
+    out.block_size = block_size;
+    out.node_flags =
+        static_cast<std::uint16_t>(leaf_block[0x20]) |
+        (static_cast<std::uint16_t>(leaf_block[0x21]) << 8);
+    out.node_level =
+        static_cast<std::uint16_t>(leaf_block[0x22]) |
+        (static_cast<std::uint16_t>(leaf_block[0x23]) << 8);
+    out.nkeys = read_le32(leaf_block.data() + 0x24);
+    out.table_space_off =
+        static_cast<std::uint16_t>(leaf_block[0x28]) |
+        (static_cast<std::uint16_t>(leaf_block[0x29]) << 8);
+    out.table_space_len =
+        static_cast<std::uint16_t>(leaf_block[0x2a]) |
+        (static_cast<std::uint16_t>(leaf_block[0x2b]) << 8);
+
+    // Only variable-KV level-0 leaves are supported.
+    if (out.node_flags & kBtreeFixedKvSize) {
+        error = "fixed-KV leaf not supported for reflow";
+        return false;
+    }
+    if (out.node_level != 0) {
+        error = "only level-0 leaves supported for reflow";
+        return false;
+    }
+    if (!(out.node_flags & kBtreeLeaf)) {
+        error = "target node is not a leaf";
+        return false;
+    }
+
+    // Geometry: TOC at 0x38 + table_space_off, key_base after TOC.
+    out.key_base =
+        0x38 + out.table_space_off + out.table_space_len;
+    out.has_root_footer = (out.node_flags & kBtreeRoot) != 0;
+    out.value_base = out.has_root_footer
+        ? block_size - 0x28
+        : block_size;
+    if (out.has_root_footer) {
+        out.footer_offset = block_size - 0x28;
+    }
+
+    if (out.nkeys == 0) {
+        error = "leaf has no records";
+        return false;
+    }
+    // Validate TOC fits.
+    const std::uint64_t toc_end =
+        0x38 + out.table_space_off +
+        out.table_space_len;
+    if (toc_end > block_size) {
+        error = "TOC exceeds leaf bounds";
+        return false;
+    }
+
+    // Parse each record's geometry.
+    out.records.resize(out.nkeys);
+    std::uint64_t max_key_end = out.key_base;
+    std::uint64_t min_val_start = out.value_base;
+    for (std::uint32_t i = 0; i < out.nkeys; ++i) {
+        const std::uint64_t toc_off =
+            0x38 + out.table_space_off +
+            static_cast<std::uint64_t>(i) *
+                out.toc_entry_size;
+        if (toc_off + out.toc_entry_size > toc_end) {
+            error = "TOC entry exceeds table space";
+            return false;
+        }
+        auto& rec = out.records[i];
+        rec.key_off =
+            static_cast<std::uint16_t>(
+                leaf_block[toc_off]) |
+            (static_cast<std::uint16_t>(
+                 leaf_block[toc_off + 1]) << 8);
+        rec.key_len =
+            static_cast<std::uint16_t>(
+                leaf_block[toc_off + 2]) |
+            (static_cast<std::uint16_t>(
+                 leaf_block[toc_off + 3]) << 8);
+        rec.val_off =
+            static_cast<std::uint16_t>(
+                leaf_block[toc_off + 4]) |
+            (static_cast<std::uint16_t>(
+                 leaf_block[toc_off + 5]) << 8);
+        rec.val_len =
+            static_cast<std::uint16_t>(
+                leaf_block[toc_off + 6]) |
+            (static_cast<std::uint16_t>(
+                 leaf_block[toc_off + 7]) << 8);
+
+        rec.abs_key_start = out.key_base + rec.key_off;
+        rec.abs_key_end = rec.abs_key_start + rec.key_len;
+        rec.abs_val_start = out.value_base - rec.val_off;
+        rec.abs_val_end = rec.abs_val_start + rec.val_len;
+
+        if (rec.abs_key_end > block_size ||
+            rec.abs_val_end > block_size ||
+            rec.abs_val_start > out.value_base) {
+            error = "record span exceeds leaf bounds";
+            return false;
+        }
+        if (rec.abs_key_end > max_key_end) {
+            max_key_end = rec.abs_key_end;
+        }
+        if (rec.abs_val_start < min_val_start) {
+            min_val_start = rec.abs_val_start;
+        }
+    }
+
+    // Derive free space from geometry: the gap between the last
+    // key end and the first value start.
+    out.key_region_end = max_key_end;
+    out.packed_values_start = min_val_start;
+    if (min_val_start <= max_key_end) {
+        out.free_bytes = 0;
+    } else {
+        out.free_bytes = min_val_start - max_key_end;
+    }
+
+    out.valid = true;
+    return true;
+}
+
+bool apfs_reflow_leaf_value(
+    const std::vector<std::uint8_t>& old_leaf,
+    std::uint32_t target_toc_index,
+    const std::vector<std::uint8_t>& new_value,
+    std::vector<std::uint8_t>& new_leaf,
+    ApfsLeafGeometry& geometry_out,
+    std::string& error
+) {
+    error.clear();
+    new_leaf.clear();
+
+    ApfsLeafGeometry geo;
+    if (!apfs_parse_leaf_geometry(
+            old_leaf, 0, geo, error)) {
+        return false;
+    }
+    if (target_toc_index >= geo.nkeys) {
+        error = "target TOC index out of range";
+        return false;
+    }
+
+    const std::uint64_t old_target_vlen =
+        geo.records[target_toc_index].val_len;
+    const std::int64_t delta =
+        static_cast<std::int64_t>(new_value.size()) -
+        static_cast<std::int64_t>(old_target_vlen);
+
+    // Check capacity: free space must absorb the delta.
+    if (delta > 0 &&
+        static_cast<std::uint64_t>(delta) > geo.free_bytes) {
+        error = "REFUSED: resized XATTR does not fit target leaf";
+        return false;
+    }
+
+    // Copy all current values to independent buffers.
+    const std::uint32_t n = geo.nkeys;
+    std::vector<std::vector<std::uint8_t>> values(n);
+    for (std::uint32_t i = 0; i < n; ++i) {
+        const auto& rec = geo.records[i];
+        values[i].assign(
+            old_leaf.begin() +
+                static_cast<std::ptrdiff_t>(
+                    rec.abs_val_start),
+            old_leaf.begin() +
+                static_cast<std::ptrdiff_t>(
+                    rec.abs_val_end));
+    }
+    // Replace the target value.
+    values[target_toc_index] = new_value;
+
+    // Repack ALL values deterministically from value_base backward.
+    // Pack in reverse order: record 0 is closest to value_base.
+    // Actually, APFS packs: record 0 at value_base - v0_len, record
+    // 1 below that, etc. So we pack from the LAST record down.
+    std::vector<std::uint64_t> new_val_start(n);
+    std::uint64_t cursor = geo.value_base;
+    for (std::int32_t i = static_cast<std::int32_t>(n) - 1;
+         i >= 0; --i) {
+        const std::uint32_t idx =
+            static_cast<std::uint32_t>(i);
+        cursor -= values[idx].size();
+        new_val_start[idx] = cursor;
+    }
+
+    // Validate: packed region must not overlap key region or TOC.
+    const std::uint64_t packed_start = cursor;
+    if (packed_start <= geo.key_region_end) {
+        error =
+            "REFUSED: resized XATTR does not fit target leaf";
+        return false;
+    }
+    if (geo.has_root_footer &&
+        packed_start <= geo.footer_offset) {
+        error = "reflow overlaps root footer";
+        return false;
+    }
+
+    // Build the new leaf: start from a copy of the old, clear the
+    // value region, then write new values and update TOC.
+    new_leaf = old_leaf;
+    // Clear the old packed value region.
+    std::fill(
+        new_leaf.begin() +
+            static_cast<std::ptrdiff_t>(packed_start),
+        new_leaf.begin() +
+            static_cast<std::ptrdiff_t>(geo.value_base),
+        0);
+    // Write each value at its new position.
+    for (std::uint32_t i = 0; i < n; ++i) {
+        std::memcpy(
+            new_leaf.data() + new_val_start[i],
+            values[i].data(),
+            values[i].size());
+    }
+    // Update TOC value offsets and lengths.
+    for (std::uint32_t i = 0; i < n; ++i) {
+        const std::uint64_t toc_off =
+            0x38 + geo.table_space_off +
+            static_cast<std::uint64_t>(i) * 8;
+        const std::uint16_t new_v_off =
+            static_cast<std::uint16_t>(
+                geo.value_base - new_val_start[i]);
+        const std::uint16_t new_v_len =
+            static_cast<std::uint16_t>(
+                values[i].size());
+        new_leaf[toc_off + 4] =
+            static_cast<std::uint8_t>(new_v_off & 0xff);
+        new_leaf[toc_off + 5] =
+            static_cast<std::uint8_t>(new_v_off >> 8);
+        new_leaf[toc_off + 6] =
+            static_cast<std::uint8_t>(new_v_len & 0xff);
+        new_leaf[toc_off + 7] =
+            static_cast<std::uint8_t>(new_v_len >> 8);
+    }
+
+    // Reseal Fletcher-64.
+    const std::uint64_t ck =
+        apfs_fletcher64(
+            new_leaf.data(), new_leaf.size());
+    for (int i = 0; i < 8; ++i) {
+        new_leaf[i] = static_cast<std::uint8_t>(
+            (ck >> (i * 8)) & 0xFF);
+    }
+
+    geometry_out = geo;
+    return true;
+}
+
+bool apfs_resize_plist_payload_safe(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    const std::vector<std::uint8_t>& new_payload,
+    ApfsMutationResult& result,
+    std::string& error
+) {
+    result = {};
+    error.clear();
+
+    if (new_payload.empty()) {
+        error = "REFUSED: replacement payload is empty";
+        return false;
+    }
+    if (expected_source_sha256.empty()) {
+        error = "REFUSED: expected source SHA-256 is required";
+        return false;
+    }
+
+    // File identity safety.
+    {
+        HANDLE sa = CreateFileA(
+            source_image_path.c_str(), GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        HANDLE sb = CreateFileA(
+            output_image_path.c_str(), GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        bool same_file = false;
+        if (sa != INVALID_HANDLE_VALUE &&
+            sb != INVALID_HANDLE_VALUE) {
+            BY_HANDLE_FILE_INFORMATION ia {};
+            BY_HANDLE_FILE_INFORMATION ib {};
+            if (GetFileInformationByHandle(sa, &ia) &&
+                GetFileInformationByHandle(sb, &ib)) {
+                same_file =
+                    ia.dwVolumeSerialNumber ==
+                        ib.dwVolumeSerialNumber &&
+                    ia.nFileIndexHigh == ib.nFileIndexHigh &&
+                    ia.nFileIndexLow == ib.nFileIndexLow;
+            }
+        }
+        if (sa != INVALID_HANDLE_VALUE) CloseHandle(sa);
+        if (sb != INVALID_HANDLE_VALUE) CloseHandle(sb);
+        if (same_file) {
+            error =
+                "REFUSED: source and output must be distinct paths";
+            return false;
+        }
+    }
+
+    // Certified source read.
+    ApfsReaderReport report;
+    if (!apfs_read_container(
+            source_image_path, report, error)) {
+        error = "REFUSED: source reader failed: " + error;
+        return false;
+    }
+    if (report.plist_file.status != "READ_OK" ||
+        report.plist_file.drec_cnid != target_cnid) {
+        error =
+            "REFUSED: source plist not readable or CNID mismatch";
+        return false;
+    }
+    const std::string actual_hash = compute_sha256_hex(
+        report.plist_file.bytes.data(),
+        report.plist_file.bytes.size());
+    if (actual_hash != expected_source_sha256) {
+        error = "REFUSED: source hash mismatch";
+        return false;
+    }
+    if (report.plist_file.xattr_leaf_paddr == 0) {
+        error =
+            "REFUSED: XATTR leaf provenance not recorded";
+        return false;
+    }
+
+    // Capture provenance.
+    if (report.plist_file.owner_volume_index >=
+        report.volumes.size()) {
+        error = "REFUSED: plist owner volume not recorded";
+        return false;
+    }
+    const ApfsVolumeInfo& owner_vol =
+        report.volumes[
+            report.plist_file.owner_volume_index];
+    result.apsb_block = owner_vol.apsb_block;
+    result.apsb_oid = owner_vol.apsb_oid;
+    result.volume_xid = owner_vol.xid;
+    result.root_tree_oid = owner_vol.root_tree_oid;
+    result.resolved_root_block = owner_vol.root_tree_block;
+    result.target_cnid = target_cnid;
+    result.target_leaf_block =
+        report.plist_file.xattr_leaf_paddr;
+    result.xattr_key_off_in_leaf =
+        report.plist_file.xattr_key_off;
+    result.xattr_val_off_in_leaf =
+        report.plist_file.xattr_val_off;
+    result.old_plist_sha256 = actual_hash;
+
+    // Copy source → output.
+    if (!CopyFileA(
+            source_image_path.c_str(),
+            output_image_path.c_str(),
+            FALSE)) {
+        error = "REFUSED: copy source to output failed";
+        return false;
+    }
+
+    // Pre-write provenance reread (owner-index based).
+    {
+        ApfsReaderReport copy_report;
+        std::string copy_error;
+        if (!apfs_read_container(
+                output_image_path, copy_report, copy_error)) {
+            error =
+                "REFUSED: pre-write reread failed: " +
+                copy_error;
+            return false;
+        }
+        if (copy_report.plist_file.status != "READ_OK" ||
+            copy_report.plist_file.drec_cnid != target_cnid ||
+            copy_report.plist_file.owner_volume_index >=
+                copy_report.volumes.size()) {
+            error =
+                "REFUSED: pre-write reread owner volume invalid";
+            return false;
+        }
+        const ApfsVolumeInfo& copy_owner =
+            copy_report.volumes[
+                copy_report.plist_file.owner_volume_index];
+        if (copy_owner.apsb_block != result.apsb_block ||
+            copy_owner.apsb_oid != result.apsb_oid ||
+            copy_owner.xid != result.volume_xid ||
+            copy_owner.root_tree_block !=
+                result.resolved_root_block ||
+            copy_report.plist_file.xattr_leaf_paddr !=
+                result.target_leaf_block ||
+            copy_report.plist_file.xattr_key_off !=
+                result.xattr_key_off_in_leaf ||
+            copy_report.plist_file.xattr_val_off !=
+                result.xattr_val_off_in_leaf) {
+            error =
+                "REFUSED: pre-write reread provenance mismatch";
+            return false;
+        }
+    }
+
+    // Read the target leaf from the output.
+    HANDLE out = CreateFileA(
+        output_image_path.c_str(),
+        GENERIC_READ | GENERIC_WRITE,
+        0, nullptr, OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (out == INVALID_HANDLE_VALUE) {
+        error = "REFUSED: cannot open output for writing";
+        return false;
+    }
+    std::vector<std::uint8_t> old_leaf(
+        report.container.block_size, 0);
+    if (!read_block(
+            out, result.target_leaf_block,
+            report.container.block_size, old_leaf, error)) {
+        CloseHandle(out);
+        error = "REFUSED: target leaf read failed";
+        return false;
+    }
+    if (!apfs_block_checksum_ok(old_leaf)) {
+        CloseHandle(out);
+        error =
+            "REFUSED: target leaf checksum mismatch pre-write";
+        return false;
+    }
+    result.old_block_checksum = format_u64_hex(
+        read_le64(old_leaf.data()));
+
+    // Parse leaf geometry.
+    ApfsLeafGeometry geo;
+    if (!apfs_parse_leaf_geometry(
+            old_leaf, result.target_leaf_block, geo, error)) {
+        CloseHandle(out);
+        error = "REFUSED: " + error;
+        return false;
+    }
+
+    // Find the target XATTR record's TOC index. Match by key
+    // offset (the reader recorded xattr_key_off).
+    std::uint32_t target_toc = UINT32_MAX;
+    for (std::uint32_t i = 0; i < geo.nkeys; ++i) {
+        if (geo.records[i].abs_key_start ==
+            report.plist_file.xattr_key_off) {
+            target_toc = i;
+            break;
+        }
+    }
+    if (target_toc == UINT32_MAX) {
+        CloseHandle(out);
+        error = "REFUSED: target XATTR TOC index not found";
+        return false;
+    }
+
+    // Construct the resized XATTR value:
+    // {flags u16, xdata_len u16, sig u32, algo u32, logical u64,
+    //  [pad to 16], marker u8, payload[]}
+    const std::uint16_t old_flags = 0x0002; // DATA_EMBEDDED
+    const std::uint32_t sig = kDecmpfsSignature;
+    const std::uint32_t algo = 9;
+    const std::uint64_t logical = new_payload.size();
+    const std::uint16_t new_xdata_len =
+        static_cast<std::uint16_t>(16 + 1 + new_payload.size());
+    std::vector<std::uint8_t> new_value(4 + new_xdata_len, 0);
+    new_value[0] = old_flags & 0xff;
+    new_value[1] = old_flags >> 8;
+    new_value[2] = new_xdata_len & 0xff;
+    new_value[3] = new_xdata_len >> 8;
+    new_value[4] = sig & 0xff;
+    new_value[5] = (sig >> 8) & 0xff;
+    new_value[6] = (sig >> 16) & 0xff;
+    new_value[7] = (sig >> 24) & 0xff;
+    new_value[8] = algo & 0xff;
+    new_value[9] = (algo >> 8) & 0xff;
+    new_value[10] = (algo >> 16) & 0xff;
+    new_value[11] = (algo >> 24) & 0xff;
+    for (int i = 0; i < 8; ++i) {
+        new_value[12 + i] =
+            static_cast<std::uint8_t>(
+                (logical >> (i * 8)) & 0xFF);
+    }
+    new_value[4 + 16] = kDecmpfsPlainMarker; // 0xCC
+    std::memcpy(
+        new_value.data() + 4 + 16 + 1,
+        new_payload.data(),
+        new_payload.size());
+
+    // Reflow the leaf.
+    std::vector<std::uint8_t> new_leaf;
+    ApfsLeafGeometry new_geo;
+    if (!apfs_reflow_leaf_value(
+            old_leaf, target_toc, new_value,
+            new_leaf, new_geo, error)) {
+        CloseHandle(out);
+        // Reflow errors already have REFUSED: prefix or are
+        // capacity/geometry errors.
+        if (error.find("REFUSED:") != 0) {
+            error = "REFUSED: " + error;
+        }
+        return false;
+    }
+    result.new_block_checksum = format_u64_hex(
+        read_le64(new_leaf.data()));
+
+    // Write the complete new leaf.
+    LARGE_INTEGER dist {};
+    dist.QuadPart = static_cast<LONGLONG>(
+        result.target_leaf_block *
+        report.container.block_size);
+    DWORD written = 0;
+    if (!SetFilePointerEx(
+            out, dist, nullptr, FILE_BEGIN) ||
+        !WriteFile(
+            out, new_leaf.data(),
+            static_cast<DWORD>(new_leaf.size()),
+            &written, nullptr) ||
+        written != new_leaf.size() ||
+        !FlushFileBuffers(out)) {
+        CloseHandle(out);
+        error = "REFUSED: write/flush failed";
+        return false;
+    }
+    CloseHandle(out);
+
+    // Certified reread.
+    ApfsReaderReport verify_report;
+    std::string verify_error;
+    if (!apfs_read_container(
+            output_image_path,
+            verify_report, verify_error)) {
+        error =
+            "REFUSED: certified reread failed: " +
+            verify_error;
+        return false;
+    }
+    if (verify_report.plist_file.status != "READ_OK" ||
+        verify_report.plist_file.drec_cnid != target_cnid ||
+        verify_report.plist_file.owner_volume_index >=
+            verify_report.volumes.size()) {
+        error =
+            "REFUSED: certified reread identity mismatch";
+        return false;
+    }
+    const ApfsVolumeInfo& verify_owner =
+        verify_report.volumes[
+            verify_report.plist_file.owner_volume_index];
+    if (verify_owner.apsb_block != result.apsb_block ||
+        verify_owner.apsb_oid != result.apsb_oid ||
+        verify_owner.xid != result.volume_xid ||
+        verify_owner.root_tree_block !=
+            result.resolved_root_block ||
+        verify_report.plist_file.xattr_leaf_paddr !=
+            result.target_leaf_block) {
+        error =
+            "REFUSED: certified reread provenance mismatch";
+        return false;
+    }
+    if (verify_report.plist_file.bytes.size() !=
+            new_payload.size() ||
+        std::memcmp(
+            verify_report.plist_file.bytes.data(),
+            new_payload.data(),
+            new_payload.size()) != 0) {
+        error =
+            "REFUSED: reread payload mismatch";
+        return false;
+    }
+    result.new_plist_sha256 = compute_sha256_hex(
+        verify_report.plist_file.bytes.data(),
+        verify_report.plist_file.bytes.size());
+    result.reread_plist_sha256 = result.new_plist_sha256;
+    result.reread_verified = true;
+    if (result.new_plist_sha256 ==
+        expected_source_sha256) {
+        error =
+            "REFUSED: reread hash unchanged after replacement";
+        return false;
+    }
+    result.success = true;
+    return true;
+}
+
 } // namespace vphone
