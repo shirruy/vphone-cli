@@ -259,6 +259,10 @@ if(WIN32)
     set_tests_properties(apfs_reader_test PROPERTIES
         PASS_REGULAR_EXPRESSION "APFS_READER_TEST_PASS"
     )
+    add_test(NAME apfs_mutator_test COMMAND vphone_apfs_mutator_test)
+    set_tests_properties(apfs_mutator_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "APFS_MUTATOR_TEST_PASS"
+    )
 
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)
     target_include_directories(vphone_udif_portable

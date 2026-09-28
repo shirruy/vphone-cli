@@ -72,6 +72,12 @@ struct ApfsReaderReport {
         std::uint64_t decmpfs_logical_size = 0;
         bool xattr_embedded = false;
         bool needs_resource_fork = false;
+        std::uint64_t owner_volume_index = 0;
+        // Physical provenance from structural descent (for mutation).
+        std::uint64_t xattr_leaf_paddr = 0;
+        std::uint64_t xattr_key_off = 0;
+        std::uint64_t xattr_val_off = 0;
+        std::uint64_t xattr_data_start_off = 0; // plist bytes start
     } plist_file;
 };
 
@@ -95,9 +101,34 @@ struct ApfsMutationResult {
     std::string new_plist_sha256;
     std::string old_block_checksum;
     std::string new_block_checksum;
+    // Physical provenance from structural descent.
+    std::uint64_t xattr_key_off_in_leaf = 0;
+    std::uint64_t xattr_val_off_in_leaf = 0;
+    // Certified reread verification.
+    std::string reread_plist_sha256;
+    bool reread_verified = false;
 };
 
-// Structural single-byte mutation through the certified read chain.
+// Structural single-byte mutation: source → output, certified chain.
+// Source image is NEVER opened for writing. Output must be a
+// distinct copied image. The mutation resolves the target through
+// APSB/xid → OMAP → FSTREE structural descent, derives the exact
+// TOC/XATTR value pointer, and verifies post-write via certified
+// reread of the output image.
+bool apfs_mutate_plist_byte_safe(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    std::uint64_t plist_byte_offset,
+    std::uint8_t expected_old_byte,
+    std::uint8_t new_byte,
+    ApfsMutationResult& result,
+    std::string& error
+);
+
+// Legacy in-place variant (refuses if source == output).
+// Kept for backward compatibility but prefer the safe API.
 // Refuses to write when any precondition differs.
 bool apfs_mutate_plist_byte(
     const std::string& image_path,

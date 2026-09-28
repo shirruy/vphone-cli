@@ -802,6 +802,10 @@ struct FstreeRawRecord {
     std::uint16_t key_extra_len = 0;
     const std::uint8_t* value = nullptr;
     std::uint16_t value_len = 0;
+    // Physical provenance for structural mutation.
+    std::uint64_t leaf_paddr = 0;
+    std::uint16_t key_off_in_leaf = 0;
+    std::uint16_t val_off_in_leaf = 0;
 };
 
 template <typename RawMatchFn>
@@ -978,6 +982,9 @@ bool fstree_visit_raw_records(
         rec.key_extra_len = k_len - 8;
         rec.value = p + vp;
         rec.value_len = v_len;
+        rec.leaf_paddr = paddr;
+        rec.key_off_in_leaf = static_cast<std::uint16_t>(kp);
+        rec.val_off_in_leaf = static_cast<std::uint16_t>(vp);
 
         if (!match(rec)) {
             error = "raw record match callback failed";
@@ -1325,6 +1332,15 @@ bool fstree_read_plist_file(
                     );
                 }
                 dcs.found = true;
+                // Record physical provenance for mutation.
+                result.xattr_leaf_paddr = rec.leaf_paddr;
+                result.xattr_key_off = rec.key_off_in_leaf;
+                result.xattr_val_off = rec.val_off_in_leaf;
+                // Plist data starts at value + 4 (flags+len) +
+                // 16 (decmpfs header) + 1 (marker) = value + 21.
+                result.xattr_data_start_off =
+                    rec.val_off_in_leaf + 4 +
+                    kDecmpfsHeaderSize + 1;
                 return true;
             };
 
@@ -1904,6 +1920,8 @@ bool apfs_read_container(
                 if (report.launchdaemons_cnid != 0 &&
                     report.plist_file.status == "NOT_ATTEMPTED") {
                     FstreeWalkCtx plist_ctx = walk_ctx;
+                    report.plist_file.owner_volume_index =
+                        report.volumes.size();
                     fstree_read_plist_file(
                         plist_ctx,
                         volume.root_tree_oid,
@@ -2333,6 +2351,249 @@ bool apfs_mutate_plist_byte(
     new_plist[plist_byte_offset] = new_byte;
     result.new_plist_sha256 = compute_sha256_hex(
         new_plist.data(), new_plist.size());
+
+    result.success = true;
+    return true;
+}
+
+bool apfs_mutate_plist_byte_safe(
+    const std::string& source_image_path,
+    const std::string& output_image_path,
+    const std::string& expected_source_sha256,
+    std::uint64_t target_cnid,
+    std::uint64_t plist_byte_offset,
+    std::uint8_t expected_old_byte,
+    std::uint8_t new_byte,
+    ApfsMutationResult& result,
+    std::string& error
+) {
+    result = {};
+    error.clear();
+
+    // Safety: source and output must be distinct.
+    if (source_image_path == output_image_path) {
+        error =
+            "REFUSED: source and output must be distinct paths";
+        return false;
+    }
+
+    // Safety: source hash must be provided.
+    if (expected_source_sha256.empty()) {
+        error =
+            "REFUSED: expected source SHA-256 is required";
+        return false;
+    }
+
+    // Step 1: Read the SOURCE image through the certified reader
+    // (never opens for writing). This resolves the structural chain
+    // and gives us physical provenance for the target XATTR record.
+    ApfsReaderReport report;
+    if (!apfs_read_container(
+            source_image_path, report, error)) {
+        error = "REFUSED: source reader failed: " + error;
+        return false;
+    }
+
+    // Verify plist resolved from the source.
+    if (report.plist_file.status != "READ_OK") {
+        error = "REFUSED: source plist not readable: " +
+            report.plist_file.status;
+        return false;
+    }
+    if (report.plist_file.drec_cnid != target_cnid) {
+        error = "REFUSED: target CNID mismatch";
+        return false;
+    }
+
+    // Verify source plist hash.
+    const std::string actual_hash = compute_sha256_hex(
+        report.plist_file.bytes.data(),
+        report.plist_file.bytes.size());
+    if (actual_hash != expected_source_sha256) {
+        error = "REFUSED: source hash mismatch";
+        return false;
+    }
+
+    // Verify byte offset and expected old byte.
+    if (plist_byte_offset >=
+        report.plist_file.bytes.size()) {
+        error = "REFUSED: byte offset beyond plist";
+        return false;
+    }
+    if (report.plist_file.bytes[plist_byte_offset] !=
+        expected_old_byte) {
+        error = "REFUSED: old byte mismatch at offset";
+        return false;
+    }
+
+    // Verify structural provenance was recorded.
+    if (report.plist_file.xattr_leaf_paddr == 0) {
+        error =
+            "REFUSED: XATTR leaf provenance not recorded";
+        return false;
+    }
+
+    // Era binding: use the exact volume that resolved the plist.
+    // This binds the write to one deterministic APSB/oid/xid/OMAP
+    // chain instead of the first volume with a root tree.
+    if (report.plist_file.owner_volume_index >=
+            report.volumes.size()) {
+        error =
+            "REFUSED: plist owner volume not recorded";
+        return false;
+    }
+    const ApfsVolumeInfo& owner_vol =
+        report.volumes[
+            report.plist_file.owner_volume_index];
+    if (owner_vol.root_tree_block == 0 ||
+        owner_vol.apsb_oid == 0) {
+        error = "REFUSED: plist owner volume chain incomplete";
+        return false;
+    }
+    result.apsb_block = owner_vol.apsb_block;
+    result.apsb_oid = owner_vol.apsb_oid;
+    result.volume_xid = owner_vol.xid;
+    result.root_tree_oid = owner_vol.root_tree_oid;
+    result.resolved_root_block = owner_vol.root_tree_block;
+    result.target_cnid = target_cnid;
+    result.target_leaf_block =
+        report.plist_file.xattr_leaf_paddr;
+    result.xattr_key_off_in_leaf =
+        report.plist_file.xattr_key_off;
+    result.xattr_val_off_in_leaf =
+        report.plist_file.xattr_val_off;
+    result.old_plist_sha256 = actual_hash;
+    result.old_byte = expected_old_byte;
+    result.new_byte = new_byte;
+
+    // Derive the exact write offset from structural provenance.
+    const std::uint64_t write_off_in_leaf =
+        report.plist_file.xattr_data_start_off +
+        plist_byte_offset;
+    result.data_offset_in_block = write_off_in_leaf;
+
+    // Step 2: Copy source to output (the only write target).
+    if (!CopyFileA(
+            source_image_path.c_str(),
+            output_image_path.c_str(),
+            FALSE)) {
+        error = "REFUSED: copy source to output failed";
+        return false;
+    }
+
+    // Step 3: Open output for writing.
+    HANDLE out = CreateFileA(
+        output_image_path.c_str(),
+        GENERIC_READ | GENERIC_WRITE,
+        0,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr);
+    if (out == INVALID_HANDLE_VALUE) {
+        error = "REFUSED: cannot open output for writing";
+        return false;
+    }
+
+    // Step 4: Read and verify the target block on the output copy.
+    std::vector<std::uint8_t> blk(
+        report.container.block_size, 0);
+    if (!read_block(
+            out, result.target_leaf_block,
+            report.container.block_size, blk, error)) {
+        CloseHandle(out);
+        error = "REFUSED: target block read failed";
+        return false;
+    }
+    if (!apfs_block_checksum_ok(blk)) {
+        CloseHandle(out);
+        error = "REFUSED: block checksum mismatch pre-write";
+        return false;
+    }
+    result.old_block_checksum = format_u64_hex(
+        read_le64(blk.data()));
+
+    // Verify the byte at the structural offset.
+    if (blk[write_off_in_leaf] != expected_old_byte) {
+        CloseHandle(out);
+        error =
+            "REFUSED: byte at structural offset mismatch";
+        return false;
+    }
+
+    // Step 5: Apply mutation + recompute checksum.
+    blk[write_off_in_leaf] = new_byte;
+    const std::uint64_t new_ck =
+        apfs_fletcher64(blk.data(), blk.size());
+    for (int i = 0; i < 8; ++i) {
+        blk[i] = static_cast<std::uint8_t>(
+            (new_ck >> (i * 8)) & 0xFF);
+    }
+    result.new_block_checksum = format_u64_hex(new_ck);
+
+    // Step 6: Write block, flush, verify.
+    LARGE_INTEGER dist{};
+    dist.QuadPart = static_cast<LONGLONG>(
+        result.target_leaf_block *
+        report.container.block_size);
+    if (!SetFilePointerEx(
+            out, dist, nullptr, FILE_BEGIN) ||
+        !WriteFile(
+            out, blk.data(),
+            static_cast<DWORD>(blk.size()),
+            nullptr, nullptr) ||
+        !FlushFileBuffers(out)) {
+        CloseHandle(out);
+        error = "REFUSED: write/flush failed";
+        return false;
+    }
+
+    // Reread block and verify.
+    std::vector<std::uint8_t> vblk(
+        report.container.block_size, 0);
+    if (!read_block(
+            out, result.target_leaf_block,
+            report.container.block_size, vblk, error) ||
+        !apfs_block_checksum_ok(vblk) ||
+        vblk[write_off_in_leaf] != new_byte) {
+        CloseHandle(out);
+        error = "REFUSED: post-write block verify failed";
+        return false;
+    }
+    CloseHandle(out);
+
+    // Step 7: Certified reread of the OUTPUT image.
+    ApfsReaderReport verify_report;
+    std::string verify_error;
+    if (!apfs_read_container(
+            output_image_path,
+            verify_report, verify_error)) {
+        error =
+            "REFUSED: certified reread failed: " +
+            verify_error;
+        return false;
+    }
+    if (verify_report.plist_file.status != "READ_OK" ||
+        verify_report.plist_file.drec_cnid !=
+            target_cnid) {
+        error =
+            "REFUSED: certified reread identity mismatch";
+        return false;
+    }
+
+    // Compute new plist hash from actual reread bytes.
+    result.new_plist_sha256 = compute_sha256_hex(
+        verify_report.plist_file.bytes.data(),
+        verify_report.plist_file.bytes.size());
+    result.reread_plist_sha256 = result.new_plist_sha256;
+    result.reread_verified = true;
+
+    if (result.new_plist_sha256 ==
+        expected_source_sha256) {
+        error =
+            "REFUSED: reread hash unchanged after mutation";
+        return false;
+    }
 
     result.success = true;
     return true;
