@@ -1612,6 +1612,157 @@ bool fstree_read_plist_file(
     result.status = "READ_OK";
     return true;
 }
+
+// Checkpoint-authoritative APSB resolution.
+//
+// The container OMAP B-trees carry the authoritative mapping from a
+// volume's virtual APSB oid to the physical block that the active
+// checkpoint references. A numerically newer orphan APSB that no
+// container OMAP entry references must never win selection.
+//
+// The resolver scans OMAP-subtype B-tree blocks whose object xid is
+// within the active checkpoint era (xid <= nxsb_xid), finds the
+// newest entry for the target oid, and returns its physical paddr.
+// An OMAP entry also carries its own per-mapping xid; only entries
+// at or below the container era are considered. The mapping's omap
+// block and btree block are reported for provenance.
+struct CheckpointOmapResolution {
+    bool found = false;
+    bool any_entries_for_target = false;
+    std::uint64_t omap_btree_block = 0;
+    std::uint64_t entry_xid = 0;
+    std::uint64_t apsb_paddr = 0;
+};
+
+bool resolve_checkpoint_apsb_paddr(
+    HANDLE file,
+    std::uint32_t block_size,
+    std::uint64_t block_count,
+    std::uint64_t nxsb_xid,
+    std::uint64_t target_oid,
+    CheckpointOmapResolution& out
+) {
+    out = CheckpointOmapResolution{};
+    std::vector<std::uint8_t> buf(block_size, 0);
+
+    for (std::uint64_t b = 0; b < block_count; ++b) {
+        std::string rb_error;
+        if (!read_block(file, b, block_size, buf, rb_error)) {
+            continue;
+        }
+
+        const std::uint32_t type =
+            read_le32(buf.data() + 24);
+        const std::uint32_t type_kind = type & kObjectTypeMask;
+        if (type_kind != kBtreeType &&
+            type_kind != kBtreeTypeNode) {
+            continue;
+        }
+        const std::uint32_t subtype =
+            read_le32(buf.data() + 28);
+        if (subtype != kOmapType) {
+            continue;
+        }
+        if (!apfs_block_checksum_ok(buf)) {
+            continue;
+        }
+
+        const std::uint64_t tree_xid =
+            read_le64(buf.data() + 16);
+        if (tree_xid > nxsb_xid) {
+            continue; // future-era OMAP tree
+        }
+
+        ApfsBtreeNodeInfo info;
+        std::string decode_error;
+        if (!decode_btree_node(
+                buf, block_size, info, decode_error)) {
+            continue;
+        }
+        const bool geometry_ok =
+            (info.flags & kBtreeRoot)
+                ? info.node_size == block_size
+                : true; // non-root leaves carry no footer
+        if (!(info.flags & kBtreeFixedKvSize) ||
+            info.level != 0 ||
+            !geometry_ok) {
+            continue; // only OMAP fixed-KV leaves are relevant
+        }
+
+        const std::uint16_t tofs =
+            static_cast<std::uint16_t>(buf[0x28]) |
+            (static_cast<std::uint16_t>(buf[0x29]) << 8);
+        const std::uint16_t tlen =
+            static_cast<std::uint16_t>(buf[0x2a]) |
+            (static_cast<std::uint16_t>(buf[0x2b]) << 8);
+        const std::uint64_t key_base =
+            static_cast<std::uint64_t>(kBtreeNodeHeaderSize) +
+            tofs + tlen;
+        const bool is_root = (info.flags & kBtreeRoot) != 0;
+        const std::uint64_t value_base = is_root
+            ? static_cast<std::uint64_t>(block_size) -
+                  kBtreeInfoSize
+            : static_cast<std::uint64_t>(block_size);
+
+        for (std::uint32_t i = 0; i < info.nkeys; ++i) {
+            const std::uint64_t toc =
+                static_cast<std::uint64_t>(
+                    kBtreeNodeHeaderSize) +
+                tofs + static_cast<std::uint64_t>(i) * 4;
+            if (toc + 4 > block_size) {
+                break;
+            }
+            const std::uint16_t k_off =
+                static_cast<std::uint16_t>(
+                    buf[toc]) |
+                (static_cast<std::uint16_t>(buf[toc + 1]) << 8);
+            const std::uint16_t v_off =
+                static_cast<std::uint16_t>(
+                    buf[toc + 2]) |
+                (static_cast<std::uint16_t>(buf[toc + 3]) << 8);
+
+            const std::uint64_t kp = key_base + k_off;
+            if (kp + 16 > block_size) {
+                continue;
+            }
+            const std::uint64_t key_oid =
+                read_le64(buf.data() + kp);
+            const std::uint64_t entry_xid =
+                read_le64(buf.data() + kp + 8);
+            if (key_oid == target_oid) {
+                out.any_entries_for_target = true;
+            }
+            if (key_oid != target_oid ||
+                entry_xid > nxsb_xid) {
+                continue;
+            }
+
+            // omap_fixed_val: {flags u32, size u32, paddr u64}
+            const std::uint64_t vp = value_base - v_off;
+            if (vp + 16 > block_size) {
+                continue;
+            }
+            const std::uint64_t paddr =
+                read_le64(buf.data() + vp + 8);
+            if (paddr >= block_count) {
+                continue;
+            }
+
+            // Newest in-era mapping wins; ties prefer the later
+            // tree block for deterministic behavior.
+            if (!out.found || entry_xid > out.entry_xid ||
+                (entry_xid == out.entry_xid &&
+                 b >= out.omap_btree_block)) {
+                out.found = true;
+                out.omap_btree_block = b;
+                out.entry_xid = entry_xid;
+                out.apsb_paddr = paddr;
+            }
+        }
+    }
+    return out.found;
+}
+
 } // namespace
 
 bool apfs_read_container(
@@ -1916,6 +2067,37 @@ bool apfs_read_container(
             }
         );
         report.volumes = std::move(active_era_volumes);
+
+        // Checkpoint-authoritative filter: keep only APSBs whose
+        // physical block is the one the active container OMAP
+        // references for that volume oid. A valid orphan APSB with
+        // a higher xid that no OMAP entry references is dropped.
+        {
+            std::vector<ApfsVolumeInfo> authoritative;
+            for (const auto& volume : report.volumes) {
+                CheckpointOmapResolution resolution;
+                resolve_checkpoint_apsb_paddr(
+                        file,
+                        report.container.block_size,
+                        report.container.block_count,
+                        nxsb_xid,
+                        volume.apsb_oid,
+                        resolution
+                    );
+                if (resolution.found) {
+                    if (resolution.apsb_paddr !=
+                            volume.apsb_block) {
+                        continue; // OMAP points elsewhere
+                    }
+                } else if (resolution.any_entries_for_target) {
+                    continue; // entries exist but none in-era
+                }
+                // No container OMAP entries at all for this oid:
+                // keep the active-era selection (legacy containers).
+                authoritative.push_back(volume);
+            }
+            report.volumes = std::move(authoritative);
+        }
 
         // Pass B: structural resolution on ACTIVE volumes only.
         // LaunchDaemons traversal and plist reconstruction can no
@@ -2622,6 +2804,14 @@ bool apfs_mutate_plist_byte_safe(
         }
         if (copy_report.plist_file.status != "READ_OK" ||
             copy_report.plist_file.drec_cnid != target_cnid ||
+            copy_report.volumes.empty() ||
+            copy_report.volumes[0].apsb_block !=
+                result.apsb_block ||
+            copy_report.volumes[0].apsb_oid !=
+                result.apsb_oid ||
+            copy_report.volumes[0].xid != result.volume_xid ||
+            copy_report.volumes[0].root_tree_block !=
+                result.resolved_root_block ||
             copy_report.plist_file.xattr_leaf_paddr !=
                 result.target_leaf_block ||
             copy_report.plist_file.xattr_key_off !=
@@ -2731,6 +2921,28 @@ bool apfs_mutate_plist_byte_safe(
             target_cnid) {
         error =
             "REFUSED: certified reread identity mismatch";
+        return false;
+    }
+    if (verify_report.volumes.empty() ||
+        verify_report.volumes[0].apsb_block !=
+            result.apsb_block ||
+        verify_report.volumes[0].apsb_oid !=
+            result.apsb_oid ||
+        verify_report.volumes[0].xid != result.volume_xid ||
+        verify_report.volumes[0].root_tree_block !=
+            result.resolved_root_block ||
+        verify_report.plist_file.xattr_leaf_paddr !=
+            result.target_leaf_block) {
+        error =
+            "REFUSED: certified reread provenance mismatch";
+        return false;
+    }
+    if (plist_byte_offset >=
+            verify_report.plist_file.bytes.size() ||
+        verify_report.plist_file.bytes[plist_byte_offset] !=
+            new_byte) {
+        error =
+            "REFUSED: reread logical byte mismatch";
         return false;
     }
 

@@ -308,6 +308,32 @@ std::vector<std::uint8_t> build_image() {
         put(5, blk);
     }
 
+    // Container OMAP fixed-KV leaf at block 3: maps the volume's
+    // virtual APSB oid (42) to the authoritative physical block (1).
+    // This is the checkpoint-authoritative reference the reader uses
+    // to reject orphan/stale APSB copies.
+    {
+        std::vector<std::uint8_t> blk(kBlockSize, 0);
+        put_le64(blk, 8, 3);
+        put_le64(blk, 16, kApsbXid);
+        put_le32(blk, 24, 0x40000003u);   // btree node
+        put_le32(blk, 28, 0x0000000Bu);   // subtype OMAP
+        put_le32(blk, 0x20, 0x00000006u); // leaf+fixed
+        put_le32(blk, 0x24, 1);           // 1 entry
+        put_le32(blk, 0x28, 0x00100000u); // tofs=0, tlen=0x10
+        blk[0x38] = 0x00; blk[0x39] = 0x00;
+        blk[0x3a] = 0x10; blk[0x3b] = 0x00;
+        put_le64(blk, 0x48, kApsbOid);    // key oid
+        put_le64(blk, 0x50, kApsbXid);    // key xid
+        // value at end (non-root leaf, value_base=4096):
+        // flags=0, size=block, paddr=1 at 0xff0
+        put_le32(blk, 0xff0, 0);
+        put_le32(blk, 0xff4, kBlockSize);
+        put_le64(blk, 0xff8, 1);
+        seal(blk);
+        put(3, blk);
+    }
+
     // FSTREE root at block 6.
     {
         std::vector<std::uint8_t> blk(kBlockSize, 0);
@@ -409,6 +435,25 @@ std::vector<std::uint8_t> build_two_era_image() {
         put(13, active_apsb);
         std::vector<std::uint8_t> blank(kBlockSize, 0);
         put(1, blank);
+    }
+    // Point the container OMAP entry at the active APSB's new
+    // physical block (13).
+    {
+        std::vector<std::uint8_t> cont_omap = get(3);
+        put_le64(cont_omap, 0xff8, 13);
+        seal(cont_omap);
+        put(3, cont_omap);
+    }
+    // Orphan APSB: same oid, same xid as active, valid checksum,
+    // physically before the active APSB — but NOT referenced by the
+    // container OMAP. A "newest valid wins" selector would pick it;
+    // the checkpoint-authoritative filter must reject it.
+    {
+        std::vector<std::uint8_t> orphan = get(13);
+        // Give the orphan its own OMAP so it looks self-consistent.
+        put_le64(orphan, 0x80, 10);
+        seal(orphan);
+        put(14, orphan);
     }
 
     // Copy the active leaf (block 8) to block 7, retag it as a
