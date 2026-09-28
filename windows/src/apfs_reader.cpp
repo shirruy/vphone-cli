@@ -1617,9 +1617,9 @@ bool fstree_read_plist_file(
 //
 // The ONLY legal authority chain is:
 //   active NXSB (block 0, checksum-verified)
-//   -> nx_omap_oid (offset 136)
-//   -> active checkpoint map (nx_xp_desc_base at offset 112)
-//   -> entry mapping the container OMAP object oid
+//   -> nx_omap_oid (offset 0xA0 = 160, per linux-apfs-rw apfs_raw.h
+//      struct apfs_nx_superblock: nx_spaceman_oid@0x98,
+//      nx_omap_oid@0xA0, nx_reaper_oid@0xA8)
 //   -> omap_phys block (checksum/type/xid verified)
 //   -> om_tree_oid (offset 0x30)
 //   -> OMAP B-tree traversal rooted at that exact tree
@@ -1652,7 +1652,7 @@ bool resolve_checkpoint_apsb_paddr(
     const std::uint64_t nxsb_xid =
         read_le64(nxsb_block.data() + 16);
     const std::uint64_t nx_omap_oid =
-        read_le64(nxsb_block.data() + 136);
+        read_le64(nxsb_block.data() + 160);
     const std::uint64_t xp_desc_base =
         read_le64(nxsb_block.data() + 112);
 
@@ -1719,69 +1719,59 @@ bool resolve_checkpoint_apsb_paddr(
     }
     out.checkpoint_map_block = map_block;
 
-    // Resolve the container omap_phys object. Two supported paths:
-    // A) the checkpoint map carries an entry mapping nx_omap_oid to
-    //    a physical block (explicit checkpoint-reference layout), or
-    // B) the NXSB carries a direct physical omap block reference at
-    //    offset 160 in this image family (Apple ramdisk layout).
-    // Both paths are strictly pointer-rooted; there is no global
-    // omap_phys scan. The OMAP tree traversal below is rooted ONLY
-    // in the selected omap_phys om_tree_oid; loose OMAP leaves are
-    // never consulted. Unresolvable references FAIL CLOSED.
-    // In both paths the OMAP tree traversal below is rooted ONLY in
-    // the selected omap_phys om_tree_oid; loose OMAP leaves are
-    // never consulted.
+    // Resolve the container omap_phys object from nx_omap_oid
+    // (offset 0xA0, per linux-apfs-rw apfs_raw.h). The field uses
+    // APFS object addressing: a plain in-geometry value is a
+    // direct physical block reference (real fixture: 1462); a
+    // value with storage-class/virtual bits set is a virtual oid
+    // that must be resolved through the active checkpoint map.
+    // Out-of-geometry or unresolvable values FAIL CLOSED. No
+    // container-wide omap scan exists in either path.
     std::uint64_t omap_phys_block = 0;
-    for (std::uint32_t e = 0; e < cp_count; ++e) {
-        const std::uint64_t off =
-            0x40 + static_cast<std::uint64_t>(e) * 40;
-        const std::uint64_t oid_v =
-            read_le64(cp.data() + off);
-        const std::uint64_t paddr =
-            read_le64(cp.data() + off + 8);
-        const std::uint32_t flags =
-            static_cast<std::uint32_t>(
-                read_le64(cp.data() + off + 16));
-        const std::uint32_t size =
-            static_cast<std::uint32_t>(
-                read_le64(cp.data() + off + 24));
-        if (oid_v != nx_omap_oid) {
-            continue;
-        }
-        if (paddr == 0 ||
-            paddr >= block_count ||
-            size != block_size) {
-            error =
-                "checkpoint map OMAP entry geometry invalid";
-            return false;
-        }
-        // Physical storage class: no virtual flag bits.
-        if ((flags & 0x80000000u) != 0) {
-            error =
-                "checkpoint map OMAP entry uses unsupported "
-                "storage class";
-            return false;
-        }
-        omap_phys_block = paddr;
-        break;
-    }
-    if (omap_phys_block == 0) {
-        // Path B: direct physical reference from the NXSB at
-        // offset 160 in this image family (Apple ramdisk layout).
-        // The target is fully validated as an OMAP object below;
-        // a wrong pointer fails closed instead of scanning the
-        // container for alternatives. No global omap scan exists.
-        const std::uint64_t nx_omap_phys =
-            read_le64(nxsb_block.data() + 160);
-        if (omap_phys_block == 0) {
-            if (nx_omap_phys == 0 ||
-                nx_omap_phys >= block_count) {
+    if (nx_omap_oid < block_count) {
+        // Plain physical reference. Fully validated as an OMAP
+        // object below; a wrong pointer fails closed.
+        omap_phys_block = nx_omap_oid;
+    } else {
+        // Virtual/ephemeral oid: resolve through the checkpoint
+        // map entries. No match fails closed.
+        for (std::uint32_t e = 0; e < cp_count; ++e) {
+            const std::uint64_t off =
+                0x40 + static_cast<std::uint64_t>(e) * 40;
+            const std::uint64_t oid_v =
+                read_le64(cp.data() + off);
+            const std::uint64_t paddr =
+                read_le64(cp.data() + off + 8);
+            const std::uint32_t flags =
+                static_cast<std::uint32_t>(
+                    read_le64(cp.data() + off + 16));
+            const std::uint32_t size =
+                static_cast<std::uint32_t>(
+                    read_le64(cp.data() + off + 24));
+            if (oid_v != nx_omap_oid) {
+                continue;
+            }
+            if (paddr == 0 ||
+                paddr >= block_count ||
+                size != block_size) {
                 error =
-                    "NXSB provides no resolvable container omap "
-                    "reference";
+                    "checkpoint map OMAP entry geometry invalid";
                 return false;
             }
-            omap_phys_block = nx_omap_phys;
+            if ((flags & 0x80000000u) != 0) {
+                error =
+                    "checkpoint map OMAP entry uses unsupported "
+                    "storage class";
+                return false;
+            }
+            omap_phys_block = paddr;
+            break;
+        }
+        if (omap_phys_block == 0) {
+            error =
+                "nx_omap_oid is virtual and the checkpoint map "
+                "has no matching entry";
+            return false;
         }
     }
     out.omap_phys_block = omap_phys_block;
@@ -1927,11 +1917,9 @@ bool apfs_read_container(
         report.container.block_size = read_le32(block.data() + 36);
         report.container.block_count = read_le64(block.data() + 40);
 
-        // nx_omap_oid follows the uuid + next-oid/xid + checkpoint area.
-        // Observed layout for the known-good fixture: the omap pointer
-        // table starts after the checkpoint descriptor/data arrays.
-        // Decode from the field observed at offset 136 in this image
-        // family; validated below by finding an OMAP object there.
+        // Container omap authority uses nx_omap_oid at offset 0xA0
+        // (160) per the documented apfs_nx_superblock layout; see
+        // resolve_checkpoint_apsb_paddr for the full chain.
         const std::uint64_t file_size_u =
             static_cast<std::uint64_t>(file_size.QuadPart);
         if (!valid_block_geometry(

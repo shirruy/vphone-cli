@@ -432,7 +432,7 @@ std::vector<std::uint8_t> build_image() {
         put_le32(blk, 36, kBlockSize);
         put_le64(blk, 40, kBlockCount);
         // Rooted authority pointers.
-        put_le64(blk, 136, 1000);  // nx_omap_oid (virtual)
+        // offset 136 = desc_index/len (not omap; documented)
         put_le32(blk, 104, 1);     // xp_desc area = 1 checkpoint pair
         put_le64(blk, 112, kCheckpointMapBlock); // xp_desc_base
         put_le64(blk, 160, kContainerOmapPhysBlock); // omap ref
@@ -1092,6 +1092,66 @@ int main() {
             std::fprintf(
                 stderr,
                 "[bad_nxsb_checksum] error mismatch: '%s'\n",
+                rerr.c_str());
+            return 1;
+        }
+        DeleteFileA(bad_path.c_str());
+    }
+
+    // Falsification: a value at nx_omap_oid (0xA0/160) that is NOT
+    // a plausible physical block — for example a value dominated by
+    // high bits the way a misread nx_max_file_systems/fs_index pair
+    // would be — must never be reinterpreted as a paddr. The
+    // resolver must fail closed, not scan.
+    {
+        std::vector<std::uint8_t> bad = build_image();
+        // 0x100000000 = high-bit-only value (out of geometry).
+        const std::size_t nxsb_off = 0;
+        put_le64(bad, nxsb_off + 160, 0x100000000ull);
+        // Reseal the NXSB so only the omap oid is semantically bad.
+        {
+            std::vector<std::uint8_t> blk(kBlockSize, 0);
+            std::memcpy(
+                blk.data(),
+                bad.data() + nxsb_off,
+                kBlockSize);
+            // Clear old checksum then reseal.
+            put_le64(blk, 0, 0);
+            // Re-seal via fletcher64.
+            blk.assign(kBlockSize, 0);
+            std::memcpy(
+                blk.data(),
+                bad.data() + nxsb_off,
+                kBlockSize);
+            put_le64(blk, 0, 0);
+            seal(blk);
+            std::memcpy(
+                bad.data() + nxsb_off,
+                blk.data(),
+                kBlockSize);
+        }
+        const std::string bad_path =
+            dir + "apfs_mut_bad_omap_oid.img";
+        if (!write_all(bad_path, bad)) {
+            std::fprintf(
+                stderr, "bad omap oid write failed\n");
+            return 1;
+        }
+        vphone::ApfsReaderReport rpt;
+        std::string rerr;
+        if (vphone::apfs_read_container(bad_path, rpt, rerr)) {
+            std::fprintf(
+                stderr,
+                "[bad_omap_oid] expected reader failure\n");
+            return 1;
+        }
+        if (rerr !=
+            "checkpoint-authoritative resolution failed: "
+            "nx_omap_oid is virtual and the checkpoint map has "
+            "no matching entry") {
+            std::fprintf(
+                stderr,
+                "[bad_omap_oid] error mismatch: '%s'\n",
                 rerr.c_str());
             return 1;
         }
