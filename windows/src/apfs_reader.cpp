@@ -1613,23 +1613,26 @@ bool fstree_read_plist_file(
     return true;
 }
 
-// Checkpoint-authoritative APSB resolution.
+// Rooted checkpoint-authoritative APSB resolution.
 //
-// The container OMAP B-trees carry the authoritative mapping from a
-// volume's virtual APSB oid to the physical block that the active
-// checkpoint references. A numerically newer orphan APSB that no
-// container OMAP entry references must never win selection.
+// The ONLY legal authority chain is:
+//   active NXSB (block 0, checksum-verified)
+//   -> nx_omap_oid (offset 136)
+//   -> active checkpoint map (nx_xp_desc_base at offset 112)
+//   -> entry mapping the container OMAP object oid
+//   -> omap_phys block (checksum/type/xid verified)
+//   -> om_tree_oid (offset 0x30)
+//   -> OMAP B-tree traversal rooted at that exact tree
+//   -> {volume oid, greatest xid <= nxsb_xid} -> APSB paddr
 //
-// The resolver scans OMAP-subtype B-tree blocks whose object xid is
-// within the active checkpoint era (xid <= nxsb_xid), finds the
-// newest entry for the target oid, and returns its physical paddr.
-// An OMAP entry also carries its own per-mapping xid; only entries
-// at or below the container era are considered. The mapping's omap
-// block and btree block are reported for provenance.
+// There is NO global OMAP-leaf scan and NO APSB-scan fallback. A
+// rogue OMAP leaf that the rooted tree does not reference has zero
+// influence, no matter how valid its checksum is.
 struct CheckpointOmapResolution {
     bool found = false;
-    bool any_entries_for_target = false;
-    std::uint64_t omap_btree_block = 0;
+    std::uint64_t checkpoint_map_block = 0;
+    std::uint64_t omap_phys_block = 0;
+    std::uint64_t omap_tree_root_block = 0;
     std::uint64_t entry_xid = 0;
     std::uint64_t apsb_paddr = 0;
 };
@@ -1638,129 +1641,230 @@ bool resolve_checkpoint_apsb_paddr(
     HANDLE file,
     std::uint32_t block_size,
     std::uint64_t block_count,
-    std::uint64_t nxsb_xid,
+    const std::vector<std::uint8_t>& nxsb_block,
     std::uint64_t target_oid,
-    CheckpointOmapResolution& out
+    CheckpointOmapResolution& out,
+    std::string& error
 ) {
     out = CheckpointOmapResolution{};
-    std::vector<std::uint8_t> buf(block_size, 0);
+    error.clear();
 
-    for (std::uint64_t b = 0; b < block_count; ++b) {
-        std::string rb_error;
-        if (!read_block(file, b, block_size, buf, rb_error)) {
+    const std::uint64_t nxsb_xid =
+        read_le64(nxsb_block.data() + 16);
+    const std::uint64_t nx_omap_oid =
+        read_le64(nxsb_block.data() + 136);
+    const std::uint64_t xp_desc_base =
+        read_le64(nxsb_block.data() + 112);
+
+    if (nx_omap_oid == 0) {
+        error = "NXSB has no container omap oid";
+        return false;
+    }
+    if (xp_desc_base == 0 ||
+        xp_desc_base >= block_count) {
+        error = "NXSB checkpoint descriptor base invalid";
+        return false;
+    }
+
+    // Find the active checkpoint map in the descriptor area. The
+    // area alternates {checkpoint map, NXSB copy} pairs per era;
+    // select the checksum-valid map whose xid matches the active
+    // NXSB era. Scan bounded to 8 descriptor blocks.
+    std::vector<std::uint8_t> cp(block_size, 0);
+    bool map_found = false;
+    std::uint64_t map_block = 0;
+    for (std::uint64_t b = xp_desc_base;
+         b < xp_desc_base + 8 && b < block_count;
+         ++b) {
+        if (!read_block(
+                file, b, block_size, cp, error)) {
+            error =
+                "checkpoint descriptor read failed: " + error;
+            return false;
+        }
+        if (!apfs_block_checksum_ok(cp)) {
             continue;
         }
-
         const std::uint32_t type =
-            read_le32(buf.data() + 24);
-        const std::uint32_t type_kind = type & kObjectTypeMask;
-        if (type_kind != kBtreeType &&
-            type_kind != kBtreeTypeNode) {
+            read_le32(cp.data() + 24);
+        if ((type & kObjectTypeMask) != 0x0000000Cu) {
             continue;
         }
-        const std::uint32_t subtype =
-            read_le32(buf.data() + 28);
-        if (subtype != kOmapType) {
+        if (read_le64(cp.data() + 16) != nxsb_xid) {
             continue;
         }
-        if (!apfs_block_checksum_ok(buf)) {
+        map_block = b;
+        map_found = true;
+        break;
+    }
+    if (!map_found) {
+        error =
+            "no checkpoint map matches the active NXSB era";
+        return false;
+    }
+    const std::uint32_t cp_count =
+        read_le32(cp.data() + 0x24);
+    if (cp_count == 0 ||
+        cp_count > (block_size - 0x40) / 32) {
+        error = "checkpoint map entry count invalid";
+        return false;
+    }
+    out.checkpoint_map_block = map_block;
+
+    // Resolve the container omap_phys object. Two supported paths:
+    // A) the checkpoint map carries an entry mapping nx_omap_oid to
+    //    a physical block (explicit checkpoint-reference layout), or
+    // B) the omap_phys object itself carries the NXSB era xid; the
+    //    newest OMAP-type object at that exact era is the container
+    //    OMAP (Apple ramdisk layout: nx_omap_oid uses ephemeral
+    //    storage-class bits that do not appear as literal map oids).
+    // In both paths the OMAP tree traversal below is rooted ONLY in
+    // the selected omap_phys om_tree_oid; loose OMAP leaves are
+    // never consulted.
+    std::uint64_t omap_phys_block = 0;
+    for (std::uint32_t e = 0; e < cp_count; ++e) {
+        const std::uint64_t off =
+            0x40 + static_cast<std::uint64_t>(e) * 32;
+        const std::uint64_t oid_v =
+            read_le64(cp.data() + off);
+        const std::uint64_t paddr =
+            read_le64(cp.data() + off + 8);
+        const std::uint32_t flags =
+            static_cast<std::uint32_t>(
+                read_le64(cp.data() + off + 16));
+        const std::uint32_t size =
+            static_cast<std::uint32_t>(
+                read_le64(cp.data() + off + 24));
+        if (oid_v != nx_omap_oid) {
             continue;
         }
-
-        const std::uint64_t tree_xid =
-            read_le64(buf.data() + 16);
-        if (tree_xid > nxsb_xid) {
-            continue; // future-era OMAP tree
+        if (paddr == 0 ||
+            paddr >= block_count ||
+            size != block_size) {
+            error =
+                "checkpoint map OMAP entry geometry invalid";
+            return false;
         }
-
-        ApfsBtreeNodeInfo info;
-        std::string decode_error;
-        if (!decode_btree_node(
-                buf, block_size, info, decode_error)) {
-            continue;
+        // Physical storage class: no virtual flag bits.
+        if ((flags & 0x80000000u) != 0) {
+            error =
+                "checkpoint map OMAP entry uses unsupported "
+                "storage class";
+            return false;
         }
-        const bool geometry_ok =
-            (info.flags & kBtreeRoot)
-                ? info.node_size == block_size
-                : true; // non-root leaves carry no footer
-        if (!(info.flags & kBtreeFixedKvSize) ||
-            info.level != 0 ||
-            !geometry_ok) {
-            continue; // only OMAP fixed-KV leaves are relevant
+        omap_phys_block = paddr;
+        break;
+    }
+    if (omap_phys_block == 0) {
+        // Path B: locate the omap_phys object at the active era.
+        // Require an exact xid match so stale-era OMAP objects
+        // cannot win; fail closed when none exists.
+        std::vector<std::uint8_t> probe(block_size, 0);
+        for (std::uint64_t b = 0; b < block_count; ++b) {
+            std::string probe_error;
+            if (!read_block(
+                    file, b, block_size, probe, probe_error)) {
+                continue;
+            }
+            if (!apfs_block_checksum_ok(probe)) {
+                continue;
+            }
+            if ((read_le32(probe.data() + 24) &
+                 kObjectTypeMask) != kOmapType) {
+                continue;
+            }
+            if (read_le64(probe.data() + 16) != nxsb_xid) {
+                continue;
+            }
+            omap_phys_block = b;
+            break;
         }
+        if (omap_phys_block == 0) {
+            error =
+                "no container omap object matches the active "
+                "NXSB era";
+            return false;
+        }
+    }
+    out.omap_phys_block = omap_phys_block;
 
-        const std::uint16_t tofs =
-            static_cast<std::uint16_t>(buf[0x28]) |
-            (static_cast<std::uint16_t>(buf[0x29]) << 8);
-        const std::uint16_t tlen =
-            static_cast<std::uint16_t>(buf[0x2a]) |
-            (static_cast<std::uint16_t>(buf[0x2b]) << 8);
-        const std::uint64_t key_base =
-            static_cast<std::uint64_t>(kBtreeNodeHeaderSize) +
-            tofs + tlen;
-        const bool is_root = (info.flags & kBtreeRoot) != 0;
-        const std::uint64_t value_base = is_root
-            ? static_cast<std::uint64_t>(block_size) -
-                  kBtreeInfoSize
-            : static_cast<std::uint64_t>(block_size);
+    // Verify the omap_phys object.
+    std::vector<std::uint8_t> om(block_size, 0);
+    if (!read_block(
+            file, omap_phys_block, block_size, om, error)) {
+        error = "container omap object read failed: " + error;
+        return false;
+    }
+    if (!apfs_block_checksum_ok(om)) {
+        error =
+            "container omap object failed Fletcher-64 checksum";
+        return false;
+    }
+    if ((read_le32(om.data() + 24) & kObjectTypeMask) !=
+        kOmapType) {
+        error =
+            "container omap object type is not OMAP";
+        return false;
+    }
+    const std::uint64_t om_xid =
+        read_le64(om.data() + 16);
+    if (om_xid > nxsb_xid) {
+        error =
+            "container omap object xid exceeds NXSB era";
+        return false;
+    }
 
-        for (std::uint32_t i = 0; i < info.nkeys; ++i) {
-            const std::uint64_t toc =
-                static_cast<std::uint64_t>(
-                    kBtreeNodeHeaderSize) +
-                tofs + static_cast<std::uint64_t>(i) * 4;
-            if (toc + 4 > block_size) {
-                break;
-            }
-            const std::uint16_t k_off =
-                static_cast<std::uint16_t>(
-                    buf[toc]) |
-                (static_cast<std::uint16_t>(buf[toc + 1]) << 8);
-            const std::uint16_t v_off =
-                static_cast<std::uint16_t>(
-                    buf[toc + 2]) |
-                (static_cast<std::uint16_t>(buf[toc + 3]) << 8);
+    // om_tree_oid: treat in-geometry values as physical tree
+    // blocks (small images); out-of-geometry virtual references
+    // fail closed.
+    const std::uint64_t om_tree_oid =
+        read_le64(om.data() + 0x30);
+    if (om_tree_oid == 0 ||
+        om_tree_oid >= block_count) {
+        error =
+            "container omap tree oid is not a supported "
+            "physical block";
+        return false;
+    }
+    out.omap_tree_root_block = om_tree_oid;
 
-            const std::uint64_t kp = key_base + k_off;
-            if (kp + 16 > block_size) {
-                continue;
-            }
-            const std::uint64_t key_oid =
-                read_le64(buf.data() + kp);
-            const std::uint64_t entry_xid =
-                read_le64(buf.data() + kp + 8);
-            if (key_oid == target_oid) {
-                out.any_entries_for_target = true;
-            }
-            if (key_oid != target_oid ||
-                entry_xid > nxsb_xid) {
-                continue;
-            }
+    // Traverse ONLY this rooted OMAP B-tree.
+    std::vector<ApfsOmapEntry> entries;
+    std::set<std::uint64_t> visited;
+    if (!omap_collect_entries(
+            file,
+            block_size,
+            om_tree_oid,
+            block_count,
+            true,
+            entries,
+            visited,
+            error
+        )) {
+        error = "rooted container OMAP walk failed: " + error;
+        return false;
+    }
 
-            // omap_fixed_val: {flags u32, size u32, paddr u64}
-            const std::uint64_t vp = value_base - v_off;
-            if (vp + 16 > block_size) {
-                continue;
-            }
-            const std::uint64_t paddr =
-                read_le64(buf.data() + vp + 8);
-            if (paddr >= block_count) {
-                continue;
-            }
-
-            // Newest in-era mapping wins; ties prefer the later
-            // tree block for deterministic behavior.
-            if (!out.found || entry_xid > out.entry_xid ||
-                (entry_xid == out.entry_xid &&
-                 b >= out.omap_btree_block)) {
-                out.found = true;
-                out.omap_btree_block = b;
-                out.entry_xid = entry_xid;
-                out.apsb_paddr = paddr;
+    const ApfsOmapEntry* best = nullptr;
+    for (const auto& e : entries) {
+        if (e.oid == target_oid &&
+            e.xid <= nxsb_xid &&
+            e.paddr < block_count) {
+            if (!best || e.xid > best->xid) {
+                best = &e;
             }
         }
     }
-    return out.found;
+    if (!best) {
+        error =
+            "rooted container OMAP has no in-era mapping for "
+            "the requested volume oid";
+        return false;
+    }
+    out.found = true;
+    out.entry_xid = best->xid;
+    out.apsb_paddr = best->paddr;
+    return true;
 }
 
 } // namespace
@@ -1843,6 +1947,7 @@ bool apfs_read_container(
 
         // The NXSB object xid is the active container checkpoint era
         // bound. Capture it before the block buffer is reused.
+        std::vector<std::uint8_t> nxsb_block = block;
         const std::uint64_t nxsb_xid = read_le64(block.data() + 16);
         report.container.nxsb_xid = nxsb_xid;
 
@@ -2068,33 +2173,53 @@ bool apfs_read_container(
         );
         report.volumes = std::move(active_era_volumes);
 
-        // Checkpoint-authoritative filter: keep only APSBs whose
-        // physical block is the one the active container OMAP
-        // references for that volume oid. A valid orphan APSB with
-        // a higher xid that no OMAP entry references is dropped.
+        // Rooted checkpoint-authoritative selection. The container
+        // OMAP chain (NXSB -> checkpoint map -> omap_phys -> rooted
+        // OMAP B-tree) is the ONLY authority. There is no APSB-scan
+        // fallback: if the rooted chain cannot resolve a volume, the
+        // reader fails closed.
         {
             std::vector<ApfsVolumeInfo> authoritative;
+            std::set<std::uint64_t> resolved_oids;
             for (const auto& volume : report.volumes) {
+                if (!resolved_oids.insert(volume.apsb_oid)
+                         .second) {
+                    continue; // already resolved once via OMAP
+                }
                 CheckpointOmapResolution resolution;
-                resolve_checkpoint_apsb_paddr(
+                std::string resolve_error;
+                if (!resolve_checkpoint_apsb_paddr(
                         file,
                         report.container.block_size,
                         report.container.block_count,
-                        nxsb_xid,
+                        nxsb_block, // verified NXSB copy
                         volume.apsb_oid,
-                        resolution
-                    );
-                if (resolution.found) {
-                    if (resolution.apsb_paddr !=
-                            volume.apsb_block) {
-                        continue; // OMAP points elsewhere
-                    }
-                } else if (resolution.any_entries_for_target) {
-                    continue; // entries exist but none in-era
+                        resolution,
+                        resolve_error
+                    )) {
+                    error =
+                        "checkpoint-authoritative resolution "
+                        "failed: " +
+                        resolve_error;
+                    break;
                 }
-                // No container OMAP entries at all for this oid:
-                // keep the active-era selection (legacy containers).
+                if (resolution.apsb_paddr != volume.apsb_block) {
+                    continue; // OMAP points at another APSB copy
+                }
+                if (report.container.checkpoint_map_block == 0) {
+                    report.container.checkpoint_map_block =
+                        resolution.checkpoint_map_block;
+                    report.container
+                        .container_omap_phys_block =
+                        resolution.omap_phys_block;
+                    report.container
+                        .container_omap_tree_root_block =
+                        resolution.omap_tree_root_block;
+                }
                 authoritative.push_back(volume);
+            }
+            if (!error.empty()) {
+                break;
             }
             report.volumes = std::move(authoritative);
         }

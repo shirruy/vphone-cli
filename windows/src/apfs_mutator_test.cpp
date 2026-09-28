@@ -14,7 +14,7 @@
 namespace {
 
 constexpr std::uint32_t kBlockSize = 4096;
-constexpr std::uint64_t kBlockCount = 16;
+constexpr std::uint64_t kBlockCount = 20;
 constexpr std::uint64_t kApsbOid = 42;
 constexpr std::uint64_t kApsbXid = 3;
 constexpr std::uint64_t kOmapPhys = 4;
@@ -23,6 +23,10 @@ constexpr std::uint64_t kRootOid = 300;
 constexpr std::uint64_t kLeafOid = 301;
 constexpr std::uint64_t kFileCnid = 50;
 constexpr std::uint64_t kLaunchDaemonsCnid = 5;
+// Rooted checkpoint authority chain blocks.
+constexpr std::uint64_t kCheckpointMapBlock = 15;
+constexpr std::uint64_t kContainerOmapPhysBlock = 16;
+constexpr std::uint64_t kRogueOmapBlock = 17;
 
 std::uint64_t fletcher64(const std::vector<std::uint8_t>& b) {
     constexpr std::uint64_t modulus = 0xFFFFFFFFull;
@@ -318,20 +322,52 @@ std::vector<std::uint8_t> build_image() {
         put_le64(blk, 16, kApsbXid);
         put_le32(blk, 24, 0x40000003u);   // btree node
         put_le32(blk, 28, 0x0000000Bu);   // subtype OMAP
-        put_le32(blk, 0x20, 0x00000006u); // leaf+fixed
+        put_le32(blk, 0x20, 0x00000007u); // root+leaf+fixed
         put_le32(blk, 0x24, 1);           // 1 entry
         put_le32(blk, 0x28, 0x00100000u); // tofs=0, tlen=0x10
         blk[0x38] = 0x00; blk[0x39] = 0x00;
         blk[0x3a] = 0x10; blk[0x3b] = 0x00;
         put_le64(blk, 0x48, kApsbOid);    // key oid
         put_le64(blk, 0x50, kApsbXid);    // key xid
-        // value at end (non-root leaf, value_base=4096):
-        // flags=0, size=block, paddr=1 at 0xff0
-        put_le32(blk, 0xff0, 0);
-        put_le32(blk, 0xff4, kBlockSize);
-        put_le64(blk, 0xff8, 1);
+        // Root-leaf value at value_base(0xfd8) - 0x10 = 0xfc8:
+        // flags=0, size=block, paddr=1.
+        put_le32(blk, 0xfc8, 0);
+        put_le32(blk, 0xfcc, kBlockSize);
+        put_le64(blk, 0xfd0, 1);
+        // btree_info footer at 0xfd8: node_size = block size.
+        put_le32(blk, 0xfd8 + 4, kBlockSize);
         seal(blk);
         put(3, blk);
+    }
+
+    // Container omap_phys object at block 16. Its om_tree_oid
+    // points at the rooted OMAP B-tree leaf (block 3).
+    {
+        std::vector<std::uint8_t> blk(kBlockSize, 0);
+        put_le64(blk, 8, 1000);
+        put_le64(blk, 16, kApsbXid);
+        put_le32(blk, 24, 0x4000000Bu); // omap_phys type
+        put_le64(blk, 0x30, 3);         // om_tree_oid -> block 3
+        seal(blk);
+        put(kContainerOmapPhysBlock, blk);
+    }
+
+    // Checkpoint map at block 15: single entry mapping the
+    // container OMAP object (oid 1000) to block 16.
+    {
+        std::vector<std::uint8_t> blk(kBlockSize, 0);
+        put_le64(blk, 8, 1001);
+        put_le64(blk, 16, kApsbXid);
+        put_le32(blk, 24, 0x4000000Cu); // checkpoint map type
+        put_le32(blk, 0x24, 1);          // 1 entry
+        // Entry layout: {oid u64, paddr u64, flags u64,
+        // size u64} at 0x40 (32 bytes).
+        put_le64(blk, 0x40, 1000);       // omap object oid
+        put_le64(blk, 0x48, kContainerOmapPhysBlock);
+        put_le64(blk, 0x50, 0);           // flags: physical
+        put_le64(blk, 0x58, kBlockSize);  // size
+        seal(blk);
+        put(kCheckpointMapBlock, blk);
     }
 
     // FSTREE root at block 6.
@@ -392,6 +428,10 @@ std::vector<std::uint8_t> build_image() {
         put_le32(blk, 32, 0x4253584Eu);
         put_le32(blk, 36, kBlockSize);
         put_le64(blk, 40, kBlockCount);
+        // Rooted authority pointers.
+        put_le64(blk, 136, 1000);  // nx_omap_oid (virtual)
+        put_le32(blk, 104, 1);     // xp_desc area = 1 checkpoint pair
+        put_le64(blk, 112, kCheckpointMapBlock); // xp_desc_base
         seal(blk);
         put(0, blk);
     }
@@ -426,10 +466,11 @@ std::vector<std::uint8_t> build_two_era_image() {
         return blk;
     };
 
-    // CRITICAL RACE LAYOUT: move the ACTIVE APSB to block 13 so the
-    // STALE APSB (block 9, xid 2) is PHYSICALLY BEFORE it on disk.
-    // A scan-order-first-wins implementation would traverse the
-    // stale chain first and populate plist provenance from it.
+    // CRITICAL RACE LAYOUT: move the ACTIVE APSB to block 13. The
+    // STALE APSB (block 9, xid 2) is physically before it on disk,
+    // and the orphan APSB (block 14) is physically after it. Both
+    // orderings are therefore covered: stale-first scan attacks and
+    // later-block orphan attacks.
     {
         std::vector<std::uint8_t> active_apsb = get(1);
         put(13, active_apsb);
@@ -440,7 +481,7 @@ std::vector<std::uint8_t> build_two_era_image() {
     // physical block (13).
     {
         std::vector<std::uint8_t> cont_omap = get(3);
-        put_le64(cont_omap, 0xff8, 13);
+        put_le64(cont_omap, 0xfd0, 13);
         seal(cont_omap);
         put(3, cont_omap);
     }
@@ -454,6 +495,36 @@ std::vector<std::uint8_t> build_two_era_image() {
         put_le64(orphan, 0x80, 10);
         seal(orphan);
         put(14, orphan);
+    }
+
+    // Rogue OMAP leaf: checksum-valid, OMAP-subtype, fixed-KV B-tree
+    // with the SAME key {oid=42, xid=3} as the legitimate rooted
+    // mapping, but pointing at the orphan APSB (block 14). It is
+    // NOT reachable from the container omap_phys at block 16 (whose
+    // om_tree_oid is block 3). A global OMAP-leaf scanner with a
+    // later-tree tie-break would select block 17 and hijack
+    // authority toward the orphan; the rooted resolver must ignore
+    // it entirely.
+    {
+        std::vector<std::uint8_t> rogue(kBlockSize, 0);
+        put_le64(rogue, 8, 1002);
+        put_le64(rogue, 16, kApsbXid);
+        put_le32(rogue, 24, 0x40000003u);   // btree node
+        put_le32(rogue, 28, 0x0000000Bu);   // subtype OMAP
+        put_le32(rogue, 0x20, 0x00000007u); // root+leaf+fixed
+        put_le32(rogue, 0x24, 1);
+        put_le32(rogue, 0x28, 0x00100000u);
+        rogue[0x38] = 0x00; rogue[0x39] = 0x00;
+        rogue[0x3a] = 0x10; rogue[0x3b] = 0x00;
+        put_le64(rogue, 0x48, kApsbOid);
+        put_le64(rogue, 0x50, kApsbXid);
+        // Root-leaf value at value_base(0xfd8) - 0x10 = 0xfc8.
+        put_le32(rogue, 0xfc8, 0);
+        put_le32(rogue, 0xfcc, kBlockSize);
+        put_le64(rogue, 0xfd0, 14); // -> orphan APSB
+        put_le32(rogue, 0xfd8 + 4, kBlockSize);
+        seal(rogue);
+        put(kRogueOmapBlock, rogue);
     }
 
     // Copy the active leaf (block 8) to block 7, retag it as a

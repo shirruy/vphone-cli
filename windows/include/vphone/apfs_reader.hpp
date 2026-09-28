@@ -12,6 +12,10 @@ struct ApfsContainerInfo {
     std::uint64_t omap_oid = 0;
     // Active container checkpoint era from the NXSB object header.
     std::uint64_t nxsb_xid = 0;
+    // Rooted checkpoint authority provenance.
+    std::uint64_t checkpoint_map_block = 0;
+    std::uint64_t container_omap_phys_block = 0;
+    std::uint64_t container_omap_tree_root_block = 0;
 };
 
 struct ApfsBtreeNodeInfo {

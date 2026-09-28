@@ -97,6 +97,87 @@ void make_object_header(
     put_le32(block, 24, type);
 }
 
+// Write a rooted checkpoint authority chain into an image:
+//   block 12: checkpoint map (entry: omap object oid 2000 -> 13)
+//   block 13: container omap_phys (om_tree_oid -> 14)
+//   block 14: OMAP root-leaf ({apsb_oid, xid} -> apsb_block)
+// and patch the NXSB at block 0 to advertise the chain. This
+// mirrors the rooted production resolver: no global OMAP scanning.
+void write_rooted_authority(
+    std::vector<std::uint8_t>& image,
+    std::uint32_t block_size,
+    std::uint64_t apsb_oid,
+    std::uint64_t nxsb_xid
+) {
+    auto put_at = [&](
+        std::uint64_t b,
+        const std::vector<std::uint8_t>& blk
+    ) {
+        std::memcpy(
+            image.data() +
+                static_cast<std::size_t>(b) * block_size,
+            blk.data(), block_size);
+    };
+
+    // Checkpoint map at block 12.
+    {
+        std::vector<std::uint8_t> blk(block_size, 0);
+        put_le64(blk, 8, 2001);
+        put_le64(blk, 16, nxsb_xid);
+        put_le32(blk, 24, 0x4000000Cu);
+        put_le32(blk, 0x24, 1);
+        put_le64(blk, 0x40, 2000); // container omap oid
+        put_le64(blk, 0x48, 13);
+        put_le64(blk, 0x50, 0);
+        put_le64(blk, 0x58, block_size);
+        seal_checksum(blk);
+        put_at(12, blk);
+    }
+    // omap_phys at block 13.
+    {
+        std::vector<std::uint8_t> blk(block_size, 0);
+        put_le64(blk, 8, 2000);
+        put_le64(blk, 16, nxsb_xid);
+        put_le32(blk, 24, 0x4000000Bu);
+        put_le64(blk, 0x30, 14); // om_tree_oid -> 14
+        seal_checksum(blk);
+        put_at(13, blk);
+    }
+    // OMAP root-leaf at block 14 mapping apsb_oid -> block 1.
+    {
+        std::vector<std::uint8_t> blk(block_size, 0);
+        put_le64(blk, 8, 2002);
+        put_le64(blk, 16, nxsb_xid);
+        put_le32(blk, 24, 0x40000002u);
+        put_le32(blk, 28, 0x0000000Bu); // OMAP subtype
+        put_le32(blk, 0x20, 0x00000007u); // root+leaf+fixed
+        put_le32(blk, 0x24, 1);
+        put_le32(blk, 0x28, 0x00100000u);
+        // Fixed-KV TOC entry {k=0, v=0x10} at 0x38.
+        blk[0x38] = 0x00; blk[0x39] = 0x00;
+        blk[0x3a] = 0x10; blk[0x3b] = 0x00;
+        put_le64(blk, 0x48, apsb_oid);
+        put_le64(blk, 0x50, nxsb_xid);
+        put_le64(blk, 0x58, 0);   // key padding
+        put_le32(blk, 0xfc8, 0);  // value flags
+        put_le32(blk, 0xfcc, block_size);
+        put_le64(blk, 0xfd0, 1);  // -> APSB block
+        put_le32(blk, 0xfd8 + 4, block_size); // footer node size
+        seal_checksum(blk);
+        put_at(14, blk);
+    }
+    // Patch NXSB pointers.
+    {
+        std::vector<std::uint8_t> blk(block_size, 0);
+        std::memcpy(
+            blk.data(), image.data(), block_size);
+        put_le64(blk, 136, 2000); // nx_omap_oid
+        put_le64(blk, 112, 12);   // xp_desc_base -> map
+        seal_checksum(blk);
+        put_at(0, blk);
+    }
+}
+
 } // namespace
 
 int main() {
@@ -223,6 +304,11 @@ int main() {
             block_size
         );
     }
+
+    // Rooted checkpoint authority chain (checkpoint map -> omap_phys
+    // -> OMAP root-leaf -> APSB 1). Required by the production
+    // resolver; volume selection must come from this chain only.
+    write_rooted_authority(image, block_size, 42, 3);
 
     char temp_path[MAX_PATH] = {};
     if (!GetTempPathA(MAX_PATH, temp_path)) {
@@ -373,7 +459,7 @@ int main() {
     // -----------------------------------------------------------------
     {
         constexpr std::uint32_t fbs = 4096;
-        constexpr std::uint64_t fbc = 12;
+        constexpr std::uint64_t fbc = 16;
         constexpr std::uint64_t kFstreeRootOid = 200;
         constexpr std::uint64_t kFstreeMidOid = 201;
         constexpr std::uint64_t kFstreeLeafOid = 202;
@@ -556,6 +642,7 @@ int main() {
                 put(kFstreeLeafBlock, blk);
             }
 
+            write_rooted_authority(img, fbs, 42, 3);
             return img;
         };
 
@@ -1314,6 +1401,7 @@ int main() {
                 put(7, leaf_blk);
             }
 
+            write_rooted_authority(img, rbs, 42, 3);
             return img;
         };
 
