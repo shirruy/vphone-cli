@@ -255,6 +255,8 @@ if(WIN32)
 
     add_executable(vphone_apfs_mutator_test src/apfs_mutator_test.cpp)
     target_link_libraries(vphone_apfs_mutator_test PRIVATE vphone_apfs_reader)
+    add_executable(vphone_apfs_semantic_wrapper_test src/apfs_semantic_wrapper_test.cpp)
+    target_link_libraries(vphone_apfs_semantic_wrapper_test PRIVATE vphone_apfs_reader)
     add_test(NAME apfs_reader_test COMMAND vphone_apfs_reader_test)
     set_tests_properties(apfs_reader_test PROPERTIES
         PASS_REGULAR_EXPRESSION "APFS_READER_TEST_PASS"
@@ -262,6 +264,10 @@ if(WIN32)
     add_test(NAME apfs_mutator_test COMMAND vphone_apfs_mutator_test)
     set_tests_properties(apfs_mutator_test PROPERTIES
         PASS_REGULAR_EXPRESSION "APFS_MUTATOR_TEST_PASS"
+    )
+    add_test(NAME apfs_semantic_wrapper_test COMMAND vphone_apfs_semantic_wrapper_test)
+    set_tests_properties(apfs_semantic_wrapper_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "SEMANTIC_WRAPPER_TEST_PASS"
     )
 
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)
