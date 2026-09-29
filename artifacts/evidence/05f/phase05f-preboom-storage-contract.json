@@ -106,7 +106,7 @@
       "interrupt_parent": "0x20 (aic)",
       "interrupts": [110, 109, 112, 111, 117],
       "reg_mmio": "multiple (base,size) pairs; first entries 0xe0000000 / 0x407700000000 family decoded from raw property",
-      "clock_ids": [0x14a, 0x149, 0x14b],
+      "clock_ids": [330, 329, 331],
       "power_gates": "u",
       "quirks": ["nvme-prp-flush-wa", "nvme-vdma-wa", "msp-bfh-params"],
       "dart": "BootKC binds AppleANS2DARTNVMeController (DART IOMMU managed)"
