@@ -390,16 +390,71 @@ int main() {
         if (!build_type4_rsrc({a, b}, rsrc)) {
             ++failures;
         } else {
-            // force chunk 1 offset to overlap chunk 0
-            put_le32(rsrc, 16 + 4 + 4 + 8, 0);
+            // True chunk-to-chunk overlap: both chunks start after
+            // the block table, but chunk 1 starts inside chunk 0's
+            // range. Chunk 0 starts at entry off; force chunk 1 to
+            // start one byte before chunk 0's end.
+            // Read chunk0's offset+size from the table.
+            const std::uint32_t c0_off =
+                [&]() {
+                    std::uint32_t v = 0;
+                    v |= rsrc[16 + 4 + 4 + 0];
+                    v |= static_cast<std::uint32_t>(
+                        rsrc[16 + 4 + 4 + 1]) << 8;
+                    v |= static_cast<std::uint32_t>(
+                        rsrc[16 + 4 + 4 + 2]) << 16;
+                    v |= static_cast<std::uint32_t>(
+                        rsrc[16 + 4 + 4 + 3]) << 24;
+                    return v;
+                }();
+            const std::uint32_t c0_size =
+                [&]() {
+                    std::uint32_t v = 0;
+                    v |= rsrc[16 + 4 + 4 + 4];
+                    v |= static_cast<std::uint32_t>(
+                        rsrc[16 + 4 + 4 + 5]) << 8;
+                    v |= static_cast<std::uint32_t>(
+                        rsrc[16 + 4 + 4 + 6]) << 16;
+                    v |= static_cast<std::uint32_t>(
+                        rsrc[16 + 4 + 4 + 7]) << 24;
+                    return v;
+                }();
+            // chunk1.start = chunk0.start + chunk0.size - 1
+            const std::uint32_t c1_off =
+                c0_off + c0_size - 1;
+            put_le32(rsrc, 16 + 4 + 4 + 8, c1_off);
             if (vphone::decmpfs_type4_reconstruct(
                     rsrc, 0x10000 + 1000, out, error)) {
                 std::fprintf(
-                    stderr, "[12] overlapping chunks accepted\n");
+                    stderr,
+                    "[12] true chunk overlap accepted: %s\n",
+                    error.c_str());
                 ++failures;
             } else {
                 std::printf(
-                    "DECMPFS_TYPE4_OVERLAP_REFUSED_PASS\n");
+                    "DECMPFS_TYPE4_TRUE_CHUNK_OVERLAP_REFUSED_PASS\n");
+            }
+        }
+    }
+
+    // 13. Management-region geometry: mgmt_offset=0 with nonzero
+    //     mgmt_size must be refused.
+    {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else {
+            put_be32(rsrc, 12, 64); // mgmt_size with mgmt_offset=0
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 4096, out, error)) {
+                std::fprintf(
+                    stderr, "[13] inconsistent mgmt accepted\n");
+                ++failures;
+            } else {
+                std::printf(
+                    "DECMPFS_TYPE4_MANAGEMENT_REGION_GEOMETRY_PASS\n");
             }
         }
     }

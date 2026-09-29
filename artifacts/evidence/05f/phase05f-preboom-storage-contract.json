@@ -1,8 +1,9 @@
 {
   "gate": "preboom-mapping-and-minimum-ios-storage-contract",
-  "iteration": "57U",
+  "iteration": "57V",
   "date": "2026-09-29",
   "certified": {
+    "ITERATION_57V": "PASS",
     "ITERATION_57T_CERTIFIED_CLOSED": "YES"
   },
   "decmpfs_reconstruction": {
@@ -48,27 +49,64 @@
       "truncated-table", "overlap"
     ],
     "RESOURCEFORK_DATA_STREAM_NEGATIVE_MATRIX_PASS": true,
+    "dstream_negative_matrix_cases": [
+      "flags-0x0001-data-stream", "flags-0x0002-data-embedded",
+      "flags-0x0000-refused", "flags-0x0003-refused",
+      "flags-0x0004-refused", "descriptor-48-valid",
+      "descriptor-8-refused", "descriptor-16-refused",
+      "descriptor-47-refused", "descriptor-49-refused",
+      "size-gt-alloced-refused", "size-eq-alloced-valid"
+    ],
+    "MACHO_FAT32_STRUCTURE_PASS": true,
+    "MACHO_FAT64_STRUCTURE_PASS": true,
+    "MACHO_FAT_MALFORMED_REFUSAL_PASS": true,
+    "MACHO_STRUCTURAL_FIXTURE_MATRIX_PASS": true,
+    "MACHO_INVALID_OUTPUT_READ_OK_IMPOSSIBLE_PASS": true,
+    "macho_fixture_cases": [
+      "thin64-valid", "fat32-valid", "fat64-valid",
+      "fat-truncated-table-refused", "fat-slice-oob-refused",
+      "fat-overlap-refused", "fat-zero-slice-refused",
+      "thin-load-command-bounds-refused",
+      "fat-swapped-refused", "fat-nested-refused"
+    ],
+    "DECMPFS_TYPE4_CHUNK_TO_CHUNK_NONOVERLAP_PASS": true,
+    "DECMPFS_TYPE4_TRUE_CHUNK_OVERLAP_REFUSED_PASS": true,
+    "DECMPFS_TYPE4_MANAGEMENT_REGION_GEOMETRY_PASS": true,
+    "SPRINGBOARD_MACHO_CPU_TYPE_PASS": true,
+    "SPRINGBOARD_MACHO_FILETYPE_PASS": true,
     "executables": {
       "springboard": {
         "cnid": 1152921500312051482,
         "logical_size": 139712,
         "sha256": "db2d73a61739417c14359db4415ac5eb0cc59f86611c158e7413d97b0458b55c",
-        "macho_magic": true,
-        "macho_structural": true,
+        "macho_structure_valid": true,
+        "macho_cputype": 16777228,
+        "macho_cpusubtype": 2147483650,
+        "macho_filetype": 2,
+        "macho_ncmds": 21,
+        "macho_sizeofcmds": 1336,
         "reconstructed": true
       },
       "backboardd": {
         "cnid": 1152921500312413741,
         "sha256": "fbba7fd2925990dd859b24629ecab5cdbf6f2fac8c1c357ec0f9e412ded75559",
-        "macho_magic": true,
-        "macho_structural": true,
+        "macho_structure_valid": true,
+        "macho_cputype": 16777228,
+        "macho_cpusubtype": 2147483650,
+        "macho_filetype": 2,
+        "macho_ncmds": 65,
+        "macho_sizeofcmds": 7960,
         "reconstructed": true
       },
       "runningboardd": {
         "cnid": 1152921500312414480,
         "sha256": "7b03581c0399960bc35b681e8ae732fa69df390567c6816950b6ce7629962457",
-        "macho_magic": true,
-        "macho_structural": true,
+        "macho_structure_valid": true,
+        "macho_cputype": 16777228,
+        "macho_cpusubtype": 2147483650,
+        "macho_filetype": 2,
+        "macho_ncmds": 23,
+        "macho_sizeofcmds": 1976,
         "reconstructed": true
       }
     }

@@ -138,6 +138,16 @@ int main(int argc, char** argv) {
                   << (resolution.macho_structure_valid
                           ? "true" : "false")
                   << ",\n";
+        std::cout << "  \"macho_cputype\": "
+                  << resolution.macho_cputype << ",\n";
+        std::cout << "  \"macho_cpusubtype\": "
+                  << resolution.macho_cpusubtype << ",\n";
+        std::cout << "  \"macho_filetype\": "
+                  << resolution.macho_filetype << ",\n";
+        std::cout << "  \"macho_ncmds\": "
+                  << resolution.macho_ncmds << ",\n";
+        std::cout << "  \"macho_sizeofcmds\": "
+                  << resolution.macho_sizeofcmds << ",\n";
         std::cout << "  \"sha256\": \"" << resolution.sha256 << "\"\n";
         std::cout << "}\n";
         return 0;

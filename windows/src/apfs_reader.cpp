@@ -12,6 +12,8 @@
 #include <sstream>
 #include <zlib.h>
 #include "vphone/decmpfs_type4.hpp"
+#include "vphone/decmpfs_dstream.hpp"
+#include "vphone/macho_validate.hpp"
 
 namespace vphone {
 namespace {
@@ -2377,93 +2379,27 @@ std::string compute_sha256_hex(
     std::size_t size
 );
 
-// Validate a reconstructed Mach-O (magic 0xfeedfacf / 0xfeedface /
-// FAT 0xcafebabe / 0xcafebabf) so reconstructed executables are not
-// merely arbitrary bytes.
-// Structural validation: header size, ncmds/sizeofcmds bounds,
-// every load command within file bounds with cmdsize >= 8.
-bool bytes_are_macho(const std::vector<std::uint8_t>& bytes) {
-    if (bytes.size() < 8) {
+// Fail-closed Mach-O gate: validates the reconstructed bytes with the
+// shared structural validator and records the identity fields.
+bool macho_gate(
+    const std::vector<std::uint8_t>& bytes,
+    ApfsInodeResolution& result,
+    std::string& error
+) {
+    const vphone::MachOValidationResult mv =
+        vphone::macho_validate(bytes);
+    result.macho_structure_valid = mv.valid;
+    result.macho_cputype = mv.cputype;
+    result.macho_cpusubtype = mv.cpusubtype;
+    result.macho_filetype = mv.filetype;
+    result.macho_ncmds = mv.ncmds;
+    result.macho_sizeofcmds = mv.sizeofcmds;
+    if (!mv.valid) {
+        error = "reconstructed executable failed Mach-O "
+                "structural validation: " + mv.error;
         return false;
     }
-    const auto read_le32_at = [&](std::size_t off)
-        -> std::uint32_t {
-        return static_cast<std::uint32_t>(bytes[off]) |
-               (static_cast<std::uint32_t>(bytes[off + 1]) << 8) |
-               (static_cast<std::uint32_t>(bytes[off + 2]) << 16) |
-               (static_cast<std::uint32_t>(bytes[off + 3]) << 24);
-    };
-    const auto read_be32_at = [&](std::size_t off)
-        -> std::uint32_t {
-        return (static_cast<std::uint32_t>(bytes[off]) << 24) |
-               (static_cast<std::uint32_t>(bytes[off + 1]) << 16) |
-               (static_cast<std::uint32_t>(bytes[off + 2]) << 8) |
-               static_cast<std::uint32_t>(bytes[off + 3]);
-    };
-
-    const std::uint32_t magic =
-        static_cast<std::uint32_t>(bytes[0]) |
-        (static_cast<std::uint32_t>(bytes[1]) << 8) |
-        (static_cast<std::uint32_t>(bytes[2]) << 16) |
-        (static_cast<std::uint32_t>(bytes[3]) << 24);
-
-    // FAT (big-endian) containers.
-    if (magic == 0xcafebabeu || magic == 0xcafebabfu) {
-        if (bytes.size() < 8) {
-            return false;
-        }
-        const std::uint32_t nfat =
-            read_be32_at(4);
-        const std::uint64_t table_size =
-            static_cast<std::uint64_t>(nfat) * 20;
-        if (8 + table_size > bytes.size()) {
-            return false;
-        }
-        for (std::uint32_t i = 0; i < nfat; ++i) {
-            const std::size_t e = 8 + i * 20;
-            const std::uint32_t off = read_be32_at(e + 8);
-            const std::uint32_t size = read_be32_at(e + 12);
-            if (static_cast<std::uint64_t>(off) + size >
-                bytes.size()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Thin Mach-O (little-endian).
-    const bool is64 = magic == 0xfeedfacfu;
-    if (magic != 0xfeedfaceu && !is64) {
-        return false;
-    }
-    if (bytes.size() < 28) {
-        return false;
-    }
-    const std::uint32_t ncmds = read_le32_at(16);
-    const std::uint32_t sizeofcmds = read_le32_at(20);
-    const std::size_t header_size = is64 ? 32 : 28;
-    if (bytes.size() < header_size) {
-        return false;
-    }
-    const std::uint64_t cmds_end =
-        static_cast<std::uint64_t>(header_size) + sizeofcmds;
-    if (cmds_end > bytes.size()) {
-        return false;
-    }
-    std::size_t cursor = header_size;
-    for (std::uint32_t i = 0; i < ncmds; ++i) {
-        if (cursor + 8 > cmds_end) {
-            return false;
-        }
-        const std::uint32_t cmdsize = read_le32_at(cursor + 4);
-        if (cmdsize < 8 ||
-            static_cast<std::uint64_t>(cursor) + cmdsize >
-                cmds_end) {
-            return false;
-        }
-        cursor += cmdsize;
-    }
-    return cursor == cmds_end;
+    return true;
 }
 } // namespace (reopened below)
 
@@ -3092,8 +3028,11 @@ bool apfs_resolve_inode(
                 result.file_size = dcs.logical_size;
                 result.sha256 = compute_sha256_hex(
                     output.data(), output.size());
-                result.macho_structure_valid =
-                    bytes_are_macho(output);
+                if (!macho_gate(output, result, error)) {
+                    result.status = "FAIL_MACHO_STRUCTURE";
+                    CloseHandle(ctx.file);
+                    return false;
+                }
                 result.status =
                     "READ_OK (decmpfs zlib-inline)";
                 CloseHandle(ctx.file);
@@ -3190,12 +3129,11 @@ bool apfs_resolve_inode(
 
             // Step 2: branch on XATTR storage mode. Accept ONLY the
             // exact canonical flags; ambiguous combinations fail
-            // closed.
-            const bool is_stream =
-                rf.flags == kXattrDataStream;
-            const bool is_embedded =
-                rf.flags == kXattrDataEmbedded;
-            if (!is_stream && !is_embedded) {
+            // closed. Classification is the shared production helper
+            // exercised by the DATA_STREAM negative matrix.
+            const vphone::XattrStorageMode rf_mode =
+                vphone::decmpfs_classify_xattr_flags(rf.flags);
+            if (rf_mode == vphone::XattrStorageMode::INVALID) {
                 result.status =
                     "COMPRESSED: ResourceFork XATTR flags "
                     "ambiguous or invalid: 0x" +
@@ -3209,7 +3147,7 @@ bool apfs_resolve_inode(
                 return true;
             }
 
-            if (is_embedded) {
+            if (rf_mode == vphone::XattrStorageMode::DATA_EMBEDDED) {
                 // DATA_EMBEDDED: xdata IS the resource fork.
                 std::vector<std::uint8_t> output;
                 std::string derr;
@@ -3226,8 +3164,11 @@ bool apfs_resolve_inode(
                 result.file_size = dcs.logical_size;
                 result.sha256 = compute_sha256_hex(
                     output.data(), output.size());
-                result.macho_structure_valid =
-                    bytes_are_macho(output);
+                if (!macho_gate(output, result, error)) {
+                    result.status = "FAIL_MACHO_STRUCTURE";
+                    CloseHandle(ctx.file);
+                    return false;
+                }
                 result.status =
                     "READ_OK (decmpfs zlib-resource-fork embedded)";
                 CloseHandle(ctx.file);
@@ -3238,33 +3179,26 @@ bool apfs_resolve_inode(
             // { xattr_obj_id u64; j_dstream_t dstream; } = 48 bytes.
             // j_dstream_t is 40 bytes: size, alloced_size,
             // default_crypto_id, total_bytes_written,
-            // total_bytes_read (u64 each). Require the exact size.
-            if (rf.data.size() != 48) {
+            // total_bytes_read (u64 each). Parsed by the shared
+            // production helper (same code as the negative matrix).
+            const vphone::XattrDstreamInfo ds =
+                vphone::decmpfs_parse_xattr_dstream(rf.data);
+            if (!ds.valid) {
                 result.status =
-                    "COMPRESSED: DATA_STREAM descriptor size " +
-                    std::to_string(rf.data.size()) +
-                    " != 48";
+                    "COMPRESSED: DATA_STREAM descriptor invalid: " +
+                    ds.error;
                 CloseHandle(ctx.file);
                 return true;
             }
-            const std::uint64_t xattr_obj_id =
-                read_le64(rf.data.data());
-            const std::uint64_t dstream_size =
-                read_le64(rf.data.data() + 8);
-            const std::uint64_t alloced_size =
-                read_le64(rf.data.data() + 16);
+            const std::uint64_t xattr_obj_id = ds.xattr_obj_id;
+            const std::uint64_t dstream_size = ds.size;
+            const std::uint64_t alloced_size = ds.alloced_size;
             const std::uint64_t default_crypto_id =
-                read_le64(rf.data.data() + 24);
+                ds.default_crypto_id;
             const std::uint64_t total_written =
-                read_le64(rf.data.data() + 32);
+                ds.total_bytes_written;
             const std::uint64_t total_read =
-                read_le64(rf.data.data() + 40);
-            if (dstream_size > alloced_size) {
-                result.status =
-                    "COMPRESSED: dstream.size > alloced_size";
-                CloseHandle(ctx.file);
-                return true;
-            }
+                ds.total_bytes_read;
             result.status =
                 "COMPRESSED: ResourceFork DATA_STREAM "
                 "xattr_obj_id=" +
@@ -3468,8 +3402,11 @@ bool apfs_resolve_inode(
             result.file_size = dcs.logical_size;
             result.sha256 = compute_sha256_hex(
                 output.data(), output.size());
-            result.macho_structure_valid =
-                bytes_are_macho(output);
+            if (!macho_gate(output, result, error)) {
+                result.status = "FAIL_MACHO_STRUCTURE";
+                CloseHandle(ctx.file);
+                return false;
+            }
             result.status =
                 "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)";
             CloseHandle(ctx.file);
@@ -3484,8 +3421,11 @@ bool apfs_resolve_inode(
         result.file_size = dcs.logical_size;
         result.sha256 = compute_sha256_hex(
             dcs.xdata.data(), dcs.xdata.size());
-        result.macho_structure_valid =
-            bytes_are_macho(dcs.xdata);
+        if (!macho_gate(dcs.xdata, result, error)) {
+            result.status = "FAIL_MACHO_STRUCTURE";
+            CloseHandle(ctx.file);
+            return false;
+        }
         result.status = "READ_OK (decmpfs PLAIN_ATTR)";
         CloseHandle(ctx.file);
         return true;

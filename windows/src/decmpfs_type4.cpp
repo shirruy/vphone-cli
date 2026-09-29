@@ -2,6 +2,7 @@
 
 #include <zlib.h>
 
+#include <algorithm>
 #include <cstring>
 
 namespace vphone {
@@ -100,13 +101,33 @@ bool decmpfs_type4_reconstruct(
         error = "data region exceeds resource fork";
         return false;
     }
-    // The management/map region, when present, must be in bounds.
-    if (header.mgmt_offset > rsrc.size() ||
-        (header.mgmt_offset != 0 &&
-         static_cast<std::uint64_t>(header.mgmt_offset) +
-             header.mgmt_size > rsrc.size())) {
-        error = "management region exceeds resource fork";
+    // The management/map region must be internally consistent:
+    // absent means BOTH fields zero; present means both nonzero and
+    // the full region in bounds.
+    if ((header.mgmt_offset == 0) != (header.mgmt_size == 0)) {
+        error = "management region fields inconsistent";
         return false;
+    }
+    if (header.mgmt_offset != 0) {
+        if (header.mgmt_offset > rsrc.size() ||
+            static_cast<std::uint64_t>(header.mgmt_offset) +
+                    header.mgmt_size > rsrc.size()) {
+            error = "management region exceeds resource fork";
+            return false;
+        }
+        // Reject overlap with the declared resource-data region.
+        const std::uint64_t data_start =
+            header.data_offset;
+        const std::uint64_t data_end =
+            data_start + header.data_size;
+        const std::uint64_t mgmt_start = header.mgmt_offset;
+        const std::uint64_t mgmt_end =
+            mgmt_start + header.mgmt_size;
+        if (data_start < mgmt_end &&
+            mgmt_start < data_end) {
+            error = "resource-data and management regions overlap";
+            return false;
+        }
     }
 
     std::vector<DecmpfsType4Entry> entries;
@@ -142,6 +163,14 @@ bool decmpfs_type4_reconstruct(
         (logical_size + 0xFFFF) & ~static_cast<std::uint64_t>(0xFFFF),
         0);
 
+    // Compute every chunk range first and validate pairwise
+    // non-overlap with overflow-safe arithmetic.
+    struct ChunkRange {
+        std::uint64_t start;
+        std::uint64_t end;
+    };
+    std::vector<ChunkRange> ranges;
+    ranges.reserve(entries.size());
     for (std::uint64_t k = 0; k < entries.size(); ++k) {
         const auto& entry = entries[k];
         std::uint64_t expected_len =
@@ -172,6 +201,37 @@ bool decmpfs_type4_reconstruct(
             error = "chunk exceeds declared resource-data region";
             return false;
         }
+        ranges.push_back({src_off, src_off + entry.size});
+    }
+    std::sort(
+        ranges.begin(), ranges.end(),
+        [](const ChunkRange& a, const ChunkRange& b) {
+            return a.start < b.start;
+        });
+    for (std::size_t i = 1; i < ranges.size(); ++i) {
+        if (ranges[i].start < ranges[i - 1].end) {
+            error = "chunk-to-chunk overlap";
+            return false;
+        }
+    }
+
+    for (std::uint64_t k = 0; k < entries.size(); ++k) {
+        const auto& entry = entries[k];
+        std::uint64_t expected_len =
+            logical_size - (0x10000 * k);
+        if (expected_len > 0x10000) {
+            expected_len = 0x10000;
+        }
+        if (entry.size == 0) {
+            error = "zero-length chunk";
+            return false;
+        }
+        if (entry.size > 0x10001) {
+            error = "chunk size exceeds 64KiB+marker";
+            return false;
+        }
+        const std::uint64_t src_off =
+            table_base + static_cast<std::uint64_t>(entry.off);
         const std::uint8_t* src = rsrc.data() + src_off;
         std::uint8_t* dst = output.data() + 0x10000 * k;
         std::uint64_t decoded_bytes = 0;
