@@ -99,6 +99,8 @@ bool build_type4_rsrc(
     }
 
     const std::size_t res_len_pos = data_offset;
+    // Resource-data length: everything after data_offset, including
+    // the length field itself and the table and chunks.
     const std::uint32_t res_len =
         static_cast<std::uint32_t>(out.size() - data_offset);
     // res_len field at data_offset; count at data_offset+4.
@@ -109,7 +111,7 @@ bool build_type4_rsrc(
 
     put_be32(out, 0, static_cast<std::uint32_t>(data_offset));
     put_be32(out, 4, 0); // mgmt_offset
-    put_be32(out, 8, res_len + 4); // data_size
+    put_be32(out, 8, res_len); // data_size = resource data length
     put_be32(out, 12, 0); // mgmt_size
     return true;
 }
@@ -293,6 +295,111 @@ int main() {
             } else {
                 std::printf(
                     "DECMPFS_TYPE4_ZERO_CHUNK_REFUSED_PASS\n");
+            }
+        }
+    }
+
+    // 9. Valid stored/raw chunk (marker 0xFF + verbatim bytes).
+    {
+        // Build a custom RF with one stored chunk: byte 0xFF followed
+        // by 4096 data bytes (marker 0xFF has low nibble 0x0F).
+        std::vector<std::uint8_t> plain(4096, 0x5A);
+        std::vector<std::uint8_t> rsrc(16 + 16, 0);
+        // stored chunk: 1 marker + 4096 bytes at table_end.
+        const std::size_t table_end = 16 + 16;
+        rsrc.resize(table_end + 1 + plain.size());
+        rsrc[table_end] = 0xFF;
+        std::memcpy(
+            rsrc.data() + table_end + 1,
+            plain.data(), plain.size());
+        put_le32(rsrc, 16, 4097); // res_len
+        put_le32(rsrc, 20, 1); // count
+        // chunk off is relative to cmpf_rsrc_base (data_offset+4).
+        // chunk starts at table_end (28); base = 16+4 = 20.
+        put_le32(rsrc, 24, table_end - 20);
+        put_le32(rsrc, 28, 1 + 4096); // chunk size
+        put_be32(rsrc, 0, 16); // data_offset
+        put_be32(
+            rsrc, 8,
+            static_cast<std::uint32_t>(
+                table_end + 1 + plain.size() - 16));
+        std::vector<std::uint8_t> out;
+        std::string error;
+        if (!vphone::decmpfs_type4_reconstruct(
+                rsrc, plain.size(), out, error) ||
+            out != plain) {
+            std::fprintf(
+                stderr, "[9] stored chunk failed: %s\n",
+                error.c_str());
+            ++failures;
+        } else {
+            std::printf("DECMPFS_TYPE4_STORED_CHUNK_PASS\n");
+        }
+    }
+
+    // 10. Wrong-endian data_offset (BE bytes swapped) refused.
+    {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else {
+            // corrupt data_offset to a swapped value that is OOB
+            put_be32(rsrc, 0, 0xFFFF0000u);
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 4096, out, error)) {
+                std::fprintf(
+                    stderr, "[10] wrong-endian offset accepted\n");
+                ++failures;
+            } else {
+                std::printf(
+                    "DECMPFS_TYPE4_WRONG_ENDIAN_OFFSET_REFUSED_PASS\n");
+            }
+        }
+    }
+
+    // 11. Truncated block table refused.
+    {
+        auto chunks = make_chunks(3, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else {
+            // shrink data_size so the table is cut off
+            put_be32(rsrc, 8, 20);
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 4096 * 3, out, error)) {
+                std::fprintf(
+                    stderr, "[11] truncated table accepted\n");
+                ++failures;
+            } else {
+                std::printf(
+                    "DECMPFS_TYPE4_TRUNCATED_TABLE_REFUSED_PASS\n");
+            }
+        }
+    }
+
+    // 12. Overlapping chunks refused.
+    {
+        auto a = make_chunks(1, 0x10000)[0];
+        auto b = make_chunks(1, 1000)[0];
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc({a, b}, rsrc)) {
+            ++failures;
+        } else {
+            // force chunk 1 offset to overlap chunk 0
+            put_le32(rsrc, 16 + 4 + 4 + 8, 0);
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 0x10000 + 1000, out, error)) {
+                std::fprintf(
+                    stderr, "[12] overlapping chunks accepted\n");
+                ++failures;
+            } else {
+                std::printf(
+                    "DECMPFS_TYPE4_OVERLAP_REFUSED_PASS\n");
             }
         }
     }

@@ -2380,17 +2380,90 @@ std::string compute_sha256_hex(
 // Validate a reconstructed Mach-O (magic 0xfeedfacf / 0xfeedface /
 // FAT 0xcafebabe / 0xcafebabf) so reconstructed executables are not
 // merely arbitrary bytes.
+// Structural validation: header size, ncmds/sizeofcmds bounds,
+// every load command within file bounds with cmdsize >= 8.
 bool bytes_are_macho(const std::vector<std::uint8_t>& bytes) {
     if (bytes.size() < 8) {
         return false;
     }
+    const auto read_le32_at = [&](std::size_t off)
+        -> std::uint32_t {
+        return static_cast<std::uint32_t>(bytes[off]) |
+               (static_cast<std::uint32_t>(bytes[off + 1]) << 8) |
+               (static_cast<std::uint32_t>(bytes[off + 2]) << 16) |
+               (static_cast<std::uint32_t>(bytes[off + 3]) << 24);
+    };
+    const auto read_be32_at = [&](std::size_t off)
+        -> std::uint32_t {
+        return (static_cast<std::uint32_t>(bytes[off]) << 24) |
+               (static_cast<std::uint32_t>(bytes[off + 1]) << 16) |
+               (static_cast<std::uint32_t>(bytes[off + 2]) << 8) |
+               static_cast<std::uint32_t>(bytes[off + 3]);
+    };
+
     const std::uint32_t magic =
         static_cast<std::uint32_t>(bytes[0]) |
         (static_cast<std::uint32_t>(bytes[1]) << 8) |
         (static_cast<std::uint32_t>(bytes[2]) << 16) |
         (static_cast<std::uint32_t>(bytes[3]) << 24);
-    return magic == 0xfeedfacfu || magic == 0xfeedfaceu ||
-           magic == 0xcafebabeu || magic == 0xcafebabfu;
+
+    // FAT (big-endian) containers.
+    if (magic == 0xcafebabeu || magic == 0xcafebabfu) {
+        if (bytes.size() < 8) {
+            return false;
+        }
+        const std::uint32_t nfat =
+            read_be32_at(4);
+        const std::uint64_t table_size =
+            static_cast<std::uint64_t>(nfat) * 20;
+        if (8 + table_size > bytes.size()) {
+            return false;
+        }
+        for (std::uint32_t i = 0; i < nfat; ++i) {
+            const std::size_t e = 8 + i * 20;
+            const std::uint32_t off = read_be32_at(e + 8);
+            const std::uint32_t size = read_be32_at(e + 12);
+            if (static_cast<std::uint64_t>(off) + size >
+                bytes.size()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Thin Mach-O (little-endian).
+    const bool is64 = magic == 0xfeedfacfu;
+    if (magic != 0xfeedfaceu && !is64) {
+        return false;
+    }
+    if (bytes.size() < 28) {
+        return false;
+    }
+    const std::uint32_t ncmds = read_le32_at(16);
+    const std::uint32_t sizeofcmds = read_le32_at(20);
+    const std::size_t header_size = is64 ? 32 : 28;
+    if (bytes.size() < header_size) {
+        return false;
+    }
+    const std::uint64_t cmds_end =
+        static_cast<std::uint64_t>(header_size) + sizeofcmds;
+    if (cmds_end > bytes.size()) {
+        return false;
+    }
+    std::size_t cursor = header_size;
+    for (std::uint32_t i = 0; i < ncmds; ++i) {
+        if (cursor + 8 > cmds_end) {
+            return false;
+        }
+        const std::uint32_t cmdsize = read_le32_at(cursor + 4);
+        if (cmdsize < 8 ||
+            static_cast<std::uint64_t>(cursor) + cmdsize >
+                cmds_end) {
+            return false;
+        }
+        cursor += cmdsize;
+    }
+    return cursor == cmds_end;
 }
 } // namespace (reopened below)
 
@@ -3115,8 +3188,28 @@ bool apfs_resolve_inode(
                 return true;
             }
 
-            // Step 2: branch on XATTR storage mode.
-            if (!(rf.flags & kXattrDataStream)) {
+            // Step 2: branch on XATTR storage mode. Accept ONLY the
+            // exact canonical flags; ambiguous combinations fail
+            // closed.
+            const bool is_stream =
+                rf.flags == kXattrDataStream;
+            const bool is_embedded =
+                rf.flags == kXattrDataEmbedded;
+            if (!is_stream && !is_embedded) {
+                result.status =
+                    "COMPRESSED: ResourceFork XATTR flags "
+                    "ambiguous or invalid: 0x" +
+                    [&]() {
+                        char buf[8];
+                        std::snprintf(buf, sizeof(buf), "%04x",
+                            rf.flags);
+                        return std::string(buf);
+                    }();
+                CloseHandle(ctx.file);
+                return true;
+            }
+
+            if (is_embedded) {
                 // DATA_EMBEDDED: xdata IS the resource fork.
                 std::vector<std::uint8_t> output;
                 std::string derr;
@@ -3143,23 +3236,49 @@ bool apfs_resolve_inode(
 
             // DATA_STREAM: xdata is a j_xattr_dstream descriptor
             // { xattr_obj_id u64; j_dstream_t dstream; } = 48 bytes.
-            if (rf.data.size() < 8) {
+            // j_dstream_t is 40 bytes: size, alloced_size,
+            // default_crypto_id, total_bytes_written,
+            // total_bytes_read (u64 each). Require the exact size.
+            if (rf.data.size() != 48) {
                 result.status =
-                    "COMPRESSED: DATA_STREAM descriptor truncated";
+                    "COMPRESSED: DATA_STREAM descriptor size " +
+                    std::to_string(rf.data.size()) +
+                    " != 48";
                 CloseHandle(ctx.file);
                 return true;
             }
             const std::uint64_t xattr_obj_id =
                 read_le64(rf.data.data());
             const std::uint64_t dstream_size =
-                rf.data.size() >= 16
-                    ? read_le64(rf.data.data() + 8) : 0;
+                read_le64(rf.data.data() + 8);
+            const std::uint64_t alloced_size =
+                read_le64(rf.data.data() + 16);
+            const std::uint64_t default_crypto_id =
+                read_le64(rf.data.data() + 24);
+            const std::uint64_t total_written =
+                read_le64(rf.data.data() + 32);
+            const std::uint64_t total_read =
+                read_le64(rf.data.data() + 40);
+            if (dstream_size > alloced_size) {
+                result.status =
+                    "COMPRESSED: dstream.size > alloced_size";
+                CloseHandle(ctx.file);
+                return true;
+            }
             result.status =
                 "COMPRESSED: ResourceFork DATA_STREAM "
                 "xattr_obj_id=" +
                 std::to_string(xattr_obj_id) +
                 " dstream_size=" +
-                std::to_string(dstream_size);
+                std::to_string(dstream_size) +
+                " alloced_size=" +
+                std::to_string(alloced_size) +
+                " crypto_id=" +
+                std::to_string(default_crypto_id) +
+                " written=" +
+                std::to_string(total_written) +
+                " read=" +
+                std::to_string(total_read);
 
             // Step 3: FILE_EXTENT chain for xattr_obj_id.
             struct StreamExtent {
@@ -3232,6 +3351,35 @@ bool apfs_resolve_inode(
                         "COMPRESSED: zero-length RF extent";
                     CloseHandle(ctx.file);
                     return true;
+                }
+                // Logical overflow guard.
+                if (e.length >
+                        std::numeric_limits<
+                            std::uint64_t>::max() -
+                        e.logical) {
+                    result.status =
+                        "COMPRESSED: RF extent logical overflow";
+                    CloseHandle(ctx.file);
+                    return true;
+                }
+                // Physical bounds: phys + blocks must fit the
+                // container; phys==0 is an explicit sparse extent.
+                if (e.phys != 0) {
+                    if (e.phys >= ctx.block_count) {
+                        result.status =
+                            "COMPRESSED: RF extent phys OOB";
+                        CloseHandle(ctx.file);
+                        return true;
+                    }
+                    const std::uint64_t blocks =
+                        e.length / ctx.block_size +
+                        ((e.length % ctx.block_size) != 0 ? 1 : 0);
+                    if (blocks > ctx.block_count - e.phys) {
+                        result.status =
+                            "COMPRESSED: RF extent phys range OOB";
+                        CloseHandle(ctx.file);
+                        return true;
+                    }
                 }
                 if (i > 0) {
                     const auto& prev = s_extents[i - 1];

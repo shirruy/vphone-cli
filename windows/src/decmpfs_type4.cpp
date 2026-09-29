@@ -93,6 +93,21 @@ bool decmpfs_type4_reconstruct(
         error = "data_offset exceeds resource fork";
         return false;
     }
+    // Validate all four header fields with overflow-safe arithmetic.
+    // data_offset + data_size must stay inside the RF.
+    if (static_cast<std::uint64_t>(header.data_offset) +
+            header.data_size > rsrc.size()) {
+        error = "data region exceeds resource fork";
+        return false;
+    }
+    // The management/map region, when present, must be in bounds.
+    if (header.mgmt_offset > rsrc.size() ||
+        (header.mgmt_offset != 0 &&
+         static_cast<std::uint64_t>(header.mgmt_offset) +
+             header.mgmt_size > rsrc.size())) {
+        error = "management region exceeds resource fork";
+        return false;
+    }
 
     std::vector<DecmpfsType4Entry> entries;
     if (!decmpfs_type4_parse_block_table(
@@ -114,6 +129,14 @@ bool decmpfs_type4_reconstruct(
         static_cast<std::uint64_t>(header.data_offset) + 4;
     const std::uint64_t table_end =
         table_base + 4 + entries.size() * 8;
+    // The table must live inside the declared data region.
+    const std::uint64_t data_region_end =
+        static_cast<std::uint64_t>(header.data_offset) +
+        header.data_size;
+    if (table_end > data_region_end) {
+        error = "block table exceeds declared data region";
+        return false;
+    }
 
     output.resize(
         (logical_size + 0xFFFF) & ~static_cast<std::uint64_t>(0xFFFF),
@@ -143,6 +166,10 @@ bool decmpfs_type4_reconstruct(
         if (src_off > rsrc.size() ||
             entry.size > rsrc.size() - src_off) {
             error = "chunk out of bounds";
+            return false;
+        }
+        if (src_off + entry.size > data_region_end) {
+            error = "chunk exceeds declared resource-data region";
             return false;
         }
         const std::uint8_t* src = rsrc.data() + src_off;
