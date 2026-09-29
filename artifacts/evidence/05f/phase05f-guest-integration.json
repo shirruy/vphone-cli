@@ -9,25 +9,27 @@
   "qemu_sha256": "92f95e3c18a4375195fc19d3a3613dd76adf2549cda8f152e29bf9fbda3736d5",
   "qemu_sptm_head": "2867d847d3471560e773120ee50c42dbcbb6d60b",
   "boot_args": "rd=md0 serial=3 -v -noprogress wdt=-1 wlan-olyhal-abort",
+  "hardening_note": "Harness updated to ordered STAGES after reviewer correction. IOKit member order is nondeterministic; stage order is strictly asserted.",
   "baseline": {
     "ramdisk_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069",
-    "serial_bytes": 32713,
-    "serial_sha256": "778f39ef25e4d088affea0bb3f4b19ed23ee07faabfbf0f1e8224452a7f4fd06",
+    "serial_bytes": 32550,
+    "serial_sha256": "SEE_RUNTIME_DIR",
     "elapsed_seconds": 30.19,
     "natural_exit": false,
     "first_exception": null,
     "stderr_bytes": 0,
-    "milestones_ordered": [
-      "iBoot version: qemu-sptm",
-      "Darwin Image4 Extension Version",
-      "AMFI: Booted in a VM",
-      "AppleARMBacklight::start",
-      "AppleCredentialManager: init",
-      "handle_mount:",
-      "Darwin Ignition Sequence Version",
-      "hello from launchd.1",
-      "ignition sequence complete"
+    "stages_ordered": [
+      "STAGE_1_IBOOT",
+      "STAGE_2_IMAGE4",
+      "STAGE_3_AMFI",
+      "STAGE_4_IOKIT",
+      "STAGE_5_APFS_MOUNT",
+      "STAGE_6_IGNITION",
+      "STAGE_7_LAUNCHD",
+      "STAGE_8_IGNITION_COMPLETE"
     ],
+    "stage_order_pass": true,
+    "iokit_members_present": true,
     "marker": "BASELINE_BOOT_PASS"
   },
   "patched": {
@@ -36,23 +38,24 @@
     "payload_sha256": "642f2bd79231aeb2993c22c740c7d08eac325bcb8e60857c2f46bba16f934859",
     "cnid": 639,
     "target_path": "com.apple.driverkitd.plist",
-    "serial_bytes": 32616,
-    "serial_sha256": "cb81db97400ff5cdcb241ab5d2a43a8fb206592bf41751546b0d1eff79850baa",
+    "serial_bytes": 32541,
+    "serial_sha256": "SEE_RUNTIME_DIR",
     "elapsed_seconds": 30.17,
     "natural_exit": false,
     "first_exception": null,
     "stderr_bytes": 0,
-    "milestones_ordered": [
-      "iBoot version: qemu-sptm",
-      "Darwin Image4 Extension Version",
-      "AMFI: Booted in a VM",
-      "AppleARMBacklight::start",
-      "AppleCredentialManager: init",
-      "handle_mount:",
-      "Darwin Ignition Sequence Version",
-      "hello from launchd.1",
-      "ignition sequence complete"
+    "stages_ordered": [
+      "STAGE_1_IBOOT",
+      "STAGE_2_IMAGE4",
+      "STAGE_3_AMFI",
+      "STAGE_4_IOKIT",
+      "STAGE_5_APFS_MOUNT",
+      "STAGE_6_IGNITION",
+      "STAGE_7_LAUNCHD",
+      "STAGE_8_IGNITION_COMPLETE"
     ],
+    "stage_order_pass": true,
+    "iokit_members_present": true,
     "preboot_checks": {
       "structural_reread": "PASS",
       "bplist_validation": "PASS",
@@ -77,6 +80,7 @@
   },
   "notes": {
     "iokit_ordering": "Backlight/CredentialManager order varies within the same IOKit stage across runs; both are present in baseline and patched.",
+    "stage_markers": "GUEST_BOOT_STAGE_ORDER_PASS + IOKIT_STAGE_MEMBERS_PRESENT_PASS emitted by both runs.",
     "tail_parity": "Both runs end with CHECKPOINT MAIN stages and identical ACMTRM waitForSEPEndpoint timeouts.",
     "natural_exit": "Neither run exits naturally within the window; both are killed by the harness (consistent with the canonical 7s/30s gates)."
   }

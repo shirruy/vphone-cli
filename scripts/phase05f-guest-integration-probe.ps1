@@ -47,17 +47,18 @@ function QPath([string]$p) {
     return ([System.IO.Path]::GetFullPath($p)).Replace('\', '/')
 }
 
-# Ordered milestone table (canonical baseline, index order matters).
-$milestones = @(
-    'iBoot version: qemu-sptm',
-    'Darwin Image4 Extension Version',
-    'AMFI: Booted in a VM',
-    'AppleARMBacklight::start',
-    'AppleCredentialManager: init',
-    'handle_mount:',
-    'Darwin Ignition Sequence Version',
-    'hello from launchd.1',
-    'ignition sequence complete'
+# Ordered boot STAGES (canonical baseline). Stage order is strictly
+# asserted; within STAGE_4_IOKIT the member order is NOT required
+# (Backlight/CredentialManager reorder across runs).
+$stages = @(
+    [ordered]@{ name = 'STAGE_1_IBOOT';     members = @('iBoot version: qemu-sptm') },
+    [ordered]@{ name = 'STAGE_2_IMAGE4';    members = @('Darwin Image4 Extension Version') },
+    [ordered]@{ name = 'STAGE_3_AMFI';      members = @('AMFI: Booted in a VM') },
+    [ordered]@{ name = 'STAGE_4_IOKIT';     members = @('AppleARMBacklight::start', 'AppleCredentialManager: init') },
+    [ordered]@{ name = 'STAGE_5_APFS_MOUNT'; members = @('handle_mount:') },
+    [ordered]@{ name = 'STAGE_6_IGNITION';  members = @('Darwin Ignition Sequence Version') },
+    [ordered]@{ name = 'STAGE_7_LAUNCHD';   members = @('hello from launchd.1') },
+    [ordered]@{ name = 'STAGE_8_IGNITION_COMPLETE'; members = @('ignition sequence complete') }
 )
 
 # Fatal-exception markers (any hit = exception present).
@@ -155,7 +156,9 @@ if (Test-Path $serial) {
 # Analyze UART.
 $uartText = ''
 $uartSha = $null
-$foundMilestones = @()
+$stageResults = @()
+$stageOrderOk = $true
+$iokitMembersPresent = $false
 $firstException = $null
 
 if ($serialBytes -gt 0) {
@@ -175,12 +178,47 @@ if ($serialBytes -gt 0) {
     $uartText = [Text.Encoding]::ASCII.GetString($b)
     $uartSha = (Get-FileHash $serial -Algorithm SHA256).Hash.ToLowerInvariant()
 
-    foreach ($m in $milestones) {
-        $foundMilestones += [ordered]@{
-            milestone = $m
-            found = $uartText.Contains($m)
-            index = $uartText.IndexOf($m)
+    # For each stage, record the first occurrence index of every
+    # member. A stage is PASS when every member is present. The
+    # stage's effective index is the minimum member index.
+    foreach ($stage in $stages) {
+        $members = @()
+        $allFound = $true
+        $minIndex = [int]::MaxValue
+        foreach ($m in $stage.members) {
+            $idx = $uartText.IndexOf($m)
+            $members += [ordered]@{
+                milestone = $m
+                found = ($idx -ge 0)
+                index = $idx
+            }
+            if ($idx -lt 0) { $allFound = $false }
+            elseif ($idx -lt $minIndex) { $minIndex = $idx }
         }
+        if ($allFound -and $stage.name -eq 'STAGE_4_IOKIT') {
+            $iokitMembersPresent = $true
+        }
+        $stageResults += [ordered]@{
+            stage = $stage.name
+            found = $allFound
+            min_index = $(if ($allFound) { $minIndex } else { -1 })
+            members = $members
+        }
+    }
+
+    # Strict stage order: each stage's min index must be greater
+    # than the previous stage's min index.
+    $prevIndex = -1
+    foreach ($s in $stageResults) {
+        if (-not $s.found) {
+            $stageOrderOk = $false
+            break
+        }
+        if ($s.min_index -le $prevIndex) {
+            $stageOrderOk = $false
+            break
+        }
+        $prevIndex = $s.min_index
     }
 
     foreach ($em in $exceptionMarkers) {
@@ -216,7 +254,9 @@ $record = [ordered]@{
     elapsed_seconds = $elapsed
     natural_exit = $naturalExit
     exit_code = $exitCode
-    milestones = $foundMilestones
+    stages = $stageResults
+    stage_order_pass = $stageOrderOk
+    iokit_stage_members_present = $iokitMembersPresent
     first_exception = $firstException
     stderr_bytes = [math]::Max(0, $stderrText.Length)
     stderr = $stderrText
@@ -227,10 +267,24 @@ $record | ConvertTo-Json -Depth 6 |
 
 Write-Host ("RESULT: serial_bytes={0} natural_exit={1} exit={2}" -f
     $serialBytes, $naturalExit, $exitCode)
-Write-Host '=== MILESTONES ==='
-foreach ($m in $foundMilestones) {
-    $tag = if ($m.found) { 'PASS' } else { 'MISS' }
-    Write-Host ("  {0,-5} idx={1,-6} {2}" -f $tag, $m.index, $m.milestone)
+Write-Host '=== STAGES ==='
+foreach ($s in $stageResults) {
+    $tag = if ($s.found) { 'PASS' } else { 'MISS' }
+    Write-Host ("  {0,-5} minidx={1,-6} {2}" -f $tag, $s.min_index, $s.stage)
+    foreach ($m in $s.members) {
+        $mtag = if ($m.found) { '  ok' } else { '  MISSING' }
+        Write-Host ("{0} idx={1,-6} {2}" -f $mtag, $m.index, $m.milestone)
+    }
+}
+if ($stageOrderOk) {
+    Write-Host 'GUEST_BOOT_STAGE_ORDER_PASS'
+} else {
+    Write-Host 'GUEST_BOOT_STAGE_ORDER_FAIL'
+}
+if ($iokitMembersPresent) {
+    Write-Host 'IOKIT_STAGE_MEMBERS_PRESENT_PASS'
+} else {
+    Write-Host 'IOKIT_STAGE_MEMBERS_PRESENT_FAIL'
 }
 if ($null -ne $firstException) {
     Write-Host ("FIRST_EXCEPTION: marker={0} index={1}" -f
