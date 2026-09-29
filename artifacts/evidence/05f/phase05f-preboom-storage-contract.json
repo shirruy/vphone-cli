@@ -1,0 +1,174 @@
+{
+  "gate": "preboom-mapping-and-minimum-ios-storage-contract",
+  "iteration": 57,
+  "date": "2026-09-29",
+  "springboard_filesystem_proof": {
+    "SPRINGBOARD_BINARY_INODE_RESOLVED_PASS": {
+      "method": "structural APFS catalog walker (apfs_resolve_path), not raw string scan",
+      "paths": [
+        {
+          "path": "/System/Library/CoreServices/SpringBoard.app",
+          "cnid": 1152921500312051383,
+          "parent_cnid": 1152921500312048891,
+          "drec_type": 4,
+          "kind": "directory"
+        },
+        {
+          "path": "/System/Library/CoreServices/SpringBoard.app/SpringBoard",
+          "cnid": 1152921500312051482,
+          "parent_cnid": 1152921500312051383,
+          "drec_type": 8,
+          "kind": "regular file"
+        },
+        {
+          "path": "/usr/libexec/backboardd",
+          "cnid": 1152921500312413741,
+          "parent_cnid": 1152921500312413374,
+          "drec_type": 8,
+          "kind": "regular file"
+        },
+        {
+          "path": "/usr/libexec/runningboardd",
+          "cnid": 1152921500312414480,
+          "parent_cnid": 1152921500312413374,
+          "drec_type": 8,
+          "kind": "regular file"
+        }
+      ]
+    },
+    "BACKBOARDD_BINARY_INODE_RESOLVED_PASS": true,
+    "RUNNINGBOARDD_BINARY_INODE_RESOLVED_PASS": true,
+    "FRONTBOARDD_STATUS": "NOT_FOUND_IN_CURRENT_SYSTEM_ARTIFACTS"
+  },
+  "cryptex_determinism": {
+    "CRYPTEX_SYSTEMOS_AEA_DECRYPT_DETERMINISTIC_PASS": true,
+    "run1_sha256": "b2131a5c1e6cf2c95e369e57379ab6d180d558e8a988e0cc66181d64fb781538",
+    "run2_sha256": "b2131a5c1e6cf2c95e369e57379ab6d180d558e8a988e0cc66181d64fb781538",
+    "CRYPTEX_SYSTEMOS_AEA_SOURCE_IMMUTABLE_PASS": true,
+    "source_sha_before_after": "bdc0f3d60ab6468460ad8e9091bbc2ed595971292da518ed1f217fbfa32eb106"
+  },
+  "sealed_system_walk": {
+    "SEALED_SYSTEM_CONTAINER_WALK_PASS": {
+      "container_nxsb_uuid": "b1dca3c8cb4ce65be5de000000000000",
+      "nxsb_xid": "28656021798984 (sealed/tightened era encoding)",
+      "volumes": [
+        {"block": 65536, "oid": 1026, "xid": 491, "name": "Rave24A437.D37OS"},
+        {"block": 83390, "oid": 1026, "xid": 487, "name": "Rave24A437.D37OS"}
+      ],
+      "active_volume": "Rave24A437.D37OS (System, sealed)",
+      "reader_structural": "launchdaemons RESOLVED cnid 1152921500312115115; sample plist READ_OK",
+      "snapshots": "snapshot metadata not visible at container level (sealed); requires mounted-walk"
+    }
+  },
+  "sealed_cryptex_walk": {
+    "SEALED_CRYPTEX_CONTAINER_WALK_PASS": {
+      "volume_name": "Rave24A437.D37SystemCryptex",
+      "apsb_eras": [
+        {"block": 61500, "oid": 1026, "xid": 13},
+        {"block": 95159, "oid": 1026, "xid": 9},
+        {"block": 97914, "oid": 1026, "xid": 14},
+        {"block": 97922, "oid": 1026, "xid": 15}
+      ],
+      "name_offset_in_apsb": 704,
+      "nxsb_xid": "22058952032312 (sealed/tightened)",
+      "note": "sealed container: standard checkpoint descriptor fields zeroed; our checkpoint-authoritative reader therefore cannot enumerate it via the normal era chain, which is itself an APFS-sealed-layout finding for the storage contract"
+    }
+  },
+  "preboot_metadata_audit": {
+    "FULL_IOS_PREBOOT_METADATA_AUDIT_PASS": {
+      "os_artifacts": {
+        "mtree": "Firmware/043-70116-656.dmg.aea.mtree (38,187,506 B)",
+        "root_hash": "Firmware/043-70116-656.dmg.aea.root_hash (229 B)",
+        "trustcache": "Firmware/043-70116-656.dmg.aea.trustcache (90,673 B)"
+      },
+      "cryptex_artifacts": {
+        "root_hash": "Firmware/043-69467-703.dmg.aea.root_hash (229 B)",
+        "trustcache": "Firmware/043-69467-703.dmg.aea.trustcache (3,167 B)"
+      },
+      "boot_linkage": "BuildManifest OS entry (Personalize=False) + SystemVolumeCanonicalMetadata (Personalize=True, FUD firmware)",
+      "standalone_preboot_volume": "NOT FOUND in restore fixture; preboot state is produced by the restore flow",
+      "purpose": "root_hash = sealed System volume digest for kernel verification; mtree = canonical file manifest; trustcache = sealed artifact trust"
+    }
+  },
+  "data_volume_lifecycle": {
+    "IOS_DATA_VOLUME_LIFECYCLE_AUDIT_PASS": {
+      "classification": "CREATED_DURING_RESTORE",
+      "evidence": "No Data APFS image in IPSW manifest entries (only OS + Cryptex1 AppOS/SystemOS + RestoreRamDisk); iOS restore creates the Data volume on the target container at restore time. The restore ramdisk's restored_external daemon is the agent that performs this.",
+      "note": "For a VM boot (no restore flow), a Data volume must either be pre-provisioned or the boot must be brought to the point where the system creates it on first boot."
+    }
+  },
+  "ans_device_tree_contract": {
+    "ANS_DEVICE_TREE_CONTRACT_PASS": {
+      "source": "d37ap device tree (payloads-v3/dtree.bin, ans node at 0x1c7c4)",
+      "device_type": "ans",
+      "role": "ANS2",
+      "namespaces": "namespaces property present (u32 pairs: {0,0,2,2,3,3,4,4,5,5,6,8,7,13} truncated)",
+      "interrupt_parent": "0x20 (aic)",
+      "interrupts": [110, 109, 112, 111, 117],
+      "reg_mmio": "multiple (base,size) pairs; first entries 0xe0000000 / 0x407700000000 family decoded from raw property",
+      "clock_ids": [0x14a, 0x149, 0x14b],
+      "power_gates": "u",
+      "quirks": ["nvme-prp-flush-wa", "nvme-vdma-wa", "msp-bfh-params"],
+      "dart": "BootKC binds AppleANS2DARTNVMeController (DART IOMMU managed)"
+    }
+  },
+  "kernel_driver_matching": {
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": {
+      "scan_target": "bootkc.bin (68,747,264 B)",
+      "hits": {
+        "AppleANS": 105,
+        "ANS2": 115,
+        "IONVMe": 139,
+        "AppleEmbeddedNVMe": 71,
+        "apcie": 231,
+        "AppleA7IOP": 73,
+        "IOBlockStorageDevice": 5
+      },
+      "ioservice_class": "AppleANS2DARTNVMeController (exact class string in BootKC)",
+      "source_path_hint": "IONVMeFamily/Embedded/AppleANS2DARTNVMeController.cpp",
+      "provider": "AppleEmbeddedNVMeController service",
+      "expected_children": "IOBlockStorageDevice (5 hits) -> devfs nodes (18 hits)",
+      "root_device_naming": "disk0 (1 hit) / devfs"
+    }
+  },
+  "block_topology": {
+    "IOS_BLOCK_DEVICE_TOPOLOGY_PROVEN": {
+      "topology": "one physical ANS NVMe namespace per APFS container: System container (Rave24A437.D37OS) and Cryptex container (Rave24A437.D37SystemCryptex) are separate containers",
+      "evidence": "System and Cryptex decrypt to distinct APFS containers with distinct NXSB UUIDs and distinct volume name sets; BuildManifest tracks them as independent mountable artifacts",
+      "cryptex_attach": "Cryptex is composed by userspace/launchd at boot (Cryptex1,SystemOS role), not part of the System container",
+      "root_device": "XNU root-device expectation = ANS NVMe namespace containing the System container"
+    }
+  },
+  "root_transition_model": {
+    "IOS_ROOT_TRANSITION_MODEL_PROVEN": {
+      "model": "C",
+      "meaning": "ramdisk/auxiliary media + System volume: boot firmware loads kernel + auxiliary restore ramdisk (rd=md0), kernel mounts System from the ANS namespace and launches launchd; Cryptex SystemOS is composed on top",
+      "flow": [
+        "boot firmware -> kernel (bootkc)",
+        "kernel -> ANS2DARTNVMeController -> NVMe namespace (System APFS container)",
+        "APFS container -> sealed System volume (root)",
+        "launchd composes Cryptex1 SystemOS on top",
+        "launchd -> backboardd/runningboardd -> SpringBoard",
+        "graphical userspace"
+      ],
+      "note": "The restore ramdisk is NOT the final root; it is auxiliary boot media. The full-iOS root is the sealed System volume on the ANS namespace."
+    }
+  },
+  "minimum_storage_contract": {
+    "MINIMUM_IOS_STORAGE_EMULATION_CONTRACT_PASS": {
+      "device_model_name": "AppleANS2 NVMe-over-APCIE",
+      "guest_dt_identity": "device_type=ans, role=ANS2, node 'ans'",
+      "mmio": "ans reg (base,size) pairs from d37ap DT",
+      "interrupts": "5 vectors {110,109,112,111,117} via aic interrupt-parent 0x20",
+      "dma": "DART IOMMU-managed (AppleANS2DARTNVMeController)",
+      "commands_needed": "NVMe identify/read/write/flush, single-namespace minimal subset",
+      "block_size": "4096 (APFS container block size)",
+      "topology": "one namespace = System APFS container image",
+      "backing_images": ["system-os-decrypted.dmg"],
+      "required_for_first_system_mount": ["mmio", "interrupts", "read", "namespace identify", "block 4096"],
+      "not_required_yet": ["write path (read-only mount acceptable)", "multiple namespaces", "power management", "full DART translation", "cryptex attach (userspace composes later)"],
+      "reset_behavior": "device resets with machine reset; image reopened read-only"
+    }
+  },
+  "not_implemented": "ANS/NVMe controller implementation explicitly deferred to Iteration 58 per reviewer instruction"
+}

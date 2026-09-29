@@ -227,6 +227,28 @@ bool apfs_read_container(
     std::string& error
 );
 
+// Read-only generic path resolution (for the full-OS audit):
+// resolves a "/"-separated absolute path through the structural
+// catalog walker of the active-era volume and records the final
+// record's CNID, parent CNID, and name. Returns the record type
+// (DIR_REC=3) and whether the path fully resolved.
+struct ApfsPathResolution {
+    bool resolved = false;
+    std::string status = "NOT_ATTEMPTED";
+    std::uint64_t final_cnid = 0;
+    std::uint64_t parent_cnid = 0;
+    std::uint16_t drec_type = 0;
+    std::string name;
+    std::string error;
+};
+
+bool apfs_resolve_path(
+    const std::string& image_path,
+    const std::string& path,
+    ApfsPathResolution& result,
+    std::string& error
+);
+
 // Parse variable-KV B-tree leaf geometry from a raw block.
 // Derives all offsets, spans, boundaries, and free space from the
 // actual TOC/record layout — never from zero bytes. Fails closed

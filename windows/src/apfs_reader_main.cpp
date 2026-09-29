@@ -46,17 +46,45 @@ std::string sha256_hex(const std::vector<std::uint8_t>& data) {
 
 int main(int argc, char** argv) {
     std::string dump_path;
+    std::string resolve_path;
     if (argc == 4 && std::string(argv[1]) == "--dump-plist") {
         dump_path = argv[2];
+    } else if (argc == 4 && std::string(argv[1]) == "--resolve-path") {
+        resolve_path = argv[2];
     } else if (argc != 2) {
         std::cerr
             << "usage: vphone-apfs-reader-win <raw-apfs-image>\n"
-            << "       vphone-apfs-reader-win --dump-plist <path> <raw-apfs-image>\n";
+            << "       vphone-apfs-reader-win --dump-plist <path> <raw-apfs-image>\n"
+            << "       vphone-apfs-reader-win --resolve-path <path> <raw-apfs-image>\n";
         return 64;
     }
 
     const char* image_path =
         argc == 4 ? argv[3] : argv[1];
+
+    if (!resolve_path.empty()) {
+        vphone::ApfsPathResolution resolution;
+        std::string error;
+        if (!vphone::apfs_resolve_path(
+                image_path, resolve_path, resolution, error)) {
+            std::cerr << "ERROR: " << error << "\n";
+            return 1;
+        }
+        std::cout << "{\n";
+        std::cout << "  \"path\": \"" << resolve_path << "\",\n";
+        std::cout << "  \"status\": \"" << resolution.status << "\",\n";
+        std::cout << "  \"resolved\": "
+                  << (resolution.resolved ? "true" : "false") << ",\n";
+        std::cout << "  \"final_cnid\": "
+                  << resolution.final_cnid << ",\n";
+        std::cout << "  \"parent_cnid\": "
+                  << resolution.parent_cnid << ",\n";
+        std::cout << "  \"drec_type\": "
+                  << resolution.drec_type << ",\n";
+        std::cout << "  \"name\": \"" << resolution.name << "\"\n";
+        std::cout << "}\n";
+        return 0;
+    }
 
     vphone::ApfsReaderReport report;
     std::string error;

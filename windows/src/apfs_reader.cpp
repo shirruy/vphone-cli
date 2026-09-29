@@ -2350,6 +2350,190 @@ bool apfs_read_container(
 }
 
 // ---------------------------------------------------------------------------
+// Read-only generic path resolution for the full-OS audit. Resolves a
+// "/"-separated absolute path through the structural catalog walker of
+// the active-era volume, returning the final DIR_REC's CNID, parent,
+// and type. Reuses the hardened walker (checksums, topology, OMAP).
+// ---------------------------------------------------------------------------
+
+bool apfs_resolve_path(
+    const std::string& image_path,
+    const std::string& path,
+    ApfsPathResolution& result,
+    std::string& error
+) {
+    result = ApfsPathResolution{};
+    error.clear();
+
+    if (path.empty() || path[0] != '/') {
+        error = "path must be absolute";
+        return false;
+    }
+
+    ApfsReaderReport report;
+    if (!apfs_read_container(image_path, report, error)) {
+        result.status = "FAIL: container read: " + error;
+        return false;
+    }
+    if (report.volumes.empty()) {
+        error = "no active-era volume found";
+        result.status = "FAIL: no volume";
+        return false;
+    }
+
+    // Split path into components.
+    std::vector<std::string> components;
+    {
+        std::string cur;
+        for (char c : path) {
+            if (c == '/') {
+                if (!cur.empty()) {
+                    components.push_back(cur);
+                    cur.clear();
+                }
+            } else {
+                cur.push_back(c);
+            }
+        }
+        if (!cur.empty()) {
+            components.push_back(cur);
+        }
+    }
+    if (components.empty()) {
+        error = "path has no components";
+        result.status = "FAIL: empty path";
+        return false;
+    }
+
+    // Use the owner volume (the one that resolved the container).
+    const ApfsVolumeInfo& volume = report.volumes[0];
+    FstreeWalkCtx ctx;
+    ctx.file = CreateFileA(
+        image_path.c_str(), GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (ctx.file == INVALID_HANDLE_VALUE) {
+        error = "cannot open image for path walk";
+        result.status = "FAIL: open";
+        return false;
+    }
+    ctx.block_size = report.container.block_size;
+    ctx.block_count = report.container.block_count;
+    ctx.volume_xid = volume.xid;
+
+    // Hashed names come from the APSB incompatible-features field,
+    // exactly as apfs_read_container sets it for the plist walk.
+    {
+        std::vector<std::uint8_t> apsb_buf(
+            ctx.block_size, 0);
+        std::string apsb_error;
+        if (volume.apsb_block < ctx.block_count &&
+            read_block(
+                ctx.file, volume.apsb_block, ctx.block_size,
+                apsb_buf, apsb_error)) {
+            const std::uint64_t incompat =
+                read_le64(apsb_buf.data() + kApsbIncompatOffset);
+            ctx.hashed_names =
+                (incompat & kIncompatCaseInsensitive) != 0 ||
+                (incompat & kIncompatNormalizationInsensitive) != 0;
+        }
+    }
+
+    // Resolve the volume OMAP entries the same way apfs_read_container
+    // does (rooted OMAP tree walk).
+    std::vector<ApfsOmapEntry> omap_entries;
+    {
+        std::vector<std::uint8_t> omap_buf(
+            ctx.block_size, 0);
+        std::string read_error;
+        if (volume.omap_block >= ctx.block_count ||
+            !read_block(
+                ctx.file, volume.omap_block, ctx.block_size,
+                omap_buf, read_error)) {
+            error = "OMAP block read failed: " + read_error;
+            result.status = "FAIL: omap read";
+            CloseHandle(ctx.file);
+            return false;
+        }
+        const std::uint64_t om_tree_oid =
+            read_le64(omap_buf.data() + 0x30);
+        std::set<std::uint64_t> visited;
+        std::string omap_error;
+        if (!omap_collect_entries(
+                ctx.file,
+                ctx.block_size,
+                om_tree_oid,
+                ctx.block_count,
+                true,
+                omap_entries,
+                visited,
+                omap_error)) {
+            error = "OMAP collect failed: " + omap_error;
+            result.status = "FAIL: omap collect";
+            CloseHandle(ctx.file);
+            return false;
+        }
+    }
+    ctx.omap = &omap_entries;
+
+    // Walk components.
+    std::uint64_t parent = kApfsRootDirCnid;
+    std::uint64_t final_parent = 0;
+    for (const std::string& want : components) {
+        ctx.visited.clear();
+        bool found = false;
+        std::uint64_t next_cnid = 0;
+        std::uint16_t next_type = 0;
+
+        auto matcher = [&](
+            std::uint64_t p_cnid,
+            const std::string& name,
+            std::uint64_t c_cnid,
+            std::uint16_t drec_type
+        ) -> bool {
+            if (found || p_cnid != parent || name != want) {
+                return true;
+            }
+            found = true;
+            next_cnid = c_cnid;
+            next_type = drec_type;
+            return true;
+        };
+
+        std::string walk_error;
+        if (!fstree_visit_dir_records(
+                ctx,
+                volume.root_tree_oid,
+                volume.root_tree_info.level,
+                true,
+                matcher,
+                walk_error)) {
+            error = "walk failed at '" + want + "': " + walk_error;
+            result.status = "FAIL: walk";
+            CloseHandle(ctx.file);
+            return false;
+        }
+        if (!found) {
+            result.status = "NOT_FOUND at component '" + want + "'";
+            result.parent_cnid = parent;
+            CloseHandle(ctx.file);
+            return true;
+        }
+        final_parent = parent;
+        parent = next_cnid;
+        result.drec_type = next_type;
+        result.name = want;
+    }
+
+    CloseHandle(ctx.file);
+    result.resolved = true;
+    result.final_cnid = parent;
+    result.parent_cnid = final_parent;
+    result.status = "RESOLVED";
+    return true;
+}
+
+// ---------------------------------------------------------------------------
 // Structural mutation: single-byte change through the certified read chain.
 // ---------------------------------------------------------------------------
 

@@ -17,7 +17,9 @@
       "extracted_sha256": "7186bc515731a60ed3de19d0d673c5e8ac07575b589598b0228c5ce88d34a3f5",
       "manifest_role": "OS",
       "aea_profile": 1,
-      "key_hex": "76b2455c023f58014febcd3f7c239a8b02b2c56f5e15e0cf7ef58dc6b658f003"
+      "key_source": "iPhone Wiki Keys:Rave_24A437_(iPhone15,4) Root Filesystem entry",
+      "key_length": 32,
+      "key_sha256": "735dd72265fb05ecae6ca11611feef33a9fc17b783e8cb3249aa3c1019f3b4ab"
     },
     "cryptex_systemos": {
       "ipsw_entry": "043-69467-703.dmg.aea",
@@ -25,8 +27,14 @@
       "extracted_sha256": "bdc0f3d60ab6468460ad8e9091bbc2ed595971292da518ed1f217fbfa32eb106",
       "manifest_role": "Cryptex1,SystemOS",
       "aea_profile": 1,
-      "key_hex": "b14e47fc4f7d1d153036fffc7fff4b2dc54b456a1f671e087bed2b6fcad6711e"
+      "key_source": "iPhone Wiki Keys:Rave_24A437_(iPhone15,4) Cryptex1,SystemOS entry",
+      "key_length": 32,
+      "key_sha256": "24b19f3974873a69c74fae28160d61f183b8fd0dedade0911a95cab01eee5b0b"
     }
+  },
+  "aea_evidence_key_hygiene": {
+    "marker": "AEA_EVIDENCE_KEY_HYGIENE_PASS",
+    "note": "Raw symmetric keys removed from committed evidence; only source reference, length, and SHA-256 fingerprints are stored. Actual keys live in the private runtime environment."
   },
   "system_os_decrypt": {
     "markers": ["SYSTEM_AEA_DECRYPT_PASS", "SYSTEM_AEA_DECRYPT_DETERMINISTIC_PASS", "SYSTEM_AEA_SOURCE_IMMUTABLE_PASS"],
