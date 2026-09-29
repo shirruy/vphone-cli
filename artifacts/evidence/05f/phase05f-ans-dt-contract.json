@@ -1,0 +1,721 @@
+{
+  "ans_node": {
+    "byte_offset": 116068,
+    "properties": {
+      "nvme-interrupt-idx": {
+        "length": 4,
+        "byte_offset": 116112,
+        "decoded": [
+          4
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "04000000",
+        "decoded_ints": [
+          4
+        ]
+      },
+      "iop-version": {
+        "length": 4,
+        "byte_offset": 116152,
+        "decoded": [
+          1
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "01000000",
+        "decoded_ints": [
+          1
+        ]
+      },
+      "clock-gates": {
+        "length": 4,
+        "byte_offset": 116192,
+        "decoded": [
+          117
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "75000000",
+        "decoded_ints": [
+          117
+        ]
+      },
+      "nvme-queue-entries": {
+        "length": 4,
+        "byte_offset": 116232,
+        "decoded": [
+          64
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "40000000",
+        "decoded_ints": [
+          64
+        ]
+      },
+      "function-spi0_sclk_config": {
+        "length": 16,
+        "byte_offset": 116272,
+        "decoded": [
+          40,
+          1196443983,
+          20,
+          65537
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "280000004f4950471400000001000100"
+      },
+      "AAPL,phandle": {
+        "length": 4,
+        "byte_offset": 116324,
+        "decoded": [
+          105
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "69000000",
+        "decoded_ints": [
+          105
+        ]
+      },
+      "nvme-linear-sq": {
+        "length": 0,
+        "byte_offset": 116364,
+        "decoded": null,
+        "decoded_hex_strings": null,
+        "hex_prefix": ""
+      },
+      "iommu-parent": {
+        "length": 4,
+        "byte_offset": 116400,
+        "decoded": [
+          107
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "6b000000",
+        "decoded_ints": [
+          107
+        ]
+      },
+      "nand-debug": {
+        "length": 8,
+        "byte_offset": 116440,
+        "decoded": [
+          1,
+          0
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "0100000000000000"
+      },
+      "namespaces": {
+        "length": 84,
+        "byte_offset": 116484,
+        "decoded": [
+          1,
+          1,
+          0,
+          2,
+          2,
+          2560,
+          3,
+          3,
+          32,
+          4,
+          4,
+          2,
+          5,
+          5,
+          2,
+          6,
+          8,
+          256,
+          7,
+          13,
+          32768
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "0100000001000000000000000200000002000000000a000003000000030000002000000004000000040000000200000005000000050000000200000006000000"
+      },
+      "interrupt-parent": {
+        "length": 4,
+        "byte_offset": 116604,
+        "decoded": [
+          32
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "20000000",
+        "decoded_ints": [
+          32
+        ]
+      },
+      "nvme-prp-flush-wa": {
+        "length": 0,
+        "byte_offset": 116644,
+        "decoded": null,
+        "decoded_hex_strings": null,
+        "hex_prefix": ""
+      },
+      "name": {
+        "length": 4,
+        "byte_offset": 116680,
+        "decoded": [
+          7564897
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "616e7300",
+        "decoded_string": "ans"
+      },
+      "interrupts": {
+        "length": 20,
+        "byte_offset": 116720,
+        "decoded": [
+          622,
+          621,
+          624,
+          623,
+          629
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "6e0200006d020000700200006f02000075020000",
+        "decoded_ints": [
+          622,
+          621,
+          624,
+          623,
+          629
+        ]
+      },
+      "msp-bfh-params": {
+        "length": 120,
+        "byte_offset": 116776,
+        "decoded": [
+          65537,
+          3735928559,
+          2,
+          100,
+          4294967295,
+          2752513,
+          35840,
+          2382919682,
+          3622940,
+          4154232444,
+          2420637710,
+          0,
+          36948,
+          2421161984,
+          61440,
+          4026568796,
+          131072,
+          143654936,
+          4202496,
+          274794664,
+          143655936,
+          20979712,
+          274794664,
+          197632,
+          1885929486,
+          1701736296,
+          861877553,
+          1112296799,
+          262148,
+          1
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "01000100efbeadde0200000064000000ffffffff01002a00008c00000278088e1c4837007c8e9cf70e00489000000000549000000000509000f000005c9000f0"
+      },
+      "clock-ids": {
+        "length": 12,
+        "byte_offset": 116932,
+        "decoded": [
+          330,
+          329,
+          331
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "4a010000490100004b010000",
+        "decoded_ints": [
+          330,
+          329,
+          331
+        ]
+      },
+      "nvme-vdma-wa": {
+        "length": 0,
+        "byte_offset": 116980,
+        "decoded": null,
+        "decoded_hex_strings": null,
+        "hex_prefix": ""
+      },
+      "role": {
+        "length": 5,
+        "byte_offset": 117016,
+        "decoded": null,
+        "decoded_hex_strings": null,
+        "hex_prefix": "414e533200",
+        "decoded_string": "ANS2"
+      },
+      "tunable-table-bundle": {
+        "length": 9,
+        "byte_offset": 117060,
+        "decoded": null,
+        "decoded_hex_strings": null,
+        "hex_prefix": "62636a717467786f00",
+        "decoded_string": "bcjqtgxo"
+      },
+      "device_type": {
+        "length": 4,
+        "byte_offset": 117108,
+        "decoded": [
+          7564897
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "616e7300",
+        "decoded_string": "ans"
+      },
+      "function-spi0_mosi_config": {
+        "length": 16,
+        "byte_offset": 117148,
+        "decoded": [
+          40,
+          1196443983,
+          21,
+          65537
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "280000004f4950471500000001000100"
+      },
+      "power-gates": {
+        "length": 4,
+        "byte_offset": 117200,
+        "decoded": [
+          117
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "75000000",
+        "decoded_ints": [
+          117
+        ]
+      },
+      "reg": {
+        "length": 224,
+        "byte_offset": 117240,
+        "decoded": [
+          {
+            "base": 2000683008,
+            "size": 442368
+          },
+          {
+            "base": 1996816384,
+            "size": 16384
+          },
+          {
+            "base": 0,
+            "size": 0
+          },
+          {
+            "base": 2076966912,
+            "size": 393216
+          },
+          {
+            "base": 2030043136,
+            "size": 16777216
+          },
+          {
+            "base": 2075721728,
+            "size": 49152
+          },
+          {
+            "base": 2077522944,
+            "size": 16384
+          },
+          {
+            "base": 0,
+            "size": 0
+          },
+          {
+            "base": 0,
+            "size": 0
+          },
+          {
+            "base": 0,
+            "size": 0
+          },
+          {
+            "base": 0,
+            "size": 0
+          },
+          {
+            "base": 0,
+            "size": 0
+          },
+          {
+            "base": 0,
+            "size": 0
+          },
+          {
+            "base": 2064646144,
+            "size": 278528
+          }
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "000040770000000000c006000000000000000577000000000040000000000000000000000000000000000000000000000000cc7b000000000000060000000000"
+      }
+    },
+    "child_names": [
+      "iop-ans-nub"
+    ]
+  },
+  "apcie_node": {
+    "byte_offset": 202280,
+    "properties": {
+      "power-gates": {
+        "length": 16,
+        "byte_offset": 202324,
+        "decoded": [
+          85,
+          88,
+          117,
+          37
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "55000000580000007500000025000000",
+        "decoded_ints": [
+          85,
+          88,
+          117,
+          37
+        ]
+      },
+      "reg": {
+        "length": 336,
+        "byte_offset": 202376,
+        "decoded": [
+          {
+            "base": 23622320128,
+            "size": 268435456
+          },
+          {
+            "base": 23907532800,
+            "size": 16384
+          },
+          {
+            "base": 24125636608,
+            "size": 49152
+          },
+          {
+            "base": 24125898752,
+            "size": 163840
+          },
+          {
+            "base": 24092082176,
+            "size": 16384
+          },
+          {
+            "base": 1026326528,
+            "size": 4352
+          },
+          {
+            "base": 23957897216,
+            "size": 32768
+          },
+          {
+            "base": 23957979136,
+            "size": 16384
+          },
+          {
+            "base": 24125702144,
+            "size": 16384
+          },
+          {
+            "base": 24125964288,
+            "size": 32768
+          },
+          {
+            "base": 23957880832,
+            "size": 16384
+          },
+          {
+            "base": 23974674432,
+            "size": 32768
+          },
+          {
+            "base": 23974756352,
+            "size": 16384
+          },
+          {
+            "base": 24125718528,
+            "size": 16384
+          },
+          {
+            "base": 24125997056,
+            "size": 32768
+          },
+          {
+            "base": 23974658048,
+            "size": 16384
+          },
+          {
+            "base": 23991451648,
+            "size": 32768
+          },
+          {
+            "base": 23991533568,
+            "size": 16384
+          },
+          {
+            "base": 24125734912,
+            "size": 16384
+          },
+          {
+            "base": 24126029824,
+            "size": 32768
+          },
+          {
+            "base": 23991435264,
+            "size": 16384
+          }
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00000080050000000000001000000000000000910500000000400000000000000000009e0500000000c00000000000000000049e050000000080020000000000"
+      },
+      "domain-id": {
+        "length": 4,
+        "byte_offset": 202748,
+        "decoded": [
+          0
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00000000"
+      },
+      "clock-gates": {
+        "length": 16,
+        "byte_offset": 202788,
+        "decoded": [
+          85,
+          88,
+          117,
+          37
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "55000000580000007500000025000000",
+        "decoded_ints": [
+          85,
+          88,
+          117,
+          37
+        ]
+      },
+      "#address-cells": {
+        "length": 4,
+        "byte_offset": 202840,
+        "decoded": [
+          3
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "03000000"
+      },
+      "AAPL,phandle": {
+        "length": 4,
+        "byte_offset": 202880,
+        "decoded": [
+          245
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "f5000000",
+        "decoded_ints": [
+          245
+        ]
+      },
+      "msi-vector-offset": {
+        "length": 4,
+        "byte_offset": 202920,
+        "decoded": [
+          706
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "c2020000"
+      },
+      "pci-aer-correctable": {
+        "length": 4,
+        "byte_offset": 202960,
+        "decoded": [
+          0
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00000000"
+      },
+      "bus-range": {
+        "length": 8,
+        "byte_offset": 203000,
+        "decoded": [
+          0,
+          8
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "0000000008000000"
+      },
+      "lane-cfg": {
+        "length": 4,
+        "byte_offset": 203044,
+        "decoded": [
+          0
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00000000"
+      },
+      "function-debug_gpio": {
+        "length": 16,
+        "byte_offset": 203084,
+        "decoded": [
+          40,
+          1196443983,
+          79,
+          257
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "280000004f4950474f00000001010000"
+      },
+      "name": {
+        "length": 6,
+        "byte_offset": 203136,
+        "decoded": null,
+        "decoded_hex_strings": null,
+        "hex_prefix": "617063696500",
+        "decoded_string": "apcie"
+      },
+      "interrupt-parent": {
+        "length": 4,
+        "byte_offset": 203180,
+        "decoded": [
+          32
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "20000000",
+        "decoded_ints": [
+          32
+        ]
+      },
+      "dev-range": {
+        "length": 8,
+        "byte_offset": 203220,
+        "decoded": [
+          0,
+          255
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00000000ff000000"
+      },
+      "interrupts": {
+        "length": 12,
+        "byte_offset": 203264,
+        "decoded": [
+          694,
+          698,
+          702
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "b6020000ba020000be020000",
+        "decoded_ints": [
+          694,
+          698,
+          702
+        ]
+      },
+      "msi-address": {
+        "length": 8,
+        "byte_offset": 203312,
+        "decoded": [
+          4294963200,
+          0
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00f0ffff00000000"
+      },
+      "pci-aer-uncorrectable": {
+        "length": 4,
+        "byte_offset": 203356,
+        "decoded": [
+          1
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "01000000"
+      },
+      "ranges": {
+        "length": 56,
+        "byte_offset": 203396,
+        "decoded": [
+          1124073472,
+          2684354560,
+          5,
+          2684354560,
+          5,
+          536870912,
+          0,
+          33554432,
+          3221225472,
+          0,
+          3221225472,
+          5,
+          1073741824,
+          0
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00000043000000a005000000000000a005000000000000200000000000000002000000c000000000000000c0050000000000004000000000"
+      },
+      "#ports": {
+        "length": 4,
+        "byte_offset": 203488,
+        "decoded": [
+          3
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "03000000"
+      },
+      "link-state-power": {
+        "length": 16,
+        "byte_offset": 203528,
+        "decoded": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "00000000000000000000000000000000"
+      },
+      "device_type": {
+        "length": 4,
+        "byte_offset": 203580,
+        "decoded": [
+          6906736
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "70636900",
+        "decoded_string": "pci"
+      },
+      "#size-cells": {
+        "length": 4,
+        "byte_offset": 203620,
+        "decoded": [
+          2
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "02000000"
+      },
+      "msi-parent-controller": {
+        "length": 4,
+        "byte_offset": 203660,
+        "decoded": [
+          32
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "20000000"
+      },
+      "#msi-vectors": {
+        "length": 4,
+        "byte_offset": 203700,
+        "decoded": [
+          96
+        ],
+        "decoded_hex_strings": null,
+        "hex_prefix": "60000000"
+      }
+    }
+  }
+}

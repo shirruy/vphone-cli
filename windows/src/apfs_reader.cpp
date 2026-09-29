@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <limits>
 #include <sstream>
+#include <zlib.h>
 
 namespace vphone {
 namespace {
@@ -431,6 +432,22 @@ constexpr std::uint16_t kXFieldMetaSize = 4;
 constexpr std::uint8_t kDecmpfsPlainMarker = 0xCC;
 // Decmpfs magic signature ("cmpf").
 constexpr std::uint32_t kDecmpfsSignature = 0x636D7066u;
+// Decmpfs compression_type mapping (Apple decmpfs.h):
+//   3  = zlib inline        (payload follows 16-byte header)
+//   4  = zlib resource fork (compressed chunks in com.apple.ResourceFork)
+//   7  = LZVN inline
+//   8  = LZVN resource fork
+//   11 = LZFSE inline
+//   12 = LZFSE resource fork
+// Source references: Apple decmpfs.h (CMP_TypeZlibAttrib=3,
+// CMP_TypeZlib=4, CMP_TypeLZVN=7, CMP_TypeLZVN_2=8, CMP_TypeLZFSE=11,
+// CMP_TypeLZFSE_2=12); apfs-fuse Decmpfs.cpp uses the same table.
+constexpr std::uint32_t kDecmpfsTypeZlibAttrib = 3;
+constexpr std::uint32_t kDecmpfsTypeZlib = 4;
+constexpr std::uint32_t kDecmpfsTypeLzvn = 7;
+constexpr std::uint32_t kDecmpfsTypeLzvn2 = 8;
+constexpr std::uint32_t kDecmpfsTypeLzfse = 11;
+constexpr std::uint32_t kDecmpfsTypeLzfse2 = 12;
 // XATTR storage mode flags.
 constexpr std::uint16_t kXattrDataStream = 0x0001;
 constexpr std::uint16_t kXattrDataEmbedded = 0x0002;
@@ -438,6 +455,8 @@ constexpr std::uint16_t kXattrDataEmbedded = 0x0002;
 constexpr std::uint16_t kDecmpfsHeaderSize = 16;
 // XATTR name "com.apple.decmpfs" = 17 chars + NUL = 18.
 constexpr std::uint16_t kDecmpfsNameLen = 18;
+// com.apple.ResourceFork XATTR name = 22 chars + NUL = 23.
+constexpr std::uint16_t kResourceForkNameLen = 23;
 
 constexpr std::uint64_t kExtentLenMask = 0x00FFFFFFFFFFFFFFull;
 // APSB apfs_incompatible_features @ +0x38.
@@ -2770,6 +2789,12 @@ bool apfs_resolve_inode(
             std::uint32_t signature = 0;
             std::uint32_t algo = 0;
             std::uint64_t logical_size = 0;
+            // Raw diagnostics: never derive zero from an unpopulated
+            // decoded-payload vector.
+            std::uint16_t raw_xattr_value_length = 0;
+            std::uint16_t raw_xdata_length = 0;
+            std::uint16_t decmpfs_header_length = 0;
+            std::vector<std::uint8_t> raw_xdata;
             std::vector<std::uint8_t> xdata;
             std::string parse_error;
         } dcs;
@@ -2808,11 +2833,20 @@ bool apfs_resolve_inode(
             const std::uint16_t xdata_len =
                 static_cast<std::uint16_t>(rec.value[2]) |
                 (static_cast<std::uint16_t>(rec.value[3]) << 8);
+            dcs.raw_xattr_value_length = rec.value_len;
+            dcs.raw_xdata_length = xdata_len;
             if (xdata_len != rec.value_len - 4) {
                 dcs.parse_error = "XATTR xdata_len mismatch";
                 return false;
             }
             const std::uint8_t* xd = rec.value + 4;
+            dcs.raw_xdata.assign(
+                rec.value + 4,
+                rec.value + 4 + xdata_len);
+            dcs.decmpfs_header_length =
+                static_cast<std::uint16_t>(
+                    std::min<std::uint16_t>(
+                        kDecmpfsHeaderSize, xdata_len));
             // For non-PLAIN_ATTR storage, the xdata may only carry
             // the 16-byte decmpfs header (DATA_STREAM compression).
             // Parse what is present without fabricating fields.
@@ -2889,11 +2923,22 @@ bool apfs_resolve_inode(
             CloseHandle(ctx.file);
             return true;
         }
-        // Diagnostic: report the exact storage mode and sizes
-        // instead of guessing where the payload lives.
+        // Diagnostic: report RAW lengths (not derived payload sizes)
+        // and the correct algorithm name.
+        const char* algo_name = "unknown";
+        switch (dcs.algo) {
+        case kDecmpfsTypeZlibAttrib: algo_name = "zlib-inline"; break;
+        case kDecmpfsTypeZlib: algo_name = "zlib-resource-fork"; break;
+        case kDecmpfsTypeLzvn: algo_name = "LZVN-inline"; break;
+        case kDecmpfsTypeLzvn2: algo_name = "LZVN-resource-fork"; break;
+        case kDecmpfsTypeLzfse: algo_name = "LZFSE-inline"; break;
+        case kDecmpfsTypeLzfse2: algo_name = "LZFSE-resource-fork"; break;
+        default: break;
+        }
         result.status =
             "COMPRESSED: decmpfs algo=" +
             std::to_string(dcs.algo) +
+            " (" + algo_name + ")" +
             " xattr_flags=0x" +
             [&]() {
                 char buf[16];
@@ -2903,8 +2948,236 @@ bool apfs_resolve_inode(
             }() +
             " logical_size=" +
             std::to_string(dcs.logical_size) +
-            " xdata_len=" +
-            std::to_string(dcs.xdata.size());
+            " raw_xattr_value_len=" +
+            std::to_string(dcs.raw_xattr_value_length) +
+            " raw_xdata_len=" +
+            std::to_string(dcs.raw_xdata_length) +
+            " header_len=" +
+            std::to_string(dcs.decmpfs_header_length);
+        result.decmpfs_algo = dcs.algo;
+        result.xattr_flags = dcs.xattr_flags;
+        result.raw_xattr_value_length =
+            dcs.raw_xattr_value_length;
+        result.raw_xdata_length = dcs.raw_xdata_length;
+        result.decmpfs_header_length =
+            dcs.decmpfs_header_length;
+        if (dcs.algo == kDecmpfsTypeZlib ||
+            dcs.algo == kDecmpfsTypeZlibAttrib) {
+            // zlib resource-fork / inline reconstruction.
+            // For the resource-fork variant, the compressed chunks
+            // live in the com.apple.ResourceFork XATTR; for inline,
+            // the zlib stream follows the 16-byte header.
+            std::vector<std::uint8_t> compressed;
+
+            if (dcs.algo == kDecmpfsTypeZlibAttrib) {
+                // zlib inline: payload after the 16-byte header.
+                if (dcs.raw_xdata_length > kDecmpfsHeaderSize) {
+                    compressed.assign(
+                        dcs.raw_xdata.begin() + kDecmpfsHeaderSize,
+                        dcs.raw_xdata.end());
+                }
+            } else {
+                // zlib resource fork: resolve com.apple.ResourceFork.
+                struct RfInfo {
+                    bool found = false;
+                    std::vector<std::uint8_t> data;
+                    std::uint16_t flags = 0;
+                    std::string parse_error;
+                } rf;
+                std::uint16_t rf_flags_observer = 0;
+
+                ctx.visited.clear();
+                auto rf_match = [&](
+                    const FstreeRawRecord& rec
+                ) -> bool {
+                    if (rf.found ||
+                        rec.record_type != kApfsTypeXattr ||
+                        (rec.obj_id != cnid &&
+                         rec.obj_id != ino.private_id)) {
+                        return true;
+                    }
+                    if (rec.key_extra_len < 3) {
+                        return true;
+                    }
+                    const std::uint16_t name_len =
+                        static_cast<std::uint16_t>(
+                            rec.key_extra[0]) |
+                        (static_cast<std::uint16_t>(
+                             rec.key_extra[1]) << 8);
+                    if (name_len != kResourceForkNameLen ||
+                        rec.key_extra_len != 2 + kResourceForkNameLen) {
+                        return true;
+                    }
+                    if (std::memcmp(
+                            rec.key_extra + 2,
+                            "com.apple.ResourceFork",
+                            kResourceForkNameLen - 1) != 0) {
+                        return true;
+                    }
+                    if (rec.value_len < 4) {
+                        return true;
+                    }
+                    const std::uint16_t xdata_len =
+                        static_cast<std::uint16_t>(
+                            rec.value[2]) |
+                        (static_cast<std::uint16_t>(
+                             rec.value[3]) << 8);
+                    if (xdata_len != rec.value_len - 4) {
+                        rf.parse_error =
+                            "ResourceFork xdata_len mismatch";
+                        return false;
+                    }
+                    rf.data.assign(
+                        rec.value + 4,
+                        rec.value + 4 + xdata_len);
+                    rf.flags =
+                        static_cast<std::uint16_t>(
+                            rec.value[0]) |
+                        (static_cast<std::uint16_t>(
+                             rec.value[1]) << 8);
+                    rf.found = true;
+                    return true;
+                };
+
+                std::string walk_error;
+                if (!fstree_visit_raw_records(
+                        ctx, volume.root_tree_oid,
+                        volume.root_tree_info.level, true,
+                        rf_match, walk_error)) {
+                    if (!rf.parse_error.empty()) {
+                        result.status = "FAIL";
+                        result.error =
+                            "ResourceFork parse: " + rf.parse_error;
+                        error = result.error;
+                        CloseHandle(ctx.file);
+                        return false;
+                    }
+                    result.status = "FAIL";
+                    result.error =
+                        "ResourceFork walk: " + walk_error;
+                    error = result.error;
+                    CloseHandle(ctx.file);
+                    return false;
+                }
+                if (!rf.found) {
+                    result.status =
+                        "COMPRESSED: no com.apple.ResourceFork XATTR";
+                    CloseHandle(ctx.file);
+                    return true;
+                }
+                rf_flags_observer = rf.flags;
+                result.status =
+                    "COMPRESSED: ResourceFork raw=" +
+                    std::to_string(rf.data.size()) +
+                    " bytes flags=0x" +
+                    [&]() {
+                        char buf[8];
+                        std::snprintf(buf, sizeof(buf), "%04x",
+                            rf_flags_observer);
+                        return std::string(buf);
+                    }() +
+                    " logical=" +
+                    std::to_string(dcs.logical_size);
+                compressed = std::move(rf.data);
+            }
+
+            if (compressed.empty()) {
+                result.status =
+                    "COMPRESSED: no compressed payload bytes";
+                CloseHandle(ctx.file);
+                return true;
+            }
+
+            // Resource-fork chunk table format (APFS compressed
+            // resource fork): the data is a sequence of zlib
+            // streams. Try: if the whole blob inflates to exactly
+            // logical_size, accept. Otherwise treat the resource
+            // fork as concatenated zlib chunks with a trailing
+            // chunk table (fail closed on any mismatch).
+            std::vector<std::uint8_t> output;
+            bool ok = false;
+
+            // Attempt A: whole-blob zlib stream.
+            {
+                uLongf dest_len = static_cast<uLongf>(
+                    dcs.logical_size);
+                std::vector<std::uint8_t> out(
+                    dcs.logical_size, 0);
+                const int rc = uncompress(
+                    out.data(), &dest_len,
+                    compressed.data(),
+                    static_cast<uLong>(compressed.size()));
+                if (rc == Z_OK &&
+                    dest_len == dcs.logical_size) {
+                    output = std::move(out);
+                    ok = true;
+                }
+                // Z_OK with short dest_len = first of concatenated
+                // streams; fall through to Attempt B.
+            }
+
+            // Attempt B: sequential zlib streams concatenated.
+            if (!ok) {
+                output.clear();
+                std::size_t pos = 0;
+                bool chunk_ok = true;
+                while (pos < compressed.size() &&
+                       output.size() < dcs.logical_size) {
+                    z_stream zs{};
+                    if (inflateInit(&zs) != Z_OK) {
+                        chunk_ok = false;
+                        break;
+                    }
+                    std::vector<std::uint8_t> chunk(1 << 16, 0);
+                    zs.next_in = const_cast<Bytef*>(
+                        compressed.data() + pos);
+                    zs.avail_in = static_cast<uInt>(
+                        compressed.size() - pos);
+                    zs.next_out = chunk.data();
+                    zs.avail_out =
+                        static_cast<uInt>(chunk.size());
+                    const int rc = inflate(&zs, Z_NO_FLUSH);
+                    if (rc != Z_STREAM_END && rc != Z_OK) {
+                        inflateEnd(&zs);
+                        chunk_ok = false;
+                        break;
+                    }
+                    const std::size_t produced =
+                        chunk.size() - zs.avail_out;
+                    const std::size_t consumed =
+                        (compressed.size() - pos) - zs.avail_in;
+                    output.insert(
+                        output.end(),
+                        chunk.begin(),
+                        chunk.begin() + produced);
+                    pos += consumed;
+                    inflateEnd(&zs);
+                    if (produced == 0) {
+                        chunk_ok = false;
+                        break;
+                    }
+                }
+                ok = chunk_ok &&
+                    output.size() == dcs.logical_size;
+            }
+
+            if (!ok) {
+                result.status =
+                    "COMPRESSED: zlib reconstruction failed "
+                    "(decoded size mismatch or invalid stream)";
+                CloseHandle(ctx.file);
+                return true;
+            }
+            result.bytes_reconstructed = true;
+            result.file_size = dcs.logical_size;
+            result.sha256 = compute_sha256_hex(
+                output.data(), output.size());
+            result.status =
+                "READ_OK (decmpfs zlib-resource-fork)";
+            CloseHandle(ctx.file);
+            return true;
+        }
+
         if (dcs.algo != 9 || dcs.xdata.empty()) {
             CloseHandle(ctx.file);
             return true;

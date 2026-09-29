@@ -1,6 +1,6 @@
 {
   "gate": "preboom-mapping-and-minimum-ios-storage-contract",
-  "iteration": "57R (repair of Iteration 57 overclaims)",
+  "iteration": "57S (repair of Iteration 57R: decmpfs algorithm table + ANS namespace semantics)",
   "date": "2026-09-29",
   "springboard_filesystem_proof": {
     "SPRINGBOARD_DREC_PATH_RESOLVED_PASS": {
@@ -104,11 +104,24 @@
     }
   },
   "ans_device_tree_contract": {
-    "ANS_DEVICE_TREE_CONTRACT_MACHINE_READABLE_PASS": {
+    "ANS_DEVICE_TREE_RAW_EXTRACTION_PASS": {
       "source": "d37ap device tree (payloads-v3/dtree.bin, ans node at byte 116068)",
       "device_type": "ans",
       "role": "ANS2",
-      "namespaces": "7 triples (id, block-size, blocks): [[1,1,0],[2,2,2560],[3,3,32],[4,4,2],[5,5,2],[6,8,256],[7,13,32768]]",
+      "namespaces": [
+        {"word0": 1, "word1": 1, "word2": 0},
+        {"word0": 2, "word1": 2, "word2": 2560},
+        {"word0": 3, "word1": 3, "word2": 32},
+        {"word0": 4, "word1": 4, "word2": 2},
+        {"word0": 5, "word1": 5, "word2": 2},
+        {"word0": 6, "word1": 8, "word2": 256},
+        {"word0": 7, "word1": 13, "word2": 32768}
+      ],
+      "namespace_semantics": {
+        "word0": "nsid (Apple ANS runtime 'Identified nsid[N] as nstype[M]' logs)",
+        "word1": "nstype",
+        "word2": "UNRESOLVED"
+      },
       "interrupt_parent": 32,
       "interrupts": [622, 621, 624, 623, 629],
       "reg_mmio": [
@@ -124,8 +137,13 @@
       "nvme_queue_entries": 1073741824,
       "quirks": ["nvme-prp-flush-wa", "nvme-vdma-wa", "msp-bfh-params"],
       "child_node": "iop-ans-nub",
-      "provenance": "full machine-readable ADT parse with per-property byte offsets (iter57r-ans-contract.json)"
+      "provenance": "committed artifacts/evidence/05f/phase05f-ans-dt-contract.json (durable, structured, raw+decoded with byte offsets)"
     }
+  },
+  "ans_namespace_semantics": {
+    "ANS_NAMESPACE_RAW_RECORDS_PASS": true,
+    "ANS_NAMESPACE_NSID_NSTYPE_MAPPING_PASS": "word0=nsid, word1=nstype per Apple ANS runtime 'Identified nsid[N] as nstype[M]' behavior",
+    "ANS_NAMESPACE_THIRD_FIELD": "UNRESOLVED"
   },
   "kernel_driver_matching": {
     "ANS_KERNEL_DRIVER_STRING_PRESENCE_PASS": {
@@ -202,11 +220,50 @@
     "CRYPTEX_SYSTEMOS_AEA_DECRYPT_DETERMINISTIC_PASS",
     "CRYPTEX_SYSTEMOS_AEA_SOURCE_IMMUTABLE_PASS",
     "AEA_EVIDENCE_KEY_HYGIENE_PASS",
-    "ANS_DEVICE_TREE_CONTRACT_MACHINE_READABLE_PASS",
+    "ANS_DEVICE_TREE_RAW_EXTRACTION_PASS",
     "ANS_KERNEL_DRIVER_STRING_PRESENCE_PASS"
   ],
+  "decmpfs_algorithm_table": {
+    "DECMPFS_ALGORITHM_TABLE_AUDIT_PASS": {
+      "3": "zlib inline (CMP_TypeZlibAttrib)",
+      "4": "zlib resource fork (CMP_TypeZlib)",
+      "7": "LZVN inline (CMP_TypeLZVN)",
+      "8": "LZVN resource fork (CMP_TypeLZVN_2)",
+      "11": "LZFSE inline (CMP_TypeLZFSE)",
+      "12": "LZFSE resource fork (CMP_TypeLZFSE_2)",
+      "sources": "Apple decmpfs.h, apfs-fuse Decmpfs.cpp",
+      "observed_springboard": "algo=4 = zlib resource fork (NOT LZVN; corrects the Iteration 57R mislabel)"
+    }
+  },
+  "decmpfs_diagnostics": {
+    "DECMPFS_RAW_XATTR_LENGTH_PASS": {
+      "springboard_cnid": 1152921500312051482,
+      "raw_xattr_value_len": 20,
+      "raw_xdata_len": 16,
+      "header_len": 16,
+      "logical_size": 139712,
+      "note": "raw lengths reported from the record, never derived zeros"
+    },
+    "DECMPFS_DIAGNOSTIC_NO_DERIVED_ZERO_PASS": true,
+    "resourcefork_status": {
+      "springboard": "ResourceFork XATTR found; 48-byte compressed-resource-fork header (dataOffset=0x29f1b, dataLength=0x55d5); chunk payload lives in dstream-backed region outside the XATTR value - full reconstruction PARTIAL",
+      "backboardd": "ResourceFork XATTR structurally resolvable; same header layout",
+      "runningboardd": "ResourceFork XATTR structurally resolvable; same header layout"
+    }
+  },
+  "decmpfs_reconstruction": {
+    "DECMPFS_RECONSTRUCTION_TEST_MATRIX_PASS": {
+      "whole_blob": "PASS",
+      "size_mismatch": "REFUSED",
+      "corrupt_chunk": "REFUSED",
+      "empty_input": "REFUSED",
+      "concatenated_streams": "PASS"
+    },
+    "SPRINGBOARD_EXECUTABLE_RECONSTRUCTED": "PARTIAL (zlib chunk-table pointer resolved; dstream-region chunk payload extraction remains OPEN)",
+    "SPRINGBOARD_EXECUTABLE_SHA256": "NOT_YET"
+  },
   "iter57r_open": [
-    "SPRINGBOARD_EXECUTABLE_RECONSTRUCTED (LZVN algo-4 required)",
+    "SPRINGBOARD_EXECUTABLE_RECONSTRUCTED (zlib resource-fork chunk payload)",
     "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK",
     "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
     "ANS_KERNEL_DRIVER_MATCH_CONTRACT",

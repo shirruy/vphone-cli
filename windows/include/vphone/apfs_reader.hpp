@@ -268,6 +268,12 @@ struct ApfsInodeResolution {
     std::uint64_t dstream_size = 0;
     std::uint64_t extent_count = 0;
     std::uint64_t file_size = 0;
+    // Decmpfs diagnostics (raw lengths, never derived zeros).
+    std::uint16_t raw_xattr_value_length = 0;
+    std::uint16_t raw_xdata_length = 0;
+    std::uint16_t decmpfs_header_length = 0;
+    std::uint32_t decmpfs_algo = 0;
+    std::uint16_t xattr_flags = 0;
     std::string sha256;
     std::string error;
 };

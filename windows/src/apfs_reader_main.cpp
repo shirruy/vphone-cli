@@ -119,6 +119,16 @@ int main(int argc, char** argv) {
                   << (resolution.has_dstream ? "true" : "false") << ",\n";
         std::cout << "  \"dstream_size\": "
                   << resolution.dstream_size << ",\n";
+        std::cout << "  \"decmpfs_algo\": "
+                  << resolution.decmpfs_algo << ",\n";
+        std::cout << "  \"xattr_flags\": "
+                  << resolution.xattr_flags << ",\n";
+        std::cout << "  \"raw_xattr_value_length\": "
+                  << resolution.raw_xattr_value_length << ",\n";
+        std::cout << "  \"raw_xdata_length\": "
+                  << resolution.raw_xdata_length << ",\n";
+        std::cout << "  \"decmpfs_header_length\": "
+                  << resolution.decmpfs_header_length << ",\n";
         std::cout << "  \"extent_count\": "
                   << resolution.extent_count << ",\n";
         std::cout << "  \"bytes_reconstructed\": "
