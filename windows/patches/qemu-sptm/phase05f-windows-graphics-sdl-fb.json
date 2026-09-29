@@ -3,7 +3,7 @@
   "purpose": "Iteration 53 experimental graphical display path: SDL2 backend, linear framebuffer handoff, QEMU console surface, and first visible guest frame",
   "qemu_sptm_base": "2867d847d3471560e773120ee50c42dbcbb6d60b",
   "patch_file": "windows/patches/qemu-sptm/phase05f-windows-graphics-sdl-fb.patch",
-  "patch_sha256": "f6d45f4338078d636bf401dd0dfd274581762b418ce44550b5f5db1ca661cae2e",
+  "patch_sha256": "bbc10708890dcaed22b723f1618b0481277e7a836518e948e45105ab9bafdbb0",
   "cumulative": true,
   "includes_prior_patches": [
     "phase05e-windows-portability",

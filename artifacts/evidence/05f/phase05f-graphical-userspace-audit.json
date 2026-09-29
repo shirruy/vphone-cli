@@ -1,0 +1,84 @@
+{
+  "gate": "graphical-ios-userspace-feasibility",
+  "iteration": 54,
+  "date": "2026-09-29",
+  "fb_validation": {
+    "FB_32_ONLY_VALIDATION_PASS": "fb=1024x768 and fb=1024x768@32 accepted; parser restricted to depth 32",
+    "FB_INVALID_DEPTH_REFUSAL_PASS": "fb=1024x768@16 rejected with exit 1",
+    "FB_TRAILING_GARBAGE_REFUSAL_PASS": "fb=1024x768junk and fb=1024x768@32garbage rejected with exit 1"
+  },
+  "fb_reservation": {
+    "mechanism": "boot_args.memSize and memSizeActual reduced to framebuffer_base - dram_base in BOTH arm_load_xnu_sptm and arm_load_xnu_nosptm when has_fb",
+    "invariant": "guest_usable_ram_end == framebuffer_base (asserted in loader and printed at init)",
+    "runtime_line": "darwin-fb: reserved guest-usable RAM end=0x00000101FFD00000 (framebuffer base; non-overlap invariant)",
+    "stress_90s": "no corruption/panic/assert markers, 16+ distinct framebuffer hashes (boot console writes), process alive at 90s",
+    "markers": [
+      "FRAMEBUFFER_MEMORY_RESERVED_PASS",
+      "FRAMEBUFFER_GUEST_RAM_NONOVERLAP_PASS"
+    ]
+  },
+  "visual_artifact": {
+    "marker": "VISIBLE_FRAME_ARTIFACT_PRESERVED_PASS",
+    "files": [
+      {
+        "path": "iter54-visual-artifacts/darwin-fb-frame-20.ppm",
+        "sha256": "5ae42bd9b0ddceb4466d7c75e031e1bae47671ccc5abcd6072b656f1f3e7e8ea",
+        "bytes": 2359312
+      },
+      {
+        "path": "iter54-visual-artifacts/darwin-fb-frame-20.png",
+        "sha256": "53f978c120f94cea14eed8de6bab400b510bc818a6a7e2caec9cbf57446f3b94",
+        "bytes": 45708
+      },
+      {
+        "path": "iter54-visual-artifacts/crop-topleft.png",
+        "sha256": "46ae1710a06558e2a4d9351b4bc81d705366b58d69a03d948266826fcc6488da",
+        "bytes": 14239
+      }
+    ]
+  },
+  "userspace_audit": {
+    "marker": "GRAPHICAL_USERSPACE_COMPONENT_AUDIT_PASS",
+    "root_state": "RESTORE_RAMDISK_ONLY",
+    "method": "raw 243MB ramdisk scan (C-speed) + structural APFS reader + serial boot log",
+    "components": [
+      {"name": "SpringBoard", "present": false, "launch_config": false, "observed": false},
+      {"name": "backboardd", "present": false, "launch_config": false, "observed": false},
+      {"name": "frontboardd", "present": false, "launch_config": false, "observed": false},
+      {"name": "runningboardd", "present": false, "launch_config": false, "observed": false},
+      {"name": "WindowServer", "present": false, "launch_config": false, "observed": false},
+      {"name": "UIKit", "present": false, "launch_config": false, "observed": false},
+      {"name": "CoreAnimation", "present": false, "launch_config": false, "observed": false},
+      {"name": "IOSurface", "present": "framework present (4 hits)", "launch_config": false, "observed": false},
+      {"name": "IOMobileFramebuffer", "present": "framework present (4 hits)", "launch_config": false, "observed": false},
+      {"name": "AppleCLCD", "present": false, "launch_config": false, "observed": false}
+    ],
+    "plist_scan": "12 com.apple plists in ramdisk; only restore daemons (restored_external, syslogd, reportcrash, driverkitd, diskimagesiod, purple-reverse-proxy) - no SpringBoard/backboardd/frontboardd LaunchDaemons",
+    "serial_evidence": "com.apple.xpc.launchd: 'Restore environment starting.' - the boot itself declares restore mode",
+    "classification_note": "The ramdisk contains restore-only userspace. rd=md0 boots a restore ramdisk; the full iOS root/system volume is not mounted."
+  },
+  "conclusion": {
+    "BLOCKER": "FULL_IOS_ROOT_OR_SYSTEM_VOLUME_REQUIRED",
+    "evidence": [
+      "zero SpringBoard/backboardd/frontboardd/runningboardd/WindowServer/UIKit strings in the 243MB restore ramdisk",
+      "restore-only LaunchDaemons (restored_external/syslogd/...)",
+      "launchd serial log: 'Restore environment starting.'",
+      "IOMobileFramebuffer/IOSurface frameworks exist as libraries but no display service runs in this root"
+    ],
+    "next_step": "Map the system/data/preboot volumes and the boot-storage path to mount a full iOS root; do NOT implement DCP until a graphical userspace exists to need it.",
+    "APPLE_DISPLAY_CONTROLLER_EMULATION_REQUIRED": false
+  },
+  "regression": {
+    "HEADLESS_BOOT_REGRESSION_PASS": "hardened binary headless: 32543 uart bytes, launchd+ignition, empty stderr",
+    "WINDOWS_QEMU_SDL_BACKEND_PASS": "-display help still lists sdl",
+    "QEMU_WINDOW_CREATED_PASS": "EnumWindows SDL_app visible=True on hardened binary",
+    "GUEST_FRAMEBUFFER_ACTIVITY_PASS": "16+ distinct hashes on hardened binary"
+  },
+  "not_claimed": [
+    "SPRINGBOARD_VISIBLE",
+    "SPRINGBOARD_LAUNCH",
+    "TOUCH_INPUT_WORKING",
+    "KAIRO_VISIBLE",
+    "GRAPHICAL_IOS_COMPLETE"
+  ]
+}

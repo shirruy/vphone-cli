@@ -55,7 +55,7 @@ index 35c4460..2733ee2 100644
  #include "apple_regs_autogen.h"
  
 diff --git a/hw/arm/darwin.c b/hw/arm/darwin.c
-index 51d240b..6aa1f61 100644
+index 51d240b..7e0b7d7 100644
 --- a/hw/arm/darwin.c
 +++ b/hw/arm/darwin.c
 @@ -21,13 +21,14 @@
@@ -96,12 +96,14 @@ index 51d240b..6aa1f61 100644
  
  static void alloc_zeroed(const char *name, hwaddr pa, size_t len) {
      if (0 == len) {
-@@ -64,6 +71,203 @@ static void alloc_zeroed(const char *name, hwaddr pa, size_t len) {
+@@ -64,6 +71,226 @@ static void alloc_zeroed(const char *name, hwaddr pa, size_t len) {
      address_space_set(&address_space_memory, pa, 0, len, MEMTXATTRS_UNSPECIFIED);
  }
  
-+// Parse the experimental "WxH[@depth]" framebuffer property.
-+// Example: "1024x768" or "1024x768@32". Returns false on malformed input.
++// Parse the experimental "WxH" or "WxH@32" framebuffer property.
++// Only 32bpp is implemented by the rendering path (PIXMAN_x8r8g8b8).
++// @16, other depths, trailing garbage, and malformed geometry are
++// rejected. Returns false on any invalid input.
 +static bool parse_fb_geometry(
 +    const char *spec,
 +    uint32_t *width, uint32_t *height, uint32_t *depth
@@ -115,11 +117,21 @@ index 51d240b..6aa1f61 100644
 +    if (end == spec || h == 0 || h > 4096) return false;
 +    *width = (uint32_t)w;
 +    *height = (uint32_t)h;
-+    *depth = 32;
-+    if (*end == '@') {
-+        unsigned long d = strtoul(end + 1, &end, 10);
-+        if (d == 16 || d == 32) *depth = (uint32_t)d;
++    *depth = 0; // must be resolved below
++
++    // Optional @depth: 32 only.
++    if (*end == '\0') {
++        *depth = 32;
++        return true;
 +    }
++    if (*end != '@') {
++        return false; // trailing garbage
++    }
++    unsigned long d = strtoul(end + 1, &end, 10);
++    if (d != 32 || *end != '\0') {
++        return false; // @16, other depths, or trailing garbage
++    }
++    *depth = 32;
 +    return true;
 +}
 +
@@ -281,6 +293,13 @@ index 51d240b..6aa1f61 100644
 +    s->bootinfo.fb_rowbytes = (uint32_t)rowbytes;
 +    s->bootinfo.fb_depth = depth;
 +
++    // Explicit reservation contract: the framebuffer range must not
++    // overlap guest-usable RAM. The boot loader asserts the same
++    // invariant before writing boot_args.
++    const uint64_t guest_usable_end = base;
++    assert(guest_usable_end >= s->bootinfo.dram_base);
++    assert(base + size <= s->bootinfo.dram_base + s->bootinfo.dram_size);
++
 +    s->fb_con = qemu_graphic_console_create(NULL, 0, &fb_hw_ops, s);
 +    if (!s->fb_con) {
 +        fprintf(stderr, "darwin: graphic console creation failed\n");
@@ -295,12 +314,16 @@ index 51d240b..6aa1f61 100644
 +        w, h, depth,
 +        (unsigned long long)base,
 +        (unsigned long long)size);
++    fprintf(stderr,
++        "darwin-fb: reserved guest-usable RAM end=0x%016llX "
++        "(framebuffer base; non-overlap invariant)\n",
++        (unsigned long long)guest_usable_end);
 +}
 +
  static void do_darwin_reset(void *state) {
      DarwinState *s = DARWIN_MACHINE((MachineState *)state);
      ARMCPU *cpu = s->cpu;
-@@ -83,27 +287,31 @@ static void do_darwin_reset(void *state) {
+@@ -83,27 +310,31 @@ static void do_darwin_reset(void *state) {
  }
  
  static mmap_file_t check_and_open(const char *path, const char *errmsg) {
@@ -345,7 +368,7 @@ index 51d240b..6aa1f61 100644
      };
  
  fail:
-@@ -136,40 +344,6 @@ static void init_sep(struct dtree_node *dt_root) {
+@@ -136,40 +367,6 @@ static void init_sep(struct dtree_node *dt_root) {
      alloc_zeroed("sep", sep_reg[0].base, sep_reg[0].len);
  }
  
@@ -386,7 +409,7 @@ index 51d240b..6aa1f61 100644
  static void setup_mte(Object *cpuobj, MachineState *machine, struct xnu_boot_info *info) {
      MemoryRegion *tag_sysmem = NULL;
  
-@@ -255,6 +429,12 @@ static void darwin_init(MachineState *ms) {
+@@ -255,6 +452,12 @@ static void darwin_init(MachineState *ms) {
      info->dram_base = *(u64*)adt_get_prop_val(chosen_node, "dram-base");
      info->dram_size = *(u64*)adt_get_prop_val(chosen_node, "dram-size");
  
@@ -399,7 +422,7 @@ index 51d240b..6aa1f61 100644
      s->cpu = ARM_CPU(cpuobj);
      arm_load_xnu(s->cpu, ms, info);
      if (info->has_mte) setup_mte(cpuobj, MACHINE(s), info);
-@@ -272,7 +452,7 @@ static void darwin_init(MachineState *ms) {
+@@ -272,7 +475,7 @@ static void darwin_init(MachineState *ms) {
      assert(0 == arm_io_ranges[0]); // child bus phys addr must be zero
  
      init_uart(dt_root, iobase);
@@ -408,7 +431,7 @@ index 51d240b..6aa1f61 100644
      init_sep(dt_root);
      init_cpu_impl(dt_root);
  
-@@ -286,13 +466,13 @@ static void darwin_init(MachineState *ms) {
+@@ -286,13 +489,13 @@ static void darwin_init(MachineState *ms) {
      qdev_connect_gpio_out(cpudev, GTIMER_HYPVIRT, qdev_get_gpio_in(cpudev, ARM_CPU_FIQ));
  
      qemu_register_reset(do_darwin_reset, s);
@@ -428,7 +451,7 @@ index 51d240b..6aa1f61 100644
      }
  }
  
-@@ -313,6 +493,7 @@ static void darwin_machine_class_init(ObjectClass *oc, const void *data) {
+@@ -313,6 +516,7 @@ static void darwin_machine_class_init(ObjectClass *oc, const void *data) {
      object_class_property_add_str(oc, "txm", txm_darwin_class_get, txm_darwin_class_set);
      object_class_property_add_str(oc, "tc", tc_darwin_class_get, tc_darwin_class_set);
      object_class_property_add_str(oc, "ramdisk", ramdisk_darwin_class_get, ramdisk_darwin_class_set);
@@ -451,7 +474,7 @@ index 72063a1..d515f5c 100644
          cursor = NEXT(cursor);
      }
 diff --git a/hw/arm/xnuboot_sptm.c b/hw/arm/xnuboot_sptm.c
-index b96d421..8099cfc 100644
+index b96d421..1153dc4 100644
 --- a/hw/arm/xnuboot_sptm.c
 +++ b/hw/arm/xnuboot_sptm.c
 @@ -3,7 +3,6 @@
@@ -473,7 +496,31 @@ index b96d421..8099cfc 100644
  
  static void alloc_ram(Object *cpuobj, hwaddr base, size_t len) {
      MemoryRegion *ram_main = get_system_memory();
-@@ -385,6 +384,17 @@ static void arm_load_xnu_sptm(ARMCPU *cpu, MachineState *ms, struct xnu_boot_inf
+@@ -375,7 +374,22 @@ static void arm_load_xnu_sptm(ARMCPU *cpu, MachineState *ms, struct xnu_boot_inf
+ 
+     args.physBase = info->dram_base;
+     args.memSizeActual = info->dram_size;
+-    if (info->has_mte) {
++    if (info->has_fb) {
++        // Experimental framebuffer reservation: guest-usable RAM ends
++        // exactly at the framebuffer base so XNU cannot allocate that
++        // range as ordinary memory. The range stays addressable for
++        // framebuffer writes.
++        uint64_t usable = info->fb_base - info->dram_base;
++        assert(info->fb_base > info->dram_base);
++        assert(blob_head <= info->fb_base);
++        args.memSizeActual = usable;
++    }
++    if (info->has_fb) {
++        args.memSize = info->fb_base - info->dram_base;
++        if (info->has_mte) {
++            args.memSize = (31 * args.memSize) / 32;
++        }
++    } else if (info->has_mte) {
+         args.memSize = (31 * info->dram_size) / 32;
+     } else {
+         args.memSize = info->dram_size;
+@@ -385,6 +399,17 @@ static void arm_load_xnu_sptm(ARMCPU *cpu, MachineState *ms, struct xnu_boot_inf
      args.deviceTreeLength = info->dtree_f.len;
      g_strlcpy(args.CommandLine, info->args, BOOT_LINE_LENGTH);
  
@@ -491,7 +538,19 @@ index b96d421..8099cfc 100644
  #ifdef DEBUG_MEMORY_LAYOUT
      uint64_t sptm_load = args.virtBase - args.physBase + sptm_mi.physlo;
      uint64_t txm_load = sptm_load + 1 * SPTM_EXPECTED_STRIDE;
-@@ -487,6 +497,14 @@ static void arm_load_xnu_nosptm(ARMCPU *cpu, MachineState *ms, struct xnu_boot_i
+@@ -481,12 +506,25 @@ static void arm_load_xnu_nosptm(ARMCPU *cpu, MachineState *ms, struct xnu_boot_i
+     args.Version = kBootArgsVersion2;
+     args.virtBase = STRIP_L2_PT_INDEX(bkc_mi.virtlo);
+     args.physBase = info->dram_base;
+-    args.memSize = info->dram_size;
++    if (info->has_fb) {
++        args.memSize = info->fb_base - info->dram_base;
++        args.memSizeActual = args.memSize;
++    } else {
++        args.memSize = info->dram_size;
++    }
+     args.topOfKernelData = rd_base_phys + ROUND_NEXT_PAGE(info->ramdisk_f.len);
+     args.deviceTreeP = dtree_base_phys - args.physBase + args.virtBase;
      args.deviceTreeLength = info->dtree_f.len;
      g_strlcpy(args.CommandLine, info->args, BOOT_LINE_LENGTH);
  
