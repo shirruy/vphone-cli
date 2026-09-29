@@ -1,0 +1,38 @@
+{
+  "phase": "05F",
+  "purpose": "Iteration 53 experimental graphical display path: SDL2 backend, linear framebuffer handoff, QEMU console surface, and first visible guest frame",
+  "qemu_sptm_base": "2867d847d3471560e773120ee50c42dbcbb6d60b",
+  "patch_file": "windows/patches/qemu-sptm/phase05f-windows-graphics-sdl-fb.patch",
+  "patch_sha256": "f6d45f4338078d636bf401dd0dfd274581762b418ce44550b5f5db1ca661cae2e",
+  "cumulative": true,
+  "includes_prior_patches": [
+    "phase05e-windows-portability",
+    "phase05f-windows-llp64-fileset"
+  ],
+  "new_in_iter53": [
+    "meson.build: macOS-bundle postconf script skipped on non-darwin hosts (Windows build fix)",
+    "include/xnu/boot/xnuboot.h: fb machine property, fb geometry fields, has_fb flag",
+    "hw/arm/xnuboot_sptm.c: populate Boot_Video (v_baseAddr/v_width/v_height/v_rowBytes/v_depth) when has_fb",
+    "hw/arm/darwin.c: fb=WxH[@depth] machine property, DRAM-top framebuffer allocation, QemuConsole + 500ms poll timer, hash-change instrumentation, PPM screenshot dump, non-NULL GraphicHwOps (fixes NULL hw_ops crash on display refresh)"
+  ],
+  "experimental": true,
+  "build_configuration": {
+    "sdl2": "mingw-w64-x86_64-SDL2 2.32.10 via MSYS2 pacman",
+    "meson": "setup --reconfigure with -Dsdl=enabled",
+    "target": "aarch64-softmmu"
+  },
+  "runtime_evidence": {
+    "WINDOWS_QEMU_SDL_BACKEND_PASS": "-display help lists none, sdl, curses, dbus",
+    "QEMU_WINDOW_CREATED_PASS": "Win32 EnumWindows title=QEMU class=SDL_app visible=True",
+    "GUEST_FRAMEBUFFER_ACTIVITY_PASS": "hash changes every poll with video console (boot args without serial=3); 16+ distinct hashes",
+    "FIRST_VISIBLE_GUEST_FRAME_PASS": "darwin-fb-frame-20.ppm: structured console text-like glyphs, 14% nonzero",
+    "HEADLESS_BOOT_REGRESSION_PASS": "rebuilt binary headless still reaches launchd+ignition, 32447 uart bytes"
+  },
+  "not_claimed": [
+    "SPRINGBOARD_VISIBLE",
+    "KAIRO_VISIBLE",
+    "TOUCH_INPUT_WORKING",
+    "GRAPHICAL_IOS_COMPLETE",
+    "INPUT wired to darwin machine (INPUT_NOT_IMPLEMENTED unchanged)"
+  ]
+}

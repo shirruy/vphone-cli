@@ -1,0 +1,1360 @@
+diff --git a/hw/arm/apple_dtree.c b/hw/arm/apple_dtree.c
+index 3c26a80..57f2ddb 100644
+--- a/hw/arm/apple_dtree.c
++++ b/hw/arm/apple_dtree.c
+@@ -69,18 +69,18 @@ size_t adt_get_prop_len(struct dtree_node *n, const char *prop_name) {
+ }
+ 
+ struct dtree_node *adt_find_node(struct dtree_node *root, const char *path) {
+-    char *token, *string, *tofree;
+-    struct dtree_node *cur_node, *cur_child;
++    gchar **tokens;
++    struct dtree_node *cur_node;
+ 
+-    tofree = string = strdup(path);
++    tokens = g_strsplit(path, kDTPathNameSeparator, -1);
+     cur_node = root;
+ 
+-    while (NULL != (token = strsep(&string, kDTPathNameSeparator))) {
++    for (gchar **token = tokens; *token != NULL; token++) {
+         bool found_it = false;
++        struct dtree_node *cur_child = first_child(cur_node);
+ 
+-        cur_child = first_child(cur_node);
+         for (size_t i = 0; i < cur_node->nChildren; i++) {
+-            if (0 == strcmp(adt_get_prop_val(cur_child, "name"), token)) {
++            if (0 == strcmp(adt_get_prop_val(cur_child, "name"), *token)) {
+                 cur_node = cur_child;
+                 found_it = true;
+                 break;
+@@ -90,11 +90,10 @@ struct dtree_node *adt_find_node(struct dtree_node *root, const char *path) {
+ 
+         if (!found_it) {
+             cur_node = NULL;
+-            goto out;
++            break;
+         }
+     }
+ 
+-out:
+-    free(tofree);
++    g_strfreev(tokens);
+     return cur_node;
+ }
+diff --git a/hw/arm/apple_regs.c b/hw/arm/apple_regs.c
+index 35c4460..2733ee2 100644
+--- a/hw/arm/apple_regs.c
++++ b/hw/arm/apple_regs.c
+@@ -23,7 +23,7 @@ void log_write(const char *, CPUARMState *, const ARMCPRegInfo *, u64 val);
+ 
+ #define APPLE_STATE(env) ((apple_state_t*)env->apple_state)
+ 
+-#define TAG_OFFSET_EL2_LOCK            BIT(63)
++#define TAG_OFFSET_EL2_LOCK            BIT_ULL(63)
+ 
+ #include "apple_regs_autogen.h"
+ 
+diff --git a/hw/arm/darwin.c b/hw/arm/darwin.c
+index 51d240b..6aa1f61 100644
+--- a/hw/arm/darwin.c
++++ b/hw/arm/darwin.c
+@@ -21,13 +21,14 @@
+ #include "hw/arm/apple_amcc.h"
+ #include "xnu/patch.h"
+ #include "xnu/macho.h"
++#include "hw/intc/apple_aic.h"
++#include "ui/console.h"
++#include "ui/qemu-pixman.h"
++#include "qemu/timer.h"
+ 
+ // See device tree specification section 2.3.8: ranges
+ #define IO_RANGE_BASE_OFFSET     1
+ 
+-// Use this for AICs where we don't know how many interrupts there should be
+-#define A_GOOD_NUMBER_OF_IRQS    0x1000
+-
+ #define EXPECTED_FIRMWARE_NAME   "qemu-sptm"
+ 
+ static char *g_default_args = (char*)"debug=0x8 kextlog=0xffff cpus=1 rd=md0 serial=7 -v -noprogress keepsyms=1 wdt=-1 -enable_kprintf_spam wlan-olyhal-abort";
+@@ -42,6 +43,11 @@ struct DarwinState {
+     MachineState parent_obj;
+     ARMCPU *cpu;
+     struct xnu_boot_info bootinfo;
++    // Experimental framebuffer display state.
++    QemuConsole *fb_con;
++    QEMUTimer *fb_timer;
++    uint64_t fb_hash;
++    uint32_t fb_update_count;
+ };
+ 
+ MACHINE_CLASS_ARG(bootkc);
+@@ -51,6 +57,7 @@ MACHINE_CLASS_ARG(sptm);
+ MACHINE_CLASS_ARG(txm);
+ MACHINE_CLASS_ARG(tc);
+ MACHINE_CLASS_ARG(ramdisk);
++MACHINE_CLASS_ARG(fb);
+ 
+ static void alloc_zeroed(const char *name, hwaddr pa, size_t len) {
+     if (0 == len) {
+@@ -64,6 +71,203 @@ static void alloc_zeroed(const char *name, hwaddr pa, size_t len) {
+     address_space_set(&address_space_memory, pa, 0, len, MEMTXATTRS_UNSPECIFIED);
+ }
+ 
++// Parse the experimental "WxH[@depth]" framebuffer property.
++// Example: "1024x768" or "1024x768@32". Returns false on malformed input.
++static bool parse_fb_geometry(
++    const char *spec,
++    uint32_t *width, uint32_t *height, uint32_t *depth
++) {
++    if (!spec || !*spec) return false;
++    char *end = NULL;
++    unsigned long w = strtoul(spec, &end, 10);
++    if (end == spec || *end != 'x' || w == 0 || w > 4096) return false;
++    spec = end + 1;
++    unsigned long h = strtoul(spec, &end, 10);
++    if (end == spec || h == 0 || h > 4096) return false;
++    *width = (uint32_t)w;
++    *height = (uint32_t)h;
++    *depth = 32;
++    if (*end == '@') {
++        unsigned long d = strtoul(end + 1, &end, 10);
++        if (d == 16 || d == 32) *depth = (uint32_t)d;
++    }
++    return true;
++}
++
++// Hash a guest framebuffer region and update the QEMU console when
++// its contents changed since the last poll.
++static void fb_poll_timer(void *opaque) {
++    DarwinState *s = DARWIN_MACHINE((MachineState *)opaque);
++    if (!s->fb_con || !s->bootinfo.has_fb) return;
++    if (s->fb_update_count == 0) {
++        fprintf(stderr, "darwin-fb: timer tick begin\n");
++    }
++
++    const uint64_t stride =
++        (uint64_t)s->bootinfo.fb_width * (s->bootinfo.fb_depth / 8);
++    const uint64_t total = stride * s->bootinfo.fb_height;
++
++    DisplaySurface *surface =
++        qemu_create_displaysurface_from(
++            (int)s->bootinfo.fb_width,
++            (int)s->bootinfo.fb_height,
++            PIXMAN_x8r8g8b8,
++            (int)stride,
++            NULL  // host buffer copied below from guest RAM
++        );
++    if (!surface) return;
++    if (s->fb_update_count == 0) {
++        fprintf(stderr, "darwin-fb: surface created\n");
++    }
++
++    // Copy guest RAM into the surface data buffer.
++    uint8_t *dst = (uint8_t *)surface_data(surface);
++    uint64_t done = 0;
++    const uint64_t chunk = 1 << 20;
++    while (done < total) {
++        uint64_t n = MIN(chunk, total - done);
++        address_space_read(
++            &address_space_memory,
++            s->bootinfo.fb_base + done,
++            MEMTXATTRS_UNSPECIFIED,
++            dst + done,
++            n
++        );
++        done += n;
++    }
++    if (s->fb_update_count == 0) {
++        fprintf(stderr, "darwin-fb: guest ram copied\n");
++    }
++
++    // Hash change detection.
++    uint64_t h = 0xcbf29ce484222325ULL;
++    for (uint64_t i = 0; i < total; i += 64) {
++        uint64_t v = 0;
++        for (uint64_t j = 0; j < 8 && i + j < total; j++) {
++            v = (v << 8) | dst[i + j];
++        }
++        h = (h ^ v) * 0x100000001b3ULL;
++    }
++
++    if (h == s->fb_hash) {
++        qemu_free_displaysurface(surface);
++        timer_mod(s->fb_timer,
++                  qemu_clock_get_ms(QEMU_CLOCK_VIRTUAL) + 500);
++        return;
++    }
++    s->fb_hash = h;
++    s->fb_update_count++;
++    if (s->fb_update_count == 1) {
++        fprintf(stderr, "darwin-fb: about to set surface\n");
++    }
++
++    // Experimental activity instrumentation: log the first few
++    // content changes so headless captures can prove the guest
++    // writes changing framebuffer data.
++    if (s->fb_update_count <= 16) {
++        fprintf(stderr,
++            "darwin-fb: update=%u hash=0x%016llX\n",
++            s->fb_update_count,
++            (unsigned long long)h);
++    }
++    // Dump the framebuffer as PPM on the first frame so a real
++    // screenshot artifact exists (no fake pixels).
++    if (s->fb_update_count == 1 || s->fb_update_count == 20) {
++        char ppm_name[64];
++        snprintf(ppm_name, sizeof(ppm_name),
++                 "darwin-fb-frame-%u.ppm", s->fb_update_count);
++        FILE *ppm = fopen(ppm_name, "wb");
++        if (ppm) {
++            fprintf(ppm, "P6\n%u %u\n255\n",
++                    s->bootinfo.fb_width, s->bootinfo.fb_height);
++            uint8_t *d = (uint8_t *)surface_data(surface);
++            uint32_t stride =
++                s->bootinfo.fb_width * (s->bootinfo.fb_depth / 8);
++            for (uint32_t y = 0; y < s->bootinfo.fb_height; y++) {
++                for (uint32_t x = 0; x < s->bootinfo.fb_width; x++) {
++                    // x8r8g8b8 little-endian: B G R X
++                    uint8_t *p = d + y * stride + x * 4;
++                    fputc(p[2], ppm); // R
++                    fputc(p[1], ppm); // G
++                    fputc(p[0], ppm); // B
++                }
++            }
++            fclose(ppm);
++            fprintf(stderr, "darwin-fb: wrote %s\n", ppm_name);
++        }
++    }
++
++    qemu_console_set_surface(s->fb_con, surface);
++    if (s->fb_update_count == 1) {
++        fprintf(stderr, "darwin-fb: surface set\n");
++    }
++    qemu_console_update_full(s->fb_con);
++    if (s->fb_update_count == 1) {
++        fprintf(stderr, "darwin-fb: update_full done\n");
++    }
++    timer_mod(s->fb_timer,
++              qemu_clock_get_ms(QEMU_CLOCK_VIRTUAL) + 500);
++}
++
++// The console hw ops must never be NULL: qemu_console_hw_update
++// dereferences hw_ops->gfx_update unconditionally.
++static void fb_gfx_invalidate(void *opaque) { (void)opaque; }
++static const GraphicHwOps fb_hw_ops = {
++    .invalidate = fb_gfx_invalidate,
++    /* gfx_update intentionally NULL: the poll timer drives updates. */
++};
++
++// Create the experimental framebuffer console + poll timer.
++static void darwin_init_fb(MachineState *ms) {
++    DarwinState *s = DARWIN_MACHINE(ms);
++    uint32_t w = 0, h = 0, depth = 0;
++    if (!parse_fb_geometry(s->bootinfo.fb, &w, &h, &depth)) {
++        if (s->bootinfo.fb && *s->bootinfo.fb) {
++            fprintf(stderr,
++                "darwin: invalid -M darwin,fb= spec: %s\n",
++                s->bootinfo.fb);
++            exit(1);
++        }
++        return; // framebuffer disabled (default: headless behavior)
++    }
++
++    const uint64_t rowbytes = (uint64_t)w * (depth / 8);
++    const uint64_t size = rowbytes * h;
++    // Place the framebuffer at the top of DRAM, page aligned.
++    const uint64_t base =
++        ROUND_DOWN_POW2(
++            s->bootinfo.dram_base + s->bootinfo.dram_size - size,
++            DARWIN_PAGE_SIZE
++        );
++    if (base < s->bootinfo.dram_base + s->bootinfo.dram_size / 2) {
++        fprintf(stderr, "darwin: framebuffer too large for DRAM\n");
++        exit(1);
++    }
++
++    s->bootinfo.has_fb = true;
++    s->bootinfo.fb_base = base;
++    s->bootinfo.fb_size = size;
++    s->bootinfo.fb_width = w;
++    s->bootinfo.fb_height = h;
++    s->bootinfo.fb_rowbytes = (uint32_t)rowbytes;
++    s->bootinfo.fb_depth = depth;
++
++    s->fb_con = qemu_graphic_console_create(NULL, 0, &fb_hw_ops, s);
++    if (!s->fb_con) {
++        fprintf(stderr, "darwin: graphic console creation failed\n");
++        exit(1);
++    }
++    s->fb_timer = timer_new_ms(QEMU_CLOCK_VIRTUAL, fb_poll_timer, s);
++    timer_mod(s->fb_timer, qemu_clock_get_ms(QEMU_CLOCK_VIRTUAL) + 1000);
++
++    fprintf(stderr,
++        "darwin: experimental framebuffer %ux%u depth=%u "
++        "at 0x%016llX size=0x%llX\n",
++        w, h, depth,
++        (unsigned long long)base,
++        (unsigned long long)size);
++}
++
+ static void do_darwin_reset(void *state) {
+     DarwinState *s = DARWIN_MACHINE((MachineState *)state);
+     ARMCPU *cpu = s->cpu;
+@@ -83,27 +287,31 @@ static void do_darwin_reset(void *state) {
+ }
+ 
+ static mmap_file_t check_and_open(const char *path, const char *errmsg) {
+-    int fd;
+-    struct stat stats;
+-    void *mapping;
+-
+-    if (!path) goto fail;
++    gchar *contents = NULL;
++    gsize length = 0;
++    GError *gerr = NULL;
+ 
+-    fd = open(path, O_RDONLY | O_BINARY);
+-    if (fd < 0) goto fail;
++    if (!path) {
++        goto fail;
++    }
+ 
+-    fstat(fd, &stats);
+-    mapping = mmap(NULL, stats.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+-    if (MAP_FAILED == mapping) goto fail;
++    if (!g_file_get_contents(path, &contents, &length, &gerr)) {
++        if (gerr) {
++            fprintf(stderr, "error reading %s: %s\n", path, gerr->message);
++            g_clear_error(&gerr);
++        }
++        goto fail;
++    }
+ 
+-    if (is_im4p(mapping)) {
++    if (is_im4p(contents)) {
+         fprintf(stderr, "error: %s is an im4p, you need to unwrap it (eg. ipsw img4 im4p extract)\n", path);
++        g_free(contents);
+         goto fail;
+     }
+ 
+     return (mmap_file_t){
+-        .buf = mapping,
+-        .len = stats.st_size,
++        .buf = contents,
++        .len = length,
+     };
+ 
+ fail:
+@@ -136,40 +344,6 @@ static void init_sep(struct dtree_node *dt_root) {
+     alloc_zeroed("sep", sep_reg[0].base, sep_reg[0].len);
+ }
+ 
+-static void init_aic(struct dtree_node *dt_root, uint64_t iobase) {
+-    // This is a bare-bones aic implementation that ignores all register reads/
+-    // writes, and simply reports the correct number of IRQs
+-    struct dtree_node *aic = adt_find_node(dt_root, "arm-io/aic");
+-    struct adt_io_reg *aic_reg = adt_get_prop_val(aic, "reg");
+-
+-    uint64_t base = aic_reg[0].base + iobase;
+-    alloc_zeroed("aic", base, aic_reg[0].len);
+-
+-    int aic_vers = -1;
+-    sscanf(adt_get_prop_val(aic, "compatible"), "aic,%d", &aic_vers);
+-
+-    uint32_t num_irqs = 0;
+-    switch (aic_vers) {
+-        case 1:
+-            // aic,1 needs register +0x04 from first iobase to report the number of interrupts
+-            // This is always 8x the size of the ipid-mask for this device
+-            num_irqs = 8 * adt_get_prop_len(aic, "ipid-mask");
+-            address_space_write(&address_space_memory, base + 0x4, MEMTXATTRS_UNSPECIFIED, &num_irqs, sizeof(num_irqs));
+-            break;
+-
+-        case 2:
+-        case 3:
+-            // aic,2 and aic,3 have num irqs at +0xC
+-            num_irqs = A_GOOD_NUMBER_OF_IRQS;
+-            address_space_write(&address_space_memory, base + 0xC, MEMTXATTRS_UNSPECIFIED, &num_irqs, sizeof(num_irqs));
+-            break;
+-
+-        default:
+-            fprintf(stderr, "warning: unsupported AIC, this will probably not work\n");
+-            break;
+-    }
+-}
+-
+ static void setup_mte(Object *cpuobj, MachineState *machine, struct xnu_boot_info *info) {
+     MemoryRegion *tag_sysmem = NULL;
+ 
+@@ -255,6 +429,12 @@ static void darwin_init(MachineState *ms) {
+     info->dram_base = *(u64*)adt_get_prop_val(chosen_node, "dram-base");
+     info->dram_size = *(u64*)adt_get_prop_val(chosen_node, "dram-size");
+ 
++    // Parse and allocate the experimental framebuffer BEFORE the
++    // boot loader writes boot_args so Video fields are populated.
++    if (info->fb && *info->fb) {
++        darwin_init_fb(ms);
++    }
++
+     s->cpu = ARM_CPU(cpuobj);
+     arm_load_xnu(s->cpu, ms, info);
+     if (info->has_mte) setup_mte(cpuobj, MACHINE(s), info);
+@@ -272,7 +452,7 @@ static void darwin_init(MachineState *ms) {
+     assert(0 == arm_io_ranges[0]); // child bus phys addr must be zero
+ 
+     init_uart(dt_root, iobase);
+-    init_aic(dt_root, iobase);
++    apple_aic_create(adt_find_node(dt_root, "arm-io/aic"), iobase);
+     init_sep(dt_root);
+     init_cpu_impl(dt_root);
+ 
+@@ -286,13 +466,13 @@ static void darwin_init(MachineState *ms) {
+     qdev_connect_gpio_out(cpudev, GTIMER_HYPVIRT, qdev_get_gpio_in(cpudev, ARM_CPU_FIQ));
+ 
+     qemu_register_reset(do_darwin_reset, s);
+-    munmap(info->bootkc_f.buf, info->bootkc_f.len);
+-    munmap(info->dtree_f.buf, info->dtree_f.len);
+-    munmap(info->tc_f.buf, info->tc_f.len);
+-    munmap(info->ramdisk_f.buf, info->ramdisk_f.len);
++    g_free(info->bootkc_f.buf);
++    g_free(info->dtree_f.buf);
++    g_free(info->tc_f.buf);
++    g_free(info->ramdisk_f.buf);
+     if (info->sptm) {
+-        munmap(info->sptm_f.buf, info->sptm_f.len);
+-        munmap(info->txm_f.buf, info->txm_f.len);
++        g_free(info->sptm_f.buf);
++        g_free(info->txm_f.buf);
+     }
+ }
+ 
+@@ -313,6 +493,7 @@ static void darwin_machine_class_init(ObjectClass *oc, const void *data) {
+     object_class_property_add_str(oc, "txm", txm_darwin_class_get, txm_darwin_class_set);
+     object_class_property_add_str(oc, "tc", tc_darwin_class_get, tc_darwin_class_set);
+     object_class_property_add_str(oc, "ramdisk", ramdisk_darwin_class_get, ramdisk_darwin_class_set);
++    object_class_property_add_str(oc, "fb", fb_darwin_class_get, fb_darwin_class_set);
+ 
+     darwin_machine_init(mc);
+ }
+diff --git a/hw/arm/macho.c b/hw/arm/macho.c
+index 72063a1..d515f5c 100644
+--- a/hw/arm/macho.c
++++ b/hw/arm/macho.c
+@@ -121,7 +121,8 @@ fse_t *macho_find_fileset_entry(u8 *macho, const char *name) {
+     for (size_t i = 0; i < header->ncmds; i++) {
+         if (LC_FILESET_ENTRY == cursor->cmd) {
+             fse_t *f = (fse_t*)cursor;
+-            if (0 == strcmp(name, (char*)(f+1))) return f;
++            const char *entry_id = macho_fse_entry_id(f);
++            if (entry_id && 0 == strcmp(name, entry_id)) return f;
+         }
+         cursor = NEXT(cursor);
+     }
+diff --git a/hw/arm/xnuboot_sptm.c b/hw/arm/xnuboot_sptm.c
+index b96d421..8099cfc 100644
+--- a/hw/arm/xnuboot_sptm.c
++++ b/hw/arm/xnuboot_sptm.c
+@@ -3,7 +3,6 @@
+ #include "hw/arm/machines-qom.h"
+ #include "system/address-spaces.h"
+ #include "cpu.h"
+-#include <sys/mman.h>
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ #include <inttypes.h>
+@@ -30,8 +29,8 @@
+ // BKC actual virt addr = sptm.virtlo + 2 * SPTM_EXPECTED_STRIDE
+ #define SPTM_EXPECTED_STRIDE    0x10000000
+ 
+-#define GET_L2_PT_INDEX(a)      (( ((a)) & ( (BIT(36)-1)) ))
+-#define STRIP_L2_PT_INDEX(a)    (( ((a)) & (~(BIT(36)-1)) ))
++#define GET_L2_PT_INDEX(a)      (( ((a)) & ( (BIT_ULL(36)-1)) ))
++#define STRIP_L2_PT_INDEX(a)    (( ((a)) & (~(BIT_ULL(36)-1)) ))
+ 
+ static void alloc_ram(Object *cpuobj, hwaddr base, size_t len) {
+     MemoryRegion *ram_main = get_system_memory();
+@@ -385,6 +384,17 @@ static void arm_load_xnu_sptm(ARMCPU *cpu, MachineState *ms, struct xnu_boot_inf
+     args.deviceTreeLength = info->dtree_f.len;
+     g_strlcpy(args.CommandLine, info->args, BOOT_LINE_LENGTH);
+ 
++    // Experimental framebuffer handoff: only when requested via the
++    // machine property. The guest framebuffer lives at info->fb_base
++    // and the coordinates are exposed through Boot_Video.
++    if (info->has_fb) {
++        args.Video.v_baseAddr = info->fb_base;
++        args.Video.v_width = info->fb_width;
++        args.Video.v_height = info->fb_height;
++        args.Video.v_rowBytes = info->fb_rowbytes;
++        args.Video.v_depth = info->fb_depth;
++    }
++
+ #ifdef DEBUG_MEMORY_LAYOUT
+     uint64_t sptm_load = args.virtBase - args.physBase + sptm_mi.physlo;
+     uint64_t txm_load = sptm_load + 1 * SPTM_EXPECTED_STRIDE;
+@@ -487,6 +497,14 @@ static void arm_load_xnu_nosptm(ARMCPU *cpu, MachineState *ms, struct xnu_boot_i
+     args.deviceTreeLength = info->dtree_f.len;
+     g_strlcpy(args.CommandLine, info->args, BOOT_LINE_LENGTH);
+ 
++    if (info->has_fb) {
++        args.Video.v_baseAddr = info->fb_base;
++        args.Video.v_width = info->fb_width;
++        args.Video.v_height = info->fb_height;
++        args.Video.v_rowBytes = info->fb_rowbytes;
++        args.Video.v_depth = info->fb_depth;
++    }
++
+     assert(args.topOfKernelData > bkc_mi.physlo + (bkc_mi.virthi - bkc_mi.virtlo));
+ 
+ #ifdef DEBUG_MEMORY_LAYOUT
+diff --git a/hw/intc/apple_aic.c b/hw/intc/apple_aic.c
+new file mode 100644
+index 0000000..ec7a3af
+--- /dev/null
++++ b/hw/intc/apple_aic.c
+@@ -0,0 +1,280 @@
++#include "qemu/osdep.h"
++#include "qapi/error.h"
++#include "qemu/log.h"
++#include "target/arm/cpu.h"
++#include "hw/intc/apple_aic.h"
++#include "hw/core/sysbus.h"
++#include "hw/core/irq.h"
++
++/*
++ * minimal aic implementation:
++ *  - knows how many interrupts there are
++ *  - knows which are enabled/ disabled
++ *  - can receive interrupts from devices, and send irqs to core 0
++ *  - can respond to eoi conditions
++ *  - supports v1-3
++ *  - ignores everything else
++ */
++
++typedef uint64_t u64;
++typedef uint32_t u32;
++typedef uint16_t u16;
++typedef uint8_t  u8;
++
++// #define aic_log printf
++#define aic_log(...)
++
++#define TYPE_APPLE_AIC "APPLE_AIC"
++OBJECT_DECLARE_SIMPLE_TYPE(AppleAICState, APPLE_AIC)
++
++// Use this for AICs where we don't know how many interrupts there should be
++#define A_GOOD_NUMBER_OF_IRQS           0x1000
++
++#define IRQS_PER_WORD                   (( 8 * sizeof(u32) ))
++#define AIC_EOI_FLAG_VALID_INT          0x10000
++
++/* ref: AppleInterruptControllerVX::enableVector & ::initVector */
++#define AIC1_REG_NUM_INTS               0x4
++#define AIC1_REG_IACK                   0x2004
++#define AIC1_ACK_BASE                   0x4080
++#define AIC1_ACK_SIZE                   0x80
++#define AIC1_DISABLE_BASE               0x4100
++#define AIC1_DISABLE_SIZE               0x80
++#define AIC1_ENABLE_BASE                0x4180
++#define AIC1_ENABLE_SIZE                0x80
++
++#define AIC2_REG_NUM_INTS               0x0C
++#define AIC2_DISABLE_BASE               0x6400
++#define AIC2_DISABLE_SIZE               0x200
++#define AIC2_ENABLE_BASE                0x6600
++#define AIC2_ENABLE_SIZE                0x200
++
++#define AIC3_REG_NUM_INTS               0x0C
++#define AIC3_DISABLE_BASE               0x14400
++#define AIC3_DISABLE_SIZE               0x200
++#define AIC3_ENABLE_BASE                0x14600
++#define AIC3_ENABLE_SIZE                0x200
++
++/*
++ * FOR_BITVEC_IN
++ * o: offset of a register access
++ * b: base on the MMIO region to test for
++ * sz: size of the MMIO region to test for
++ *
++ * If the register access at offset o is within the MMIO region starting at b
++ * and sz bytes large, this will loop over every bit in the register, and
++ * define the irqnum variable to correspond to which interrupt number the
++ * current iteration refers to.
++ *
++ * It won't do anything if offset isn't within the bounds of this MMIO region.
++ *
++ * Yes, this macro is *extremely* cursed. No I'm not sorry.
++ */
++#define FOR_BITVEC_IN(o, b, sz) \
++    for (size_t i = 0, irqnum = 0; \
++        addr_between(o, b, sz) && i < IRQS_PER_WORD; \
++        i++, irqnum = i + IRQS_PER_WORD * ((o - b) >> 2))
++
++struct AppleAICState {
++    SysBusDevice   parent_obj;
++    MemoryRegion   mmio;
++    size_t         physlen;
++    uint32_t       num_irqs;
++    qemu_irq       irq_out;
++    bool          *enable;
++    bool          *pending;
++    aic_version_t  version;
++    bool           has_ack_region;
++    size_t         r_iack;
++    size_t         r_num_ints;
++    size_t         r_enable_base, r_enable_size;
++    size_t         r_disable_base, r_disable_size;
++    size_t         r_ack_base, r_ack_size; // only valid if has_ack_region
++};
++
++static bool addr_between(hwaddr addr, hwaddr base, size_t len) {
++    return addr >= base && addr < base + len;
++}
++
++static void apple_aic_update_irqs(AppleAICState *aic) {
++    for (size_t i = 0; i < aic->num_irqs; i++) {
++        if (aic->pending[i] && aic->enable[i]) {
++            aic_log("aic: raising IRQ\n");
++            qemu_irq_raise(aic->irq_out);
++            return;
++        }
++    }
++}
++
++static u64 aic_handle_eoi(AppleAICState *aic) {
++    // AppleInterruptController::handleInterrupt will keep looping looking for
++    // more interrupts until this register returns 0.
++    for (size_t i = 0; i < aic->num_irqs; i++) {
++        if (aic->pending[i] && aic->enable[i]) {
++            if (!aic->has_ack_region) aic->pending[i] = false;
++            aic_log("aic: EOI for int num %zu\n", i);
++            return i | AIC_EOI_FLAG_VALID_INT;
++        }
++    }
++
++    // All interrupts handled, we can shut down now
++    aic_log("aic: EOI with no remaining interrupts\n");
++    qemu_irq_lower(aic->irq_out);
++    return 0;
++}
++
++static uint64_t apple_aic_read(void *opaque, hwaddr offset, unsigned size) {
++    AppleAICState *aic = APPLE_AIC(opaque);
++
++    assert(sizeof(uint32_t) == size);
++
++    aic_log("aic: read(offset 0x%llX, pc 0x%llX, lr 0x%llX)\n", offset, cpu_env(qemu_get_cpu(0))->pc, cpu_env(qemu_get_cpu(0))->xregs[30]);
++
++    if (aic->r_num_ints == offset) return aic->num_irqs;
++    if (aic->r_iack == offset) return aic_handle_eoi(aic);
++    return 0;
++}
++
++static void apple_aic_write(void *opaque, hwaddr offset, uint64_t value, unsigned size) {
++    AppleAICState *aic = APPLE_AIC(opaque);
++
++    assert(sizeof(uint32_t) == size);
++
++    aic_log("aic: write(offset 0x%llX, value 0x%llX, pc 0x%llX, lr 0x%llX)\n", offset, value, cpu_env(qemu_get_cpu(0))->pc, cpu_env(qemu_get_cpu(0))->xregs[30]);
++
++    FOR_BITVEC_IN(offset, aic->r_disable_base, aic->r_disable_size) {
++        if (1 & (value >> i)) {
++            aic_log("aic: disabling IRQ %ld\n", irqnum);
++            aic->enable[irqnum] = false;
++        }
++    }
++
++    FOR_BITVEC_IN(offset, aic->r_enable_base, aic->r_enable_size) {
++        if (1 & (value >> i)) {
++            aic_log("aic: enabling IRQ %ld\n", irqnum);
++            aic->enable[irqnum] = true;
++        }
++    }
++
++    if (aic->has_ack_region) {
++        FOR_BITVEC_IN(offset, aic->r_ack_base, aic->r_ack_size) {
++            if (1 & (value >> i)) {
++                aic_log("aic: acknowledging IRQ %ld\n", irqnum);
++                aic->pending[irqnum] = false;
++            }
++        }
++    }
++
++    apple_aic_update_irqs(aic);
++}
++
++static void apple_aic_irq_request(void *opaque, int n, int level) {
++    AppleAICState *aic = opaque;
++    aic_log("aic: interrupt %d taken (level %d)\n", n, level);
++    if (level) aic->pending[n] = true;
++    apple_aic_update_irqs(aic);
++}
++
++static const MemoryRegionOps apple_aic_ops = {
++    .read  = apple_aic_read,
++    .write = apple_aic_write,
++};
++
++static void apple_aic_realize(DeviceState *dev, Error **errp) {
++    AppleAICState *aic = APPLE_AIC(dev);
++
++    memory_region_init_io(&aic->mmio, OBJECT(dev), &apple_aic_ops, aic, TYPE_APPLE_AIC, aic->physlen);
++    sysbus_init_mmio(SYS_BUS_DEVICE(dev), &aic->mmio);
++
++    aic->enable  = g_new0(bool, aic->num_irqs);
++    aic->pending = g_new0(bool, aic->num_irqs);
++
++    qdev_init_gpio_in(DEVICE(aic), apple_aic_irq_request, aic->num_irqs);
++    qdev_init_gpio_out(DEVICE(aic), &aic->irq_out, 1);
++}
++
++static void apple_aic_class_init(ObjectClass *klass, const void *data) {
++    DeviceClass *dc = DEVICE_CLASS(klass);
++    dc->realize = apple_aic_realize;
++}
++
++static const TypeInfo apple_aic1_info = {
++    .name           =  TYPE_APPLE_AIC,
++    .parent         =  TYPE_SYS_BUS_DEVICE,
++    .instance_size  =  sizeof(AppleAICState),
++    .class_init     =  apple_aic_class_init,
++};
++
++static void apple_aic_register_types(void) {
++    type_register_static(&apple_aic1_info);
++}
++
++type_init(apple_aic_register_types)
++
++DeviceState *apple_aic_create(struct dtree_node *adt_node, uint64_t iobase) {
++    DeviceState *dev = qdev_new(TYPE_APPLE_AIC);
++    AppleAICState *aic = APPLE_AIC(dev);
++    struct adt_io_reg *aic_reg;
++
++    assert(32 == IRQS_PER_WORD);
++    assert(adt_node);
++    aic_reg = adt_get_prop_val(adt_node, "reg");
++    assert(aic_reg);
++
++    aic->version = AIC_UNKNOWN;
++    aic->physlen = aic_reg[0].len;
++    sscanf(adt_get_prop_val(adt_node, "compatible"), "aic,%d", &aic->version);
++
++    switch (aic->version) {
++        case AIC_V1:
++            // aic,1 must have *exactly* 8x the length of ipid-mask interrupt lines
++            aic->num_irqs        =  8 * adt_get_prop_len(adt_node, "ipid-mask");
++            aic->has_ack_region  =  true;
++            aic->r_iack          =  AIC1_REG_IACK;
++            aic->r_num_ints      =  AIC1_REG_NUM_INTS;
++            aic->r_enable_base   =  AIC1_ENABLE_BASE;
++            aic->r_enable_size   =  AIC1_ENABLE_SIZE;
++            aic->r_disable_base  =  AIC1_DISABLE_BASE;
++            aic->r_disable_size  =  AIC1_DISABLE_SIZE;
++            aic->r_ack_base      =  AIC1_ACK_BASE;
++            aic->r_ack_size      =  AIC1_ACK_SIZE;
++            break;
++
++        case AIC_V2:
++            aic->num_irqs        =  A_GOOD_NUMBER_OF_IRQS;
++            aic->has_ack_region  =  false;
++            aic->r_iack          = *(u64*)adt_get_prop_val(adt_node, "aic-iack-offset");
++            aic->r_num_ints      =  AIC2_REG_NUM_INTS;
++            aic->r_enable_base   =  AIC2_ENABLE_BASE;
++            aic->r_enable_size   =  AIC2_ENABLE_SIZE;
++            aic->r_disable_base  =  AIC2_DISABLE_BASE;
++            aic->r_disable_size  =  AIC2_DISABLE_SIZE;
++            break;
++
++        case AIC_V3:
++            aic->num_irqs        =  A_GOOD_NUMBER_OF_IRQS;
++            aic->has_ack_region  =  false;
++            aic->r_iack          = *(u64*)adt_get_prop_val(adt_node, "aic-iack-offset");
++            aic->r_num_ints      =  AIC3_REG_NUM_INTS;
++            aic->r_enable_base   =  AIC3_ENABLE_BASE;
++            aic->r_enable_size   =  AIC3_ENABLE_SIZE;
++            aic->r_disable_base  =  AIC3_DISABLE_BASE;
++            aic->r_disable_size  =  AIC3_DISABLE_SIZE;
++            break;
++
++        default:
++            // Note: you don't actually need a working aic to boot to a root
++            // shell; all you need usually is for the aic to report that the
++            // number of interrupts is nonzero. Proper aic support is only
++            // needed if you want the qemuport UARTs (non-primary UARTs) to
++            // work. uart0 doesn't use interrupts so it always works even if
++            // the aic doesn't.
++            fprintf(stderr, "unknown aic version %d\n", aic->version);
++            exit(1);
++            break;
++    }
++
++    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, aic_reg[0].base + iobase);
++    return dev;
++}
+diff --git a/hw/intc/meson.build b/hw/intc/meson.build
+index 377de78..d9ab64d 100644
+--- a/hw/intc/meson.build
++++ b/hw/intc/meson.build
+@@ -88,3 +88,5 @@ specific_ss.add(when: 'CONFIG_LOONGARCH_EXTIOI', if_true: files('loongarch_extio
+ specific_ss.add(when: ['CONFIG_KVM', 'CONFIG_LOONGARCH_EXTIOI'],
+                if_true: files('loongarch_extioi_kvm.c'))
+ specific_ss.add(when: 'CONFIG_LOONGARCH_DINTC', if_true: files('loongarch_dintc.c'))
++
++arm_common_ss.add(files('apple_aic.c'))
+diff --git a/include/hw/intc/apple_aic.h b/include/hw/intc/apple_aic.h
+new file mode 100644
+index 0000000..04df723
+--- /dev/null
++++ b/include/hw/intc/apple_aic.h
+@@ -0,0 +1,14 @@
++#pragma once
++#include "qemu/osdep.h"
++#include "qom/object.h"
++#include "hw/core/sysbus.h"
++#include "xnu/apple_dtree.h"
++
++typedef enum {
++    AIC_UNKNOWN = 0,
++    AIC_V1 = 1,
++    AIC_V2 = 2,
++    AIC_V3 = 3,
++} aic_version_t;
++
++DeviceState *apple_aic_create(struct dtree_node *aic_node, uint64_t iobase);
+diff --git a/include/xnu/boot/args.h b/include/xnu/boot/args.h
+index 5fca5f1..06dc110 100644
+--- a/include/xnu/boot/args.h
++++ b/include/xnu/boot/args.h
+@@ -1,31 +1,24 @@
+ #ifndef XNU_BOOT_ARGS_H
+ #define XNU_BOOT_ARGS_H
+ 
+-// from xnu-12377.121.6/pexpert/pexpert/arm64/boot.h
+-
+-/*
+- * Copyright (c) 2007-2009 Apple Inc. All rights reserved.
+- * Copyright (c) 2000-2006 Apple Computer, Inc. All rights reserved.
+- */
+-/*
+- * @OSF_COPYRIGHT@
+- */
+-
+ #include <stdint.h>
++#include <stddef.h>
+ 
+ #define BOOT_LINE_LENGTH 1024
+ 
+ /*
+- * Video information..
++ * Apple ARM64 guest ABI.
++ *
++ * Never use host-width unsigned long here.
++ * Windows x64 is LLP64, where unsigned long is 32-bit.
+  */
+-
+ struct Boot_Video {
+-	unsigned long   v_baseAddr;     /* Base address of video memory */
+-	unsigned long   v_display;      /* Display Code (if Applicable */
+-	unsigned long   v_rowBytes;     /* Number of bytes per pixel row */
+-	unsigned long   v_width;        /* Width */
+-	unsigned long   v_height;       /* Height */
+-	unsigned long   v_depth;        /* Pixel Depth and other parameters */
++    uint64_t v_baseAddr;
++    uint64_t v_display;
++    uint64_t v_rowBytes;
++    uint64_t v_width;
++    uint64_t v_height;
++    uint64_t v_depth;
+ };
+ 
+ #define kBootVideoDepthMask             (0xFF)
+@@ -36,37 +29,113 @@ struct Boot_Video {
+ 
+ #define kBootFlagsDarkBoot              (1ULL << 0)
+ 
+-typedef struct Boot_Video       Boot_Video;
++typedef struct Boot_Video Boot_Video;
+ 
+-/* Boot argument structure - passed into Mach kernel at boot time.
+- */
+ #define kBootArgsRevision               1
+-#define kBootArgsRevision2              2       /* added boot_args.bootFlags */
++#define kBootArgsRevision2              2
+ #define kBootArgsVersion1               1
+ #define kBootArgsVersion2               2
+ 
+ typedef struct xnu_boot_args {
+-	uint16_t                Revision;                       /* Revision of boot_args structure */
+-	uint16_t                Version;                        /* Version of boot_args structure */
+-	uint64_t                virtBase;                       /* Virtual base of memory */
+-	uint64_t                physBase;                       /* Physical base of memory */
+-	uint64_t                memSize;                        /* Size of memory */
+-	uint64_t                topOfKernelData;        /* Highest physical address used in kernel data area */
+-	Boot_Video              Video;                          /* Video Information */
+-	uint32_t                machineType;            /* Machine Type */
+-	uint64_t                deviceTreeP;           /* Base of flattened device tree */
+-	uint32_t                deviceTreeLength;       /* Length of flattened tree */
+-	char                    CommandLine[BOOT_LINE_LENGTH];  /* Passed in command line */
+-	uint64_t                bootFlags;              /* Additional flags specified by the bootloader */
+-	uint64_t                memSizeActual;          /* Actual size of memory */
++    uint16_t Revision;
++    uint16_t Version;
++    uint64_t virtBase;
++    uint64_t physBase;
++    uint64_t memSize;
++    uint64_t topOfKernelData;
++    Boot_Video Video;
++    uint32_t machineType;
++    uint64_t deviceTreeP;
++    uint32_t deviceTreeLength;
++    char CommandLine[BOOT_LINE_LENGTH];
++    uint64_t bootFlags;
++    uint64_t memSizeActual;
+ } boot_args;
+ 
+-#define SOC_DEVICE_TYPE_BUFFER_SIZE     32
++#ifdef __cplusplus
++#define VPHONE_ABI_ASSERT(c, m) static_assert((c), m)
++#else
++#define VPHONE_ABI_ASSERT(c, m) _Static_assert((c), m)
++#endif
+ 
+-#define PC_TRACE_BUF_SIZE               1024
++VPHONE_ABI_ASSERT(sizeof(Boot_Video) == 48, "Boot_Video size mismatch");
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, Revision) == 0,
++    "Revision offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, Version) == 2,
++    "Version offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, virtBase) == 8,
++    "virtBase offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, physBase) == 16,
++    "physBase offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, memSize) == 24,
++    "memSize offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, topOfKernelData) == 32,
++    "topOfKernelData offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, Video) == 40,
++    "Video offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, machineType) == 88,
++    "machineType offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, deviceTreeP) == 96,
++    "deviceTreeP offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, deviceTreeLength) == 104,
++    "deviceTreeLength offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, CommandLine) == 108,
++    "CommandLine offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, bootFlags) == 1136,
++    "bootFlags offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    offsetof(boot_args, memSizeActual) == 1144,
++    "memSizeActual offset mismatch"
++);
++
++VPHONE_ABI_ASSERT(
++    sizeof(boot_args) == 1152,
++    "boot_args size mismatch"
++);
++
++#undef VPHONE_ABI_ASSERT
++
++#define SOC_DEVICE_TYPE_BUFFER_SIZE 32
++#define PC_TRACE_BUF_SIZE 1024
+ 
+ #define CDBG_MEM ((sizeof(dbg_registry_t) + PAGE_SIZE - 1) & ~PAGE_MASK)
+-
+ #define PE_EARLY_BOOT_VA (CDBG_MEM)
+ 
+-#endif
++#endif
+\ No newline at end of file
+diff --git a/include/xnu/boot/xnuboot.h b/include/xnu/boot/xnuboot.h
+index 2c4c01e..16ce792 100644
+--- a/include/xnu/boot/xnuboot.h
++++ b/include/xnu/boot/xnuboot.h
+@@ -7,9 +7,9 @@
+ #include "target/arm/cpu-qom.h"
+ #include "qemu/notify.h"
+ 
+-#define ONE_KB        BIT(10)
+-#define ONE_MB        BIT(20)
+-#define ONE_GB        BIT(30)
++#define ONE_KB        BIT_ULL(10)
++#define ONE_MB        BIT_ULL(20)
++#define ONE_GB        BIT_ULL(30)
+ 
+ #define DARWIN_PAGE_SIZE_KB           (( 16 ))
+ #define DARWIN_HUGE_PAGE_SIZE_MB      (( 32 ))
+@@ -20,7 +20,7 @@
+ #define ROUND_DOWN_POW2(x,sz)      ((       ((x))        & (~(((sz)) - 1)) ))
+ #define ROUND_UP_POW2(x,sz)        (( (((x)) + (((sz))-1)) & (~(((sz)) - 1)) ))
+ #define ROUND_NEXT_PAGE(x)         (( ROUND_UP_POW2( ((x)), ( (( DARWIN_PAGE_SIZE )) )) ))
+-#define XNU_STRIP_VMA(x)           (( ((x)) & ((BIT(35)-1)) ))
++#define XNU_STRIP_VMA(x)           (( ((x)) & ((BIT_ULL(35)-1)) ))
+ 
+ typedef uint64_t usize;
+ typedef uint64_t u64;
+@@ -41,10 +41,16 @@ typedef struct {
+ struct xnu_boot_info {
+     // Arguments to a -M darwin machine
+     char *bootkc, *args, *dtree, *sptm, *txm, *tc, *ramdisk;
++    // Experimental linear framebuffer handoff (0 = disabled).
++    char *fb;
+     mmap_file_t bootkc_f, dtree_f, sptm_f, txm_f, tc_f, ramdisk_f;
+ 
+     uint64_t dram_base, dram_size;
++    // Experimental framebuffer geometry + guest physical address.
++    uint64_t fb_base, fb_size;
++    uint32_t fb_width, fb_height, fb_rowbytes, fb_depth;
+     bool has_mte;
++    bool has_fb;
+ 
+     // Feedback from the kernel loader back to the darwin machine to boot during reset
+     hwaddr  init_pc, init_x0;
+diff --git a/include/xnu/macho.h b/include/xnu/macho.h
+index a95ac3a..68bcc59 100644
+--- a/include/xnu/macho.h
++++ b/include/xnu/macho.h
+@@ -17,6 +17,48 @@ typedef struct segment_command_64 seg_t;
+ typedef struct section_64 sect_t;
+ typedef struct fileset_entry_command fse_t;
+ 
++/*
++ * On-disk size of the fixed portion of an LC_FILESET_ENTRY command.
++ * The host sizeof(fse_t) is 32 on LP64 hosts but 40 on LLP64 hosts
++ * (Windows), where union lc_str keeps its char *ptr member. The
++ * on-disk ABI is fixed at 32 bytes, so bounds checks must use this
++ * constant rather than sizeof(fse_t).
++ */
++#define MACHO_FSE_DISK_HEADER_SIZE 32u
++
++/*
++ * Return the NUL-terminated entry_id string of an LC_FILESET_ENTRY
++ * command. entry_id is an lc_str offset relative to the command start,
++ * not a fixed sizeof(fse_t) offset. Returns NULL when the offset is
++ * out of cmdsize or the string is not terminated inside cmdsize.
++ */
++static inline const char *macho_fse_entry_id(const fse_t *f)
++{
++    if (f->cmdsize < MACHO_FSE_DISK_HEADER_SIZE) {
++        return NULL;
++    }
++
++    if (f->entry_id.offset >= f->cmdsize) {
++        return NULL;
++    }
++
++    if (f->entry_id.offset < MACHO_FSE_DISK_HEADER_SIZE) {
++        return NULL;
++    }
++
++    const uint8_t *cmd_start = (const uint8_t *)f;
++    const uint8_t *cmd_end = cmd_start + f->cmdsize;
++    const char *entry_id = (const char *)(cmd_start + f->entry_id.offset);
++
++    for (const uint8_t *p = (const uint8_t *)entry_id; p < cmd_end; p++) {
++        if (*p == '\0') {
++            return entry_id;
++        }
++    }
++
++    return NULL;
++}
++
+ bool           is_im4p(u8 *macho);
+ macho_info_t   macho_get_info(u8 *macho);
+ void           macho_verify_header(u8 *macho, bool is_kc);
+diff --git a/meson.build b/meson.build
+index 49a5baf..d7f8dd3 100644
+--- a/meson.build
++++ b/meson.build
+@@ -15,7 +15,10 @@ add_test_setup('slow', exclude_suites: ['thorough'],
+ add_test_setup('thorough',
+                env: ['G_TEST_SLOW=1', 'SPEED=thorough', 'RUST_BACKTRACE=1'])
+ 
+-meson.add_postconf_script(find_program('scripts/symlink-install-tree.py'))
++if host_machine.system() == 'darwin'
++  # macOS bundle assembly only; Windows builds install flat binaries.
++  meson.add_postconf_script(find_program('scripts/symlink-install-tree.py'))
++endif
+ 
+ ####################
+ # Global variables #
+diff --git a/tests/unit/meson.build b/tests/unit/meson.build
+index dc3fb95..324141c 100644
+--- a/tests/unit/meson.build
++++ b/tests/unit/meson.build
+@@ -40,6 +40,8 @@ tests = {
+   'test-qtree': [],
+   'test-bitops': [],
+   'test-bitcnt': [],
++  'test-xnu-llp64': [],
++  'test-macho-fileset': [],
+   'test-qgraph': ['../qtest/libqos/qgraph.c'],
+   'check-qom-interface': [qom],
+   'check-qom-proplist': [qom],
+diff --git a/tests/unit/test-macho-fileset.c b/tests/unit/test-macho-fileset.c
+new file mode 100644
+index 0000000..6cf96e3
+--- /dev/null
++++ b/tests/unit/test-macho-fileset.c
+@@ -0,0 +1,139 @@
++/*
++ * macho_find_fileset_entry LC_FILESET_ENTRY parsing tests.
++ *
++ * entry_id is an lc_str offset relative to the load command start, not
++ * a fixed sizeof(fileset_entry_command) offset. Malformed entries must
++ * fail closed (be skipped) rather than read out of bounds.
++ *
++ * This work is licensed under the terms of the GNU LGPL, version 2 or later.
++ * See the COPYING.LIB file in the top-level directory.
++ */
++
++#include "qemu/osdep.h"
++#include "xnu/mach-o/loader.h"
++#include "xnu/macho.h"
++
++/*
++ * Layout of the synthetic load command buffer:
++ *   [ fse_t header (32 bytes) ][ pad (8) ][ entry id string ]
++ * entry_id.offset points past the padding so it differs from sizeof(fse_t).
++ */
++#define FSE_PAD 8
++
++static fse_t *make_fileset_cmd(const char *entry_id, uint32_t extra_pad,
++                               uint8_t **out_buf, size_t *out_len)
++{
++    size_t id_len = strlen(entry_id) + 1;
++    uint32_t cmdsize = MACHO_FSE_DISK_HEADER_SIZE + extra_pad + id_len;
++    uint8_t *buf = g_malloc0(cmdsize);
++    fse_t *f = (fse_t *)buf;
++
++    f->cmd = LC_FILESET_ENTRY;
++    f->cmdsize = cmdsize;
++    f->vmaddr = 0xfffffff027100000ULL;
++    f->fileoff = 0x1000;
++    f->entry_id.offset = MACHO_FSE_DISK_HEADER_SIZE + extra_pad;
++
++    memcpy(buf + f->entry_id.offset, entry_id, id_len);
++
++    *out_buf = buf;
++    *out_len = cmdsize;
++    return f;
++}
++
++static void test_entry_id_offset_not_sizeof(void)
++{
++    uint8_t *cmd; size_t cmd_len;
++    make_fileset_cmd("com.apple.security.AppleImage4", FSE_PAD, &cmd, &cmd_len);
++
++    fse_t *f = (fse_t *)cmd;
++    g_assert_cmpuint(f->entry_id.offset, !=, MACHO_FSE_DISK_HEADER_SIZE);
++
++    const char *id = macho_fse_entry_id(f);
++    g_assert_nonnull(id);
++    g_assert_cmpstr(id, ==, "com.apple.security.AppleImage4");
++
++    g_free(cmd);
++}
++
++static void test_zero_pad_still_matches(void)
++{
++    uint8_t *cmd; size_t cmd_len;
++    make_fileset_cmd("kext", 0, &cmd, &cmd_len);
++
++    g_assert_cmpuint(((fse_t *)cmd)->entry_id.offset, ==, MACHO_FSE_DISK_HEADER_SIZE);
++    g_assert_nonnull(macho_fse_entry_id((fse_t *)cmd));
++
++    g_free(cmd);
++}
++
++static void test_offset_out_of_cmdsize_fails_closed(void)
++{
++    uint8_t *cmd; size_t cmd_len;
++    fse_t *f = make_fileset_cmd("kext", 0, &cmd, &cmd_len);
++
++    /* Offset at or beyond cmdsize must never be dereferenced. */
++    f->entry_id.offset = f->cmdsize;
++    g_assert_null(macho_fse_entry_id(f));
++
++    f->entry_id.offset = f->cmdsize + 0x1000;
++    g_assert_null(macho_fse_entry_id(f));
++
++    g_free(cmd);
++}
++
++static void test_cmdsize_below_header_fails_closed(void)
++{
++    uint8_t *cmd; size_t cmd_len;
++    fse_t *f = make_fileset_cmd("kext", 0, &cmd, &cmd_len);
++
++    /* cmdsize smaller than the fixed header must never be trusted. */
++    f->cmdsize = MACHO_FSE_DISK_HEADER_SIZE - 1;
++    g_assert_null(macho_fse_entry_id(f));
++
++    f->cmdsize = 0;
++    g_assert_null(macho_fse_entry_id(f));
++
++    g_free(cmd);
++}
++
++static void test_offset_inside_header_fails_closed(void)
++{
++    uint8_t *cmd; size_t cmd_len;
++    fse_t *f = make_fileset_cmd("kext", 0, &cmd, &cmd_len);
++
++    /* entry_id must not alias the fixed header fields themselves. */
++    f->entry_id.offset = MACHO_FSE_DISK_HEADER_SIZE - 1;
++    g_assert_null(macho_fse_entry_id(f));
++
++    f->entry_id.offset = 0;
++    g_assert_null(macho_fse_entry_id(f));
++
++    g_free(cmd);
++}
++
++static void test_unterminated_string_fails_closed(void)
++{
++    uint8_t *cmd; size_t cmd_len;
++    fse_t *f = make_fileset_cmd("kext", 0, &cmd, &cmd_len);
++
++    /* Remove the NUL so no terminator exists inside cmdsize. */
++    cmd[cmd_len - 1] = 'x';
++    g_assert_null(macho_fse_entry_id((fse_t *)cmd));
++
++    g_free(cmd);
++}
++
++int main(int argc, char **argv)
++{
++    g_test_init(&argc, &argv, NULL);
++
++    g_test_add_func("/macho/fileset/offset-not-sizeof", test_entry_id_offset_not_sizeof);
++    g_test_add_func("/macho/fileset/zero-pad", test_zero_pad_still_matches);
++    g_test_add_func("/macho/fileset/offset-oob-fail-closed", test_offset_out_of_cmdsize_fails_closed);
++    g_test_add_func("/macho/fileset/cmdsize-below-header-fail-closed", test_cmdsize_below_header_fails_closed);
++    g_test_add_func("/macho/fileset/offset-inside-header-fail-closed", test_offset_inside_header_fails_closed);
++    g_test_add_func("/macho/fileset/unterminated-fail-closed", test_unterminated_string_fails_closed);
++
++    return g_test_run();
++}
+diff --git a/tests/unit/test-xnu-llp64.c b/tests/unit/test-xnu-llp64.c
+new file mode 100644
+index 0000000..aba2a2b
+--- /dev/null
++++ b/tests/unit/test-xnu-llp64.c
+@@ -0,0 +1,77 @@
++/*
++ * XNU boot LLP64 ABI regression tests.
++ *
++ * Windows x64 is LLP64: unsigned long is 32 bits wide.  The XNU boot
++ * headers must never derive address masks or page constants from
++ * host-width BIT() definitions, otherwise every guest physical
++ * address at or above 4 GiB is truncated to its low 32 bits.  The
++ * Phase 5F SPTM Data Abort was caused by exactly this defect in
++ * ROUND_NEXT_PAGE via ONE_KB/ONE_MB/ONE_GB.
++ *
++ * This work is licensed under the terms of the GNU LGPL, version 2 or later.
++ * See the COPYING.LIB file in the top-level directory.
++ */
++
++#include "qemu/osdep.h"
++#include "xnu/boot/xnuboot.h"
++#include "xnu/boot/args.h"
++
++static void test_page_constants_are_64bit(void)
++{
++    g_assert_cmphex(ONE_KB, ==, 0x400ULL);
++    g_assert_cmphex(ONE_MB, ==, 0x100000ULL);
++    g_assert_cmphex(ONE_GB, ==, 0x40000000ULL);
++    g_assert_cmphex(DARWIN_PAGE_SIZE, ==, 0x4000ULL);
++    g_assert_cmphex(DARWIN_HUGE_PAGE_SIZE, ==, 0x2000000ULL);
++    g_assert_cmphex(XNU_STRIP_VMA(0xfffffff0270a4f74ULL),
++                    ==, 0x0000000270a4f74ULL & 0x7ffffffffULL);
++    g_assert_cmphex(BIT_ULL(36) - 1, ==, 0xfffffffffULL);
++    g_assert_cmphex(BIT_ULL(63), ==, 0x8000000000000000ULL);
++}
++
++static void test_round_next_page_preserves_upper_bits(void)
++{
++    /* Exact Phase 5F fault coordinates. */
++    g_assert_cmphex(ROUND_NEXT_PAGE(0x100076a0000ULL),
++                    ==, 0x100076a0000ULL);
++    g_assert_cmphex(ROUND_NEXT_PAGE(0x10015ea0000ULL),
++                    ==, 0x10015ea0000ULL);
++
++    /* Rounding must carry upward without discarding bits 63:32. */
++    g_assert_cmphex(ROUND_NEXT_PAGE(0x100076a0001ULL),
++                    ==, 0x100076a4000ULL);
++    g_assert_cmphex(ROUND_NEXT_PAGE(0x10000000000ULL),
++                    ==, 0x10000000000ULL);
++    g_assert_cmphex(ROUND_NEXT_PAGE(0x10000000001ULL),
++                    ==, 0x10000004000ULL);
++
++    /* Values just below and above 4 GiB must never truncate. */
++    g_assert_cmphex(ROUND_NEXT_PAGE(0xffffffffULL), ==, 0x100000000ULL);
++    g_assert_cmphex(ROUND_NEXT_PAGE(0x100000001ULL), ==, 0x100004000ULL);
++}
++
++static void test_boot_args_abi_layout(void)
++{
++    g_assert_cmpuint(sizeof(Boot_Video), ==, 48);
++    g_assert_cmpuint(sizeof(boot_args), ==, 1152);
++    g_assert_cmpuint(offsetof(boot_args, virtBase), ==, 8);
++    g_assert_cmpuint(offsetof(boot_args, physBase), ==, 16);
++    g_assert_cmpuint(offsetof(boot_args, memSize), ==, 24);
++    g_assert_cmpuint(offsetof(boot_args, topOfKernelData), ==, 32);
++    g_assert_cmpuint(offsetof(boot_args, Video), ==, 40);
++    g_assert_cmpuint(offsetof(boot_args, deviceTreeP), ==, 96);
++    g_assert_cmpuint(offsetof(boot_args, CommandLine), ==, 108);
++    g_assert_cmpuint(offsetof(boot_args, bootFlags), ==, 1136);
++    g_assert_cmpuint(offsetof(boot_args, memSizeActual), ==, 1144);
++}
++
++int main(int argc, char **argv)
++{
++    g_test_init(&argc, &argv, NULL);
++
++    g_test_add_func("/xnu/llp64/page-constants", test_page_constants_are_64bit);
++    g_test_add_func("/xnu/llp64/round-next-page", test_round_next_page_preserves_upper_bits);
++    g_test_add_func("/xnu/llp64/boot-args-layout", test_boot_args_abi_layout);
++
++    return g_test_run();
++}

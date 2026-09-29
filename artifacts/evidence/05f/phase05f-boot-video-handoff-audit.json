@@ -1,0 +1,46 @@
+{
+  "gate": "boot-video-handoff-audit",
+  "iteration": 53,
+  "date": "2026-09-29",
+  "marker": "BOOT_VIDEO_HANDOFF_AUDIT_PASS",
+  "boot_video_struct": {
+    "source": "include/xnu/boot/args.h",
+    "fields": ["v_baseAddr u64", "v_display u64", "v_rowBytes u64", "v_width u64", "v_height u64", "v_depth u64"],
+    "size": 48,
+    "offset_in_boot_args": 40,
+    "static_assert": "sizeof(Boot_Video)==48 and offsetof(boot_args, Video)==40 verified at compile time"
+  },
+  "populations": {
+    "sptm_path": {
+      "file": "hw/arm/xnuboot_sptm.c",
+      "function": "arm_load_xnu_sptm",
+      "behavior": "boot_args args = {0}; only Revision/Version/virtBase/physBase/memSize/topOfKernelData/deviceTreeP/deviceTreeLength/CommandLine set. Video.* NEVER written."
+    },
+    "nosptm_path": {
+      "file": "hw/arm/xnuboot_sptm.c",
+      "function": "arm_load_xnu_nosptm",
+      "behavior": "boot_args args = {0}; same non-video fields set. Video.* NEVER written."
+    },
+    "darwin_machine": {
+      "file": "hw/arm/darwin.c",
+      "function": "darwin_init",
+      "behavior": "No display device, no framebuffer MemoryRegion, no Video population. Only uart/sep/aic/cpu-impl initialized."
+    }
+  },
+  "framebuffer_sources": {
+    "FRAMEBUFFER_BASE_SOURCE": "NONE (no code writes v_baseAddr; no framebuffer MemoryRegion allocated)",
+    "FRAMEBUFFER_SIZE_SOURCE": "NONE",
+    "WIDTH": "guest DT declares framebuffer-width=4096 (dcp-sac-controller node, property at dtree.bin offset 0x28d9c)",
+    "HEIGHT": "guest DT declares framebuffer-height=2160 (property at dtree.bin offset 0x28e74)",
+    "ROWBYTES": "unknown (no property found, no boot-args value)",
+    "DEPTH": "unknown (display-default-color present in DT but no depth populated in boot args)"
+  },
+  "boot_framebuffer_memory": "ABSENT",
+  "boot_framebuffer_memory_evidence": [
+    "rg framebuffer/video/Video over xnu/*.c and hw/arm/darwin.c: zero allocations",
+    "xnuboot_sptm.c constructs boot_args with {0} and never writes Video",
+    "no MemoryRegion named framebuffer/fb/video in the Darwin machine init",
+    "guest DT framebuffer-width/height are declarations of hardware the emulator does not back"
+  ],
+  "classification_note": "BOOT_FRAMEBUFFER_MEMORY=ABSENT. The reviewer-specified ramfb path therefore requires step 3b: create a small experimental linear framebuffer allocation and wire its coordinates into the existing Boot_Video handoff, keeping it clearly experimental."
+}
