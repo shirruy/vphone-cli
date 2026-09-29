@@ -27,6 +27,65 @@ std::uint64_t be64(const std::uint8_t* p) {
 
 } // namespace
 
+MachOValidationResult macho_validate_thin(
+    const std::uint8_t* data,
+    std::size_t size
+) {
+    MachOValidationResult r;
+    if (data == nullptr || size < 4) {
+        r.error = "file too short for any Mach-O header";
+        return r;
+    }
+    const std::uint32_t magic = le32(data);
+    r.is_thin = true;
+    r.is_64 = magic == 0xfeedfacfu;
+    if (magic != 0xfeedfaceu && !r.is_64) {
+        r.error = "unrecognized Mach-O magic";
+        return r;
+    }
+    const std::size_t header_size = r.is_64 ? 32 : 28;
+    if (size < header_size) {
+        r.error = "Mach-O header truncated";
+        return r;
+    }
+    r.cputype = le32(data + 4);
+    r.cpusubtype = le32(data + 8);
+    r.filetype = le32(data + 12);
+    r.ncmds = le32(data + 16);
+    r.sizeofcmds = le32(data + 20);
+    r.flags = le32(data + 24);
+
+    const std::uint64_t cmds_end =
+        static_cast<std::uint64_t>(header_size) +
+        r.sizeofcmds;
+    if (cmds_end > size) {
+        r.error = "load commands exceed file bounds";
+        return r;
+    }
+    std::size_t cursor = header_size;
+    for (std::uint32_t i = 0; i < r.ncmds; ++i) {
+        if (cursor + 8 > cmds_end) {
+            r.error = "load command header out of bounds";
+            return r;
+        }
+        const std::uint32_t cmdsize =
+            le32(data + cursor + 4);
+        if (cmdsize < 8 ||
+            static_cast<std::uint64_t>(cursor) + cmdsize >
+                cmds_end) {
+            r.error = "load command size out of bounds";
+            return r;
+        }
+        cursor += cmdsize;
+    }
+    if (cursor != cmds_end) {
+        r.error = "load commands do not cover sizeofcmds exactly";
+        return r;
+    }
+    r.valid = true;
+    return r;
+}
+
 MachOValidationResult macho_validate(
     const std::vector<std::uint8_t>& bytes
 ) {
@@ -57,6 +116,10 @@ MachOValidationResult macho_validate(
             return r;
         }
         r.nfat = be32(bytes.data() + 4);
+        if (r.nfat == 0) {
+            r.error = "FAT container has zero architectures";
+            return r;
+        }
         const std::uint64_t entry_size =
             r.is_fat64 ? 32 : 20;
         if (r.nfat >
@@ -64,7 +127,13 @@ MachOValidationResult macho_validate(
             r.error = "FAT architecture table out of bounds";
             return r;
         }
-        // Collect slice ranges and reject overlap/overflow/OOB.
+        // The FAT metadata region is the header plus the full
+        // architecture table; slices must start at or after it.
+        const std::uint64_t metadata_end =
+            8 + static_cast<std::uint64_t>(r.nfat) *
+                    entry_size;
+        // Collect slice ranges; reject overlap/overflow/OOB and any
+        // slice that intrudes on the metadata region.
         struct Slice {
             std::uint64_t off;
             std::uint64_t size;
@@ -85,9 +154,15 @@ MachOValidationResult macho_validate(
                 r.error = "FAT slice has zero size";
                 return r;
             }
+            // Overflow-safe bounds: never add off + size before
+            // proving it cannot overflow.
             if (s.off > bytes.size() ||
                 s.size > bytes.size() - s.off) {
                 r.error = "FAT slice out of bounds";
+                return r;
+            }
+            if (s.off < metadata_end) {
+                r.error = "FAT slice overlaps header or table";
                 return r;
             }
             slices.push_back(s);
@@ -104,59 +179,28 @@ MachOValidationResult macho_validate(
                 }
             }
         }
+        // Every slice must be a structurally valid THIN Mach-O.
+        // FAT-inside-FAT is deliberately not accepted.
+        for (std::uint32_t i = 0; i < r.nfat; ++i) {
+            const auto& s = slices[i];
+            const MachOValidationResult inner =
+                macho_validate_thin(
+                    bytes.data() + s.off,
+                    static_cast<std::size_t>(s.size));
+            if (!inner.valid) {
+                r.error = "FAT slice " + std::to_string(i) +
+                    " is not a valid thin Mach-O: " +
+                    inner.error;
+                return r;
+            }
+            ++r.slices_validated;
+        }
         r.valid = true;
         return r;
     }
 
-    // Thin Mach-O: little-endian magic.
-    const std::uint32_t magic = le32(bytes.data());
-    r.is_thin = true;
-    r.is_64 = magic == 0xfeedfacfu;
-    if (magic != 0xfeedfaceu && !r.is_64) {
-        r.error = "unrecognized Mach-O magic";
-        return r;
-    }
-    const std::size_t header_size = r.is_64 ? 32 : 28;
-    if (bytes.size() < header_size) {
-        r.error = "Mach-O header truncated";
-        return r;
-    }
-    r.cputype = le32(bytes.data() + 4);
-    r.cpusubtype = le32(bytes.data() + 8);
-    r.filetype = le32(bytes.data() + 12);
-    r.ncmds = le32(bytes.data() + 16);
-    r.sizeofcmds = le32(bytes.data() + 20);
-    r.flags = le32(bytes.data() + 24);
-
-    const std::uint64_t cmds_end =
-        static_cast<std::uint64_t>(header_size) +
-        r.sizeofcmds;
-    if (cmds_end > bytes.size()) {
-        r.error = "load commands exceed file bounds";
-        return r;
-    }
-    std::size_t cursor = header_size;
-    for (std::uint32_t i = 0; i < r.ncmds; ++i) {
-        if (cursor + 8 > cmds_end) {
-            r.error = "load command header out of bounds";
-            return r;
-        }
-        const std::uint32_t cmdsize =
-            le32(bytes.data() + cursor + 4);
-        if (cmdsize < 8 ||
-            static_cast<std::uint64_t>(cursor) + cmdsize >
-                cmds_end) {
-            r.error = "load command size out of bounds";
-            return r;
-        }
-        cursor += cmdsize;
-    }
-    if (cursor != cmds_end) {
-        r.error = "load commands do not cover sizeofcmds exactly";
-        return r;
-    }
-    r.valid = true;
-    return r;
+    return macho_validate_thin(
+        bytes.data(), bytes.size());
 }
 
 } // namespace vphone

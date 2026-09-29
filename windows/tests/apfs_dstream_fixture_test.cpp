@@ -175,7 +175,11 @@ int main() {
     }
 
     if (failures == 0) {
-        std::printf("RESOURCEFORK_DATA_STREAM_NEGATIVE_MATRIX_PASS\n");
+        // Descriptor/flags scope only. FILE_EXTENT coverage lives in
+        // apfs_file_extent_fixture_test; the combined orchestration
+        // gate lives in apfs_dstream_contract_test.
+        std::printf(
+            "RESOURCEFORK_DSTREAM_DESCRIPTOR_NEGATIVE_MATRIX_PASS\n");
         return 0;
     }
     std::fprintf(stderr, "FAILURES=%d\n", failures);

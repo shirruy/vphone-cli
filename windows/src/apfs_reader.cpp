@@ -13,6 +13,7 @@
 #include <zlib.h>
 #include "vphone/decmpfs_type4.hpp"
 #include "vphone/decmpfs_dstream.hpp"
+#include "vphone/file_extent.hpp"
 #include "vphone/macho_validate.hpp"
 
 namespace vphone {
@@ -1507,6 +1508,27 @@ bool fstree_read_plist_file(
         return false;
     }
 
+    // Shared production FILE_EXTENT validator (same code as the
+    // FILE_EXTENT negative matrix test).
+    std::vector<vphone::FileExtent> plist_valid_extents;
+    plist_valid_extents.reserve(extents.size());
+    for (const auto& e : extents) {
+        plist_valid_extents.push_back(
+            {e.logical, e.length, e.phys});
+    }
+    vphone::FileExtentContext plist_ctx{};
+    plist_ctx.dstream_size = file_size;
+    plist_ctx.block_size = ctx.block_size;
+    plist_ctx.block_count = ctx.block_count;
+    plist_ctx.allow_sparse = true;
+    const vphone::FileExtentValidation plist_val =
+        vphone::validate_file_extents(
+            plist_valid_extents, plist_ctx);
+    if (!plist_val.valid) {
+        result.status = "FAIL";
+        result.error = "extent invalid: " + plist_val.error;
+        return false;
+    }
     // Sort by logical address.
     std::sort(
         extents.begin(),
@@ -1515,40 +1537,6 @@ bool fstree_read_plist_file(
             return a.logical < b.logical;
         }
     );
-
-    // Validate: no zero-length, no overlap, phys in range.
-    for (std::size_t i = 0; i < extents.size(); ++i) {
-        const auto& e = extents[i];
-        if (e.length == 0) {
-            result.status = "FAIL";
-            result.error = "zero-length extent";
-            return false;
-        }
-        // Overflow-safe ceiling division for block count.
-        const std::uint64_t blocks_needed =
-            e.length / ctx.block_size +
-            ((e.length % ctx.block_size) != 0 ? 1 : 0);
-        if (e.phys != 0 &&
-            (e.phys >= ctx.block_count ||
-             blocks_needed > ctx.block_count - e.phys)) {
-            result.status = "FAIL";
-            result.error = "extent physical range exceeds container";
-            return false;
-        }
-        if (i > 0) {
-            const auto& prev = extents[i - 1];
-            // Overflow-safe logical end check.
-            if (prev.length >
-                    std::numeric_limits<std::uint64_t>::max() -
-                    prev.logical ||
-                e.logical < prev.logical + prev.length) {
-                result.status = "FAIL";
-                result.error = "overlapping extents";
-                return false;
-            }
-
-        }
-    }
 
     result.extent_count = extents.size();
 
@@ -3271,65 +3259,35 @@ bool apfs_resolve_inode(
                 CloseHandle(ctx.file);
                 return true;
             }
+            // Shared production FILE_EXTENT validator (the exact
+            // code exercised by the FILE_EXTENT negative matrix).
+            std::vector<vphone::FileExtent> rf_valid_extents;
+            rf_valid_extents.reserve(s_extents.size());
+            for (const auto& e : s_extents) {
+                rf_valid_extents.push_back(
+                    {e.logical, e.length, e.phys});
+            }
+            vphone::FileExtentContext rf_ctx{};
+            rf_ctx.dstream_size = dstream_size;
+            rf_ctx.block_size = ctx.block_size;
+            rf_ctx.block_count = ctx.block_count;
+            rf_ctx.allow_sparse = true;
+            const vphone::FileExtentValidation rf_val =
+                vphone::validate_file_extents(
+                    rf_valid_extents, rf_ctx);
+            if (!rf_val.valid) {
+                result.status =
+                    "COMPRESSED: RF extent invalid: " +
+                    rf_val.error;
+                CloseHandle(ctx.file);
+                return true;
+            }
             std::sort(
                 s_extents.begin(), s_extents.end(),
                 [](const StreamExtent& a,
                    const StreamExtent& b) {
                     return a.logical < b.logical;
                 });
-            for (std::size_t i = 0;
-                 i < s_extents.size(); ++i) {
-                const auto& e = s_extents[i];
-                if (e.length == 0) {
-                    result.status =
-                        "COMPRESSED: zero-length RF extent";
-                    CloseHandle(ctx.file);
-                    return true;
-                }
-                // Logical overflow guard.
-                if (e.length >
-                        std::numeric_limits<
-                            std::uint64_t>::max() -
-                        e.logical) {
-                    result.status =
-                        "COMPRESSED: RF extent logical overflow";
-                    CloseHandle(ctx.file);
-                    return true;
-                }
-                // Physical bounds: phys + blocks must fit the
-                // container; phys==0 is an explicit sparse extent.
-                if (e.phys != 0) {
-                    if (e.phys >= ctx.block_count) {
-                        result.status =
-                            "COMPRESSED: RF extent phys OOB";
-                        CloseHandle(ctx.file);
-                        return true;
-                    }
-                    const std::uint64_t blocks =
-                        e.length / ctx.block_size +
-                        ((e.length % ctx.block_size) != 0 ? 1 : 0);
-                    if (blocks > ctx.block_count - e.phys) {
-                        result.status =
-                            "COMPRESSED: RF extent phys range OOB";
-                        CloseHandle(ctx.file);
-                        return true;
-                    }
-                }
-                if (i > 0) {
-                    const auto& prev = s_extents[i - 1];
-                    if (prev.length >
-                            std::numeric_limits<
-                                std::uint64_t>::max() -
-                            prev.logical ||
-                        e.logical <
-                            prev.logical + prev.length) {
-                        result.status =
-                            "COMPRESSED: RF extent overlap";
-                        CloseHandle(ctx.file);
-                        return true;
-                    }
-                }
-            }
 
             // Step 4: reconstruct raw RF byte stream [0, dstream_size).
             std::vector<std::uint8_t> rf_stream(
@@ -3492,40 +3450,33 @@ bool apfs_resolve_inode(
         return false;
     }
 
+    // Shared production FILE_EXTENT validator (same code as the
+    // FILE_EXTENT negative matrix test).
+    std::vector<vphone::FileExtent> dstream_valid_extents;
+    dstream_valid_extents.reserve(extents.size());
+    for (const auto& e : extents) {
+        dstream_valid_extents.push_back(
+            {e.logical, e.length, e.phys});
+    }
+    vphone::FileExtentContext dstream_ctx{};
+    dstream_ctx.dstream_size = ino.dstream_size;
+    dstream_ctx.block_size = ctx.block_size;
+    dstream_ctx.block_count = ctx.block_count;
+    dstream_ctx.allow_sparse = true;
+    const vphone::FileExtentValidation dstream_val =
+        vphone::validate_file_extents(
+            dstream_valid_extents, dstream_ctx);
+    if (!dstream_val.valid) {
+        result.status = "FAIL: extent invalid: " +
+            dstream_val.error;
+        CloseHandle(ctx.file);
+        return false;
+    }
     std::sort(
         extents.begin(), extents.end(),
         [](const Extent& a, const Extent& b) {
             return a.logical < b.logical;
         });
-    for (std::size_t i = 0; i < extents.size(); ++i) {
-        const auto& e = extents[i];
-        if (e.length == 0) {
-            result.status = "FAIL: zero-length extent";
-            CloseHandle(ctx.file);
-            return false;
-        }
-        const std::uint64_t blocks_needed =
-            e.length / ctx.block_size +
-            ((e.length % ctx.block_size) != 0 ? 1 : 0);
-        if (e.phys != 0 &&
-            (e.phys >= ctx.block_count ||
-             blocks_needed > ctx.block_count - e.phys)) {
-            result.status = "FAIL: extent physical range exceeds container";
-            CloseHandle(ctx.file);
-            return false;
-        }
-        if (i > 0) {
-            const auto& prev = extents[i - 1];
-            if (prev.length >
-                    std::numeric_limits<std::uint64_t>::max() -
-                    prev.logical ||
-                e.logical < prev.logical + prev.length) {
-                result.status = "FAIL: overlapping extents";
-                CloseHandle(ctx.file);
-                return false;
-            }
-        }
-    }
     result.extent_count = extents.size();
 
     // Phase 3: reconstruct with coverage validation.

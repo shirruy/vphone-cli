@@ -1,8 +1,9 @@
 {
   "gate": "preboom-mapping-and-minimum-ios-storage-contract",
-  "iteration": "57V",
+  "iteration": "57W",
   "date": "2026-09-29",
   "certified": {
+    "ITERATION_57W": "PASS",
     "ITERATION_57V": "PASS",
     "ITERATION_57T_CERTIFIED_CLOSED": "YES"
   },
@@ -43,37 +44,52 @@
     "DECMPFS_TYPE4_RESOURCE_REGION_GEOMETRY_PASS": true,
     "DECMPFS_TYPE4_REAL_FIXTURE_MATRIX_PASS": true,
     "fixture_cases": [
-      "one-chunk", "multi-chunk", "wrong-count", "OOB-offset",
-      "corrupt-chunk", "size-mismatch", "truncated-header",
-      "zero-chunk", "stored-chunk", "wrong-endian-offset",
-      "truncated-table", "overlap"
+      "one-chunk",
+      "multi-chunk",
+      "wrong-count",
+      "OOB-offset",
+      "corrupt-chunk",
+      "size-mismatch",
+      "truncated-header",
+      "zero-chunk",
+      "stored-chunk",
+      "wrong-endian-offset",
+      "truncated-table",
+      "overlap"
     ],
     "RESOURCEFORK_DATA_STREAM_NEGATIVE_MATRIX_PASS": true,
     "dstream_negative_matrix_cases": [
-      "flags-0x0001-data-stream", "flags-0x0002-data-embedded",
-      "flags-0x0000-refused", "flags-0x0003-refused",
-      "flags-0x0004-refused", "descriptor-48-valid",
-      "descriptor-8-refused", "descriptor-16-refused",
-      "descriptor-47-refused", "descriptor-49-refused",
-      "size-gt-alloced-refused", "size-eq-alloced-valid"
+      "flags-0x0001-data-stream",
+      "flags-0x0002-data-embedded",
+      "flags-0x0000-refused",
+      "flags-0x0003-refused",
+      "flags-0x0004-refused",
+      "descriptor-48-valid",
+      "descriptor-8-refused",
+      "descriptor-16-refused",
+      "descriptor-47-refused",
+      "descriptor-49-refused",
+      "size-gt-alloced-refused",
+      "size-eq-alloced-valid"
     ],
-    "MACHO_FAT32_STRUCTURE_PASS": true,
-    "MACHO_FAT64_STRUCTURE_PASS": true,
-    "MACHO_FAT_MALFORMED_REFUSAL_PASS": true,
     "MACHO_STRUCTURAL_FIXTURE_MATRIX_PASS": true,
-    "MACHO_INVALID_OUTPUT_READ_OK_IMPOSSIBLE_PASS": true,
     "macho_fixture_cases": [
-      "thin64-valid", "fat32-valid", "fat64-valid",
-      "fat-truncated-table-refused", "fat-slice-oob-refused",
-      "fat-overlap-refused", "fat-zero-slice-refused",
-      "thin-load-command-bounds-refused",
-      "fat-swapped-refused", "fat-nested-refused"
+      "thin64-valid",
+      "fat32-real-slices",
+      "fat64-real-slices",
+      "garbage-slice-refused",
+      "bad-magic-slice-refused",
+      "malformed-loadcmd-slice-refused",
+      "nested-fat-slice-refused",
+      "zero-arch-refused",
+      "metadata-overlap-refused",
+      "truncated-table-refused",
+      "slice-oob-refused",
+      "overlap-refused",
+      "zero-slice-refused",
+      "swapped-fat-refused",
+      "load-command-bounds-refused"
     ],
-    "DECMPFS_TYPE4_CHUNK_TO_CHUNK_NONOVERLAP_PASS": true,
-    "DECMPFS_TYPE4_TRUE_CHUNK_OVERLAP_REFUSED_PASS": true,
-    "DECMPFS_TYPE4_MANAGEMENT_REGION_GEOMETRY_PASS": true,
-    "SPRINGBOARD_MACHO_CPU_TYPE_PASS": true,
-    "SPRINGBOARD_MACHO_FILETYPE_PASS": true,
     "executables": {
       "springboard": {
         "cnid": 1152921500312051482,
@@ -109,7 +125,50 @@
         "macho_sizeofcmds": 1976,
         "reconstructed": true
       }
-    }
+    },
+    "RESOURCEFORK_DSTREAM_DESCRIPTOR_NEGATIVE_MATRIX_PASS": true,
+    "RESOURCEFORK_FILE_EXTENT_NEGATIVE_MATRIX_PASS": true,
+    "RESOURCEFORK_EXTENT_VALIDATOR_SHARED_PASS": true,
+    "MACHO_FAT_CONTAINER_GEOMETRY_PASS": true,
+    "MACHO_FAT_SLICE_STRUCTURE_PASS": true,
+    "MACHO_FAT_REAL_SLICE_FIXTURE_MATRIX_PASS": true,
+    "MACHO_FAT_ZERO_ARCH_REFUSAL_PASS": true,
+    "MACHO_FAT_METADATA_OVERLAP_REFUSAL_PASS": true,
+    "DECMPFS_LOGICAL_SIZE_OVERFLOW_REFUSAL_PASS": true,
+    "SPRINGBOARD_MACHO_CPU_TYPE_PASS": true,
+    "SPRINGBOARD_MACHO_FILETYPE_PASS": true,
+    "DECMPFS_TYPE4_CHUNK_TO_CHUNK_NONOVERLAP_PASS": true,
+    "DECMPFS_TYPE4_TRUE_CHUNK_OVERLAP_REFUSED_PASS": true,
+    "DECMPFS_TYPE4_MANAGEMENT_REGION_GEOMETRY_PASS": true,
+    "MACHO_INVALID_OUTPUT_READ_OK_IMPOSSIBLE_PASS": true,
+    "extent_matrix_cases": [
+      "one-valid",
+      "multi-contiguous",
+      "sparse-hole",
+      "final-clipped",
+      "missing-chain",
+      "zero-length",
+      "leading-gap",
+      "middle-gap",
+      "overlap",
+      "duplicate-start",
+      "logical-overflow",
+      "phys-block-oob",
+      "phys-range-oob",
+      "phys-mul-overflow",
+      "coverage-incomplete",
+      "after-dstream"
+    ],
+    "contract_cases": [
+      "flags-pass",
+      "descriptor-pass",
+      "extents-pass",
+      "complete",
+      "ambiguous-flags-refused",
+      "bad-descriptor-refused",
+      "gap-refused",
+      "incomplete-refused"
+    ]
   },
   "springboard_path_proof": {
     "SPRINGBOARD_DREC_PATH_RESOLVED_PASS": true,
@@ -146,33 +205,113 @@
     "ANS_DT_ENDIANNESS_AUDIT_PASS": true,
     "ANS_DT_CONTRACT_DURABLE_EVIDENCE_PASS": true,
     "namespace_records": [
-      {"nsid": 1, "nstype": 1, "word2": 0},
-      {"nsid": 2, "nstype": 2, "word2": 2560},
-      {"nsid": 3, "nstype": 3, "word2": 32},
-      {"nsid": 4, "nstype": 4, "word2": 2},
-      {"nsid": 5, "nstype": 5, "word2": 2},
-      {"nsid": 6, "nstype": 8, "word2": 256},
-      {"nsid": 7, "nstype": 13, "word2": 32768}
+      {
+        "nsid": 1,
+        "nstype": 1,
+        "word2": 0
+      },
+      {
+        "nsid": 2,
+        "nstype": 2,
+        "word2": 2560
+      },
+      {
+        "nsid": 3,
+        "nstype": 3,
+        "word2": 32
+      },
+      {
+        "nsid": 4,
+        "nstype": 4,
+        "word2": 2
+      },
+      {
+        "nsid": 5,
+        "nstype": 5,
+        "word2": 2
+      },
+      {
+        "nsid": 6,
+        "nstype": 8,
+        "word2": 256
+      },
+      {
+        "nsid": 7,
+        "nstype": 13,
+        "word2": 32768
+      }
     ],
     "reg_mmio": [
-      {"base": "0x77400000", "size": "0x6c000"},
-      {"base": "0x77050000", "size": "0x4000"},
-      {"base": "0x0", "size": "0x0"},
-      {"base": "0x7bcc0000", "size": "0x60000"},
-      {"base": "0x79000000", "size": "0x1000000"},
-      {"base": "0x7bb90000", "size": "0xc000"},
-      {"base": "0x7bd47c00", "size": "0x4000"},
-      {"base": "0x0", "size": "0x0"},
-      {"base": "0x0", "size": "0x0"},
-      {"base": "0x0", "size": "0x0"},
-      {"base": "0x0", "size": "0x0"},
-      {"base": "0x0", "size": "0x0"},
-      {"base": "0x0", "size": "0x0"},
-      {"base": "0x7b100000", "size": "0x44000"}
+      {
+        "base": "0x77400000",
+        "size": "0x6c000"
+      },
+      {
+        "base": "0x77050000",
+        "size": "0x4000"
+      },
+      {
+        "base": "0x0",
+        "size": "0x0"
+      },
+      {
+        "base": "0x7bcc0000",
+        "size": "0x60000"
+      },
+      {
+        "base": "0x79000000",
+        "size": "0x1000000"
+      },
+      {
+        "base": "0x7bb90000",
+        "size": "0xc000"
+      },
+      {
+        "base": "0x7bd47c00",
+        "size": "0x4000"
+      },
+      {
+        "base": "0x0",
+        "size": "0x0"
+      },
+      {
+        "base": "0x0",
+        "size": "0x0"
+      },
+      {
+        "base": "0x0",
+        "size": "0x0"
+      },
+      {
+        "base": "0x0",
+        "size": "0x0"
+      },
+      {
+        "base": "0x0",
+        "size": "0x0"
+      },
+      {
+        "base": "0x0",
+        "size": "0x0"
+      },
+      {
+        "base": "0x7b100000",
+        "size": "0x44000"
+      }
     ],
-    "interrupts": [622, 621, 624, 623, 629],
+    "interrupts": [
+      622,
+      621,
+      624,
+      623,
+      629
+    ],
     "interrupt_parent": 32,
-    "clock_ids": [330, 329, 331],
+    "clock_ids": [
+      330,
+      329,
+      331
+    ],
     "power_gates": 117,
     "iop_version": 1,
     "nvme_interrupt_idx": 4,

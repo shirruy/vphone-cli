@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -456,6 +457,26 @@ int main() {
                 std::printf(
                     "DECMPFS_TYPE4_MANAGEMENT_REGION_GEOMETRY_PASS\n");
             }
+        }
+    }
+
+    // 14. Oversized logical size overflows 64KiB rounding refused.
+    {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else if (vphone::decmpfs_type4_reconstruct(
+                       rsrc,
+                       std::numeric_limits<std::uint64_t>::max(),
+                       out, error)) {
+            std::fprintf(
+                stderr, "[14] oversized logical size accepted\n");
+            ++failures;
+        } else {
+            std::printf(
+                "DECMPFS_LOGICAL_SIZE_OVERFLOW_REFUSAL_PASS\n");
         }
     }
 

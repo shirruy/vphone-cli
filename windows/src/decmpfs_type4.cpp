@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <limits>
 
 namespace vphone {
 
@@ -84,6 +85,14 @@ bool decmpfs_type4_reconstruct(
     std::string& error
 ) {
     output.clear();
+
+    // Refuse logical sizes that would overflow the 64KiB rounding
+    // arithmetic before any addition happens.
+    if (logical_size >
+        std::numeric_limits<std::uint64_t>::max() - 0xFFFF) {
+        error = "logical size overflows 64KiB rounding";
+        return false;
+    }
 
     DecmpfsType4Header header{};
     if (!decmpfs_type4_parse_header(rsrc, header)) {

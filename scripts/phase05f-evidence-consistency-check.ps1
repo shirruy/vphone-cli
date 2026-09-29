@@ -1,4 +1,4 @@
-# Deterministic evidence cross-file consistency checker (Iteration 57V).
+# Deterministic evidence cross-file consistency checker (Iteration 57W).
 # Compares duplicated fields between the summary and the durable
 # ANS DT contract, and refuses stale gate names or contradictory
 # statuses. Non-zero exit on any mismatch.
@@ -48,7 +48,8 @@ $summary = $summaryRaw | ConvertFrom-Json
 $contract = $contractRaw | ConvertFrom-Json
 
 # 1. Iteration identifier.
-Assert-Equal 'iteration' $summary.iteration '57V'
+Assert-Equal 'iteration' $summary.iteration '57W'
+Assert-Equal 'ITERATION_57W' $summary.certified.ITERATION_57W 'PASS'
 Assert-Equal 'ITERATION_57V' $summary.certified.ITERATION_57V 'PASS'
 Assert-Equal '57T_certified' $summary.certified.ITERATION_57T_CERTIFIED_CLOSED 'YES'
 
@@ -69,20 +70,29 @@ Assert-Equal 'algo4' $summary.decmpfs_reconstruction.algorithm_table.'4' 'zlib r
 # 4. ResourceFork flags exact.
 Assert-Equal 'resourcefork_flags.observed' $summary.decmpfs_reconstruction.resourcefork_flags.observed 1
 
-# 4b. DATA_STREAM negative matrix + Mach-O / type-4 hardening markers.
+# 4b. DATA_STREAM descriptor/extent/contract + Mach-O / type-4
+#     hardening markers (separate, non-collapsed gates).
 $ds = $summary.decmpfs_reconstruction
-Assert-Equal 'dstream_matrix' $ds.RESOURCEFORK_DATA_STREAM_NEGATIVE_MATRIX_PASS 'True'
-Assert-Equal 'macho_fat32' $ds.MACHO_FAT32_STRUCTURE_PASS 'True'
-Assert-Equal 'macho_fat64' $ds.MACHO_FAT64_STRUCTURE_PASS 'True'
-Assert-Equal 'macho_malformed' $ds.MACHO_FAT_MALFORMED_REFUSAL_PASS 'True'
+Assert-Equal 'dstream_descriptor_matrix' $ds.RESOURCEFORK_DSTREAM_DESCRIPTOR_NEGATIVE_MATRIX_PASS 'True'
+Assert-Equal 'file_extent_matrix' $ds.RESOURCEFORK_FILE_EXTENT_NEGATIVE_MATRIX_PASS 'True'
+Assert-Equal 'dstream_contract' $ds.RESOURCEFORK_DATA_STREAM_NEGATIVE_MATRIX_PASS 'True'
+Assert-Equal 'extent_validator_shared' $ds.RESOURCEFORK_EXTENT_VALIDATOR_SHARED_PASS 'True'
+Assert-Equal 'macho_fat_geometry' $ds.MACHO_FAT_CONTAINER_GEOMETRY_PASS 'True'
+Assert-Equal 'macho_fat_slice' $ds.MACHO_FAT_SLICE_STRUCTURE_PASS 'True'
+Assert-Equal 'macho_fat_slice_matrix' $ds.MACHO_FAT_REAL_SLICE_FIXTURE_MATRIX_PASS 'True'
+Assert-Equal 'macho_zero_arch' $ds.MACHO_FAT_ZERO_ARCH_REFUSAL_PASS 'True'
+Assert-Equal 'macho_meta_overlap' $ds.MACHO_FAT_METADATA_OVERLAP_REFUSAL_PASS 'True'
 Assert-Equal 'macho_matrix' $ds.MACHO_STRUCTURAL_FIXTURE_MATRIX_PASS 'True'
-Assert-Equal 'macho_readok_impossible' $ds.MACHO_INVALID_OUTPUT_READ_OK_IMPOSSIBLE_PASS 'True'
-Assert-Equal 'macho_fixture_cases' $ds.macho_fixture_cases.Count 10
+Assert-Equal 'decmpfs_overflow' $ds.DECMPFS_LOGICAL_SIZE_OVERFLOW_REFUSAL_PASS 'True'
+Assert-Equal 'sb_macho_cputype' $ds.SPRINGBOARD_MACHO_CPU_TYPE_PASS 'True'
+Assert-Equal 'sb_macho_filetype' $ds.SPRINGBOARD_MACHO_FILETYPE_PASS 'True'
 Assert-Equal 'type4_chunk_nonoverlap' $ds.DECMPFS_TYPE4_CHUNK_TO_CHUNK_NONOVERLAP_PASS 'True'
 Assert-Equal 'type4_chunk_overlap' $ds.DECMPFS_TYPE4_TRUE_CHUNK_OVERLAP_REFUSED_PASS 'True'
 Assert-Equal 'type4_mgmt_geometry' $ds.DECMPFS_TYPE4_MANAGEMENT_REGION_GEOMETRY_PASS 'True'
-Assert-Equal 'sb_macho_cputype' $ds.SPRINGBOARD_MACHO_CPU_TYPE_PASS 'True'
-Assert-Equal 'sb_macho_filetype' $ds.SPRINGBOARD_MACHO_FILETYPE_PASS 'True'
+Assert-Equal 'macho_readok_impossible' $ds.MACHO_INVALID_OUTPUT_READ_OK_IMPOSSIBLE_PASS 'True'
+Assert-Equal 'macho_fixture_cases' $ds.macho_fixture_cases.Count 15
+Assert-Equal 'extent_matrix_cases' $ds.extent_matrix_cases.Count 16
+Assert-Equal 'contract_cases' $ds.contract_cases.Count 8
 
 # 4c. Mach-O identity fields for all three reconstructed executables.
 $expected = @{
