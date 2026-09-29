@@ -134,6 +134,10 @@ int main(int argc, char** argv) {
         std::cout << "  \"bytes_reconstructed\": "
                   << (resolution.bytes_reconstructed ? "true" : "false")
                   << ",\n";
+        std::cout << "  \"macho_structure_valid\": "
+                  << (resolution.macho_structure_valid
+                          ? "true" : "false")
+                  << ",\n";
         std::cout << "  \"sha256\": \"" << resolution.sha256 << "\"\n";
         std::cout << "}\n";
         return 0;

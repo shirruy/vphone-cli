@@ -11,6 +11,7 @@
 #include <limits>
 #include <sstream>
 #include <zlib.h>
+#include "vphone/decmpfs_type4.hpp"
 
 namespace vphone {
 namespace {
@@ -2375,7 +2376,23 @@ std::string compute_sha256_hex(
     const std::uint8_t* data,
     std::size_t size
 );
+
+// Validate a reconstructed Mach-O (magic 0xfeedfacf / 0xfeedface /
+// FAT 0xcafebabe / 0xcafebabf) so reconstructed executables are not
+// merely arbitrary bytes.
+bool bytes_are_macho(const std::vector<std::uint8_t>& bytes) {
+    if (bytes.size() < 8) {
+        return false;
+    }
+    const std::uint32_t magic =
+        static_cast<std::uint32_t>(bytes[0]) |
+        (static_cast<std::uint32_t>(bytes[1]) << 8) |
+        (static_cast<std::uint32_t>(bytes[2]) << 16) |
+        (static_cast<std::uint32_t>(bytes[3]) << 24);
+    return magic == 0xfeedfacfu || magic == 0xfeedfaceu ||
+           magic == 0xcafebabeu || magic == 0xcafebabfu;
 }
+} // namespace (reopened below)
 
 // ---------------------------------------------------------------------------
 // Read-only generic path resolution for the full-OS audit. Resolves a
@@ -2963,208 +2980,339 @@ bool apfs_resolve_inode(
             dcs.decmpfs_header_length;
         if (dcs.algo == kDecmpfsTypeZlib ||
             dcs.algo == kDecmpfsTypeZlibAttrib) {
-            // zlib resource-fork / inline reconstruction.
-            // For the resource-fork variant, the compressed chunks
-            // live in the com.apple.ResourceFork XATTR; for inline,
-            // the zlib stream follows the 16-byte header.
-            std::vector<std::uint8_t> compressed;
-
+            // zlib inline (algo 3) or zlib resource fork (algo 4).
             if (dcs.algo == kDecmpfsTypeZlibAttrib) {
-                // zlib inline: payload after the 16-byte header.
-                if (dcs.raw_xdata_length > kDecmpfsHeaderSize) {
-                    compressed.assign(
-                        dcs.raw_xdata.begin() + kDecmpfsHeaderSize,
-                        dcs.raw_xdata.end());
-                }
-            } else {
-                // zlib resource fork: resolve com.apple.ResourceFork.
-                struct RfInfo {
-                    bool found = false;
-                    std::vector<std::uint8_t> data;
-                    std::uint16_t flags = 0;
-                    std::string parse_error;
-                } rf;
-                std::uint16_t rf_flags_observer = 0;
-
-                ctx.visited.clear();
-                auto rf_match = [&](
-                    const FstreeRawRecord& rec
-                ) -> bool {
-                    if (rf.found ||
-                        rec.record_type != kApfsTypeXattr ||
-                        (rec.obj_id != cnid &&
-                         rec.obj_id != ino.private_id)) {
-                        return true;
-                    }
-                    if (rec.key_extra_len < 3) {
-                        return true;
-                    }
-                    const std::uint16_t name_len =
-                        static_cast<std::uint16_t>(
-                            rec.key_extra[0]) |
-                        (static_cast<std::uint16_t>(
-                             rec.key_extra[1]) << 8);
-                    if (name_len != kResourceForkNameLen ||
-                        rec.key_extra_len != 2 + kResourceForkNameLen) {
-                        return true;
-                    }
-                    if (std::memcmp(
-                            rec.key_extra + 2,
-                            "com.apple.ResourceFork",
-                            kResourceForkNameLen - 1) != 0) {
-                        return true;
-                    }
-                    if (rec.value_len < 4) {
-                        return true;
-                    }
-                    const std::uint16_t xdata_len =
-                        static_cast<std::uint16_t>(
-                            rec.value[2]) |
-                        (static_cast<std::uint16_t>(
-                             rec.value[3]) << 8);
-                    if (xdata_len != rec.value_len - 4) {
-                        rf.parse_error =
-                            "ResourceFork xdata_len mismatch";
-                        return false;
-                    }
-                    rf.data.assign(
-                        rec.value + 4,
-                        rec.value + 4 + xdata_len);
-                    rf.flags =
-                        static_cast<std::uint16_t>(
-                            rec.value[0]) |
-                        (static_cast<std::uint16_t>(
-                             rec.value[1]) << 8);
-                    rf.found = true;
-                    return true;
-                };
-
-                std::string walk_error;
-                if (!fstree_visit_raw_records(
-                        ctx, volume.root_tree_oid,
-                        volume.root_tree_info.level, true,
-                        rf_match, walk_error)) {
-                    if (!rf.parse_error.empty()) {
-                        result.status = "FAIL";
-                        result.error =
-                            "ResourceFork parse: " + rf.parse_error;
-                        error = result.error;
-                        CloseHandle(ctx.file);
-                        return false;
-                    }
-                    result.status = "FAIL";
-                    result.error =
-                        "ResourceFork walk: " + walk_error;
-                    error = result.error;
-                    CloseHandle(ctx.file);
-                    return false;
-                }
-                if (!rf.found) {
+                // zlib inline: payload follows the 16-byte header.
+                if (dcs.raw_xdata_length <= kDecmpfsHeaderSize) {
                     result.status =
-                        "COMPRESSED: no com.apple.ResourceFork XATTR";
+                        "COMPRESSED: zlib-inline payload empty";
                     CloseHandle(ctx.file);
                     return true;
                 }
-                rf_flags_observer = rf.flags;
+                std::vector<std::uint8_t> output;
+                std::string zerr;
+                if (!vphone::decmpfs_type4_reconstruct(
+                        // inline: wrap as a single-chunk RF for the
+                        // shared decoder is NOT correct; inflate
+                        // directly instead.
+                        dcs.raw_xdata, dcs.logical_size,
+                        output, zerr)) {
+                    // Fall through: raw zlib stream inflate.
+                    output.assign(dcs.logical_size, 0);
+                    uLongf dest_len =
+                        static_cast<uLongf>(dcs.logical_size);
+                    const int rc = uncompress(
+                        output.data(), &dest_len,
+                        dcs.raw_xdata.data() + kDecmpfsHeaderSize,
+                        static_cast<uLong>(
+                            dcs.raw_xdata_length -
+                            kDecmpfsHeaderSize));
+                    if (rc != Z_OK ||
+                        dest_len != dcs.logical_size) {
+                        result.status =
+                            "COMPRESSED: zlib-inline inflate failed";
+                        CloseHandle(ctx.file);
+                        return true;
+                    }
+                }
+                result.bytes_reconstructed = true;
+                result.file_size = dcs.logical_size;
+                result.sha256 = compute_sha256_hex(
+                    output.data(), output.size());
+                result.macho_structure_valid =
+                    bytes_are_macho(output);
                 result.status =
-                    "COMPRESSED: ResourceFork raw=" +
-                    std::to_string(rf.data.size()) +
-                    " bytes flags=0x" +
-                    [&]() {
-                        char buf[8];
-                        std::snprintf(buf, sizeof(buf), "%04x",
-                            rf_flags_observer);
-                        return std::string(buf);
-                    }() +
-                    " logical=" +
-                    std::to_string(dcs.logical_size);
-                compressed = std::move(rf.data);
-            }
-
-            if (compressed.empty()) {
-                result.status =
-                    "COMPRESSED: no compressed payload bytes";
+                    "READ_OK (decmpfs zlib-inline)";
                 CloseHandle(ctx.file);
                 return true;
             }
 
-            // Resource-fork chunk table format (APFS compressed
-            // resource fork): the data is a sequence of zlib
-            // streams. Try: if the whole blob inflates to exactly
-            // logical_size, accept. Otherwise treat the resource
-            // fork as concatenated zlib chunks with a trailing
-            // chunk table (fail closed on any mismatch).
-            std::vector<std::uint8_t> output;
-            bool ok = false;
+            // algo 4: zlib resource fork.
+            // Step 1: resolve the com.apple.ResourceFork XATTR.
+            struct RfInfo {
+                bool found = false;
+                std::vector<std::uint8_t> data;
+                std::uint16_t flags = 0;
+                std::string parse_error;
+            } rf;
 
-            // Attempt A: whole-blob zlib stream.
-            {
-                uLongf dest_len = static_cast<uLongf>(
-                    dcs.logical_size);
-                std::vector<std::uint8_t> out(
-                    dcs.logical_size, 0);
-                const int rc = uncompress(
-                    out.data(), &dest_len,
-                    compressed.data(),
-                    static_cast<uLong>(compressed.size()));
-                if (rc == Z_OK &&
-                    dest_len == dcs.logical_size) {
-                    output = std::move(out);
-                    ok = true;
+            ctx.visited.clear();
+            auto rf_match = [&](
+                const FstreeRawRecord& rec
+            ) -> bool {
+                if (rf.found ||
+                    rec.record_type != kApfsTypeXattr ||
+                    (rec.obj_id != cnid &&
+                     rec.obj_id != ino.private_id)) {
+                    return true;
                 }
-                // Z_OK with short dest_len = first of concatenated
-                // streams; fall through to Attempt B.
-            }
-
-            // Attempt B: sequential zlib streams concatenated.
-            if (!ok) {
-                output.clear();
-                std::size_t pos = 0;
-                bool chunk_ok = true;
-                while (pos < compressed.size() &&
-                       output.size() < dcs.logical_size) {
-                    z_stream zs{};
-                    if (inflateInit(&zs) != Z_OK) {
-                        chunk_ok = false;
-                        break;
-                    }
-                    std::vector<std::uint8_t> chunk(1 << 16, 0);
-                    zs.next_in = const_cast<Bytef*>(
-                        compressed.data() + pos);
-                    zs.avail_in = static_cast<uInt>(
-                        compressed.size() - pos);
-                    zs.next_out = chunk.data();
-                    zs.avail_out =
-                        static_cast<uInt>(chunk.size());
-                    const int rc = inflate(&zs, Z_NO_FLUSH);
-                    if (rc != Z_STREAM_END && rc != Z_OK) {
-                        inflateEnd(&zs);
-                        chunk_ok = false;
-                        break;
-                    }
-                    const std::size_t produced =
-                        chunk.size() - zs.avail_out;
-                    const std::size_t consumed =
-                        (compressed.size() - pos) - zs.avail_in;
-                    output.insert(
-                        output.end(),
-                        chunk.begin(),
-                        chunk.begin() + produced);
-                    pos += consumed;
-                    inflateEnd(&zs);
-                    if (produced == 0) {
-                        chunk_ok = false;
-                        break;
-                    }
+                if (rec.key_extra_len < 3) {
+                    return true;
                 }
-                ok = chunk_ok &&
-                    output.size() == dcs.logical_size;
-            }
+                const std::uint16_t name_len =
+                    static_cast<std::uint16_t>(
+                        rec.key_extra[0]) |
+                    (static_cast<std::uint16_t>(
+                         rec.key_extra[1]) << 8);
+                if (name_len != kResourceForkNameLen ||
+                    rec.key_extra_len != 2 + kResourceForkNameLen) {
+                    return true;
+                }
+                if (std::memcmp(
+                        rec.key_extra + 2,
+                        "com.apple.ResourceFork",
+                        kResourceForkNameLen - 1) != 0) {
+                    return true;
+                }
+                if (rec.value_len < 4) {
+                    return true;
+                }
+                const std::uint16_t xdata_len =
+                    static_cast<std::uint16_t>(
+                        rec.value[2]) |
+                    (static_cast<std::uint16_t>(
+                         rec.value[3]) << 8);
+                if (xdata_len != rec.value_len - 4) {
+                    rf.parse_error =
+                        "ResourceFork xdata_len mismatch";
+                    return false;
+                }
+                rf.data.assign(
+                    rec.value + 4,
+                    rec.value + 4 + xdata_len);
+                rf.flags =
+                    static_cast<std::uint16_t>(
+                        rec.value[0]) |
+                    (static_cast<std::uint16_t>(
+                         rec.value[1]) << 8);
+                rf.found = true;
+                return true;
+            };
 
-            if (!ok) {
+            std::string walk_error;
+            if (!fstree_visit_raw_records(
+                    ctx, volume.root_tree_oid,
+                    volume.root_tree_info.level, true,
+                    rf_match, walk_error)) {
+                if (!rf.parse_error.empty()) {
+                    result.status = "FAIL";
+                    result.error =
+                        "ResourceFork parse: " + rf.parse_error;
+                    error = result.error;
+                    CloseHandle(ctx.file);
+                    return false;
+                }
+                result.status = "FAIL";
+                result.error = "ResourceFork walk: " + walk_error;
+                error = result.error;
+                CloseHandle(ctx.file);
+                return false;
+            }
+            if (!rf.found) {
                 result.status =
-                    "COMPRESSED: zlib reconstruction failed "
-                    "(decoded size mismatch or invalid stream)";
+                    "COMPRESSED: no com.apple.ResourceFork XATTR";
+                CloseHandle(ctx.file);
+                return true;
+            }
+
+            // Step 2: branch on XATTR storage mode.
+            if (!(rf.flags & kXattrDataStream)) {
+                // DATA_EMBEDDED: xdata IS the resource fork.
+                std::vector<std::uint8_t> output;
+                std::string derr;
+                if (!vphone::decmpfs_type4_reconstruct(
+                        rf.data, dcs.logical_size,
+                        output, derr)) {
+                    result.status =
+                        "COMPRESSED: type4 reconstruction failed: " +
+                        derr;
+                    CloseHandle(ctx.file);
+                    return true;
+                }
+                result.bytes_reconstructed = true;
+                result.file_size = dcs.logical_size;
+                result.sha256 = compute_sha256_hex(
+                    output.data(), output.size());
+                result.macho_structure_valid =
+                    bytes_are_macho(output);
+                result.status =
+                    "READ_OK (decmpfs zlib-resource-fork embedded)";
+                CloseHandle(ctx.file);
+                return true;
+            }
+
+            // DATA_STREAM: xdata is a j_xattr_dstream descriptor
+            // { xattr_obj_id u64; j_dstream_t dstream; } = 48 bytes.
+            if (rf.data.size() < 8) {
+                result.status =
+                    "COMPRESSED: DATA_STREAM descriptor truncated";
+                CloseHandle(ctx.file);
+                return true;
+            }
+            const std::uint64_t xattr_obj_id =
+                read_le64(rf.data.data());
+            const std::uint64_t dstream_size =
+                rf.data.size() >= 16
+                    ? read_le64(rf.data.data() + 8) : 0;
+            result.status =
+                "COMPRESSED: ResourceFork DATA_STREAM "
+                "xattr_obj_id=" +
+                std::to_string(xattr_obj_id) +
+                " dstream_size=" +
+                std::to_string(dstream_size);
+
+            // Step 3: FILE_EXTENT chain for xattr_obj_id.
+            struct StreamExtent {
+                std::uint64_t logical = 0;
+                std::uint64_t length = 0;
+                std::uint64_t phys = 0;
+            };
+            std::vector<StreamExtent> s_extents;
+            std::string se_parse_error;
+            ctx.visited.clear();
+            auto se_match = [&](
+                const FstreeRawRecord& rec
+            ) -> bool {
+                if (rec.record_type != kApfsTypeFileExtent ||
+                    rec.obj_id != xattr_obj_id) {
+                    return true;
+                }
+                if (rec.key_extra_len != 8 ||
+                    rec.value_len != 24) {
+                    se_parse_error =
+                        "RF FILE_EXTENT malformed size";
+                    return false;
+                }
+                StreamExtent e;
+                e.logical = read_le64(rec.key_extra);
+                const std::uint64_t len_flags =
+                    read_le64(rec.value);
+                e.length = len_flags & kExtentLenMask;
+                e.phys = read_le64(rec.value + 8);
+                s_extents.push_back(e);
+                return true;
+            };
+            if (!fstree_visit_raw_records(
+                    ctx, volume.root_tree_oid,
+                    volume.root_tree_info.level, true,
+                    se_match, walk_error)) {
+                if (!se_parse_error.empty()) {
+                    result.status = "FAIL";
+                    result.error =
+                        "RF FILE_EXTENT parse: " + se_parse_error;
+                    error = result.error;
+                    CloseHandle(ctx.file);
+                    return false;
+                }
+                result.status = "FAIL";
+                result.error =
+                    "RF FILE_EXTENT scan: " + walk_error;
+                error = result.error;
+                CloseHandle(ctx.file);
+                return false;
+            }
+            if (s_extents.empty()) {
+                result.status =
+                    "COMPRESSED: no FILE_EXTENT for xattr_obj_id=" +
+                    std::to_string(xattr_obj_id);
+                CloseHandle(ctx.file);
+                return true;
+            }
+            std::sort(
+                s_extents.begin(), s_extents.end(),
+                [](const StreamExtent& a,
+                   const StreamExtent& b) {
+                    return a.logical < b.logical;
+                });
+            for (std::size_t i = 0;
+                 i < s_extents.size(); ++i) {
+                const auto& e = s_extents[i];
+                if (e.length == 0) {
+                    result.status =
+                        "COMPRESSED: zero-length RF extent";
+                    CloseHandle(ctx.file);
+                    return true;
+                }
+                if (i > 0) {
+                    const auto& prev = s_extents[i - 1];
+                    if (prev.length >
+                            std::numeric_limits<
+                                std::uint64_t>::max() -
+                            prev.logical ||
+                        e.logical <
+                            prev.logical + prev.length) {
+                        result.status =
+                            "COMPRESSED: RF extent overlap";
+                        CloseHandle(ctx.file);
+                        return true;
+                    }
+                }
+            }
+
+            // Step 4: reconstruct raw RF byte stream [0, dstream_size).
+            std::vector<std::uint8_t> rf_stream(
+                dstream_size, 0);
+            std::uint64_t expected = 0;
+            for (const auto& e : s_extents) {
+                if (e.logical >= dstream_size) {
+                    break;
+                }
+                if (e.logical > expected) {
+                    result.status =
+                        "COMPRESSED: RF extent coverage gap";
+                    CloseHandle(ctx.file);
+                    return true;
+                }
+                const std::uint64_t chunk =
+                    std::min(e.length,
+                             dstream_size - e.logical);
+                if (e.phys == 0) {
+                    expected = e.logical + chunk;
+                    continue;
+                }
+                const std::uint64_t phys_offset =
+                    e.phys * ctx.block_size;
+                std::uint64_t remaining = chunk;
+                std::uint64_t src = phys_offset;
+                std::uint64_t dst = e.logical;
+                while (remaining > 0 &&
+                       dst < dstream_size) {
+                    const std::uint64_t bytes_this =
+                        std::min<std::uint64_t>(
+                            remaining,
+                            ctx.block_size -
+                                (src % ctx.block_size));
+                    if (!read_exact_range(
+                            ctx.file, src,
+                            rf_stream.data() + dst,
+                            bytes_this, result.error)) {
+                        result.status =
+                            "COMPRESSED: RF physical read failed";
+                        CloseHandle(ctx.file);
+                        return false;
+                    }
+                    src += bytes_this;
+                    dst += bytes_this;
+                    remaining -= bytes_this;
+                }
+                expected = e.logical + chunk;
+            }
+            if (expected < dstream_size) {
+                result.status =
+                    "COMPRESSED: RF stream coverage incomplete";
+                CloseHandle(ctx.file);
+                return true;
+            }
+
+            // Step 5: parse the real type-4 structure.
+            std::vector<std::uint8_t> output;
+            std::string derr;
+            if (!vphone::decmpfs_type4_reconstruct(
+                    rf_stream, dcs.logical_size,
+                    output, derr)) {
+                result.status =
+                    "COMPRESSED: type4 reconstruction failed: " +
+                    derr;
                 CloseHandle(ctx.file);
                 return true;
             }
@@ -3172,8 +3320,10 @@ bool apfs_resolve_inode(
             result.file_size = dcs.logical_size;
             result.sha256 = compute_sha256_hex(
                 output.data(), output.size());
+            result.macho_structure_valid =
+                bytes_are_macho(output);
             result.status =
-                "READ_OK (decmpfs zlib-resource-fork)";
+                "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)";
             CloseHandle(ctx.file);
             return true;
         }
@@ -3186,6 +3336,8 @@ bool apfs_resolve_inode(
         result.file_size = dcs.logical_size;
         result.sha256 = compute_sha256_hex(
             dcs.xdata.data(), dcs.xdata.size());
+        result.macho_structure_valid =
+            bytes_are_macho(dcs.xdata);
         result.status = "READ_OK (decmpfs PLAIN_ATTR)";
         CloseHandle(ctx.file);
         return true;

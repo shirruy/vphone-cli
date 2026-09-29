@@ -1,99 +1,50 @@
-// Decmpfs reconstruction fixture matrix.
+// Decmpfs type-4 (zlib resource fork) REAL fixture matrix.
 //
-// Proves the zlib resource-fork (type 4) chunk-table decoder against
-// synthetic fixtures, distinguishing:
-//   - type 4 zlib resource fork (valid + size mismatch + corrupt chunk)
-//   - type 9 PLAIN_ATTR (already proven elsewhere; included for table)
-//   - unsupported algorithm refusal
-//   - malformed resource-fork table refusal
+// Builds synthetic resource forks with the reference layout
+// (apfs-fuse ApfsLib/Decmpfs.cpp) and exercises the SHARED
+// decmpfs_type4_reconstruct() decoder used by apfs_reader.cpp.
 //
-// Uses the same chunk decoder extracted from apfs_reader.cpp logic,
-// operating on raw zlib streams so the test has no private payloads.
+// Layout:
+//   RsrcForkHeader { data_offset, mgmt_offset, data_size,
+//                    mgmt_size }      (BE u32 each)
+//   data_offset points at: [resource-data length u32 LE]
+//                          [block count u32 LE]
+//                          [entries: off LE, size LE]*
+//                          [compressed chunks...]
+
+#include "vphone/decmpfs_type4.hpp"
 
 #include <zlib.h>
 
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
 namespace {
 
-// Mirror of the type-4 reconstruction contract from apfs_reader.cpp.
-enum class ReconstructResult {
-    OK,
-    SIZE_MISMATCH,
-    INVALID_STREAM,
-    EMPTY_INPUT,
-};
-
-ReconstructResult reconstruct_zlib_rfork(
-    const std::vector<std::uint8_t>& compressed,
-    std::uint64_t logical_size,
-    std::vector<std::uint8_t>& output
+void put_be32(
+    std::vector<std::uint8_t>& b, std::size_t off,
+    std::uint32_t v
 ) {
-    output.clear();
-    if (compressed.empty()) {
-        return ReconstructResult::EMPTY_INPUT;
-    }
-
-    // Attempt A: whole-blob zlib stream.
-    {
-        uLongf dest_len = static_cast<uLongf>(logical_size);
-        std::vector<std::uint8_t> out(logical_size, 0);
-        const int rc = uncompress(
-            out.data(), &dest_len,
-            compressed.data(),
-            static_cast<uLong>(compressed.size()));
-        if (rc == Z_OK && dest_len == logical_size) {
-            output = std::move(out);
-            return ReconstructResult::OK;
-        }
-        // Z_OK with a short dest_len means the blob is the first of
-        // multiple concatenated streams: fall through to Attempt B
-        // instead of declaring a size mismatch.
-    }
-
-    // Attempt B: sequential zlib streams concatenated.
-    std::size_t pos = 0;
-    while (pos < compressed.size() &&
-           output.size() < logical_size) {
-        z_stream zs{};
-        if (inflateInit(&zs) != Z_OK) {
-            return ReconstructResult::INVALID_STREAM;
-        }
-        std::vector<std::uint8_t> chunk(1 << 16, 0);
-        zs.next_in = const_cast<Bytef*>(compressed.data() + pos);
-        zs.avail_in =
-            static_cast<uInt>(compressed.size() - pos);
-        zs.next_out = chunk.data();
-        zs.avail_out = static_cast<uInt>(chunk.size());
-        const int rc = inflate(&zs, Z_NO_FLUSH);
-        if (rc != Z_STREAM_END && rc != Z_OK) {
-            inflateEnd(&zs);
-            return ReconstructResult::INVALID_STREAM;
-        }
-        const std::size_t produced =
-            chunk.size() - zs.avail_out;
-        const std::size_t consumed =
-            (compressed.size() - pos) - zs.avail_in;
-        output.insert(
-            output.end(),
-            chunk.begin(),
-            chunk.begin() + produced);
-        pos += consumed;
-        inflateEnd(&zs);
-        if (produced == 0) {
-            return ReconstructResult::INVALID_STREAM;
-        }
-    }
-    if (output.size() != logical_size) {
-        return ReconstructResult::SIZE_MISMATCH;
-    }
-    return ReconstructResult::OK;
+    b[off] = static_cast<std::uint8_t>(v >> 24);
+    b[off + 1] = static_cast<std::uint8_t>(v >> 16);
+    b[off + 2] = static_cast<std::uint8_t>(v >> 8);
+    b[off + 3] = static_cast<std::uint8_t>(v);
 }
 
-bool zlib_compress(
+void put_le32(
+    std::vector<std::uint8_t>& b, std::size_t off,
+    std::uint32_t v
+) {
+    b[off] = static_cast<std::uint8_t>(v);
+    b[off + 1] = static_cast<std::uint8_t>(v >> 8);
+    b[off + 2] = static_cast<std::uint8_t>(v >> 16);
+    b[off + 3] = static_cast<std::uint8_t>(v >> 24);
+}
+
+bool zlib_compress_chunk(
     const std::vector<std::uint8_t>& plain,
     std::vector<std::uint8_t>& out
 ) {
@@ -101,8 +52,7 @@ bool zlib_compress(
         static_cast<uLong>(plain.size()));
     out.resize(dest_len);
     const int rc = compress2(
-        out.data(), &dest_len,
-        plain.data(),
+        out.data(), &dest_len, plain.data(),
         static_cast<uLong>(plain.size()),
         Z_DEFAULT_COMPRESSION);
     if (rc != Z_OK) {
@@ -112,81 +62,178 @@ bool zlib_compress(
     return true;
 }
 
+// Build a valid type-4 resource fork from plaintext chunks.
+bool build_type4_rsrc(
+    const std::vector<std::vector<std::uint8_t>>& plain_chunks,
+    std::vector<std::uint8_t>& out
+) {
+    const std::size_t n = plain_chunks.size();
+    // Header: data_offset = 16 (right after header). The data area
+    // holds [res_len u32][count u32][table][chunks].
+    const std::size_t data_offset = 16;
+    const std::size_t table_size = 4 + 4 + n * 8;
+
+    out.assign(data_offset + table_size, 0);
+
+    // Compress chunks, lay them after the table.
+    std::vector<std::vector<std::uint8_t>> comps(n);
+    // cmpf_rsrc_base = data_offset + 4; chunk offsets are relative
+    // to that base, matching apfs-fuse Decmpfs.cpp.
+    std::size_t cursor = out.size() - (data_offset + 4);
+    for (std::size_t i = 0; i < n; ++i) {
+        if (!zlib_compress_chunk(plain_chunks[i], comps[i])) {
+            return false;
+        }
+    }
+    for (std::size_t i = 0; i < n; ++i) {
+        put_le32(
+            out, data_offset + 4 + 4 + i * 8,
+            static_cast<std::uint32_t>(cursor));
+        put_le32(
+            out, data_offset + 4 + 4 + i * 8 + 4,
+            static_cast<std::uint32_t>(comps[i].size()));
+        cursor += comps[i].size();
+    }
+    for (const auto& c : comps) {
+        out.insert(out.end(), c.begin(), c.end());
+    }
+
+    const std::size_t res_len_pos = data_offset;
+    const std::uint32_t res_len =
+        static_cast<std::uint32_t>(out.size() - data_offset);
+    // res_len field at data_offset; count at data_offset+4.
+    put_le32(out, res_len_pos, res_len);
+    put_le32(
+        out, data_offset + 4,
+        static_cast<std::uint32_t>(n));
+
+    put_be32(out, 0, static_cast<std::uint32_t>(data_offset));
+    put_be32(out, 4, 0); // mgmt_offset
+    put_be32(out, 8, res_len + 4); // data_size
+    put_be32(out, 12, 0); // mgmt_size
+    return true;
+}
+
+struct CaseResult {
+    bool ok = false;
+    std::string error;
+};
+
 } // namespace
 
 int main() {
     int failures = 0;
 
-    // Fixture 1: valid type-4 stream, whole-blob path.
-    {
-        std::vector<std::uint8_t> plain;
-        for (int i = 0; i < 4096; ++i) {
-            plain.push_back(
-                static_cast<std::uint8_t>((i * 7 + 3) & 0xff));
+    // Fixture helper: 1..3 chunks of patterned data.
+    const auto make_chunks = [](std::size_t n, std::size_t per) {
+        std::vector<std::vector<std::uint8_t>> chunks(n);
+        for (std::size_t i = 0; i < n; ++i) {
+            chunks[i].resize(per);
+            for (std::size_t j = 0; j < per; ++j) {
+                chunks[i][j] = static_cast<std::uint8_t>(
+                    (i * 31 + j * 7 + 5) & 0xff);
+            }
         }
-        std::vector<std::uint8_t> comp;
-        std::vector<std::uint8_t> out;
-        if (!zlib_compress(plain, comp)) {
-            std::fprintf(stderr, "[1] compress failed\n");
+        return chunks;
+    };
+
+    // 1. Valid one-chunk.
+    {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else if (!vphone::decmpfs_type4_reconstruct(
+                       rsrc, 4096, out, error) ||
+                   out.size() != 4096 ||
+                   out != chunks[0]) {
+            std::fprintf(
+                stderr, "[1] one-chunk failed: %s\n",
+                error.c_str());
             ++failures;
         } else {
-            const auto r = reconstruct_zlib_rfork(
-                comp, plain.size(), out);
-            if (r != ReconstructResult::OK ||
-                out != plain) {
+            std::printf("DECMPFS_TYPE4_ONE_CHUNK_PASS\n");
+        }
+    }
+
+    // 2. Valid multi-chunk (2 x 64KiB + tail).
+    {
+        auto a = make_chunks(1, 0x10000)[0];
+        auto b = make_chunks(1, 0x10000)[0];
+        std::vector<std::uint8_t> c(1000, 0x42);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc({a, b, c}, rsrc)) {
+            ++failures;
+        } else if (!vphone::decmpfs_type4_reconstruct(
+                       rsrc, 0x10000 + 0x10000 + 1000,
+                       out, error)) {
+            std::fprintf(
+                stderr, "[2] multi-chunk failed: %s\n",
+                error.c_str());
+            ++failures;
+        } else {
+            std::printf("DECMPFS_TYPE4_MULTI_CHUNK_PASS\n");
+        }
+    }
+
+    // 3. Wrong block count.
+    {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else {
+            // corrupt the count to 2
+            put_le32(rsrc, 20, 2);
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 4096, out, error)) {
                 std::fprintf(
-                    stderr,
-                    "[1] valid whole-blob failed: %d\n",
-                    static_cast<int>(r));
+                    stderr, "[3] wrong count accepted\n");
                 ++failures;
             } else {
                 std::printf(
-                    "DECMPFS_TYPE4_WHOLE_BLOB_PASS\n");
+                    "DECMPFS_TYPE4_WRONG_COUNT_REFUSED_PASS\n");
             }
         }
     }
 
-    // Fixture 2: valid type-4 stream, wrong logical size.
+    // 4. Out-of-bounds chunk offset.
     {
-        std::vector<std::uint8_t> plain(100, 'A');
-        std::vector<std::uint8_t> comp;
-        std::vector<std::uint8_t> out;
-        if (!zlib_compress(plain, comp)) {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
             ++failures;
         } else {
-            const auto r = reconstruct_zlib_rfork(
-                comp, 200, out);
-            if (r != ReconstructResult::SIZE_MISMATCH) {
+            put_le32(rsrc, 28, 0xFFFFFFu);
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 4096, out, error)) {
                 std::fprintf(
-                    stderr,
-                    "[2] size mismatch not detected: %d\n",
-                    static_cast<int>(r));
+                    stderr, "[4] OOB offset accepted\n");
                 ++failures;
             } else {
                 std::printf(
-                    "DECMPFS_TYPE4_SIZE_MISMATCH_REFUSED_PASS\n");
+                    "DECMPFS_TYPE4_OOB_OFFSET_REFUSED_PASS\n");
             }
         }
     }
 
-    // Fixture 3: corrupt chunk.
+    // 5. Corrupt zlib chunk.
     {
-        std::vector<std::uint8_t> plain(256, 'B');
-        std::vector<std::uint8_t> comp;
-        std::vector<std::uint8_t> out;
-        if (!zlib_compress(plain, comp)) {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
             ++failures;
         } else {
-            if (comp.size() > 4) {
-                comp[comp.size() / 2] ^= 0xFF;
-            }
-            const auto r = reconstruct_zlib_rfork(
-                comp, plain.size(), out);
-            if (r != ReconstructResult::INVALID_STREAM) {
+            rsrc[rsrc.size() - 2] ^= 0xFF;
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 4096, out, error)) {
                 std::fprintf(
-                    stderr,
-                    "[3] corrupt chunk not detected: %d\n",
-                    static_cast<int>(r));
+                    stderr, "[5] corrupt chunk accepted\n");
                 ++failures;
             } else {
                 std::printf(
@@ -195,53 +242,63 @@ int main() {
         }
     }
 
-    // Fixture 4: unsupported algorithm refusal is a caller-side
-    // policy (algo table), verified structurally: the decoder is
-    // only ever invoked for algo 3/4; here we prove the empty-input
-    // and stream-error paths refuse cleanly.
+    // 6. Final logical-size mismatch.
     {
-        std::vector<std::uint8_t> out;
-        const auto r = reconstruct_zlib_rfork(
-            std::vector<std::uint8_t>{}, 10, out);
-        if (r != ReconstructResult::EMPTY_INPUT) {
-            std::fprintf(stderr, "[4] empty input not refused\n");
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else if (vphone::decmpfs_type4_reconstruct(
+                       rsrc, 5000, out, error)) {
+            std::fprintf(
+                stderr, "[6] size mismatch accepted\n");
             ++failures;
         } else {
             std::printf(
-                "DECMPFS_EMPTY_INPUT_REFUSED_PASS\n");
+                "DECMPFS_TYPE4_SIZE_MISMATCH_REFUSED_PASS\n");
         }
     }
 
-    // Fixture 5: concatenated streams path.
+    // 7. Truncated header.
     {
-        std::vector<std::uint8_t> a(1024, 'X');
-        std::vector<std::uint8_t> b(1024, 'Y');
-        std::vector<std::uint8_t> ca, cb;
-        if (!zlib_compress(a, ca) || !zlib_compress(b, cb)) {
+        std::vector<std::uint8_t> tiny(8, 0);
+        std::vector<std::uint8_t> out;
+        std::string error;
+        if (vphone::decmpfs_type4_reconstruct(
+                tiny, 100, out, error)) {
+            std::fprintf(
+                stderr, "[7] truncated header accepted\n");
             ++failures;
         } else {
-            std::vector<std::uint8_t> joined = ca;
-            joined.insert(joined.end(), cb.begin(), cb.end());
-            std::vector<std::uint8_t> out;
-            std::vector<std::uint8_t> expect = a;
-            expect.insert(expect.end(), b.begin(), b.end());
-            const auto r = reconstruct_zlib_rfork(
-                joined, expect.size(), out);
-            if (r != ReconstructResult::OK || out != expect) {
+            std::printf(
+                "DECMPFS_TYPE4_TRUNCATED_HEADER_REFUSED_PASS\n");
+        }
+    }
+
+    // 8. Zero-length chunk.
+    {
+        auto chunks = make_chunks(1, 4096);
+        std::vector<std::uint8_t> rsrc, out;
+        std::string error;
+        if (!build_type4_rsrc(chunks, rsrc)) {
+            ++failures;
+        } else {
+            put_le32(rsrc, 32, 0);
+            if (vphone::decmpfs_type4_reconstruct(
+                    rsrc, 4096, out, error)) {
                 std::fprintf(
-                    stderr,
-                    "[5] concatenated streams failed: %d\n",
-                    static_cast<int>(r));
+                    stderr, "[8] zero-length chunk accepted\n");
                 ++failures;
             } else {
                 std::printf(
-                    "DECMPFS_TYPE4_CONCATENATED_STREAMS_PASS\n");
+                    "DECMPFS_TYPE4_ZERO_CHUNK_REFUSED_PASS\n");
             }
         }
     }
 
     if (failures == 0) {
-        std::printf("DECMPFS_RECONSTRUCTION_TEST_MATRIX_PASS\n");
+        std::printf("DECMPFS_TYPE4_REAL_FIXTURE_MATRIX_PASS\n");
         return 0;
     }
     std::fprintf(stderr, "FAILURES=%d\n", failures);

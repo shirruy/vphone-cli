@@ -274,6 +274,7 @@ struct ApfsInodeResolution {
     std::uint16_t decmpfs_header_length = 0;
     std::uint32_t decmpfs_algo = 0;
     std::uint16_t xattr_flags = 0;
+    bool macho_structure_valid = false;
     std::string sha256;
     std::string error;
 };

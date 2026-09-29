@@ -243,7 +243,7 @@ if(WIN32)
     add_executable(vphone_apfs_snapshot_rename_test tests/apfs_snapshot_rename_test.cpp)
     target_link_libraries(vphone_apfs_snapshot_rename_test PRIVATE vphone_apfs_snapshot_portable)
 
-    add_library(vphone_apfs_reader STATIC src/apfs_reader.cpp)
+    add_library(vphone_apfs_reader STATIC src/apfs_reader.cpp src/decmpfs_type4.cpp)
     target_include_directories(vphone_apfs_reader PUBLIC include)
     target_link_libraries(vphone_apfs_reader PRIVATE advapi32 ZLIB::ZLIBSTATIC)
 
@@ -259,8 +259,9 @@ if(WIN32)
     target_link_libraries(vphone_apfs_semantic_wrapper_test PRIVATE vphone_apfs_reader)
     add_executable(vphone_apfs_semantic_integration_test src/apfs_semantic_integration_test.cpp)
     target_link_libraries(vphone_apfs_semantic_integration_test PRIVATE vphone_apfs_reader)
-    add_executable(vphone_apfs_decmpfs_fixture_test tests/apfs_decmpfs_fixture_test.cpp)
+    add_executable(vphone_apfs_decmpfs_fixture_test tests/apfs_decmpfs_fixture_test.cpp src/decmpfs_type4.cpp)
     target_link_libraries(vphone_apfs_decmpfs_fixture_test PRIVATE ZLIB::ZLIBSTATIC)
+    target_include_directories(vphone_apfs_decmpfs_fixture_test PRIVATE include)
     add_test(NAME apfs_reader_test COMMAND vphone_apfs_reader_test)
     set_tests_properties(apfs_reader_test PROPERTIES
         PASS_REGULAR_EXPRESSION "APFS_READER_TEST_PASS"
@@ -275,7 +276,7 @@ if(WIN32)
     )
     add_test(NAME apfs_decmpfs_fixture_test COMMAND vphone_apfs_decmpfs_fixture_test)
     set_tests_properties(apfs_decmpfs_fixture_test PROPERTIES
-        PASS_REGULAR_EXPRESSION "DECMPFS_RECONSTRUCTION_TEST_MATRIX_PASS"
+        PASS_REGULAR_EXPRESSION "DECMPFS_TYPE4_REAL_FIXTURE_MATRIX_PASS"
     )
 
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)

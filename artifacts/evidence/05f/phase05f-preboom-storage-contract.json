@@ -39,10 +39,10 @@
     "SPRINGBOARD_INODE_RECORD_RESOLVED": {
       "status": "OPEN",
       "what_is_proven": "INODE records structurally resolved for all three executables via apfs_resolve_inode (inode_found=true, mode=33261 regular file, parent_id, private_id)",
-      "what_is_open": "byte reconstruction. All three executables are decmpfs-compressed algo=4 (LZVN) with empty inline xdata; the inode resolver only reconstructs PLAIN_ATTR (algo 9) payloads."
+      "what_is_proven": "byte reconstruction COMPLETE for all three executables via the DATA_STREAM flow (j_xattr_dstream -> xattr_obj_id FILE_EXTENT chain -> raw RF stream -> type-4 block table -> zlib chunks)"
     },
-    "SPRINGBOARD_EXECUTABLE_RECONSTRUCTED": "OPEN (LZVN algo-4 payload handling not implemented)",
-    "SPRINGBOARD_EXECUTABLE_SHA256": "NOT_YET",
+    "SPRINGBOARD_EXECUTABLE_RECONSTRUCTED": "PASS (139712 bytes, Mach-O structure valid)",
+    "SPRINGBOARD_EXECUTABLE_SHA256": "db2d73a61739417c14359db4415ac5eb0cc59f86611c158e7413d97b0458b55c",
     "FRONTBOARDD_STATUS": "NOT_FOUND_IN_CURRENT_SYSTEM_ARTIFACTS"
   },
   "cryptex_determinism": {
@@ -134,7 +134,9 @@
       "iop_version": 1,
       "nvme_interrupt_idx": 4,
       "iommu_parent": 107,
-      "nvme_queue_entries": 1073741824,
+      "nvme_queue_entries": 64,
+      "nvme_queue_entries_raw_hex": "40000000",
+      "nvme_queue_entries_endianness": "little",
       "quirks": ["nvme-prp-flush-wa", "nvme-vdma-wa", "msp-bfh-params"],
       "child_node": "iop-ans-nub",
       "provenance": "committed artifacts/evidence/05f/phase05f-ans-dt-contract.json (durable, structured, raw+decoded with byte offsets)"
@@ -223,6 +225,28 @@
     "ANS_DEVICE_TREE_RAW_EXTRACTION_PASS",
     "ANS_KERNEL_DRIVER_STRING_PRESENCE_PASS"
   ],
+  "executable_reconstruction": {
+    "SPRINGBOARD_EXECUTABLE_RECONSTRUCTED_PASS": true,
+    "SPRINGBOARD_EXECUTABLE_LOGICAL_SIZE_MATCH_PASS": true,
+    "SPRINGBOARD_EXECUTABLE_MACHO_STRUCTURE_PASS": true,
+    "SPRINGBOARD_EXECUTABLE_SHA256_PASS": true,
+    "SPRINGBOARD_EXECUTABLE_DETERMINISTIC_PASS": true,
+    "springboard": {
+      "cnid": 1152921500312051482,
+      "logical_size": 139712,
+      "sha256": "db2d73a61739417c14359db4415ac5eb0cc59f86611c158e7413d97b0458b55c"
+    },
+    "backboardd": {
+      "cnid": 1152921500312413741,
+      "sha256": "fbba7fd2925990dd859b24629ecab5cdbf6f2fac8c1c357ec0f9e412ded75559",
+      "macho_structure_valid": true
+    },
+    "runningboardd": {
+      "cnid": 1152921500312414480,
+      "sha256": "7b03581c0399960bc35b681e8ae732fa69df390567c6816950b6ce7629962457",
+      "macho_structure_valid": true
+    }
+  },
   "decmpfs_algorithm_table": {
     "DECMPFS_ALGORITHM_TABLE_AUDIT_PASS": {
       "3": "zlib inline (CMP_TypeZlibAttrib)",

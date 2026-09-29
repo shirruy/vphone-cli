@@ -88,7 +88,8 @@ def decode_values(node):
             "byte_offset": prop["byte_offset"],
             "decoded": decoded,
             "decoded_hex_strings": None,
-            "hex_prefix": raw[:64].hex(),
+            "raw_hex": raw.hex(),
+            "endianness": "little",
         }
         # Correct small-integer fields that ADT encodes as u32
         if name in ("interrupts", "interrupt-parent", "clock-ids",
