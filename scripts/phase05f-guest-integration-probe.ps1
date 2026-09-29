@@ -17,7 +17,9 @@ param(
 
     [int]$WindowSeconds = 30,
 
-    [string]$BootArgs = 'rd=md0 serial=3 -v -noprogress wdt=-1 wlan-olyhal-abort'
+    [string]$BootArgs = 'rd=md0 serial=3 -v -noprogress wdt=-1 wlan-olyhal-abort',
+
+    [switch]$NegativeControl
 )
 
 $ErrorActionPreference = 'Stop'
@@ -60,6 +62,15 @@ $stages = @(
     [ordered]@{ name = 'STAGE_7_LAUNCHD';   members = @('hello from launchd.1') },
     [ordered]@{ name = 'STAGE_8_IGNITION_COMPLETE'; members = @('ignition sequence complete') }
 )
+
+# Negative control: inject an impossible stage to prove the gate
+# fails closed (exit code 1) when a stage cannot be satisfied.
+if ($NegativeControl) {
+    $stages += [ordered]@{
+        name = 'STAGE_9_IMPOSSIBLE'
+        members = @('IMPOSSIBLE_MARKER_0123456789')
+    }
+}
 
 # Fatal-exception markers (any hit = exception present).
 $exceptionMarkers = @(
@@ -292,4 +303,20 @@ if ($null -ne $firstException) {
 } else {
     Write-Host 'FIRST_EXCEPTION: NONE'
 }
+
+# Fail-closed gate: analysis result drives the process exit code.
+$gatePass =
+    $stageOrderOk -and
+    $iokitMembersPresent -and
+    ($null -eq $firstException)
+if ($gatePass) {
+    Write-Host 'HEADLESS_BOOT_REGRESSION_PASS'
+} else {
+    Write-Host 'HEADLESS_BOOT_REGRESSION_FAIL'
+}
 Write-Host "EVIDENCE: $RunRoot"
+
+if (-not $gatePass) {
+    exit 1
+}
+exit 0
