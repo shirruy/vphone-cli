@@ -257,6 +257,8 @@ if(WIN32)
     target_link_libraries(vphone_apfs_mutator_test PRIVATE vphone_apfs_reader)
     add_executable(vphone_apfs_semantic_wrapper_test src/apfs_semantic_wrapper_test.cpp)
     target_link_libraries(vphone_apfs_semantic_wrapper_test PRIVATE vphone_apfs_reader)
+    add_executable(vphone_apfs_semantic_integration_test src/apfs_semantic_integration_test.cpp)
+    target_link_libraries(vphone_apfs_semantic_integration_test PRIVATE vphone_apfs_reader)
     add_test(NAME apfs_reader_test COMMAND vphone_apfs_reader_test)
     set_tests_properties(apfs_reader_test PROPERTIES
         PASS_REGULAR_EXPRESSION "APFS_READER_TEST_PASS"

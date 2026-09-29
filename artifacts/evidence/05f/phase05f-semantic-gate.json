@@ -1,0 +1,89 @@
+{
+  "gate": "semantic-valid-plist-mutation",
+  "iteration": 50,
+  "date": "2026-09-29",
+  "reviewer_state": "SEMANTIC_VALID_PLIST_MUTATION_GATE=PASS_CLOSED",
+  "bplist_validator": {
+    "grammar": "Apple CoreFoundation marker grammar",
+    "types_rejected": ["0x7", "0x9", "0xB", "0xE"],
+    "extended_length_parser": "overflow-safe, integer-marker-only",
+    "object_table_bound": "offset_table_off"
+  },
+  "unit_spy": {
+    "negative_call_count": 0,
+    "positive_call_count": 1,
+    "markers": [
+      "SEMANTIC_WRAPPER_NEGATIVE_SPY_PASS",
+      "SEMANTIC_WRAPPER_POSITIVE_SPY_PASS",
+      "BPLIST_VALID_BOOLEAN_FALSE_PASS",
+      "BPLIST_VALID_BOOLEAN_TRUE_PASS",
+      "BPLIST_VALID_STRING_PASS",
+      "BPLIST_VALID_ARRAY_PASS",
+      "BPLIST_VALID_DICT_PASS",
+      "SEMANTIC_NEGATIVE_GARBAGE_REFUSED_PASS",
+      "SEMANTIC_NEGATIVE_TRUNCATED_BPLIST_REFUSED_PASS",
+      "SEMANTIC_NEGATIVE_CORRUPT_OBJECT_SPAN_REFUSED_PASS",
+      "SEMANTIC_NEGATIVE_OFFSET_ENTRY_IN_OBJECT_TABLE_REFUSED_PASS",
+      "SEMANTIC_NEGATIVE_INVALID_CONTAINER_REFERENCE_REFUSED_PASS",
+      "SEMANTIC_NEGATIVE_INVALID_EXTENDED_LENGTH_INTEGER_REFUSED_PASS",
+      "SEMANTIC_NEGATIVE_OBJECT_PAYLOAD_OVERLAPS_OFFSET_TABLE_REFUSED_PASS",
+      "SEMANTIC_WRAPPER_TEST_PASS"
+    ]
+  },
+  "real_712_validator": {
+    "marker": "SEMANTIC_REAL_712_BPLIST_VALIDATOR_PASS",
+    "payload_size": 712,
+    "payload_sha256": "642f2bd79231aeb2993c22c740c7d08eac325bcb8e60857c2f46bba16f934859"
+  },
+  "real_apfs_integration": {
+    "source_image": "ramdisk-source.dmg (copy of known-good)",
+    "output_image": "ramdisk-semantic-v2.dmg",
+    "target": "com.apple.driverkitd.plist CNID=639",
+    "real_apfs_call_count": 1,
+    "markers": [
+      "SEMANTIC_REAL_APFS_CALL_PASS",
+      "SEMANTIC_REAL_OUTPUT_CREATED_PASS",
+      "SEMANTIC_REAL_STRUCTURAL_REREAD_PASS",
+      "SEMANTIC_REAL_712_PAYLOAD_MATCH_PASS",
+      "SEMANTIC_REAL_SOURCE_UNCHANGED_PASS",
+      "SEMANTIC_INTEGRATION_TEST_PASS"
+    ],
+    "output_single_block": 36400,
+    "output_v1_identical": true
+  },
+  "invalid_integration": {
+    "markers": [
+      "SEMANTIC_INVALID_PLIST_PREWRITE_REFUSED_PASS",
+      "SEMANTIC_INVALID_PLIST_NO_APFS_WRITE_PASS",
+      "SEMANTIC_INVALID_PLIST_NO_OUTPUT_PASS",
+      "SEMANTIC_INVALID_PLIST_SOURCE_UNCHANGED_PASS",
+      "SEMANTIC_INTEGRATION_TEST_PASS"
+    ],
+    "real_apfs_call_count": 0,
+    "output_exists": false
+  },
+  "regression": {
+    "apfs_ctest": "4/4 PASS (reader, mutator, semantic wrapper, snapshot rename)",
+    "phase5f_canonical_reread": {
+      "block_size": 4096,
+      "block_count": 59392,
+      "apsb_block": 1461,
+      "apsb_oid": 1026,
+      "xid": 9,
+      "root_tree_block": 51206,
+      "launchdaemons_cnid": 632,
+      "plist_cnid": 639,
+      "plist_size": 721,
+      "plist_sha256": "a5ff5c5e0b656c51befcae503d0ba878ff41a348b3b19dcfd01877a09e41b2eb",
+      "marker": "PHASE5F_25_EVIDENCE_REGRESSION_PASS"
+    },
+    "real_fixture_audit": {
+      "grow": "REAL_RESIZE_GROW_LEAF_DIFF_AUDIT_PASS size=737",
+      "shrink": "REAL_RESIZE_SHRINK_LEAF_DIFF_AUDIT_PASS size=621",
+      "overall": "REAL_RESIZE_LEAF_DIFF_AUDIT_PASS",
+      "unclassified_ranges": 0,
+      "marker": "REAL_FIXTURE_VALIDATION_REGRESSION_PASS",
+      "exit": 0
+    }
+  }
+}
