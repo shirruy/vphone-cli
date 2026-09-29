@@ -1,0 +1,107 @@
+{
+  "gate": "visual-guest-bring-up-display-pipeline",
+  "iteration": 52,
+  "date": "2026-09-29",
+  "qemu_sptm_head": "2867d847d3471560e773120ee50c42dbcbb6d60b",
+  "qemu_binary_sha256": "92f95e3c18a4375195fc19d3a3613dd76adf2549cda8f152e29bf9fbda3736d5",
+  "graphics_current_state": "D",
+  "graphics_current_state_meaning": "No usable graphical path exists yet: qemu-sptm Darwin machine implements no display controller model, creates no framebuffer, and the only in-tree Apple display adapter (apple-gfx) is macOS-ParavirtualizedGraphics-only and not wired to the darwin machine. The guest device tree declares Apple display hardware (disp0 x20, dcp x33, framebuffer x3) but the emulator backs none of it.",
+  "component_audit": [
+    {
+      "component": "QEMU display surface / console",
+      "source_file": "hw/arm/darwin.c",
+      "function_or_type": "darwin_init / darwin_machine_class_init",
+      "implemented": false,
+      "wired_to_darwin_machine": false,
+      "windows_portable": "n/a (absent)",
+      "blocker": "No DisplayChangeListener, QemuConsole, or graphic_console registration anywhere in the Darwin machine; zero display symbols in darwin.c."
+    },
+    {
+      "component": "Apple display controller (DCP/ANS) emulation",
+      "source_file": "hw/ (searched)",
+      "function_or_type": "dcp / ANS",
+      "implemented": false,
+      "wired_to_darwin_machine": false,
+      "windows_portable": "n/a (absent)",
+      "blocker": "No DCP/ANS device model exists in qemu-sptm hw/ tree; guest DT nodes disp0/dcp are declared but unbacked."
+    },
+    {
+      "component": "apple-gfx (ParavirtualizedGraphics) display adapter",
+      "source_file": "hw/display/apple-gfx.m (+ mmio/pci variants)",
+      "function_or_type": "AppleGFXState / apple_gfx_common_realize",
+      "implemented": true,
+      "wired_to_darwin_machine": false,
+      "windows_portable": false,
+      "blocker": "Gated on macOS-only pvg dependency (ParavirtualizedGraphics + Metal, 22 API refs); CONFIG_MAC_PVG_* absent from the Windows build; not wired to the darwin machine."
+    },
+    {
+      "component": "Generic framebuffer device (ramfb)",
+      "source_file": "hw/display/ramfb.c",
+      "function_or_type": "ramfb",
+      "implemented": "in-tree",
+      "wired_to_darwin_machine": false,
+      "windows_portable": true,
+      "blocker": "CONFIG_RAMFB undefined in build-win; not attached by darwin.c."
+    },
+    {
+      "component": "QEMU display backends available on Windows build",
+      "source_file": "build-win/config-host.h + -display help",
+      "function_or_type": "none / curses / dbus",
+      "implemented": "curses+dbus only",
+      "wired_to_darwin_machine": false,
+      "windows_portable": true,
+      "blocker": "CONFIG_SDL undefined, CONFIG_GTK undefined, SDL2/GTK libraries absent from msys64; dbus display needs an external client and a guest display device to consume."
+    },
+    {
+      "component": "Input devices wired to Darwin machine",
+      "source_file": "hw/arm/darwin.c + xnu/*.c",
+      "function_or_type": "qemu_input_handler / kbd / mouse",
+      "implemented": false,
+      "wired_to_darwin_machine": false,
+      "windows_portable": "n/a (absent)",
+      "blocker": "Zero qemu_input usage in darwin.c or xnu; build provides generic usb-kbd/virtio-mouse/virtio-multitouch but no bus wiring or guest-side Apple HID emulation."
+    }
+  ],
+  "runtime_probes": {
+    "display_help": ["none", "curses", "dbus"],
+    "qmp_query_displays": "CommandNotFound (command does not exist in this qemu-sptm fork)",
+    "qmp_machine_graphics": "DeviceNotFound: '/machine/graphics' not found",
+    "qmp_peripheral": "empty (no attached display device)",
+    "dbus_backend_probe": "qemu stays alive with -display dbus (no crash) but no guest display device exists to drive it",
+    "guest_device_tree": {
+      "display_nodes": 27,
+      "framebuffer_nodes": 3,
+      "disp0_nodes": 20,
+      "dcp_nodes": 33
+    }
+  },
+  "input_capability": {
+    "classification": "INPUT_NOT_IMPLEMENTED",
+    "guest_dt_hits": { "touch": 5, "hid": 6, "keyboard": 0, "mouse": 0, "multitouch": 0 },
+    "qemu_input_devices": ["usb-kbd", "usb-mouse", "virtio-mouse", "virtio-multitouch"],
+    "note": "Generic QEMU input devices exist in the build, but no input device is wired to the darwin machine and there is no Apple HID/touch emulation."
+  },
+  "headless_regression": {
+    "baseline": "GUEST_BOOT_STAGE_ORDER_PASS + IOKIT_STAGE_MEMBERS_PRESENT_PASS",
+    "patched": "GUEST_BOOT_STAGE_ORDER_PASS + IOKIT_STAGE_MEMBERS_PRESENT_PASS",
+    "marker": "HEADLESS_BOOT_REGRESSION_PASS"
+  },
+  "markers": {
+    "GRAPHICS_CAPABILITY_AUDIT_PASS": true,
+    "GRAPHICS_CURRENT_STATE": "D",
+    "INPUT_CAPABILITY_AUDIT_PASS": true,
+    "HEADLESS_BOOT_REGRESSION_PASS": true,
+    "VPHONE_QEMU_WINDOW_CREATED_PASS": false,
+    "GUEST_FRAMEBUFFER_ACTIVITY_PASS": "NOT_TESTED (no display device)",
+    "FIRST_VISIBLE_GUEST_FRAME_PASS": false
+  },
+  "conclusion": "State D: no usable graphical path exists yet. The guest device tree declares Apple display hardware but qemu-sptm has no display controller model, no framebuffer path, and no usable Windows display backend wired for the darwin machine. The correct next engineering step is a source-backed plan for the smallest display path (likely a ramfb-style framebuffer device + guest DT patch or DCP stub) before any VPhone window can exist.",
+  "not_claimed": [
+    "SPRINGBOARD_VISIBLE",
+    "KAIRO_INSTALLED",
+    "KAIRO_VISIBLE",
+    "ROOT_SHELL",
+    "TRUSTCACHE_SUCCESS",
+    "SIGNING_SUCCESS"
+  ]
+}
