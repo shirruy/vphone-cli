@@ -2349,6 +2349,15 @@ bool apfs_read_container(
     return false;
 }
 
+// Forward declaration: defined below in the mutation section's
+// anonymous namespace (BCrypt SHA-256 hex).
+namespace {
+std::string compute_sha256_hex(
+    const std::uint8_t* data,
+    std::size_t size
+);
+}
+
 // ---------------------------------------------------------------------------
 // Read-only generic path resolution for the full-OS audit. Resolves a
 // "/"-separated absolute path through the structural catalog walker of
@@ -2530,6 +2539,533 @@ bool apfs_resolve_path(
     result.final_cnid = parent;
     result.parent_cnid = final_parent;
     result.status = "RESOLVED";
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// Read-only INODE-level resolution: resolve the APFS INODE record for
+// a CNID, collect its FILE_EXTENT chain, and reconstruct the file
+// bytes with the same coverage validation used by the plist reader.
+// ---------------------------------------------------------------------------
+
+bool apfs_resolve_inode(
+    const std::string& image_path,
+    std::uint64_t cnid,
+    ApfsInodeResolution& result,
+    std::string& error
+) {
+    result = ApfsInodeResolution{};
+    result.cnid = cnid;
+    error.clear();
+
+    ApfsReaderReport report;
+    if (!apfs_read_container(image_path, report, error)) {
+        result.status = "FAIL: container read: " + error;
+        return false;
+    }
+    if (report.volumes.empty()) {
+        error = "no active-era volume found";
+        result.status = "FAIL: no volume";
+        return false;
+    }
+
+    const ApfsVolumeInfo& volume = report.volumes[0];
+    FstreeWalkCtx ctx;
+    ctx.file = CreateFileA(
+        image_path.c_str(), GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (ctx.file == INVALID_HANDLE_VALUE) {
+        error = "cannot open image for inode walk";
+        result.status = "FAIL: open";
+        return false;
+    }
+    ctx.block_size = report.container.block_size;
+    ctx.block_count = report.container.block_count;
+    ctx.volume_xid = volume.xid;
+
+    {
+        std::vector<std::uint8_t> apsb_buf(ctx.block_size, 0);
+        std::string apsb_error;
+        if (volume.apsb_block < ctx.block_count &&
+            read_block(
+                ctx.file, volume.apsb_block, ctx.block_size,
+                apsb_buf, apsb_error)) {
+            const std::uint64_t incompat =
+                read_le64(apsb_buf.data() + kApsbIncompatOffset);
+            ctx.hashed_names =
+                (incompat & kIncompatCaseInsensitive) != 0 ||
+                (incompat & kIncompatNormalizationInsensitive) != 0;
+        }
+    }
+
+    std::vector<ApfsOmapEntry> omap_entries;
+    {
+        std::vector<std::uint8_t> omap_buf(ctx.block_size, 0);
+        std::string read_error;
+        if (volume.omap_block >= ctx.block_count ||
+            !read_block(
+                ctx.file, volume.omap_block, ctx.block_size,
+                omap_buf, read_error)) {
+            error = "OMAP block read failed: " + read_error;
+            result.status = "FAIL: omap read";
+            CloseHandle(ctx.file);
+            return false;
+        }
+        const std::uint64_t om_tree_oid =
+            read_le64(omap_buf.data() + 0x30);
+        std::set<std::uint64_t> visited;
+        std::string omap_error;
+        if (!omap_collect_entries(
+                ctx.file, ctx.block_size, om_tree_oid,
+                ctx.block_count, true, omap_entries, visited,
+                omap_error)) {
+            error = "OMAP collect failed: " + omap_error;
+            result.status = "FAIL: omap collect";
+            CloseHandle(ctx.file);
+            return false;
+        }
+    }
+    ctx.omap = &omap_entries;
+
+    // Phase 1: resolve the INODE record itself.
+    struct InodeParsed {
+        bool found = false;
+        std::uint64_t private_id = 0;
+        std::uint64_t parent_id = 0;
+        std::uint16_t mode = 0;
+        std::uint32_t bsd_flags = 0;
+        bool compressed = false;
+        std::uint64_t dstream_size = 0;
+        bool has_dstream = false;
+        std::string parse_error;
+    } ino;
+
+    ctx.visited.clear();
+    auto inode_match = [&](const FstreeRawRecord& rec) -> bool {
+        if (ino.found || rec.record_type != kApfsTypeInode ||
+            rec.obj_id != cnid) {
+            return true;
+        }
+        if (rec.value_len < kInodeValBaseSize) {
+            ino.parse_error =
+                "INODE value shorter than base structure";
+            return false;
+        }
+        ino.found = true;
+        ino.parent_id = read_le64(rec.value + 0x00);
+        ino.private_id = read_le64(rec.value + 0x08);
+        ino.bsd_flags = read_le32(rec.value + 0x44);
+        ino.mode =
+            static_cast<std::uint16_t>(rec.value[0x50]) |
+            (static_cast<std::uint16_t>(rec.value[0x51]) << 8);
+        ino.compressed = (ino.bsd_flags & kInoBsdCompressed) != 0;
+
+        const std::uint16_t xfields_off = 0x5c;
+        if (rec.value_len == xfields_off) {
+            // base-only inode: valid
+        } else if (rec.value_len > xfields_off &&
+                   rec.value_len < xfields_off + kXfBlobHeaderSize) {
+            ino.parse_error = "xfield partial xf_blob header";
+            return false;
+        } else if (rec.value_len >= xfields_off + kXfBlobHeaderSize) {
+            const std::uint8_t* xf = rec.value + xfields_off;
+            const std::uint16_t num_exts =
+                static_cast<std::uint16_t>(xf[0]) |
+                (static_cast<std::uint16_t>(xf[1]) << 8);
+            const std::uint16_t used_data =
+                static_cast<std::uint16_t>(xf[2]) |
+                (static_cast<std::uint16_t>(xf[3]) << 8);
+            const std::uint64_t meta_end =
+                xfields_off + kXfBlobHeaderSize +
+                static_cast<std::uint64_t>(num_exts) *
+                    kXFieldMetaSize;
+            if (meta_end > rec.value_len) {
+                ino.parse_error = "xfield metadata bounds exceeded";
+                return false;
+            }
+            std::uint64_t val_off = meta_end;
+            std::uint64_t consumed_padded = 0;
+            for (std::uint16_t xi = 0; xi < num_exts; ++xi) {
+                const std::uint8_t* meta =
+                    xf + kXfBlobHeaderSize +
+                    static_cast<std::uint64_t>(xi) * kXFieldMetaSize;
+                const std::uint8_t x_type = meta[0];
+                const std::uint16_t x_size =
+                    static_cast<std::uint16_t>(meta[2]) |
+                    (static_cast<std::uint16_t>(meta[3]) << 8);
+                const std::uint64_t padded =
+                    (static_cast<std::uint64_t>(x_size) + 7) & ~7ull;
+                if (val_off + padded > rec.value_len) {
+                    ino.parse_error = "xfield value bounds exceeded";
+                    return false;
+                }
+                if (x_type == kInoExtTypeDstream &&
+                    x_size >= kDstreamSize &&
+                    val_off + kDstreamSize <= rec.value_len) {
+                    ino.has_dstream = true;
+                    ino.dstream_size =
+                        read_le64(rec.value + val_off);
+                } else if (x_type == kInoExtTypeDstream &&
+                           x_size < kDstreamSize) {
+                    ino.parse_error = "DSTREAM xfield too short";
+                    return false;
+                }
+                val_off += padded;
+                consumed_padded += padded;
+            }
+            if (consumed_padded != used_data) {
+                ino.parse_error = "xfield xf_used_data mismatch";
+                return false;
+            }
+            if (meta_end + consumed_padded != rec.value_len) {
+                ino.parse_error = "xfield collection-size mismatch";
+                return false;
+            }
+        }
+        return true;
+    };
+
+    {
+        std::string walk_error;
+        if (!fstree_visit_raw_records(
+                ctx, volume.root_tree_oid,
+                volume.root_tree_info.level, true,
+                inode_match, walk_error)) {
+            if (!ino.parse_error.empty()) {
+                result.status = "FAIL";
+                result.error = "INODE parse: " + ino.parse_error;
+                CloseHandle(ctx.file);
+                return false;
+            }
+            result.status = "FAIL";
+            result.error = "INODE walk: " + walk_error;
+            CloseHandle(ctx.file);
+            return false;
+        }
+    }
+    if (!ino.found) {
+        result.status = "NOT_FOUND: no INODE record for CNID";
+        CloseHandle(ctx.file);
+        return true;
+    }
+
+    result.inode_found = true;
+    result.private_id = ino.private_id;
+    result.parent_id = ino.parent_id;
+    result.mode = ino.mode;
+    result.bsd_flags = ino.bsd_flags;
+    result.compressed = ino.compressed;
+    result.has_dstream = ino.has_dstream;
+    result.dstream_size = ino.dstream_size;
+    result.file_size = ino.dstream_size;
+
+    if (ino.compressed) {
+        // Resolve the com.apple.decmpfs XATTR and reconstruct
+        // PLAIN_ATTR (algo 9) inline bytes, mirroring the plist
+        // reader's hardened XATTR validation.
+        struct DecmpfsInfo {
+            bool found = false;
+            std::uint16_t xattr_flags = 0;
+            std::uint32_t signature = 0;
+            std::uint32_t algo = 0;
+            std::uint64_t logical_size = 0;
+            std::vector<std::uint8_t> xdata;
+            std::string parse_error;
+        } dcs;
+
+        ctx.visited.clear();
+        auto xattr_match = [&](const FstreeRawRecord& rec) -> bool {
+            if (dcs.found || rec.record_type != kApfsTypeXattr ||
+                rec.obj_id != cnid) {
+                return true;
+            }
+            if (rec.key_extra_len < 3) {
+                return true;
+            }
+            const std::uint16_t name_len =
+                static_cast<std::uint16_t>(rec.key_extra[0]) |
+                (static_cast<std::uint16_t>(rec.key_extra[1]) << 8);
+            if (name_len != kDecmpfsNameLen ||
+                rec.key_extra_len != 2 + kDecmpfsNameLen) {
+                return true;
+            }
+            if (rec.key_extra[2 + kDecmpfsNameLen - 1] != 0) {
+                return true;
+            }
+            if (std::memcmp(
+                    rec.key_extra + 2,
+                    "com.apple.decmpfs",
+                    kDecmpfsNameLen - 1) != 0) {
+                return true;
+            }
+            if (rec.value_len < 4) {
+                return true;
+            }
+            dcs.xattr_flags =
+                static_cast<std::uint16_t>(rec.value[0]) |
+                (static_cast<std::uint16_t>(rec.value[1]) << 8);
+            const std::uint16_t xdata_len =
+                static_cast<std::uint16_t>(rec.value[2]) |
+                (static_cast<std::uint16_t>(rec.value[3]) << 8);
+            if (xdata_len != rec.value_len - 4) {
+                dcs.parse_error = "XATTR xdata_len mismatch";
+                return false;
+            }
+            const std::uint8_t* xd = rec.value + 4;
+            // For non-PLAIN_ATTR storage, the xdata may only carry
+            // the 16-byte decmpfs header (DATA_STREAM compression).
+            // Parse what is present without fabricating fields.
+            if (xdata_len >= 4) {
+                dcs.signature = read_le32(xd);
+            }
+            if (xdata_len >= 8) {
+                dcs.algo = read_le32(xd + 4);
+            }
+            if (xdata_len >= 16) {
+                dcs.logical_size = read_le64(xd + 8);
+            }
+            if (dcs.xattr_flags & kXattrDataStream) {
+                dcs.parse_error = "XATTR DATA_STREAM not supported";
+                return false;
+            }
+            if (!(dcs.xattr_flags & kXattrDataEmbedded)) {
+                dcs.parse_error = "XATTR missing DATA_EMBEDDED";
+                return false;
+            }
+            if (dcs.signature != kDecmpfsSignature) {
+                dcs.parse_error = "XATTR bad cmpf signature";
+                return false;
+            }
+            if (dcs.algo == 9 && xdata_len >= kDecmpfsHeaderSize + 1) {
+                if (xd[kDecmpfsHeaderSize] != kDecmpfsPlainMarker) {
+                    dcs.parse_error = "XATTR bad 0xCC marker";
+                    return false;
+                }
+                if (xdata_len < kDecmpfsHeaderSize + 1 + 1) {
+                    dcs.parse_error =
+                        "XATTR PLAIN_ATTR payload empty";
+                    return false;
+                }
+                if (dcs.logical_size !=
+                    xdata_len - kDecmpfsHeaderSize - 1) {
+                    dcs.parse_error = "XATTR logical-size mismatch";
+                    return false;
+                }
+                dcs.xdata.assign(
+                    xd + kDecmpfsHeaderSize + 1,
+                    xd + kDecmpfsHeaderSize + 1 + dcs.logical_size);
+            } else if (dcs.algo == 9) {
+                dcs.parse_error =
+                    "XATTR PLAIN_ATTR xdata too short for payload";
+                return false;
+            }
+            dcs.found = true;
+            return true;
+        };
+
+        std::string walk_error;
+        if (!fstree_visit_raw_records(
+                ctx, volume.root_tree_oid,
+                volume.root_tree_info.level, true,
+                xattr_match, walk_error)) {
+            if (!dcs.parse_error.empty()) {
+                result.status = "FAIL";
+                result.error = "XATTR parse: " + dcs.parse_error;
+                error = result.error;
+                CloseHandle(ctx.file);
+                return false;
+            }
+            result.status = "FAIL";
+            result.error = "XATTR walk failed (no matching record "
+                           "or structural error): " + walk_error;
+            error = result.error;
+            CloseHandle(ctx.file);
+            return false;
+        }
+        if (!dcs.found) {
+            result.status =
+                "COMPRESSED: no decmpfs XATTR found for CNID";
+            CloseHandle(ctx.file);
+            return true;
+        }
+        // Diagnostic: report the exact storage mode and sizes
+        // instead of guessing where the payload lives.
+        result.status =
+            "COMPRESSED: decmpfs algo=" +
+            std::to_string(dcs.algo) +
+            " xattr_flags=0x" +
+            [&]() {
+                char buf[16];
+                std::snprintf(buf, sizeof(buf), "%04x",
+                    dcs.xattr_flags);
+                return std::string(buf);
+            }() +
+            " logical_size=" +
+            std::to_string(dcs.logical_size) +
+            " xdata_len=" +
+            std::to_string(dcs.xdata.size());
+        if (dcs.algo != 9 || dcs.xdata.empty()) {
+            CloseHandle(ctx.file);
+            return true;
+        }
+        result.bytes_reconstructed = true;
+        result.file_size = dcs.logical_size;
+        result.sha256 = compute_sha256_hex(
+            dcs.xdata.data(), dcs.xdata.size());
+        result.status = "READ_OK (decmpfs PLAIN_ATTR)";
+        CloseHandle(ctx.file);
+        return true;
+    }
+    if (!ino.has_dstream) {
+        result.status = "NO_DSTREAM: inode has no dstream xfield";
+        CloseHandle(ctx.file);
+        return true;
+    }
+
+    // Phase 2: FILE_EXTENT collection for private_id.
+    struct Extent {
+        std::uint64_t logical = 0;
+        std::uint64_t length = 0;
+        std::uint64_t phys = 0;
+    };
+    std::vector<Extent> extents;
+    std::string extent_parse_error;
+
+    ctx.visited.clear();
+    auto extent_match = [&](const FstreeRawRecord& rec) -> bool {
+        if (rec.record_type != kApfsTypeFileExtent ||
+            rec.obj_id != ino.private_id) {
+            return true;
+        }
+        if (rec.key_extra_len != 8 || rec.value_len != 24) {
+            extent_parse_error =
+                "FILE_EXTENT malformed size: key=" +
+                std::to_string(rec.key_extra_len) +
+                " value=" + std::to_string(rec.value_len);
+            return false;
+        }
+        Extent e;
+        e.logical = read_le64(rec.key_extra);
+        const std::uint64_t len_flags = read_le64(rec.value);
+        e.length = len_flags & kExtentLenMask;
+        e.phys = read_le64(rec.value + 8);
+        extents.push_back(e);
+        return true;
+    };
+
+    {
+        std::string walk_error;
+        if (!fstree_visit_raw_records(
+                ctx, volume.root_tree_oid,
+                volume.root_tree_info.level, true,
+                extent_match, walk_error)) {
+            if (!extent_parse_error.empty()) {
+                result.status = "FAIL";
+                result.error =
+                    "FILE_EXTENT parse: " + extent_parse_error;
+                CloseHandle(ctx.file);
+                return false;
+            }
+            result.status = "FAIL";
+            result.error = "FILE_EXTENT scan: " + walk_error;
+            CloseHandle(ctx.file);
+            return false;
+        }
+    }
+    if (extents.empty()) {
+        result.status = "FAIL: no FILE_EXTENT records";
+        CloseHandle(ctx.file);
+        return false;
+    }
+
+    std::sort(
+        extents.begin(), extents.end(),
+        [](const Extent& a, const Extent& b) {
+            return a.logical < b.logical;
+        });
+    for (std::size_t i = 0; i < extents.size(); ++i) {
+        const auto& e = extents[i];
+        if (e.length == 0) {
+            result.status = "FAIL: zero-length extent";
+            CloseHandle(ctx.file);
+            return false;
+        }
+        const std::uint64_t blocks_needed =
+            e.length / ctx.block_size +
+            ((e.length % ctx.block_size) != 0 ? 1 : 0);
+        if (e.phys != 0 &&
+            (e.phys >= ctx.block_count ||
+             blocks_needed > ctx.block_count - e.phys)) {
+            result.status = "FAIL: extent physical range exceeds container";
+            CloseHandle(ctx.file);
+            return false;
+        }
+        if (i > 0) {
+            const auto& prev = extents[i - 1];
+            if (prev.length >
+                    std::numeric_limits<std::uint64_t>::max() -
+                    prev.logical ||
+                e.logical < prev.logical + prev.length) {
+                result.status = "FAIL: overlapping extents";
+                CloseHandle(ctx.file);
+                return false;
+            }
+        }
+    }
+    result.extent_count = extents.size();
+
+    // Phase 3: reconstruct with coverage validation.
+    std::vector<std::uint8_t> bytes(ino.dstream_size, 0);
+    std::uint64_t expected = 0;
+    for (const auto& e : extents) {
+        if (e.logical >= ino.dstream_size) {
+            break;
+        }
+        if (e.logical > expected) {
+            result.status = "FAIL: extent coverage gap";
+            CloseHandle(ctx.file);
+            return false;
+        }
+        const std::uint64_t chunk =
+            std::min(e.length, ino.dstream_size - e.logical);
+        if (e.phys == 0) {
+            expected = e.logical + chunk;
+            continue;
+        }
+        const std::uint64_t phys_offset = e.phys * ctx.block_size;
+        std::uint64_t remaining = chunk;
+        std::uint64_t src = phys_offset;
+        std::uint64_t dst = e.logical;
+        while (remaining > 0 && dst < ino.dstream_size) {
+            const std::uint64_t bytes_this =
+                std::min<std::uint64_t>(
+                    remaining,
+                    ctx.block_size - (src % ctx.block_size));
+            if (!read_exact_range(
+                    ctx.file, src, bytes.data() + dst,
+                    bytes_this, result.error)) {
+                result.status = "FAIL: physical read failed";
+                CloseHandle(ctx.file);
+                return false;
+            }
+            src += bytes_this;
+            dst += bytes_this;
+            remaining -= bytes_this;
+        }
+        expected = e.logical + chunk;
+    }
+    if (expected < ino.dstream_size) {
+        result.status = "FAIL: extent coverage incomplete";
+        CloseHandle(ctx.file);
+        return false;
+    }
+
+    result.bytes_reconstructed = true;
+    result.sha256 = compute_sha256_hex(
+        bytes.data(), bytes.size());
+    result.status = "READ_OK";
+    CloseHandle(ctx.file);
     return true;
 }
 

@@ -249,6 +249,36 @@ bool apfs_resolve_path(
     std::string& error
 );
 
+// Read-only INODE-level resolution for the full-OS audit: given an
+// image and a resolved CNID, structurally resolve the APFS INODE
+// record (mode, BSD flags, private_id, dstream size), collect the
+// FILE_EXTENT chain, and reconstruct the file bytes with coverage
+// validation. Returns the SHA-256 of the reconstructed bytes.
+struct ApfsInodeResolution {
+    bool inode_found = false;
+    bool bytes_reconstructed = false;
+    std::string status = "NOT_ATTEMPTED";
+    std::uint64_t cnid = 0;
+    std::uint64_t private_id = 0;
+    std::uint64_t parent_id = 0;
+    std::uint16_t mode = 0;
+    std::uint32_t bsd_flags = 0;
+    bool compressed = false;
+    bool has_dstream = false;
+    std::uint64_t dstream_size = 0;
+    std::uint64_t extent_count = 0;
+    std::uint64_t file_size = 0;
+    std::string sha256;
+    std::string error;
+};
+
+bool apfs_resolve_inode(
+    const std::string& image_path,
+    std::uint64_t cnid,
+    ApfsInodeResolution& result,
+    std::string& error
+);
+
 // Parse variable-KV B-tree leaf geometry from a raw block.
 // Derives all offsets, spans, boundaries, and free space from the
 // actual TOC/record layout — never from zero bytes. Fails closed

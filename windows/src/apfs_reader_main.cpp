@@ -47,15 +47,19 @@ std::string sha256_hex(const std::vector<std::uint8_t>& data) {
 int main(int argc, char** argv) {
     std::string dump_path;
     std::string resolve_path;
+    std::string resolve_inode;
     if (argc == 4 && std::string(argv[1]) == "--dump-plist") {
         dump_path = argv[2];
     } else if (argc == 4 && std::string(argv[1]) == "--resolve-path") {
         resolve_path = argv[2];
+    } else if (argc == 4 && std::string(argv[1]) == "--resolve-inode") {
+        resolve_inode = argv[2];
     } else if (argc != 2) {
         std::cerr
             << "usage: vphone-apfs-reader-win <raw-apfs-image>\n"
             << "       vphone-apfs-reader-win --dump-plist <path> <raw-apfs-image>\n"
-            << "       vphone-apfs-reader-win --resolve-path <path> <raw-apfs-image>\n";
+            << "       vphone-apfs-reader-win --resolve-path <path> <raw-apfs-image>\n"
+            << "       vphone-apfs-reader-win --resolve-inode <cnid> <raw-apfs-image>\n";
         return 64;
     }
 
@@ -82,6 +86,45 @@ int main(int argc, char** argv) {
         std::cout << "  \"drec_type\": "
                   << resolution.drec_type << ",\n";
         std::cout << "  \"name\": \"" << resolution.name << "\"\n";
+        std::cout << "}\n";
+        return 0;
+    }
+
+    if (!resolve_inode.empty()) {
+        const std::uint64_t cnid =
+            static_cast<std::uint64_t>(
+                std::strtoull(resolve_inode.c_str(), nullptr, 10));
+        vphone::ApfsInodeResolution resolution;
+        std::string error;
+        if (!vphone::apfs_resolve_inode(
+                image_path, cnid, resolution, error)) {
+            std::cerr << "ERROR: " << error << "\n";
+            return 1;
+        }
+        std::cout << "{\n";
+        std::cout << "  \"cnid\": " << resolution.cnid << ",\n";
+        std::cout << "  \"status\": \"" << resolution.status << "\",\n";
+        std::cout << "  \"inode_found\": "
+                  << (resolution.inode_found ? "true" : "false") << ",\n";
+        std::cout << "  \"private_id\": "
+                  << resolution.private_id << ",\n";
+        std::cout << "  \"parent_id\": "
+                  << resolution.parent_id << ",\n";
+        std::cout << "  \"mode\": " << resolution.mode << ",\n";
+        std::cout << "  \"bsd_flags\": "
+                  << resolution.bsd_flags << ",\n";
+        std::cout << "  \"compressed\": "
+                  << (resolution.compressed ? "true" : "false") << ",\n";
+        std::cout << "  \"has_dstream\": "
+                  << (resolution.has_dstream ? "true" : "false") << ",\n";
+        std::cout << "  \"dstream_size\": "
+                  << resolution.dstream_size << ",\n";
+        std::cout << "  \"extent_count\": "
+                  << resolution.extent_count << ",\n";
+        std::cout << "  \"bytes_reconstructed\": "
+                  << (resolution.bytes_reconstructed ? "true" : "false")
+                  << ",\n";
+        std::cout << "  \"sha256\": \"" << resolution.sha256 << "\"\n";
         std::cout << "}\n";
         return 0;
     }
