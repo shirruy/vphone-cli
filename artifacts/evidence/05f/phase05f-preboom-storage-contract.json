@@ -1,11 +1,13 @@
 {
   "gate": "preboom-mapping-and-minimum-ios-storage-contract",
-  "iteration": "57W",
+  "iteration": "57X",
   "date": "2026-09-29",
   "certified": {
     "ITERATION_57W": "PASS",
     "ITERATION_57V": "PASS",
-    "ITERATION_57T_CERTIFIED_CLOSED": "YES"
+    "ITERATION_57T_CERTIFIED_CLOSED": "YES",
+    "ITERATION_57X": "PASS",
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS"
   },
   "decmpfs_reconstruction": {
     "DECMPFS_ALGORITHM_TABLE_AUDIT_PASS": true,
@@ -329,7 +331,6 @@
   "storage_gates_open": {
     "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK": "OPEN",
     "IOS_DATA_VOLUME_LIFECYCLE_AUDIT": "OPEN",
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "OPEN",
     "CRYPTEX_ATTACHMENT_MODEL": "OPEN",
     "IOS_ROOT_DEVICE_SELECTION": "OPEN",
     "IOS_ROOT_TRANSITION_MODEL": "OPEN",
@@ -348,5 +349,23 @@
     "8. MINIMUM_IOS_STORAGE_EMULATION_CONTRACT"
   ],
   "iteration_58_status": "BLOCKED until the storage/root/protocol gates above close",
-  "not_implemented": "No ANS/NVMe device code written"
+  "not_implemented": "No ANS/NVMe device code written",
+  "ans_kernel_driver_match": {
+    "ANS_MATCH_INPUT_IDENTITY_PASS": true,
+    "ANS_BOOTKC_CLASS_INVENTORY_PASS": true,
+    "ANS_CONTROLLER_CLASS_HIERARCHY_PASS": true,
+    "ANS_CONTROLLER_PROBE_PATH_PASS": true,
+    "ANS_CONTROLLER_START_PATH_PASS": true,
+    "ANS_PROVIDER_CLASS_PROVEN": true,
+    "ANS_DT_TO_DRIVER_MATCH_MAP_PASS": true,
+    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": true,
+    "ANS_ENDPOINT_MATCH_CONTRACT_PASS": true,
+    "ANS_DRIVER_RUNTIME_MILESTONE_MAP_PASS": true,
+    "ANS_NAMESPACE_DRIVER_USE_PASS": true,
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS": true,
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": true,
+    "next_gate": "IOS_STORAGE_LBA_CONTRACT",
+    "durable_evidence": "artifacts/evidence/05f/phase05f-ans-kernel-driver-match.json",
+    "open_unknown": "EXACT_WINNING_PROBE_UNRESOLVED on d37ap DT (nvme-linear-sq present; nvme-ans-dart and nvme-coastguard absent) - runtime IORegistry confirmation required"
+  }
 }

@@ -1,4 +1,4 @@
-# Deterministic evidence cross-file consistency checker (Iteration 57W).
+# Deterministic evidence cross-file consistency checker (Iteration 57X).
 # Compares duplicated fields between the summary and the durable
 # ANS DT contract, and refuses stale gate names or contradictory
 # statuses. Non-zero exit on any mismatch.
@@ -48,10 +48,28 @@ $summary = $summaryRaw | ConvertFrom-Json
 $contract = $contractRaw | ConvertFrom-Json
 
 # 1. Iteration identifier.
-Assert-Equal 'iteration' $summary.iteration '57W'
+Assert-Equal 'iteration' $summary.iteration '57X'
+Assert-Equal 'ITERATION_57X' $summary.certified.ITERATION_57X 'PASS'
 Assert-Equal 'ITERATION_57W' $summary.certified.ITERATION_57W 'PASS'
 Assert-Equal 'ITERATION_57V' $summary.certified.ITERATION_57V 'PASS'
 Assert-Equal '57T_certified' $summary.certified.ITERATION_57T_CERTIFIED_CLOSED 'YES'
+
+# 1b. ANS kernel driver match contract (57X) gates.
+$ansMatch = $summary.ans_kernel_driver_match
+Assert-Equal 'ans_identity' $ansMatch.ANS_MATCH_INPUT_IDENTITY_PASS 'True'
+Assert-Equal 'ans_inventory' $ansMatch.ANS_BOOTKC_CLASS_INVENTORY_PASS 'True'
+Assert-Equal 'ans_hierarchy' $ansMatch.ANS_CONTROLLER_CLASS_HIERARCHY_PASS 'True'
+Assert-Equal 'ans_probe' $ansMatch.ANS_CONTROLLER_PROBE_PATH_PASS 'True'
+Assert-Equal 'ans_start' $ansMatch.ANS_CONTROLLER_START_PATH_PASS 'True'
+Assert-Equal 'ans_provider' $ansMatch.ANS_PROVIDER_CLASS_PROVEN 'True'
+Assert-Equal 'ans_dt_map' $ansMatch.ANS_DT_TO_DRIVER_MATCH_MAP_PASS 'True'
+Assert-Equal 'ans_asc_rtbuddy' $ansMatch.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS 'True'
+Assert-Equal 'ans_endpoint' $ansMatch.ANS_ENDPOINT_MATCH_CONTRACT_PASS 'True'
+Assert-Equal 'ans_milestones' $ansMatch.ANS_DRIVER_RUNTIME_MILESTONE_MAP_PASS 'True'
+Assert-Equal 'ans_namespace' $ansMatch.ANS_NAMESPACE_DRIVER_USE_PASS 'True'
+Assert-Equal 'ans_durable' $ansMatch.ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS 'True'
+Assert-Equal 'ans_contract' $ansMatch.ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS 'True'
+Assert-Equal 'ans_next' $ansMatch.next_gate 'IOS_STORAGE_LBA_CONTRACT'
 
 # 2. SpringBoard reconstruction + SHA.
 $sb = $summary.decmpfs_reconstruction.executables.springboard
