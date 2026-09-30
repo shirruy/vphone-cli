@@ -1,121 +1,131 @@
 {
+  "gate": "ANS_DEVICE_TREE_CONTRACT",
+  "iteration": "57ZA",
+  "date": "2026-09-30",
+  "reparse": {
+    "tool": "fresh structural walk of Apple raw dtree format (node header: nprops u32 LE + nchildren u32 LE; property record: name[32] + length u32 LE + value[length], 4-byte aligned)",
+    "source_file": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\dtree.bin",
+    "source_sha256": "9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B",
+    "source_size": 259884,
+    "parser_note": "values below are the ONLY canonical raw facts; no value was reused from any prior artifact",
+    "D37AP_ANS_CHILD_RAW_REPARSE_PASS": true
+  },
   "ans_node": {
-    "byte_offset": 116068,
+    "path": "device-tree/arm-io/ans",
+    "node_off": 116068,
+    "node_off_hex": "0x1c564",
+    "nprops": 23,
+    "nchildren": 1,
     "properties": {
       "nvme-interrupt-idx": {
         "length": 4,
-        "byte_offset": 116112,
-        "decoded": [
-          4
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116076,
+        "byte_offset_hex": "0x1c56c",
+        "value_offset": 116112,
+        "value_offset_hex": "0x1c590",
         "raw_hex": "04000000",
-        "endianness": "little",
         "decoded_ints": [
           4
         ]
       },
       "iop-version": {
         "length": 4,
-        "byte_offset": 116152,
-        "decoded": [
-          1
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116116,
+        "byte_offset_hex": "0x1c594",
+        "value_offset": 116152,
+        "value_offset_hex": "0x1c5b8",
         "raw_hex": "01000000",
-        "endianness": "little",
         "decoded_ints": [
           1
         ]
       },
       "clock-gates": {
         "length": 4,
-        "byte_offset": 116192,
-        "decoded": [
-          117
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116156,
+        "byte_offset_hex": "0x1c5bc",
+        "value_offset": 116192,
+        "value_offset_hex": "0x1c5e0",
         "raw_hex": "75000000",
-        "endianness": "little",
         "decoded_ints": [
           117
         ]
       },
       "nvme-queue-entries": {
         "length": 4,
-        "byte_offset": 116232,
-        "decoded": [
-          64
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116196,
+        "byte_offset_hex": "0x1c5e4",
+        "value_offset": 116232,
+        "value_offset_hex": "0x1c608",
         "raw_hex": "40000000",
-        "endianness": "little",
         "decoded_ints": [
           64
         ]
       },
       "function-spi0_sclk_config": {
         "length": 16,
-        "byte_offset": 116272,
-        "decoded": [
+        "byte_offset": 116236,
+        "byte_offset_hex": "0x1c60c",
+        "value_offset": 116272,
+        "value_offset_hex": "0x1c630",
+        "raw_hex": "280000004f4950471400000001000100",
+        "decoded_ints": [
           40,
           1196443983,
           20,
           65537
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "280000004f4950471400000001000100",
-        "endianness": "little"
+        ]
       },
       "AAPL,phandle": {
         "length": 4,
-        "byte_offset": 116324,
-        "decoded": [
-          105
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116288,
+        "byte_offset_hex": "0x1c640",
+        "value_offset": 116324,
+        "value_offset_hex": "0x1c664",
         "raw_hex": "69000000",
-        "endianness": "little",
         "decoded_ints": [
           105
         ]
       },
       "nvme-linear-sq": {
         "length": 0,
-        "byte_offset": 116364,
-        "decoded": null,
-        "decoded_hex_strings": null,
+        "byte_offset": 116328,
+        "byte_offset_hex": "0x1c668",
+        "value_offset": 116364,
+        "value_offset_hex": "0x1c68c",
         "raw_hex": "",
-        "endianness": "little"
+        "decoded": null
       },
       "iommu-parent": {
         "length": 4,
-        "byte_offset": 116400,
-        "decoded": [
-          107
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116364,
+        "byte_offset_hex": "0x1c68c",
+        "value_offset": 116400,
+        "value_offset_hex": "0x1c6b0",
         "raw_hex": "6b000000",
-        "endianness": "little",
         "decoded_ints": [
           107
         ]
       },
       "nand-debug": {
         "length": 8,
-        "byte_offset": 116440,
-        "decoded": [
+        "byte_offset": 116404,
+        "byte_offset_hex": "0x1c6b4",
+        "value_offset": 116440,
+        "value_offset_hex": "0x1c6d8",
+        "raw_hex": "0100000000000000",
+        "decoded_ints": [
           1,
           0
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "0100000000000000",
-        "endianness": "little"
+        ]
       },
       "namespaces": {
         "length": 84,
-        "byte_offset": 116484,
-        "decoded": [
+        "byte_offset": 116448,
+        "byte_offset_hex": "0x1c6e0",
+        "value_offset": 116484,
+        "value_offset_hex": "0x1c704",
+        "raw_hex": "0100000001000000000000000200000002000000000a0000030000000300000020000000040000000400000002000000050000000500000002000000060000000800000000010000070000000d00000000800000",
+        "decoded_ints": [
           1,
           1,
           0,
@@ -138,55 +148,66 @@
           13,
           32768
         ],
-        "decoded_hex_strings": null,
-        "raw_hex": "0100000001000000000000000200000002000000000a0000030000000300000020000000040000000400000002000000050000000500000002000000060000000800000000010000070000000d00000000800000",
-        "endianness": "little"
+        "decoded": [
+          1,
+          1,
+          0,
+          2,
+          2,
+          2560,
+          3,
+          3,
+          32,
+          4,
+          4,
+          2,
+          5,
+          5,
+          2,
+          6,
+          8,
+          256,
+          7,
+          13,
+          32768
+        ]
       },
       "interrupt-parent": {
         "length": 4,
-        "byte_offset": 116604,
-        "decoded": [
-          32
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116568,
+        "byte_offset_hex": "0x1c758",
+        "value_offset": 116604,
+        "value_offset_hex": "0x1c77c",
         "raw_hex": "20000000",
-        "endianness": "little",
         "decoded_ints": [
           32
         ]
       },
       "nvme-prp-flush-wa": {
         "length": 0,
-        "byte_offset": 116644,
-        "decoded": null,
-        "decoded_hex_strings": null,
+        "byte_offset": 116608,
+        "byte_offset_hex": "0x1c780",
+        "value_offset": 116644,
+        "value_offset_hex": "0x1c7a4",
         "raw_hex": "",
-        "endianness": "little"
+        "decoded": null
       },
       "name": {
         "length": 4,
-        "byte_offset": 116680,
-        "decoded": [
-          7564897
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116644,
+        "byte_offset_hex": "0x1c7a4",
+        "value_offset": 116680,
+        "value_offset_hex": "0x1c7c8",
         "raw_hex": "616e7300",
-        "endianness": "little",
         "decoded_string": "ans"
       },
       "interrupts": {
         "length": 20,
-        "byte_offset": 116720,
-        "decoded": [
-          622,
-          621,
-          624,
-          623,
-          629
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116684,
+        "byte_offset_hex": "0x1c7cc",
+        "value_offset": 116720,
+        "value_offset_hex": "0x1c7f0",
         "raw_hex": "6e0200006d020000700200006f02000075020000",
-        "endianness": "little",
         "decoded_ints": [
           622,
           621,
@@ -197,8 +218,12 @@
       },
       "msp-bfh-params": {
         "length": 120,
-        "byte_offset": 116776,
-        "decoded": [
+        "byte_offset": 116740,
+        "byte_offset_hex": "0x1c804",
+        "value_offset": 116776,
+        "value_offset_hex": "0x1c828",
+        "raw_hex": "01000100efbeadde0200000064000000ffffffff01002a00008c00000278088e1c4837007c8e9cf70e00489000000000549000000000509000f000005c9000f0000002001800900800204000a80861100004900800204001a8086110000403000e006970686f6e6531355f335f4d4c420400040001000000",
+        "decoded_ints": [
           65537,
           3735928559,
           2,
@@ -229,22 +254,15 @@
           1112296799,
           262148,
           1
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "01000100efbeadde0200000064000000ffffffff01002a00008c00000278088e1c4837007c8e9cf70e00489000000000549000000000509000f000005c9000f0000002001800900800204000a80861100004900800204001a8086110000403000e006970686f6e6531355f335f4d4c420400040001000000",
-        "endianness": "little"
+        ]
       },
       "clock-ids": {
         "length": 12,
-        "byte_offset": 116932,
-        "decoded": [
-          330,
-          329,
-          331
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 116896,
+        "byte_offset_hex": "0x1c8a0",
+        "value_offset": 116932,
+        "value_offset_hex": "0x1c8c4",
         "raw_hex": "4a010000490100004b010000",
-        "endianness": "little",
         "decoded_ints": [
           330,
           329,
@@ -253,70 +271,75 @@
       },
       "nvme-vdma-wa": {
         "length": 0,
-        "byte_offset": 116980,
-        "decoded": null,
-        "decoded_hex_strings": null,
+        "byte_offset": 116944,
+        "byte_offset_hex": "0x1c8d0",
+        "value_offset": 116980,
+        "value_offset_hex": "0x1c8f4",
         "raw_hex": "",
-        "endianness": "little"
+        "decoded": null
       },
       "role": {
         "length": 5,
-        "byte_offset": 117016,
-        "decoded": null,
-        "decoded_hex_strings": null,
+        "byte_offset": 116980,
+        "byte_offset_hex": "0x1c8f4",
+        "value_offset": 117016,
+        "value_offset_hex": "0x1c918",
         "raw_hex": "414e533200",
-        "endianness": "little",
+        "decoded": null,
         "decoded_string": "ANS2"
       },
       "tunable-table-bundle": {
         "length": 9,
-        "byte_offset": 117060,
-        "decoded": null,
-        "decoded_hex_strings": null,
+        "byte_offset": 117024,
+        "byte_offset_hex": "0x1c920",
+        "value_offset": 117060,
+        "value_offset_hex": "0x1c944",
         "raw_hex": "62636a717467786f00",
-        "endianness": "little",
-        "decoded_string": "bcjqtgxo"
+        "decoded": null
       },
       "device_type": {
         "length": 4,
-        "byte_offset": 117108,
-        "decoded": [
-          7564897
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 117072,
+        "byte_offset_hex": "0x1c950",
+        "value_offset": 117108,
+        "value_offset_hex": "0x1c974",
         "raw_hex": "616e7300",
-        "endianness": "little",
-        "decoded_string": "ans"
+        "decoded_ints": [
+          7564897
+        ]
       },
       "function-spi0_mosi_config": {
         "length": 16,
-        "byte_offset": 117148,
-        "decoded": [
+        "byte_offset": 117112,
+        "byte_offset_hex": "0x1c978",
+        "value_offset": 117148,
+        "value_offset_hex": "0x1c99c",
+        "raw_hex": "280000004f4950471500000001000100",
+        "decoded_ints": [
           40,
           1196443983,
           21,
           65537
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "280000004f4950471500000001000100",
-        "endianness": "little"
+        ]
       },
       "power-gates": {
         "length": 4,
-        "byte_offset": 117200,
-        "decoded": [
-          117
-        ],
-        "decoded_hex_strings": null,
+        "byte_offset": 117164,
+        "byte_offset_hex": "0x1c9ac",
+        "value_offset": 117200,
+        "value_offset_hex": "0x1c9d0",
         "raw_hex": "75000000",
-        "endianness": "little",
         "decoded_ints": [
           117
         ]
       },
       "reg": {
         "length": 224,
-        "byte_offset": 117240,
+        "byte_offset": 117204,
+        "byte_offset_hex": "0x1c9d4",
+        "value_offset": 117240,
+        "value_offset_hex": "0x1c9f8",
+        "raw_hex": "000040770000000000c006000000000000000577000000000040000000000000000000000000000000000000000000000000cc7b000000000000060000000000000000790000000000000001000000000000b97b0000000000c0000000000000007cd47b0000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000107b000000000040040000000000",
         "decoded": [
           {
             "base": 2000683008,
@@ -374,395 +397,153 @@
             "base": 2064646144,
             "size": 278528
           }
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "000040770000000000c006000000000000000577000000000040000000000000000000000000000000000000000000000000cc7b000000000000060000000000000000790000000000000001000000000000b97b0000000000c0000000000000007cd47b0000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000107b000000000040040000000000",
-        "endianness": "little"
+        ]
       }
     },
     "child_names": [
       "iop-ans-nub"
     ]
   },
-  "apcie_node": {
-    "byte_offset": 202280,
+  "iop_ans_nub_child": {
+    "path": "device-tree/arm-io/ans/iop-ans-nub",
+    "node_off": 117464,
+    "node_off_hex": "0x1cad8",
+    "nprops": 9,
+    "nchildren": 0,
+    "property_names_in_file_order": [
+      "continuous-time",
+      "quiesced",
+      "shutdown-sleep",
+      "AAPL,phandle",
+      "region-size",
+      "region-base",
+      "crashlog-non-fatal",
+      "power-managed",
+      "name"
+    ],
     "properties": {
-      "power-gates": {
-        "length": 16,
-        "byte_offset": 202324,
-        "decoded": [
-          85,
-          88,
-          117,
-          37
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "55000000580000007500000025000000",
-        "endianness": "little",
-        "decoded_ints": [
-          85,
-          88,
-          117,
-          37
-        ]
+      "continuous-time": {
+        "length": 0,
+        "byte_offset": 117472,
+        "byte_offset_hex": "0x1cae0",
+        "value_offset": 117508,
+        "value_offset_hex": "0x1cb04",
+        "raw_hex": "",
+        "decoded": null
       },
-      "reg": {
-        "length": 336,
-        "byte_offset": 202376,
-        "decoded": [
-          {
-            "base": 23622320128,
-            "size": 268435456
-          },
-          {
-            "base": 23907532800,
-            "size": 16384
-          },
-          {
-            "base": 24125636608,
-            "size": 49152
-          },
-          {
-            "base": 24125898752,
-            "size": 163840
-          },
-          {
-            "base": 24092082176,
-            "size": 16384
-          },
-          {
-            "base": 1026326528,
-            "size": 4352
-          },
-          {
-            "base": 23957897216,
-            "size": 32768
-          },
-          {
-            "base": 23957979136,
-            "size": 16384
-          },
-          {
-            "base": 24125702144,
-            "size": 16384
-          },
-          {
-            "base": 24125964288,
-            "size": 32768
-          },
-          {
-            "base": 23957880832,
-            "size": 16384
-          },
-          {
-            "base": 23974674432,
-            "size": 32768
-          },
-          {
-            "base": 23974756352,
-            "size": 16384
-          },
-          {
-            "base": 24125718528,
-            "size": 16384
-          },
-          {
-            "base": 24125997056,
-            "size": 32768
-          },
-          {
-            "base": 23974658048,
-            "size": 16384
-          },
-          {
-            "base": 23991451648,
-            "size": 32768
-          },
-          {
-            "base": 23991533568,
-            "size": 16384
-          },
-          {
-            "base": 24125734912,
-            "size": 16384
-          },
-          {
-            "base": 24126029824,
-            "size": 32768
-          },
-          {
-            "base": 23991435264,
-            "size": 16384
-          }
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00000080050000000000001000000000000000910500000000400000000000000000009e0500000000c00000000000000000049e0500000000800200000000000000009c05000000004000000000000000802c3d0000000000110000000000000080009405000000008000000000000000c001940500000000400000000000000000019e0500000000400000000000000000059e050000000080000000000000004000940500000000400000000000000080009505000000008000000000000000c001950500000000400000000000000040019e0500000000400000000000000080059e050000000080000000000000004000950500000000400000000000000080009605000000008000000000000000c001960500000000400000000000000080019e0500000000400000000000000000069e05000000008000000000000000400096050000000040000000000000",
-        "endianness": "little"
+      "quiesced": {
+        "length": 0,
+        "byte_offset": 117508,
+        "byte_offset_hex": "0x1cb04",
+        "value_offset": 117544,
+        "value_offset_hex": "0x1cb28",
+        "raw_hex": "",
+        "decoded": null
       },
-      "domain-id": {
-        "length": 4,
-        "byte_offset": 202748,
-        "decoded": [
-          0
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00000000",
-        "endianness": "little"
-      },
-      "clock-gates": {
-        "length": 16,
-        "byte_offset": 202788,
-        "decoded": [
-          85,
-          88,
-          117,
-          37
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "55000000580000007500000025000000",
-        "endianness": "little",
-        "decoded_ints": [
-          85,
-          88,
-          117,
-          37
-        ]
-      },
-      "#address-cells": {
-        "length": 4,
-        "byte_offset": 202840,
-        "decoded": [
-          3
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "03000000",
-        "endianness": "little"
+      "shutdown-sleep": {
+        "length": 0,
+        "byte_offset": 117544,
+        "byte_offset_hex": "0x1cb28",
+        "value_offset": 117580,
+        "value_offset_hex": "0x1cb4c",
+        "raw_hex": "",
+        "decoded": null
       },
       "AAPL,phandle": {
         "length": 4,
-        "byte_offset": 202880,
-        "decoded": [
-          245
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "f5000000",
-        "endianness": "little",
+        "byte_offset": 117580,
+        "byte_offset_hex": "0x1cb4c",
+        "value_offset": 117616,
+        "value_offset_hex": "0x1cb70",
+        "raw_hex": "6a000000",
         "decoded_ints": [
-          245
+          106
         ]
       },
-      "msi-vector-offset": {
-        "length": 4,
-        "byte_offset": 202920,
-        "decoded": [
-          706
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "c2020000",
-        "endianness": "little"
-      },
-      "pci-aer-correctable": {
-        "length": 4,
-        "byte_offset": 202960,
-        "decoded": [
-          0
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00000000",
-        "endianness": "little"
-      },
-      "bus-range": {
+      "region-size": {
         "length": 8,
-        "byte_offset": 203000,
-        "decoded": [
+        "byte_offset": 117620,
+        "byte_offset_hex": "0x1cb74",
+        "value_offset": 117656,
+        "value_offset_hex": "0x1cb98",
+        "raw_hex": "0000000000000000",
+        "decoded_ints": [
           0,
-          8
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "0000000008000000",
-        "endianness": "little"
-      },
-      "lane-cfg": {
-        "length": 4,
-        "byte_offset": 203044,
-        "decoded": [
           0
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00000000",
-        "endianness": "little"
+        ]
       },
-      "function-debug_gpio": {
-        "length": 16,
-        "byte_offset": 203084,
-        "decoded": [
-          40,
-          1196443983,
-          79,
-          257
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "280000004f4950474f00000001010000",
-        "endianness": "little"
+      "region-base": {
+        "length": 8,
+        "byte_offset": 117664,
+        "byte_offset_hex": "0x1cba0",
+        "value_offset": 117700,
+        "value_offset_hex": "0x1cbc4",
+        "raw_hex": "0000000000000000",
+        "decoded_ints": [
+          0,
+          0
+        ]
+      },
+      "crashlog-non-fatal": {
+        "length": 0,
+        "byte_offset": 117708,
+        "byte_offset_hex": "0x1cbcc",
+        "value_offset": 117744,
+        "value_offset_hex": "0x1cbf0",
+        "raw_hex": "",
+        "decoded": null
+      },
+      "power-managed": {
+        "length": 4,
+        "byte_offset": 117744,
+        "byte_offset_hex": "0x1cbf0",
+        "value_offset": 117780,
+        "value_offset_hex": "0x1cc14",
+        "raw_hex": "01000000",
+        "decoded_ints": [
+          1
+        ]
       },
       "name": {
-        "length": 6,
-        "byte_offset": 203136,
-        "decoded": null,
-        "decoded_hex_strings": null,
-        "raw_hex": "617063696500",
-        "endianness": "little",
-        "decoded_string": "apcie"
-      },
-      "interrupt-parent": {
-        "length": 4,
-        "byte_offset": 203180,
-        "decoded": [
-          32
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "20000000",
-        "endianness": "little",
-        "decoded_ints": [
-          32
-        ]
-      },
-      "dev-range": {
-        "length": 8,
-        "byte_offset": 203220,
-        "decoded": [
-          0,
-          255
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00000000ff000000",
-        "endianness": "little"
-      },
-      "interrupts": {
         "length": 12,
-        "byte_offset": 203264,
-        "decoded": [
-          694,
-          698,
-          702
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "b6020000ba020000be020000",
-        "endianness": "little",
-        "decoded_ints": [
-          694,
-          698,
-          702
-        ]
-      },
-      "msi-address": {
-        "length": 8,
-        "byte_offset": 203312,
-        "decoded": [
-          4294963200,
-          0
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00f0ffff00000000",
-        "endianness": "little"
-      },
-      "pci-aer-uncorrectable": {
-        "length": 4,
-        "byte_offset": 203356,
-        "decoded": [
-          1
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "01000000",
-        "endianness": "little"
-      },
-      "ranges": {
-        "length": 56,
-        "byte_offset": 203396,
-        "decoded": [
-          1124073472,
-          2684354560,
-          5,
-          2684354560,
-          5,
-          536870912,
-          0,
-          33554432,
-          3221225472,
-          0,
-          3221225472,
-          5,
-          1073741824,
-          0
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00000043000000a005000000000000a005000000000000200000000000000002000000c000000000000000c0050000000000004000000000",
-        "endianness": "little"
-      },
-      "#ports": {
-        "length": 4,
-        "byte_offset": 203488,
-        "decoded": [
-          3
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "03000000",
-        "endianness": "little"
-      },
-      "link-state-power": {
-        "length": 16,
-        "byte_offset": 203528,
-        "decoded": [
-          0,
-          0,
-          0,
-          0
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "00000000000000000000000000000000",
-        "endianness": "little"
-      },
-      "device_type": {
-        "length": 4,
-        "byte_offset": 203580,
-        "decoded": [
-          6906736
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "70636900",
-        "endianness": "little",
-        "decoded_string": "pci"
-      },
-      "#size-cells": {
-        "length": 4,
-        "byte_offset": 203620,
-        "decoded": [
-          2
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "02000000",
-        "endianness": "little"
-      },
-      "msi-parent-controller": {
-        "length": 4,
-        "byte_offset": 203660,
-        "decoded": [
-          32
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "20000000",
-        "endianness": "little"
-      },
-      "#msi-vectors": {
-        "length": 4,
-        "byte_offset": 203700,
-        "decoded": [
-          96
-        ],
-        "decoded_hex_strings": null,
-        "raw_hex": "60000000",
-        "endianness": "little"
+        "byte_offset": 117784,
+        "byte_offset_hex": "0x1cc18",
+        "value_offset": 117820,
+        "value_offset_hex": "0x1cc3c",
+        "raw_hex": "696f702d616e732d6e756200",
+        "decoded_string": "iop-ans-nub"
       }
+    },
+    "name": {
+      "length": 12,
+      "byte_offset": 117784,
+      "byte_offset_hex": "0x1cc18",
+      "value_offset": 117820,
+      "value_offset_hex": "0x1cc3c",
+      "raw_hex": "696f702d616e732d6e756200",
+      "decoded_string": "iop-ans-nub"
+    },
+    "compatible": {
+      "present": false,
+      "D37AP_IOP_ANS_NUB_COMPATIBLE": "ABSENT"
+    },
+    "device_type": {
+      "present": false,
+      "D37AP_IOP_ANS_NUB_DEVICE_TYPE": "ABSENT"
+    },
+    "D37AP_IOP_ANS_NUB_NAME": "iop-ans-nub",
+    "whole_file_ascii_scan": {
+      "iop-nub,rtbuddy-v2": "NOT PRESENT anywhere in dtree.bin",
+      "rtbuddy": "NOT PRESENT anywhere in dtree.bin"
     }
+  },
+  "canonical_state": {
+    "D37AP_ANS_CHILD_RAW_REPARSE_PASS": true,
+    "NVME_LINEAR_SQ_LENGTH": 0,
+    "NVME_LINEAR_SQ_RAW_HEX": "",
+    "NVME_LINEAR_SQ_RAW_DT_RECONCILIATION_PASS": true,
+    "role": "ANS2",
+    "child_node": "iop-ans-nub",
+    "child_compatible": "ABSENT"
   }
 }
