@@ -13,6 +13,7 @@ $contractPath = Join-Path $root 'artifacts\evidence\05f\phase05f-ans-dt-contract
 $ansMatchPath = Join-Path $root 'artifacts\evidence\05f\phase05f-ans-kernel-driver-match.json'
 
 $summaryRaw = Get-Content $summaryPath -Raw
+$lbaRaw = Get-Content (Join-Path $root 'artifacts\evidence\05f\phase05f-ios-storage-lba-contract.json') -Raw
 $contractRaw = Get-Content $contractPath -Raw
 $ansMatchRaw = Get-Content $ansMatchPath -Raw
 $script:failures = 0
@@ -44,7 +45,7 @@ $stalePatterns = @(
 )
 $staleFound = $false
 foreach ($p in $stalePatterns) {
-    foreach ($raw in @($summaryRaw, $contractRaw, $ansMatchRaw)) {
+    foreach ($raw in @($summaryRaw, $contractRaw, $ansMatchRaw, $lbaRaw)) {
         if ($raw -match [regex]::Escape($p)) {
             Write-Host "STALE_STATE_DETECTED: $p"
             $staleFound = $true
@@ -62,8 +63,9 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZB'
-Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_PENDING_REVIEW'
+Assert-Equal 'iteration' $summary.iteration '57ZC'
+Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
+Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PASS_PENDING_REVIEW'
 Assert-Equal 'ITERATION_57ZA' $summary.certified.ITERATION_57ZA 'PARTIAL_PASS_ACCEPTED'
 Assert-Equal 'ITERATION_57Z' $summary.certified.ITERATION_57Z 'PARTIAL_PASS'
 Assert-Equal 'ITERATION_57Y' $summary.certified.ITERATION_57Y 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -308,11 +310,122 @@ if ($regDecoded.Count -ne $regSummary.Count) {
     }
 }
 
+
+# ================= 57ZC: IOS_STORAGE_LBA_CONTRACT =================
+$lba = $lbaRaw | ConvertFrom-Json
+
+Assert-Equal 'lba_iteration' $lba.iteration '57ZC'
+Assert-Equal 'lba_device' $lba.input_identity.device 'iPhone15,4'
+Assert-Equal 'lba_board' $lba.input_identity.board 'd37ap'
+Assert-Equal 'lba_soc' $lba.input_identity.soc 't8120'
+Assert-Equal 'lba_build' $lba.input_identity.build '24A437'
+Assert-Equal 'lba_bootkc_sha' $lba.input_identity.bootkc_sha256 'C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800'
+Assert-Equal 'lba_identity' $lba.input_identity.IOS_STORAGE_LBA_INPUT_IDENTITY_PASS 'True'
+
+# --- APFS vs NVMe block-size separation + explicit LBA proof ---
+Assert-Equal 'lba_apfs_nvme_sep' $lba.block_size_separation.APFS_VS_NVME_BLOCK_SIZE_SEPARATION_PASS 'True'
+Assert-Equal 'lba_apfs_block' $lba.block_size_separation.APFS_CONTAINER_BLOCK_SIZE 4096
+Assert-Equal 'lba_nvme_block' $lba.block_size_separation.NVME_NAMESPACE_LBA_SIZE 4096
+Assert-Equal 'lba_nvme_shift' $lba.block_size_separation.NVME_NAMESPACE_LBA_SHIFT 12
+Assert-Equal 'lba_host_sector' $lba.block_size_separation.HOST_BACKING_SECTOR_SIZE 512
+Assert-Equal 'lba_identify_path' $lba.identify_path.ANS_IDENTIFY_NAMESPACE_LBA_PATH_PASS 'True'
+
+# Explicit rule: if NVMe LBA size equals the APFS block size, the
+# Identify-based LBA proof gate MUST be independently asserted True.
+# (Refuses "APFS 4096 -> NVMe 4096" reuse without proof.)
+if ($lba.block_size_separation.NVME_NAMESPACE_LBA_SIZE -eq $lba.block_size_separation.APFS_CONTAINER_BLOCK_SIZE) {
+    if ($lba.identify_path.ANS_IDENTIFY_NAMESPACE_LBA_PATH_PASS -ne 'True' -or
+        $lba.lba_proof.IOS_GUEST_VISIBLE_LBA_SIZE_PASS -ne 'True') {
+        Write-Host "MISMATCH NVMe LBA size equals APFS block size without independent Identify-based LBA proof"
+        $script:failures++
+    } else {
+        Write-Host "OK LBA 4096 == APFS 4096 with independent Identify proof (APFS_VS_NVME_BLOCK_SIZE_SEPARATION_PASS)"
+    }
+}
+
+Assert-Equal 'lba_guest_size' $lba.lba_proof.IOS_GUEST_VISIBLE_LBA_SIZE_PASS 'True'
+Assert-Equal 'lba_guest_bytes' $lba.lba_proof.NVME_NAMESPACE_LBA_SIZE 4096
+Assert-Equal 'lba_guest_shift' $lba.lba_proof.NVME_NAMESPACE_LBA_SHIFT 12
+Assert-Equal 'lba_capacity_unit' $lba.lba_proof.IOS_NAMESPACE_CAPACITY_UNIT_PASS 'True'
+$capacityUnitExpected = "LBA (logical block addresses); NSZE is compared directly against DT word2 without scaling, and NSZE is defined in LBAs; block counts are 'numBlocks' (Identified numBlocks %d Expected numBlocks %d)"
+Assert-Equal 'lba_capacity_unit_value' $lba.lba_proof.capacity_unit $capacityUnitExpected
+
+# --- namespace struct + records ---
+Assert-Equal 'lba_struct_layout' $lba.namespace_struct.ANS_NAMESPACE_STRUCT_LAYOUT_PASS 'True'
+Assert-Equal 'lba_word2_semantics' $lba.namespace_struct.ANS_NAMESPACE_WORD2_SEMANTICS_PASS 'True'
+$parserExpected = "requires 'namespaces' property from the ans node to be OSData with length divisible by 12; count = length/12 (magic-divide constant 0xAAAAAAAB at 0x9c7ab24); stores count at buf[0] and copies raw bytes after +4 (field [x20,#0x7e0])"
+Assert-Equal 'lba_record_stride12' $lba.namespace_struct.parser $parserExpected
+Assert-Equal 'lba_ns_count' $lba.namespace_struct.records.Count 7
+
+# Cross-check namespace records against the DT contract
+$lbaRecords = $lba.namespace_struct.records
+$summaryNs = $summary.ans_device_tree.namespace_records
+Assert-Equal 'lba_ns_count_cross' $summaryNs.Count 7
+for ($i = 0; $i -lt 7; $i++) {
+    Assert-Equal "lba_ns$($i+1)_nsid" $lbaRecords[$i].nsid $summaryNs[$i].nsid
+    Assert-Equal "lba_ns$($i+1)_nstype" $lbaRecords[$i].nstype $summaryNs[$i].nstype
+    Assert-Equal "lba_ns$($i+1)_word2" $lbaRecords[$i].word2 $summaryNs[$i].word2
+}
+
+# --- namespace creation / publication / candidate / images ---
+Assert-Equal 'lba_ns_creation' $lba.namespace_creation_path.ANS_NAMESPACE_CREATION_PATH_PASS 'True'
+Assert-Equal 'lba_publication_map' $lba.namespace_map.IOS_NAMESPACE_PUBLICATION_MAP_PASS 'True'
+Assert-Equal 'lba_system_candidate' $lba.system_namespace_candidate.IOS_SYSTEM_NAMESPACE_CANDIDATE_PASS 'True'
+Assert-Equal 'lba_system_candidate_id' $lba.system_namespace_candidate.candidate 'NSID 1 (nstype 1) is the only NSID with the byte-capacity override path (inByteCapacity / Burn-in blks), making it the natural host for the large system container'
+Assert-Equal 'lba_image_recon' $lba.image_reconciliation.IOS_BACKING_IMAGE_LBA_RECONCILIATION_PASS 'True'
+Assert-Equal 'lba_system_img_size' $lba.image_reconciliation.images[0].size 9615441920
+Assert-Equal 'lba_system_img_lbas' $lba.image_reconciliation.images[0].lbas_4096 2347520
+Assert-Equal 'lba_cryptex_img_size' $lba.image_reconciliation.images[1].size 6014631936
+Assert-Equal 'lba_cryptex_img_lbas' $lba.image_reconciliation.images[1].lbas_4096 1468416
+Assert-Equal 'lba_ramdisk_img_size' $lba.image_reconciliation.images[2].size 243269632
+Assert-Equal 'lba_ramdisk_img_lbas' $lba.image_reconciliation.images[2].lbas_4096 59392
+foreach ($img in $lba.image_reconciliation.images) {
+    if (-not $img.aligned_4096) {
+        Write-Host "MISMATCH image $($img.name) not 4096-aligned"
+        $script:failures++
+    }
+}
+Assert-Equal 'lba_ext_audit' $lba.external_reference_audit.EXTERNAL_LBA_REFERENCE_AUDIT_PASS 'True'
+
+# --- 4-artifact cross-consistency (LBA) ---
+Assert-Equal 'x_lba_controller' $lba.input_identity.CURRENT_CONTROLLER_CLASS $sumKm.CURRENT_CONTROLLER_CLASS
+Assert-Equal 'x_lba_provider' $lba.input_identity.CURRENT_PROVIDER_CLASS $sumKm.CURRENT_PROVIDER_CLASS
+Assert-Equal 'x_lba_queue_depth' $lba.input_identity.nvme_queue_entries $summary.ans_device_tree.nvme_queue_entries
+Assert-Equal 'x_lba_controller_expected' $lba.input_identity.CURRENT_CONTROLLER_CLASS 'AppleANS3NVMeController'
+Assert-Equal 'x_lba_provider_expected' $lba.input_identity.CURRENT_PROVIDER_CLASS 'RTBuddyService'
+Assert-Equal 'x_lba_bootkc_sha_cross' $lba.input_identity.bootkc_sha256 $ansMatch.input_identity.bootkc_sha256
+Assert-Equal 'x_lba_device_cross' $lba.input_identity.device $ansMatch.input_identity.device
+
+# --- canonical close state ---
+Assert-Equal 'lba_contract' $lba.canonical_state.IOS_STORAGE_LBA_CONTRACT 'PASS_CLOSED'
+Assert-Equal 'lba_contract_pass' $lba.canonical_state.IOS_STORAGE_LBA_CONTRACT_PASS 'True'
+Assert-Equal 'lba_contract_durable' $lba.canonical_state.IOS_STORAGE_LBA_CONTRACT_DURABLE_PASS 'True'
+Assert-Equal 'lba_next_gate' $lba.canonical_state.next_gate 'SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK'
+
+# --- preboom summary cross-check ---
+Assert-Equal 'x_preboom_lba_contract' $summary.storage_gates_open.IOS_STORAGE_LBA_CONTRACT 'PASS_CLOSED'
+Assert-Equal 'x_preboom_lba_next' $summary.storage_gates_open.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'NEXT'
+$sumLba = $summary.ios_storage_lba
+Assert-Equal 'x_preboom_lba_size' $sumLba.NVME_NAMESPACE_LBA_SIZE 4096
+Assert-Equal 'x_preboom_lba_shift' $sumLba.NVME_NAMESPACE_LBA_SHIFT 12
+Assert-Equal 'x_preboom_lba_apfs' $sumLba.APFS_CONTAINER_BLOCK_SIZE 4096
+Assert-Equal 'x_preboom_lba_host' $sumLba.HOST_BACKING_SECTOR_SIZE 512
+Assert-Equal 'x_preboom_lba_contract2' $sumLba.IOS_STORAGE_LBA_CONTRACT 'PASS_CLOSED'
+Assert-Equal 'x_preboom_lba_queue' $sumLba.NVME_QUEUE_ENTRIES 64
+Assert-Equal 'x_preboom_lba_controller' $sumLba.CURRENT_CONTROLLER_CLASS 'AppleANS3NVMeController'
+Assert-Equal 'x_preboom_lba_provider' $sumLba.CURRENT_PROVIDER_CLASS 'RTBuddyService'
+Assert-Equal 'x_preboom_lba_next2' $sumLba.next_gate 'SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK'
+Assert-Equal 'x_preboot_compat_action' $sumLba.PREBOOT_ANS_DEVICE_TREE_COMPAT_RESTORE 'OPEN_ACTION_ITEM'
+if ($script:failures -eq 0) {
+    Write-Host "IOS_LBA_CROSS_ARTIFACT_CONSISTENCY_PASS"
+}
+
 if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"
     Write-Host "EVIDENCE_STALE_STATE_REFUSAL_FAIL"
     Write-Host "ANS_THREE_ARTIFACT_CROSS_CONSISTENCY_FAIL"
     Write-Host "ANS_NUB_MATCH_PROOF_DEPENDENCY_CHECK_FAIL"
+    Write-Host "IOS_LBA_CROSS_ARTIFACT_CONSISTENCY_FAIL"
     exit 1
 }
 Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_PASS"
@@ -321,4 +434,5 @@ Write-Host "ANS_DURABLE_ARTIFACT_SINGLE_STATE_PASS"
 Write-Host "ANS_EVIDENCE_NON_SELF_REFERENTIAL_PASS"
 Write-Host "ANS_THREE_ARTIFACT_CROSS_CONSISTENCY_PASS"
 Write-Host "ANS_NUB_MATCH_PROOF_DEPENDENCY_CHECK_PASS"
+Write-Host "IOS_LBA_CROSS_ARTIFACT_CONSISTENCY_PASS"
 exit 0
