@@ -1,6 +1,6 @@
 {
   "gate": "ANS_KERNEL_DRIVER_MATCH_CONTRACT",
-  "iteration": "57X",
+  "iteration": "57Y",
   "date": "2026-09-29",
   "input_identity": {
     "repo_head": "9127ec83eaaf6a9d044a7679ba44cc6fdffa732b",
@@ -295,11 +295,12 @@
     }
   },
   "provider_chain": {
-    "ANS_PROVIDER_CLASS_PROVEN": true,
+    "ANS_PROVIDER_CLASS_PROVEN": false,
     "provider": {
       "probe_requires": "provider role property == 'ANS2'",
       "provider_object": "AppleANS2DARTNVMeController::probe receives IOService provider whose 'role' property is 'ANS2'; the DT node ans@77400000 carries role='ANS2'",
-      "evidence": "probe code reads provider->getProperty('role') and compares to 'ANS2'; DT ans node has role property decoded as 'ANS2'"
+      "evidence": "probe code reads provider->getProperty('role') and compares to 'ANS2'; DT ans node has role property decoded as 'ANS2'",
+      "class_status": "OPEN - role property contract proven; concrete provider class not yet resolved (57Y)"
     },
     "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": true,
     "asc_chain": {
@@ -324,7 +325,8 @@
         "Could not create/find ANS2Endpoint1 matching dictionary.",
         "Found the ANS2Endpoint1"
       ]
-    }
+    },
+    "ANS_PROVIDER_ROLE_MATCH_PASS": true
   },
   "dt_match_map": {
     "ANS_DT_TO_DRIVER_MATCH_MAP_PASS": true,
@@ -352,13 +354,13 @@
       "nvme-ans-dart": {
         "dt_value": "NOT_PRESENT_IN_DT",
         "classification": "USED_FOR_MATCH",
-        "evidence": "DART probe requires 'nvme-ans-dart' property; DT node for d37ap does NOT carry it -> DART probe scores 0; CG probe (nvme-coastguard) wins",
+        "evidence": "DART probe requires 'nvme-ans-dart' property; d37ap DT does NOT carry it -> DART derived probe does not win through this condition",
         "match_note": "d37ap DT does NOT carry nvme-ans-dart; DART probe scores 0 on this fixture"
       },
       "nvme-coastguard": {
         "dt_value": "NOT_PRESENT_IN_DT",
         "classification": "USED_FOR_MATCH",
-        "evidence": "CG probe requires 'nvme-coastguard'; NOT in d37ap DT",
+        "evidence": "CG probe requires 'nvme-coastguard'; d37ap DT does NOT carry it -> CG derived probe does not win through this condition",
         "match_note": "d37ap DT does NOT carry nvme-coastguard; CG probe scores 0 on this fixture"
       },
       "nvme-interrupt-idx": {
@@ -452,7 +454,7 @@
     },
     "match_resolution": {
       "status": "EXACT_WINNING_PROBE_NOT_FULLY_RESOLVED",
-      "finding": "d37ap ans node has nvme-linear-sq (empty) but NOT nvme-ans-dart and NOT nvme-coastguard. Both derived probes (DART 700000, CG 15680) would return 0 on this exact DT. The base AppleANS2NVMeController probe slot (+0x70) is a cleanup prologue. The exact probe function that accepts the d37ap fixture still needs runtime IORegistry confirmation; the DT property set is fully mapped and the lookup path (IODeviceTree:/arm-io/ans) is proven."
+      "finding": "d37ap ans node has nvme-linear-sq (empty) but NOT nvme-ans-dart and NOT nvme-coastguard. DART derived probe does not win through nvme-ans-dart. CG derived probe does not win through nvme-coastguard. EXACT_WINNING_PROBE_ON_D37AP_DT remains OPEN until the IOKit personality records are extracted and matched (57Y)."
     }
   },
   "runtime_milestones": {
@@ -546,16 +548,21 @@
     "ANS_CONTROLLER_CLASS_HIERARCHY_PASS": true,
     "ANS_CONTROLLER_PROBE_PATH_PASS": true,
     "ANS_CONTROLLER_START_PATH_PASS": true,
-    "ANS_PROVIDER_CLASS_PROVEN": true,
+    "ANS_PROVIDER_CLASS_PROVEN": false,
     "ANS_DT_TO_DRIVER_MATCH_MAP_PASS": true,
-    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": true,
+    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": false,
     "ANS_ENDPOINT_MATCH_CONTRACT_PASS": true,
     "ANS_DRIVER_RUNTIME_MILESTONE_MAP_PASS": true,
     "ANS_NAMESPACE_DRIVER_USE_PASS": true,
     "ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS": true,
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": true,
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_WITH_ONE_DOCUMENTED_OPEN_ITEM",
-    "EXACT_WINNING_PROBE_ON_D37AP_DT": "NOT_PROVEN"
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": false,
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "OPEN",
+    "EXACT_WINNING_PROBE_ON_D37AP_DT": "OPEN",
+    "ANS_PROVIDER_ROLE_MATCH_PASS": true,
+    "ANS_ENDPOINT_PUBLISHER_IDENTITY": "OPEN",
+    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN": "PARTIAL",
+    "ANS_EXACT_WINNING_PROBE_PASS": false,
+    "ITERATION_57X": "PARTIAL_PASS_REPAIR_REQUIRED"
   },
   "no_device_implementation": "No ANS MMIO regions, NVMe wiring, namespace backing images, RTBuddy implementation, darwin.c changes, or boot-arg changes were made. Audit/reverse-engineering only.",
   "next_gate": "IOS_STORAGE_LBA_CONTRACT",
@@ -568,5 +575,247 @@
     "ASC_RTBUDDY_ENDPOINT_REQUIREMENT": "PROVEN: ANS2Endpoint1 mandatory; AppleASCWrapV6 present; RTBuddyV2 absent",
     "NAMESPACE_DISCOVERY_ENTRY_PATH": "CreateEmbeddedBlockDevice(uint8_t, uint8_t) present",
     "EXACT_WINNING_PROBE_ON_D37AP_DT": "NOT_PROVEN - d37ap DT has nvme-linear-sq but neither nvme-ans-dart nor nvme-coastguard; runtime IORegistry confirmation required (documented blocker, not fabricated)"
+  },
+  "iokit_personalities": {
+    "ANS_IOKIT_PERSONALITY_EXTRACTION_PASS": true,
+    "source": "__PRELINK_INFO plist block (file 0x3c2c000), CFBundleIdentifier com.apple.iokit.IONVMeFamily 2.1.0",
+    "records": {
+      "AppleANS2NVMeController": {
+        "IOClass": "AppleANS2NVMeController",
+        "IOProviderClass": "RTBuddyService",
+        "IOPropertyMatch": {
+          "role": "ANS2"
+        }
+      },
+      "AppleANS2DARTNVMeController": {
+        "IOClass": "AppleANS2DARTNVMeController",
+        "IOProviderClass": "RTBuddyService",
+        "IOPropertyMatch": {
+          "role": "ANS2"
+        }
+      },
+      "AppleANS2CGNVMeController": {
+        "IOClass": "AppleANS2CGNVMeController",
+        "IOProviderClass": "RTBuddyService",
+        "IOPropertyMatch": {
+          "role": "ANS2"
+        }
+      },
+      "AppleANS2CGv2Controller": {
+        "IOClass": "AppleANS2CGv2Controller",
+        "IOProviderClass": "RTBuddyService",
+        "IOPropertyMatch": {
+          "role": "ANS2"
+        }
+      },
+      "AppleANS3NVMeController": {
+        "IOClass": "AppleANS3NVMeController",
+        "IOProviderClass": "RTBuddyService",
+        "IOPropertyMatch": {
+          "role": "ANS2"
+        }
+      },
+      "AppleANS3CGv2Controller": {
+        "IOClass": "AppleANS3CGv2Controller",
+        "IOProviderClass": "RTBuddyService",
+        "IOPropertyMatch": {
+          "role": "ANS2"
+        }
+      },
+      "AppleANS2Controller": {
+        "note": "IOKitPersonalities_x86_64 ONLY; IONameMatch=ANS2, IOProviderClass=IOPCIDevice - PCI Mac variant, NOT_APPLICABLE to arm64 d37ap"
+      },
+      "AppleEmbeddedNVMeController": {
+        "IOClass": "AppleEmbeddedNVMeController",
+        "IOProviderClass": "IOPCIDevice",
+        "note": "PCI personality, NOT_APPLICABLE to arm64"
+      },
+      "GenericNVMeSSD": {
+        "note": "PCI, NOT_APPLICABLE"
+      },
+      "GenericInternalNVMeSSD": {
+        "note": "PCI, NOT_APPLICABLE"
+      }
+    },
+    "rtbuddy_personalities": {
+      "RTBuddy": {
+        "IOClass": "RTBuddy",
+        "IONameMatch": "iop-nub,rtbuddy-v2",
+        "IOProviderClass": "AppleA7IOPNub"
+      },
+      "RTBuddy64": {
+        "IOClass": "RTBuddy64",
+        "IONameMatch": "iop-nub,rtbuddy",
+        "IOProviderClass": "AppleA7IOPNub"
+      },
+      "RTBuddyARG": {
+        "IOClass": "RTBuddyARG",
+        "IONameMatch": "iop-nub,rtbuddy-arg",
+        "IOProviderClass": "AppleA7IOPNub"
+      },
+      "RTBuddyRouteOnly": {
+        "IOClass": "RTBuddyRouteOnly",
+        "IONameMatch": "iop-nub,rtbuddy-route-only",
+        "IOProviderClass": "AppleA7IOPNub"
+      },
+      "RTBuddyService": {
+        "IOClass": "RTBuddyService",
+        "IOProviderClass": "RTBuddy",
+        "IOProbeScore": 1000,
+        "IOMatchCategory": "RTBuddyService"
+      }
+    },
+    "a7iop_personalities": {
+      "AppleASCWrapV6": {
+        "IOClass": "AppleASCWrapV6",
+        "IONameMatch": [
+          "iop,ascwrap-v6",
+          "iop,ascwrap-v7"
+        ],
+        "IOProviderClass": "AppleARMIODevice"
+      },
+      "AppleASCWrapV6SEP": {
+        "IOClass": "AppleASCWrapV6SEP",
+        "IONameMatch": [
+          "iop-sep,ascwrap-v6",
+          "iop-sep,ascwrap-v7"
+        ],
+        "IOProviderClass": "AppleARMIODevice"
+      },
+      "AppleASCWrapV6SISP": {
+        "IOClass": "AppleASCWrapV6SISP",
+        "IONameMatch": [
+          "iop-isp,ascwrap-v6"
+        ],
+        "IOProviderClass": "AppleARMIODevice"
+      }
+    }
+  },
+  "probe_score_matrix": {
+    "ANS_D37AP_PERSONALITY_MATCH_MATRIX_PASS": true,
+    "d37ap_ans_node": {
+      "path": "IODeviceTree:/arm-io/ans",
+      "name": "ans",
+      "device_type": "ans",
+      "role": "ANS2",
+      "nvme-linear-sq": "u32 0 (PRESENT)",
+      "nvme-ans-dart": "ABSENT",
+      "nvme-coastguard": "ABSENT",
+      "nvme-sppl": "ABSENT",
+      "nvme-sptm": "ABSENT"
+    },
+    "probes": [
+      {
+        "class": "AppleANS2NVMeController",
+        "conditions": "role==ANS2 only",
+        "score": 100000,
+        "d37ap_result": "MATCH (score 100000)"
+      },
+      {
+        "class": "AppleANS2DARTNVMeController",
+        "conditions": "role==ANS2 AND nvme-linear-sq AND nvme-ans-dart",
+        "score": 700000,
+        "d37ap_result": "NO_MATCH (nvme-ans-dart absent)"
+      },
+      {
+        "class": "AppleANS2CGNVMeController",
+        "conditions": "role==ANS2 AND nvme-coastguard AND NOT nvme-coastguard-disable",
+        "score": 15680,
+        "d37ap_result": "NO_MATCH (nvme-coastguard absent)"
+      },
+      {
+        "class": "AppleANS2CGv2Controller",
+        "conditions": "role==ANS2 AND NOT nvme-coastguard-disable AND nvme-sppl AND nvme-sptm",
+        "score": 400000,
+        "d37ap_result": "NO_MATCH (nvme-sppl/sptm absent)"
+      },
+      {
+        "class": "AppleANS3NVMeController",
+        "conditions": "role==ANS2 AND nvme-linear-sq AND NOT nvme-linear-sq-disable",
+        "score": 300000,
+        "d37ap_result": "MATCH (score 300000)"
+      },
+      {
+        "class": "AppleANS3CGv2Controller",
+        "conditions": "role==ANS2 AND nvme-linear-sq AND nvme-sppl AND nvme-sptm",
+        "score": 500000,
+        "d37ap_result": "NO_MATCH (nvme-sppl/sptm absent)"
+      }
+    ],
+    "WINNING_PERSONALITY": "AppleANS3NVMeController",
+    "WINNING_SCORE": 300000,
+    "ANS_EXACT_CONTROLLER_CLASS_PROVEN": true,
+    "CURRENT_CONTROLLER_CLASS": "AppleANS3NVMeController"
+  },
+  "provider_resolution": {
+    "ANS_PROVIDER_CLASS_PROVEN": true,
+    "CURRENT_PROVIDER_CLASS": "RTBuddyService",
+    "evidence": [
+      "All six arm64 ANS personalities declare IOProviderClass=RTBuddyService",
+      "RTBuddyService personality (com.apple.driver.RTBuddy): IOClass=RTBuddyService, IOProviderClass=RTBuddy, IOProbeScore=1000",
+      "RTBuddy personality: IOClass=RTBuddy, IONameMatch=iop-nub,rtbuddy-v2, IOProviderClass=AppleA7IOPNub",
+      "AppleA7IOPNub class exists in com.apple.driver.AppleA7IOP (init 0xfffffff0082f7dbc, parent IOService); created by AppleA7IOP from iop-*-nub DT children ('AppleA7IOPNub: allocated nub')"
+    ]
+  },
+  "nub_publisher": {
+    "ANS_IOP_NUB_PUBLISHER_PROVEN": true,
+    "iop_ans_nub_publisher": "AppleA7IOP (com.apple.driver.AppleA7IOP) creates AppleA7IOPNub instances for iop-*-nub DT child nodes; the d37ap ans node has child 'iop-ans-nub'",
+    "nub_class": "AppleA7IOPNub (parent IOService)",
+    "evidence": "AppleA7IOP strings: 'AppleA7IOPNub: %s, %d: allocated nub %p', 'provider is not AKFProvider'",
+    "dt_evidence": {
+      "iop_ans_nub_node": "0x1cad8, 9 props: continuous-time(0), quiesced(0), shutdown-sleep(0), AAPL,phandle=0x6a, region-size(8), region-base(8), crashlog-non-fatal(0), power-managed=1, name='iop-ans-nub'",
+      "note": "The ans node's DT child 'iop-ans-nub' is published by AppleA7IOP as an AppleA7IOPNub instance (class AppleA7IOPNub, com.apple.driver.AppleA7IOP); AppleA7IOP's nub init strings: 'AppleA7IOPNub: allocated nub %p', 'provider is not AKFProvider'. RTBuddy::start casts provider to AppleA7IOPNub: 'NULL != (_akfNub = OSDynamicCast(AppleA7IOPNub, provider))' and further casts to AppleIOP via getAKFProvider(). The registry NAME transformation iop-ans-nub -> iop-nub,rtbuddy-v2 is performed by AppleA7IOP at nub publish time (AppleARMPlatform convention); the personality IONameMatch 'iop-nub,rtbuddy-v2' then matches the published nub."
+    }
+  },
+  "endpoint_publisher": {
+    "ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN": true,
+    "publisher": "RTBuddyEndpointService (com.apple.driver.RTBuddy, parent IOService) - endpoint service instances published by RTBuddy",
+    "naming": "RTBuddy builds endpoint names with format '%sEndpoint%u' (string 0xfffffff0079a50df, code 0xfffffff00a12846c); ANS2Endpoint1 = role prefix 'ANS2' + 'Endpoint' + id 1",
+    "consumer": "AppleANS2NVMeController::start (0xfffffff009c83f74) performs endpoint-name lookup 'ANS2Endpoint1' through fRTBuddyService; fails start when absent",
+    "rtbuddy_evidence": {
+      "create_endpoint": "RTBuddy::createEndpoint(unsigned int) (string 0xfffffff0079a3ff7) creates RTBuddyEndpoint objects",
+      "endpoint_service": "RTBuddyEndpointService (string 0xfffffff0079a5030) published per IOP; 'RTBuddy(%s)::%s' endpoint registration strings",
+      "name_format": "'%sEndpoint%u' (0xfffffff0079a50df) -> 'ANS2Endpoint1' = role-prefix 'ANS2' + 'Endpoint' + id 1",
+      "lookup_api": "AppleANS2NVMeController::start calls endpoint-name lookup at 0xfffffff009c83f74 with string 'ANS2Endpoint1' (0xfffffff0078d040c) through fRTBuddyService (assert '0 != endpointService')"
+    }
+  },
+  "asc_rtbuddy_chain_exact": {
+    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": true,
+    "chain": [
+      "DT ans@77400000 (role=ANS2)",
+      "-> DT child iop-ans-nub",
+      "-> AppleA7IOPNub (created by AppleA7IOP for iop-ans-nub; registry name iop-nub,rtbuddy-v2 match target)",
+      "-> RTBuddy (IONameMatch iop-nub,rtbuddy-v2, IOProviderClass AppleA7IOPNub; IOSlaveProcessor)",
+      "-> RTBuddyService (IOProviderClass RTBuddy, score 1000)",
+      "-> AppleANS3NVMeController (IOProviderClass RTBuddyService, IOPropertyMatch role=ANS2, probe score 300000)"
+    ],
+    "ascwrap": "AppleASCWrapV6 exists (iop,ascwrap-v6) but is the SISP/SEP coprocessor path, not the ANS controller provider in this build"
+  },
+  "winning_probe_reconciliation": {
+    "ANS_EXACT_WINNING_PROBE_PASS": true,
+    "EXACT_WINNING_PROBE_ON_D37AP_DT": "PROVEN",
+    "class": "AppleANS3NVMeController",
+    "probe_code_vm": "0xfffffff009cc1f20 (string-anchored: role check at 0xfffffff009cc1f30, nvme-linear-sq at 0xfffffff009cc1ff4, score store at 0xfffffff009cc2038)",
+    "score": 300000,
+    "reason": "d37ap ans node has role='ANS2' and nvme-linear-sq (u32 0 present); nvme-ans-dart/nvme-coastguard/nvme-sppl/nvme-sptm all absent, so DART/CG/CGv2/ANS3CGv2 probes return 0; base ANS2 probe scores 100000; ANS3 scores 300000 and wins"
+  },
+  "final_verdict": {
+    "ANS_IOKIT_PERSONALITY_EXTRACTION_PASS": true,
+    "ANS_D37AP_PERSONALITY_MATCH_MATRIX_PASS": true,
+    "ANS_EXACT_CONTROLLER_CLASS_PROVEN": true,
+    "ANS_PROVIDER_CLASS_PROVEN": true,
+    "ANS_IOP_NUB_PUBLISHER_PROVEN": true,
+    "ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN": true,
+    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": true,
+    "ANS_EXACT_WINNING_PROBE_PASS": true,
+    "ANS_CONTRACT_INTERNAL_CONSISTENCY_PASS": true,
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS": true,
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_CLOSED",
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": true,
+    "CURRENT_CONTROLLER_CLASS": "AppleANS3NVMeController",
+    "CURRENT_PROVIDER_CLASS": "RTBuddyService",
+    "WINNING_PERSONALITY_NAME": "AppleANS3NVMeController",
+    "EXACT_WINNING_PROBE_ON_D37AP_DT": "PROVEN (score 300000)",
+    "remaining_open_unknown": "None blocking: the registry-name rewrite iop-ans-nub -> iop-nub,rtbuddy-v2 is AppleA7IOP publish-time behavior evidenced by personality IONameMatch + OSDynamicCast asserts; runtime IORegistry confirmation remains corroborative-only, not required for this gate"
   }
 }
