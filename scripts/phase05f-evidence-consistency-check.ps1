@@ -1,4 +1,4 @@
-# Deterministic evidence cross-file consistency checker (Iteration 57Y).
+# Deterministic evidence cross-file consistency checker (Iteration 57Z).
 # Compares duplicated fields between the summary and the durable
 # ANS DT contract, and refuses stale gate names or contradictory
 # statuses. Non-zero exit on any mismatch.
@@ -8,9 +8,11 @@ $root = Split-Path -Parent $PSScriptRoot
 
 $summaryPath = Join-Path $root 'artifacts\evidence\05f\phase05f-preboom-storage-contract.json'
 $contractPath = Join-Path $root 'artifacts\evidence\05f\phase05f-ans-dt-contract.json'
+$ansMatchPath = Join-Path $root 'artifacts\evidence\05f\phase05f-ans-kernel-driver-match.json'
 
 $summaryRaw = Get-Content $summaryPath -Raw
 $contractRaw = Get-Content $contractPath -Raw
+$ansMatchRaw = Get-Content $ansMatchPath -Raw
 $script:failures = 0
 
 function Assert-Equal($name, $a, $b) {
@@ -22,14 +24,17 @@ function Assert-Equal($name, $a, $b) {
     }
 }
 
-# Stale-state refusal: leftover markers from prior repair iterations.
+# Stale-state refusal: leftover markers from prior repair iterations,
+# plus 57Z refusal patterns for contradictory internal states.
 $stalePatterns = @(
     'iter57r_open',
     'iter57r_closed',
     'iter57s_',
     'NOT_YET',
     '"SPRINGBOARD_EXECUTABLE_RECONSTRUCTED": "OPEN"',
-    '"SPRINGBOARD_EXECUTABLE_SHA256": "NOT_YET"'
+    '"SPRINGBOARD_EXECUTABLE_SHA256": "NOT_YET"',
+    'EXACT_WINNING_PROBE_UNRESOLVED',
+    'EXACT_WINNING_PROBE_NOT_FULLY_RESOLVED'
 )
 $staleFound = $false
 foreach ($p in $stalePatterns) {
@@ -46,53 +51,87 @@ if ($staleFound) {
 
 $summary = $summaryRaw | ConvertFrom-Json
 $contract = $contractRaw | ConvertFrom-Json
+$ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # 1. Iteration identifier.
-Assert-Equal 'iteration' $summary.iteration '57Y'
-Assert-Equal 'ITERATION_57Y' $summary.certified.ITERATION_57Y 'PASS'
+Assert-Equal 'iteration' $summary.iteration '57Z'
+Assert-Equal 'ITERATION_57Z' $summary.certified.ITERATION_57Z 'PARTIAL_PASS'
+Assert-Equal 'ITERATION_57Y' $summary.certified.ITERATION_57Y 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57X' $summary.certified.ITERATION_57X 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57W' $summary.certified.ITERATION_57W 'PASS'
 Assert-Equal 'ITERATION_57V' $summary.certified.ITERATION_57V 'PASS'
 Assert-Equal '57T_certified' $summary.certified.ITERATION_57T_CERTIFIED_CLOSED 'YES'
 
 # 1b. ANS kernel driver match contract (57X) gates.
-$ansMatch = $summary.ans_kernel_driver_match
-Assert-Equal 'ans_identity' $ansMatch.ANS_MATCH_INPUT_IDENTITY_PASS 'True'
-Assert-Equal 'ans_inventory' $ansMatch.ANS_BOOTKC_CLASS_INVENTORY_PASS 'True'
-Assert-Equal 'ans_hierarchy' $ansMatch.ANS_CONTROLLER_CLASS_HIERARCHY_PASS 'True'
-Assert-Equal 'ans_probe' $ansMatch.ANS_CONTROLLER_PROBE_PATH_PASS 'True'
-Assert-Equal 'ans_start' $ansMatch.ANS_CONTROLLER_START_PATH_PASS 'True'
-Assert-Equal 'ans_provider' $ansMatch.ANS_PROVIDER_CLASS_PROVEN 'True'
-Assert-Equal 'ans_dt_map' $ansMatch.ANS_DT_TO_DRIVER_MATCH_MAP_PASS 'True'
-Assert-Equal 'ans_asc_rtbuddy' $ansMatch.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS 'True'
-Assert-Equal 'ans_endpoint' $ansMatch.ANS_ENDPOINT_MATCH_CONTRACT_PASS 'True'
-Assert-Equal 'ans_milestones' $ansMatch.ANS_DRIVER_RUNTIME_MILESTONE_MAP_PASS 'True'
-Assert-Equal 'ans_namespace' $ansMatch.ANS_NAMESPACE_DRIVER_USE_PASS 'True'
-Assert-Equal 'ans_durable' $ansMatch.ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS 'True'
-Assert-Equal 'ans_contract' $ansMatch.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'PASS_CLOSED'
-Assert-Equal 'ans_contract_pass' $ansMatch.ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS 'True'
-Assert-Equal 'ans_exact_class' $ansMatch.ANS_EXACT_CONTROLLER_CLASS_PROVEN 'True'
-Assert-Equal 'ans_provider_proven' $ansMatch.ANS_PROVIDER_CLASS_PROVEN 'True'
-Assert-Equal 'ans_nub_publisher' $ansMatch.ANS_IOP_NUB_PUBLISHER_PROVEN 'True'
-Assert-Equal 'ans_endpoint_publisher' $ansMatch.ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN 'True'
-Assert-Equal 'ans_asc_chain_pass' $ansMatch.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS 'True'
-Assert-Equal 'ans_winning_probe' $ansMatch.ANS_EXACT_WINNING_PROBE_PASS 'True'
-Assert-Equal 'ans_personality_extraction' $ansMatch.ANS_IOKIT_PERSONALITY_EXTRACTION_PASS 'True'
-Assert-Equal 'ans_match_matrix' $ansMatch.ANS_D37AP_PERSONALITY_MATCH_MATRIX_PASS 'True'
-Assert-Equal 'ans_internal_consistency' $ansMatch.ANS_CONTRACT_INTERNAL_CONSISTENCY_PASS 'True'
-Assert-Equal 'ans_controller_class' $ansMatch.CURRENT_CONTROLLER_CLASS 'AppleANS3NVMeController'
-Assert-Equal 'ans_provider_class' $ansMatch.CURRENT_PROVIDER_CLASS 'RTBuddyService'
-Assert-Equal 'ans_winning_personality' $ansMatch.WINNING_PERSONALITY 'AppleANS3NVMeController'
-Assert-Equal 'ans_winning_score' $ansMatch.WINNING_SCORE 300000
-Assert-Equal 'ans_next' $ansMatch.next_gate 'IOS_STORAGE_LBA_CONTRACT'
+$ansMatchSummary = $summary.ans_kernel_driver_match
+Assert-Equal 'ans_identity' $ansMatchSummary.ANS_MATCH_INPUT_IDENTITY_PASS 'True'
+Assert-Equal 'ans_inventory' $ansMatchSummary.ANS_BOOTKC_CLASS_INVENTORY_PASS 'True'
+Assert-Equal 'ans_hierarchy' $ansMatchSummary.ANS_CONTROLLER_CLASS_HIERARCHY_PASS 'True'
+Assert-Equal 'ans_probe' $ansMatchSummary.ANS_CONTROLLER_PROBE_PATH_PASS 'True'
+Assert-Equal 'ans_start' $ansMatchSummary.ANS_CONTROLLER_START_PATH_PASS 'True'
+Assert-Equal 'ans_dt_map' $ansMatchSummary.ANS_DT_TO_DRIVER_MATCH_MAP_PASS 'True'
+Assert-Equal 'ans_milestones' $ansMatchSummary.ANS_DRIVER_RUNTIME_MILESTONE_MAP_PASS 'True'
+Assert-Equal 'ans_namespace' $ansMatchSummary.ANS_NAMESPACE_DRIVER_USE_PASS 'True'
+Assert-Equal 'ans_predicate' $ansMatchSummary.ANS3_NVME_LINEAR_SQ_PREDICATE_PROVEN 'True'
+Assert-Equal 'ans_exact_class' $ansMatchSummary.ANS_EXACT_CONTROLLER_CLASS_PROVEN 'True'
+Assert-Equal 'ans_winning_probe' $ansMatchSummary.ANS_EXACT_WINNING_PROBE_PASS 'True'
+Assert-Equal 'ans_controller_class' $ansMatchSummary.CURRENT_CONTROLLER_CLASS 'AppleANS3NVMeController'
+Assert-Equal 'ans_provider_proven' $ansMatchSummary.ANS_PROVIDER_CLASS_PROVEN 'True'
+Assert-Equal 'ans_provider_class' $ansMatchSummary.CURRENT_PROVIDER_CLASS 'RTBuddyService'
+Assert-Equal 'ans_personality_extraction' $ansMatchSummary.ANS_IOKIT_PERSONALITY_EXTRACTION_PASS 'True'
+Assert-Equal 'ans_match_matrix' $ansMatchSummary.ANS_D37AP_PERSONALITY_MATCH_MATRIX_PASS 'True'
+Assert-Equal 'ans_endpoint_publisher' $ansMatchSummary.ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN 'True'
+Assert-Equal 'ans_nub_publisher' $ansMatchSummary.ANS_IOP_NUB_PUBLISHER_PROVEN 'PARTIAL'
+Assert-Equal 'ans_nub_transform' $ansMatchSummary.ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM_PASS 'False'
+Assert-Equal 'ans_endpoint_creation' $ansMatchSummary.ANS2ENDPOINT1_CREATION_PATH_PASS 'PARTIAL'
+Assert-Equal 'ans_asc_chain_pass' $ansMatchSummary.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS 'False'
+Assert-Equal 'ans_contract' $ansMatchSummary.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'OPEN'
+Assert-Equal 'ans_contract_pass' $ansMatchSummary.ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS 'False'
+Assert-Equal 'ans_next' $ansMatchSummary.next_gate 'IOS_STORAGE_LBA_CONTRACT'
 
 # kernel_driver canonical state must reconcile with ans_kernel_driver_match
-Assert-Equal 'kernel_driver_contract' $summary.kernel_driver.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'PASS_CLOSED'
+Assert-Equal 'kernel_driver_contract' $summary.kernel_driver.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'OPEN'
 if ($summary.storage_gates_open.PSObject.Properties['ANS_KERNEL_DRIVER_MATCH_CONTRACT']) {
-    Write-Host "MISMATCH ANS still in storage_gates_open"
+    Write-Host "OK ANS present in storage_gates_open (OPEN)"
+} else {
+    Write-Host "MISMATCH ANS missing from storage_gates_open"
+    $script:failures++
+}
+
+# 57Z: durable contract single-state check. The durable JSON must not
+# contain contradictory PASS/OPEN pairs. Canonical is OPEN because the
+# nub registry-name transform remains unproven.
+$cs = $ansMatch.canonical_state
+if ($null -eq $cs) {
+    Write-Host "MISMATCH durable canonical_state section missing"
     $script:failures++
 } else {
-    Write-Host "OK ANS removed from storage_gates_open"
+    Assert-Equal 'cs_predicate' $cs.ANS3_NVME_LINEAR_SQ_PREDICATE_PROVEN 'True'
+    Assert-Equal 'cs_exact_class' $cs.ANS_EXACT_CONTROLLER_CLASS_PROVEN 'True'
+    Assert-Equal 'cs_winning_probe' $cs.ANS_EXACT_WINNING_PROBE_PASS 'True'
+    Assert-Equal 'cs_controller' $cs.CURRENT_CONTROLLER_CLASS 'AppleANS3NVMeController'
+    Assert-Equal 'cs_provider' $cs.CURRENT_PROVIDER_CLASS 'RTBuddyService'
+    Assert-Equal 'cs_nub_publisher' $cs.ANS_IOP_NUB_PUBLISHER_PROVEN 'PARTIAL'
+    Assert-Equal 'cs_nub_transform' $cs.ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM_PASS 'False'
+    Assert-Equal 'cs_endpoint_publisher' $cs.ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN 'True'
+    Assert-Equal 'cs_endpoint_creation' $cs.ANS2ENDPOINT1_CREATION_PATH_PASS 'PARTIAL'
+    Assert-Equal 'cs_asc_chain' $cs.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS 'False'
+    Assert-Equal 'cs_contract' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'OPEN'
+    Assert-Equal 'cs_contract_pass' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS 'False'
+    Assert-Equal 'cs_durable' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS 'False'
+}
+
+# Refusal patterns: no contradictory PASS_CLOSED / family-level /
+# IOService-provider placeholders anywhere in either file.
+foreach ($pat in @(
+    'CURRENT_CONTROLLER_CLASS.*family',
+    'CURRENT_PROVIDER_CLASS.*IOService provider',
+    'ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS.*true'
+)) {
+    if ($ansMatchRaw -match $pat) {
+        Write-Host "MISMATCH refusal pattern: $pat"
+        $script:failures++
+    }
 }
 
 # 2. SpringBoard reconstruction + SHA.
