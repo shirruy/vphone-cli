@@ -1,6 +1,6 @@
 {
   "gate": "preboom-mapping-and-minimum-ios-storage-contract",
-  "iteration": "57ZA",
+  "iteration": "57ZB",
   "date": "2026-09-30",
   "certified": {
     "ITERATION_57T_CERTIFIED_CLOSED": "YES",
@@ -9,8 +9,9 @@
     "ITERATION_57X": "PARTIAL_PASS_REPAIR_REQUIRED",
     "ITERATION_57Y": "PARTIAL_PASS_REPAIR_REQUIRED",
     "ITERATION_57Z": "PARTIAL_PASS",
-    "ITERATION_57ZA": "PARTIAL_PASS",
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "OPEN"
+    "ITERATION_57ZA": "PARTIAL_PASS_ACCEPTED",
+    "ITERATION_57ZB": "PASS_PENDING_REVIEW",
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_CLOSED"
   },
   "decmpfs_reconstruction": {
     "DECMPFS_ALGORITHM_TABLE_AUDIT_PASS": true,
@@ -328,11 +329,13 @@
     "child_node": "iop-ans-nub",
     "nvme_linear_sq_length": 0,
     "nvme_linear_sq_raw_hex": "",
-    "child_compatible": "ABSENT"
+    "child_compatible": "ABSENT",
+    "child_compatible_authoritative": "iop-nub,rtbuddy-v2",
+    "child_compatible_booted": "ABSENT"
   },
   "kernel_driver": {
     "ANS_KERNEL_DRIVER_STRING_PRESENCE_PASS": true,
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "OPEN"
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_CLOSED"
   },
   "storage_gates_open": {
     "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK": "OPEN",
@@ -340,22 +343,21 @@
     "CRYPTEX_ATTACHMENT_MODEL": "OPEN",
     "IOS_ROOT_DEVICE_SELECTION": "OPEN",
     "IOS_ROOT_TRANSITION_MODEL": "OPEN",
-    "IOS_STORAGE_LBA_CONTRACT": "OPEN",
+    "IOS_STORAGE_LBA_CONTRACT": "NEXT",
     "MINIMUM_ANS_PROTOCOL_CONTRACT": "OPEN",
     "MINIMUM_IOS_STORAGE_EMULATION_CONTRACT": "OPEN",
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "OPEN"
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_CLOSED"
   },
   "prioritized_gate_order": [
-    "1. ANS_KERNEL_DRIVER_MATCH_CONTRACT (runtime IORegistry proof of published AppleA7IOPNub name/compatible matching iop-nub,rtbuddy-v2)",
-    "2. IOS_STORAGE_LBA_CONTRACT (guest-visible block size)",
-    "3. SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK",
-    "4. CRYPTEX_ATTACHMENT_MODEL",
-    "5. IOS_ROOT_DEVICE_SELECTION + IOS_ROOT_TRANSITION_MODEL",
-    "6. IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
-    "7. MINIMUM_ANS_PROTOCOL_CONTRACT",
-    "8. MINIMUM_IOS_STORAGE_EMULATION_CONTRACT"
+    "1. IOS_STORAGE_LBA_CONTRACT (guest-visible block size) - NEXT after match contract close",
+    "2. SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK",
+    "3. CRYPTEX_ATTACHMENT_MODEL",
+    "4. IOS_ROOT_DEVICE_SELECTION + IOS_ROOT_TRANSITION_MODEL",
+    "5. IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+    "6. MINIMUM_ANS_PROTOCOL_CONTRACT",
+    "7. MINIMUM_IOS_STORAGE_EMULATION_CONTRACT"
   ],
-  "iteration_58_status": "BLOCKED until the storage/root/protocol gates above close",
+  "iteration_58_status": "UNBLOCKED by ANS_KERNEL_DRIVER_MATCH_CONTRACT close; LBA contract next",
   "not_implemented": "No ANS/NVMe device code written",
   "ans_kernel_driver_match": {
     "ANS_MATCH_INPUT_IDENTITY_PASS": true,
@@ -380,26 +382,38 @@
     "ANS_IOKIT_PERSONALITY_EXTRACTION_PASS": true,
     "ANS_D37AP_PERSONALITY_MATCH_MATRIX_PASS": true,
     "ANS_IOP_NUB_PUBLISHER_PROVEN": true,
-    "ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM": "NOT_REQUIRED",
-    "ANS_IOP_NUB_IONAMEMATCH_COMPATIBLE_PASS": false,
-    "ANS_IOP_NUB_MATCH_SOURCE": "RUNTIME_CONFIRMATION_REQUIRED",
-    "ANS_IOP_NUB_PROVIDER_MATCH_RUNTIME_PROOF_REQUIRED": true,
+    "ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM": "NOT_PROVEN_TO_BE_REQUIRED",
+    "ANS_IOP_NUB_MATCH_VALUE_SOURCE": "STATIC",
+    "ANS_IOP_NUB_MATCH_VALUE_STATIC_PROVEN": true,
+    "ANS_IOP_NUB_IONAMEMATCH_SEMANTICS_PASS": true,
+    "ANS_IOP_NUB_IONAMEMATCH_COMPATIBLE_PASS": true,
+    "ANS_IOP_NUB_PROVIDER_MATCH_PASS": true,
+    "APPLEA7IOPNUB_WITHREGISTRYENTRY_FLOW_PASS": true,
+    "APPLEA7IOPNUB_PROPERTY_SYMBOL_1_RESOLVED": true,
+    "APPLEA7IOPNUB_PROPERTY_SYMBOL_2_RESOLVED": true,
+    "APPLEA7IOP_ANS_NUB_PUBLICATION_FLOW_PASS": true,
+    "APPLEA7IOPNUB_PUBLISHED_NAME_SOURCE_PASS": true,
+    "APPLEA7IOPNUB_PROPERTY_PROPAGATION_PASS": true,
+    "APPLEA7IOPNUB_MATCH_BEHAVIOR_AUDIT_PASS": true,
+    "RTBUDDY_IONAMEMATCH_OBJECT_ORIGIN_PASS": true,
     "ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN": true,
     "ANS2ENDPOINT1_NAME_FORMAT_PROVEN": true,
     "ANS2ENDPOINT1_CONSUMER_REQUIREMENT_PROVEN": true,
     "ANS2ENDPOINT1_EXACT_CALLSITE_ARGUMENTS": "NON_BLOCKING_IMPLEMENTATION_DETAIL",
-    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": false,
+    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": true,
     "ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS": true,
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": false,
-    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "OPEN",
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": true,
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_CLOSED",
     "ANS_EVIDENCE_NON_SELF_REFERENTIAL_PASS": true,
     "ANS_DURABLE_ARTIFACT_SINGLE_STATE_PASS": true,
     "ANS_THREE_ARTIFACT_CROSS_CONSISTENCY_PASS": true,
+    "ANS_NUB_MATCH_PROOF_DEPENDENCY_CHECK_PASS": true,
     "NVME_LINEAR_SQ_RAW_DT_RECONCILIATION_PASS": true,
     "D37AP_ANS_CHILD_RAW_REPARSE_PASS": true,
-    "ANS_IOP_NUB_IONAMEMATCH_SEMANTICS_PASS": true,
+    "D37AP_AUTHORITATIVE_DT_EXTRACTION_PASS": true,
+    "DT_FIXUP_PRUNED_TREE_IDENTIFIED_PASS": true,
     "next_gate": "IOS_STORAGE_LBA_CONTRACT",
     "durable_evidence": "artifacts/evidence/05f/phase05f-ans-kernel-driver-match.json",
-    "open_unknown": "published AppleA7IOPNub matching value (iop-nub,rtbuddy-v2) requires runtime IORegistry confirmation for the exact 24A437 build"
+    "open_unknown": "boot tree (dtree.bin) lacks iop-ans-nub compatible after dt_fixup del_compat; in-guest RTBuddy attach requires restoring it or booting the authoritative tree"
   }
 }

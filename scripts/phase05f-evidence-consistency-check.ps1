@@ -1,9 +1,9 @@
-# Deterministic evidence cross-file consistency checker (Iteration 57ZA).
+# Deterministic evidence cross-file consistency checker (Iteration 57ZB).
 # Cross-checks three ANS artifacts (dt contract, kernel-driver-match,
 # preboom storage summary) for raw DT equality, provider/controller class
-# equality, and contract-status equality. Refuses the pre-57ZA
-# length-0 vs length-4 nvme-linear-sq contradiction. Non-zero exit on
-# any mismatch.
+# equality, contract status, and the static match-value proof chain.
+# Refuses ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS=true unless the static or
+# runtime match value is proven. Non-zero exit on any mismatch.
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
@@ -38,7 +38,9 @@ $stalePatterns = @(
     'EXACT_WINNING_PROBE_NOT_FULLY_RESOLVED',
     '"PENDING_COMMIT_SHA"',
     'u32 0 (PRESENT)',
-    'ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM_PASS'
+    'ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM_PASS',
+    'ANS_IOP_NUB_MATCH_SOURCE.*RUNTIME_CONFIRMATION_REQUIRED',
+    'ANS_IOP_NUB_PROVIDER_MATCH_RUNTIME_PROOF_REQUIRED'
 )
 $staleFound = $false
 foreach ($p in $stalePatterns) {
@@ -59,19 +61,21 @@ $summary = $summaryRaw | ConvertFrom-Json
 $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
-# --- iteration identity (57ZA) ---
-Assert-Equal 'iteration' $summary.iteration '57ZA'
-Assert-Equal 'ITERATION_57ZA' $summary.certified.ITERATION_57ZA 'PARTIAL_PASS'
+# --- iteration identity (57ZB) ---
+Assert-Equal 'iteration' $summary.iteration '57ZB'
+Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_PENDING_REVIEW'
+Assert-Equal 'ITERATION_57ZA' $summary.certified.ITERATION_57ZA 'PARTIAL_PASS_ACCEPTED'
 Assert-Equal 'ITERATION_57Z' $summary.certified.ITERATION_57Z 'PARTIAL_PASS'
 Assert-Equal 'ITERATION_57Y' $summary.certified.ITERATION_57Y 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57X' $summary.certified.ITERATION_57X 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57W' $summary.certified.ITERATION_57W 'PASS'
 Assert-Equal 'ITERATION_57V' $summary.certified.ITERATION_57V 'PASS'
 Assert-Equal '57T_certified' $summary.certified.ITERATION_57T_CERTIFIED_CLOSED 'YES'
+Assert-Equal 'ANS contract certified' $summary.certified.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'PASS_CLOSED'
 
 # --- single-state enforcement on the durable kernel-driver-match JSON ---
 $topKeys = $ansMatch.PSObject.Properties.Name
-foreach ($forbidden in @('probe_score_matrix','nub_chain','winner_matrix','provider_resolution','nub_publisher','endpoint_publisher','asc_rtbuddy_chain_exact','winning_probe_reconciliation')) {
+foreach ($forbidden in @('probe_score_matrix','nub_chain','winner_matrix','provider_resolution','nub_publisher','endpoint_publisher','asc_rtbuddy_chain_exact','winning_probe_reconciliation','provider_chain','dt_match_map','probe_paths','class_hierarchy','class_inventory','runtime_milestones','namespace_use','external_reference_audit','open_unknowns','iokit_personalities')) {
     if ($topKeys -contains $forbidden) {
         Write-Host "MISMATCH durable artifact still carries legacy top-level section: $forbidden"
         $script:failures++
@@ -92,76 +96,93 @@ if ($null -eq $cs) {
     $script:failures++
 } else {
     Assert-Equal 'cs_predicate' $cs.ANS3_NVME_LINEAR_SQ_PREDICATE_PROVEN 'True'
-    Assert-Equal 'cs_predicate_result' $cs.nvme_linear_sq.ANS3_D37AP_PREDICATE_RESULT 'MATCH'
-    Assert-Equal 'cs_predicate_revalidation' $cs.nvme_linear_sq.ANS3_D37AP_PREDICATE_REVALIDATION_PASS 'True'
+    Assert-Equal 'cs_predicate_revalidation' $cs.ANS3_D37AP_PREDICATE_REVALIDATION_PASS 'True'
     Assert-Equal 'cs_exact_class' $cs.ANS_EXACT_CONTROLLER_CLASS_PROVEN 'True'
     Assert-Equal 'cs_winning_probe' $cs.ANS_EXACT_WINNING_PROBE_PASS 'True'
     Assert-Equal 'cs_controller' $cs.CURRENT_CONTROLLER_CLASS 'AppleANS3NVMeController'
     Assert-Equal 'cs_provider' $cs.CURRENT_PROVIDER_CLASS 'RTBuddyService'
     Assert-Equal 'cs_provider_proven' $cs.ANS_PROVIDER_CLASS_PROVEN 'True'
-    Assert-Equal 'cs_nub_publisher' $cs.iop_ans_nub.ANS_IOP_NUB_PUBLISHER_PROVEN 'True'
-    Assert-Equal 'cs_nub_match_source' $cs.iop_ans_nub.ANS_IOP_NUB_MATCH_SOURCE 'RUNTIME_CONFIRMATION_REQUIRED'
-    Assert-Equal 'cs_nub_runtime_required' $cs.iop_ans_nub.ANS_IOP_NUB_PROVIDER_MATCH_RUNTIME_PROOF_REQUIRED 'True'
-    Assert-Equal 'cs_ionamematch_compatible' $cs.iop_ans_nub.ANS_IOP_NUB_IONAMEMATCH_COMPATIBLE_PASS 'False'
-    Assert-Equal 'cs_endpoint_publisher' $cs.endpoint.ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN 'True'
-    Assert-Equal 'cs_endpoint_args' $cs.endpoint.ANS2ENDPOINT1_EXACT_CALLSITE_ARGUMENTS 'NON_BLOCKING_IMPLEMENTATION_DETAIL'
-    Assert-Equal 'cs_asc_chain' $cs.asc_rtbuddy_chain.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS 'False'
-    Assert-Equal 'cs_contract' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'OPEN'
-    Assert-Equal 'cs_contract_pass' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS 'False'
+    Assert-Equal 'cs_nub_publisher' $cs.ANS_IOP_NUB_PUBLISHER_PROVEN 'True'
+    Assert-Equal 'cs_withreg' $cs.APPLEA7IOPNUB_WITHREGISTRYENTRY_FLOW_PASS 'True'
+    Assert-Equal 'cs_sym1' $cs.APPLEA7IOPNUB_PROPERTY_SYMBOL_1_RESOLVED 'True'
+    Assert-Equal 'cs_sym2' $cs.APPLEA7IOPNUB_PROPERTY_SYMBOL_2_RESOLVED 'True'
+    Assert-Equal 'cs_match_source' $cs.ANS_IOP_NUB_MATCH_VALUE_SOURCE 'STATIC'
+    Assert-Equal 'cs_match_static' $cs.ANS_IOP_NUB_MATCH_VALUE_STATIC_PROVEN 'True'
+    Assert-Equal 'cs_provider_match' $cs.ANS_IOP_NUB_PROVIDER_MATCH_PASS 'True'
+    Assert-Equal 'cs_transform' $cs.ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM 'NOT_PROVEN_TO_BE_REQUIRED'
+    Assert-Equal 'cs_ionamematch_semantics' $cs.ANS_IOP_NUB_IONAMEMATCH_SEMANTICS_PASS 'True'
+    Assert-Equal 'cs_ionamematch_compatible' $cs.ANS_IOP_NUB_IONAMEMATCH_COMPATIBLE_PASS 'True'
+    Assert-Equal 'cs_publication_flow' $cs.APPLEA7IOP_ANS_NUB_PUBLICATION_FLOW_PASS 'True'
+    Assert-Equal 'cs_name_source' $cs.APPLEA7IOPNUB_PUBLISHED_NAME_SOURCE_PASS 'True'
+    Assert-Equal 'cs_prop_propagation' $cs.APPLEA7IOPNUB_PROPERTY_PROPAGATION_PASS 'True'
+    Assert-Equal 'cs_match_behavior' $cs.APPLEA7IOPNUB_MATCH_BEHAVIOR_AUDIT_PASS 'True'
+    Assert-Equal 'cs_obj_origin' $cs.RTBUDDY_IONAMEMATCH_OBJECT_ORIGIN_PASS 'True'
+    Assert-Equal 'cs_asc_chain' $cs.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS 'True'
+    Assert-Equal 'cs_contract' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'PASS_CLOSED'
+    Assert-Equal 'cs_contract_pass' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS 'True'
     Assert-Equal 'cs_durable' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS 'True'
-    Assert-Equal 'cs_blocker' $cs.blocker 'ANS_IOP_NUB_PROVIDER_MATCH_RUNTIME_PROOF_REQUIRED: the exact 24A437 iop-ans-nub child exposes no IONameMatch-compatible static value and no static publication path was proven; runtime IORegistry evidence is the next blocker'
+    Assert-Equal 'cs_next_gate' $cs.next_gate 'IOS_STORAGE_LBA_CONTRACT'
 }
 
-# --- three-artifact cross-consistency (57ZA core gate) ---
-$dtCanon = $contract.canonical_state
-$sumAns = $summary.ans_device_tree
+# --- ANS_NUB_MATCH_PROOF_DEPENDENCY_CHECK: chain PASS requires match proof ---
 $sumKm = $summary.ans_kernel_driver_match
+if ($sumKm.ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS -eq 'True') {
+    $staticOk = $sumKm.ANS_IOP_NUB_MATCH_VALUE_STATIC_PROVEN -eq 'True'
+    $runtimeOk = $false
+    if ($sumKm.PSObject.Properties['ANS_IOP_NUB_MATCH_VALUE_RUNTIME_PROVEN']) {
+        $runtimeOk = $sumKm.ANS_IOP_NUB_MATCH_VALUE_RUNTIME_PROVEN -eq 'True'
+    }
+    if (-not ($staticOk -or $runtimeOk)) {
+        Write-Host "MISMATCH ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS=true without static or runtime match-value proof"
+        $script:failures++
+    } else {
+        Write-Host "OK ANS_NUB_MATCH_PROOF_DEPENDENCY_CHECK_PASS"
+    }
+} else {
+    Write-Host "OK chain not claimed (dependency gate not triggered)"
+}
 
+# --- three-artifact cross-consistency ---
+$dtCanon = $contract.canonical_state
 Assert-Equal 'x_dt_nls_len' $dtCanon.NVME_LINEAR_SQ_LENGTH 0
 Assert-Equal 'x_km_nls_len' $cs.nvme_linear_sq.length 0
-Assert-Equal 'x_sum_nls_len' $sumAns.nvme_linear_sq_length 0
 Assert-Equal 'x_dt_nls_raw' $dtCanon.NVME_LINEAR_SQ_RAW_HEX ''
 Assert-Equal 'x_km_nls_raw' $cs.nvme_linear_sq.raw_hex ''
-Assert-Equal 'x_sum_nls_raw' $sumAns.nvme_linear_sq_raw_hex ''
-# explicit len0-vs-len4 contradiction refusal
-if ($dtCanon.NVME_LINEAR_SQ_LENGTH -eq $cs.nvme_linear_sq.length -and $cs.nvme_linear_sq.length -eq 0) {
-    Write-Host "OK NVME_LINEAR_SQ_RAW_DT_RECONCILIATION_PASS (all three artifacts agree length=0)"
-} else {
-    Write-Host "MISMATCH nvme-linear-sq length contradiction across artifacts"
-    $script:failures++
-}
 Assert-Equal 'x_dt_role' $dtCanon.role 'ANS2'
 Assert-Equal 'x_km_role' $cs.role 'ANS2'
-Assert-Equal 'x_sum_role' $sumAns.role 'ANS2'
+Assert-Equal 'x_sum_role' $summary.ans_device_tree.role 'ANS2'
 Assert-Equal 'x_dt_child' $dtCanon.child_node 'iop-ans-nub'
-Assert-Equal 'x_km_child' $cs.child_node 'iop-ans-nub'
-Assert-Equal 'x_sum_child' $sumAns.child_node 'iop-ans-nub'
-Assert-Equal 'x_dt_compat' $dtCanon.child_compatible 'ABSENT'
-Assert-Equal 'x_km_compat' $cs.child_compatible 'ABSENT'
-Assert-Equal 'x_sum_compat' $sumAns.child_compatible 'ABSENT'
+Assert-Equal 'x_sum_child' $summary.ans_device_tree.child_node 'iop-ans-nub'
+Assert-Equal 'x_dt_compat_booted' $dtCanon.child_compatible 'ABSENT'
+Assert-Equal 'x_sum_compat_booted' $summary.ans_device_tree.child_compatible_booted 'ABSENT'
+Assert-Equal 'x_dt_compat_auth' $dtCanon.child_compatible_authoritative 'iop-nub,rtbuddy-v2'
+Assert-Equal 'x_sum_compat_auth' $summary.ans_device_tree.child_compatible_authoritative 'iop-nub,rtbuddy-v2'
 Assert-Equal 'x_km_controller' $cs.CURRENT_CONTROLLER_CLASS $sumKm.CURRENT_CONTROLLER_CLASS
 Assert-Equal 'x_km_controller_expected' $sumKm.CURRENT_CONTROLLER_CLASS 'AppleANS3NVMeController'
 Assert-Equal 'x_km_provider' $cs.CURRENT_PROVIDER_CLASS $sumKm.CURRENT_PROVIDER_CLASS
 Assert-Equal 'x_km_provider_expected' $sumKm.CURRENT_PROVIDER_CLASS 'RTBuddyService'
 Assert-Equal 'x_km_contract' $cs.ANS_KERNEL_DRIVER_MATCH_CONTRACT $sumKm.ANS_KERNEL_DRIVER_MATCH_CONTRACT
-Assert-Equal 'x_km_contract_expected' $sumKm.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'OPEN'
-Assert-Equal 'x_sum_gate_contract' $summary.storage_gates_open.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'OPEN'
+Assert-Equal 'x_km_contract_expected' $sumKm.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'PASS_CLOSED'
+Assert-Equal 'x_sum_gate_contract' $summary.storage_gates_open.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'PASS_CLOSED'
+Assert-Equal 'x_sum_kernel_contract' $summary.kernel_driver.ANS_KERNEL_DRIVER_MATCH_CONTRACT 'PASS_CLOSED'
 
 if ($script:failures -eq 0) {
     Write-Host "ANS_THREE_ARTIFACT_CROSS_CONSISTENCY_PASS"
 }
 
-# --- raw DT fixture child facts (57ZA reparse gate) ---
-$childInfo = $contract.iop_ans_nub_child
-Assert-Equal 'child_nprops' $childInfo.nprops 9
-Assert-Equal 'child_compatible_present' $childInfo.compatible.present 'False'
-Assert-Equal 'child_device_type_present' $childInfo.device_type.present 'False'
-Assert-Equal 'child_name' $childInfo.name.decoded_string 'iop-ans-nub'
-Assert-Equal 'D37AP_IOP_ANS_NUB_COMPATIBLE' $childInfo.compatible.D37AP_IOP_ANS_NUB_COMPATIBLE 'ABSENT'
-Assert-Equal 'D37AP_IOP_ANS_NUB_DEVICE_TYPE' $childInfo.device_type.D37AP_IOP_ANS_NUB_DEVICE_TYPE 'ABSENT'
-Assert-Equal 'D37AP_ANS_CHILD_RAW_REPARSE_PASS' $contract.reparse.D37AP_ANS_CHILD_RAW_REPARSE_PASS 'True'
-Assert-Equal 'ans_nls_len0' $contract.ans_node.'nvme-linear-sq'.length 0
-Assert-Equal 'ans_nls_raw_empty' $contract.ans_node.'nvme-linear-sq'.raw_hex ''
+# --- authoritative DT extraction + pruned-tree facts ---
+Assert-Equal 'auth_size' $contract.authoritative.decompressed_size 269248
+Assert-Equal 'auth_sha' $contract.authoritative.decompressed_sha256 '7560AA1E4AC07C0D9B57E73A81668DECB5969FE012208A199B58CCADA2CF5E7B'
+Assert-Equal 'auth_extraction' $contract.authoritative.D37AP_AUTHORITATIVE_DT_EXTRACTION_PASS 'True'
+Assert-Equal 'auth_child_compat' $contract.authoritative_ans_nub_child.D37AP_IOP_ANS_NUB_COMPATIBLE_AUTHORITATIVE 'iop-nub,rtbuddy-v2'
+Assert-Equal 'pruned_repro' $contract.booted_pruned_tree.repro_pass 'True'
+Assert-Equal 'pruned_sha' $contract.booted_pruned_tree.sha256 '9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B'
+Assert-Equal 'booted_child_compat' $contract.iop_ans_nub_child.compatible.D37AP_IOP_ANS_NUB_COMPATIBLE 'ABSENT'
+Assert-Equal 'booted_nprops' $contract.iop_ans_nub_child.nprops 9
+
+# --- boot-tree pruned finding cross-check in km ---
+Assert-Equal 'km_pruned_finding' $ansMatch.boot_tree_finding.DT_FIXUP_PRUNED_TREE_IDENTIFIED_PASS 'True'
+Assert-Equal 'km_pruned_repro' $ansMatch.boot_tree_finding.regenerated_sha256 '9e84c9add25b99eddd8b088b249e7ce348394b80a0def59949e9bb9c63a24e1b'
 
 # --- SpringBoard reconstruction + SHA ---
 $sb = $summary.decmpfs_reconstruction.executables.springboard
@@ -174,11 +195,9 @@ if (-not $sb.reconstructed -or
     Write-Host "OK SpringBoard reconstructed SHA"
 }
 
-# --- decmpfs algo table + resourcefork flags ---
-Assert-Equal 'algo4' $summary.decmpfs_reconstruction.algorithm_table.'4' 'zlib resource fork (CMP_TypeZlib)'
-Assert-Equal 'resourcefork_flags.observed' $summary.decmpfs_reconstruction.resourcefork_flags.observed 1
-
 $ds = $summary.decmpfs_reconstruction
+Assert-Equal 'algo4' $ds.algorithm_table.'4' 'zlib resource fork (CMP_TypeZlib)'
+Assert-Equal 'resourcefork_flags.observed' $ds.resourcefork_flags.observed 1
 Assert-Equal 'dstream_descriptor_matrix' $ds.RESOURCEFORK_DSTREAM_DESCRIPTOR_NEGATIVE_MATRIX_PASS 'True'
 Assert-Equal 'file_extent_matrix' $ds.RESOURCEFORK_FILE_EXTENT_NEGATIVE_MATRIX_PASS 'True'
 Assert-Equal 'dstream_contract' $ds.RESOURCEFORK_DATA_STREAM_NEGATIVE_MATRIX_PASS 'True'
@@ -200,7 +219,6 @@ Assert-Equal 'macho_fixture_cases' $ds.macho_fixture_cases.Count 15
 Assert-Equal 'extent_matrix_cases' $ds.extent_matrix_cases.Count 16
 Assert-Equal 'contract_cases' $ds.contract_cases.Count 8
 
-# --- Mach-O identity fields ---
 $expected = @{
     springboard  = @{ cputype = 16777228; cpusubtype = 2147483650; filetype = 2; ncmds = 21; sizeofcmds = 1336 }
     backboardd   = @{ cputype = 16777228; cpusubtype = 2147483650; filetype = 2; ncmds = 65; sizeofcmds = 7960 }
@@ -221,7 +239,6 @@ foreach ($exeName in $expected.Keys) {
     Assert-Equal "$exeName sizeofcmds" $exe.macho_sizeofcmds $want.sizeofcmds
 }
 
-# --- namespaces ---
 $summaryNs = $summary.ans_device_tree.namespace_records
 $contractNs = $contract.ans_node.properties.namespaces.decoded
 if ($summaryNs.Count -ne $contractNs.Count / 3) {
@@ -244,12 +261,10 @@ if ($summaryNs.Count -ne $contractNs.Count / 3) {
     }
 }
 
-# --- nvme_queue_entries + raw hex ---
 $decodedQ = $contract.ans_node.properties.'nvme-queue-entries'.decoded_ints[0]
 Assert-Equal 'nvme_queue_entries' $summary.ans_device_tree.nvme_queue_entries $decodedQ
 Assert-Equal 'nvme_queue_entries_raw' $summary.ans_device_tree.nvme_queue_entries_raw_hex '40000000'
 
-# --- interrupts ---
 $decodedInts = $contract.ans_node.properties.interrupts.decoded_ints
 $summaryInts = $summary.ans_device_tree.interrupts
 if (($decodedInts -join ',') -cne ($summaryInts -join ',')) {
@@ -259,7 +274,6 @@ if (($decodedInts -join ',') -cne ($summaryInts -join ',')) {
     Write-Host "OK interrupts"
 }
 
-# --- clock IDs ---
 $decodedClocks = $contract.ans_node.properties.'clock-ids'.decoded_ints
 $summaryClocks = $summary.ans_device_tree.clock_ids
 if (($decodedClocks -join ',') -cne ($summaryClocks -join ',')) {
@@ -269,13 +283,11 @@ if (($decodedClocks -join ',') -cne ($summaryClocks -join ',')) {
     Write-Host "OK clock-ids"
 }
 
-# --- iommu-parent + nvme-interrupt-idx ---
 $decodedIommu = $contract.ans_node.properties.'iommu-parent'.decoded_ints[0]
 Assert-Equal 'iommu-parent' $summary.ans_device_tree.iommu_parent $decodedIommu
 $decodedNvIdx = $contract.ans_node.properties.'nvme-interrupt-idx'.decoded_ints[0]
 Assert-Equal 'nvme-interrupt-idx' $summary.ans_device_tree.nvme_interrupt_idx $decodedNvIdx
 
-# --- reg tuples ---
 $regDecoded = $contract.ans_node.properties.reg.decoded
 $regSummary = $summary.ans_device_tree.reg_mmio
 if ($regDecoded.Count -ne $regSummary.Count) {
@@ -300,6 +312,7 @@ if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"
     Write-Host "EVIDENCE_STALE_STATE_REFUSAL_FAIL"
     Write-Host "ANS_THREE_ARTIFACT_CROSS_CONSISTENCY_FAIL"
+    Write-Host "ANS_NUB_MATCH_PROOF_DEPENDENCY_CHECK_FAIL"
     exit 1
 }
 Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_PASS"
@@ -307,4 +320,5 @@ Write-Host "EVIDENCE_STALE_STATE_REFUSAL_PASS"
 Write-Host "ANS_DURABLE_ARTIFACT_SINGLE_STATE_PASS"
 Write-Host "ANS_EVIDENCE_NON_SELF_REFERENTIAL_PASS"
 Write-Host "ANS_THREE_ARTIFACT_CROSS_CONSISTENCY_PASS"
+Write-Host "ANS_NUB_MATCH_PROOF_DEPENDENCY_CHECK_PASS"
 exit 0

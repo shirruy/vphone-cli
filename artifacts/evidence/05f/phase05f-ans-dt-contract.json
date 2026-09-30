@@ -1,19 +1,17 @@
 {
   "gate": "ANS_DEVICE_TREE_CONTRACT",
-  "iteration": "57ZA",
+  "iteration": "57ZB",
   "date": "2026-09-30",
   "reparse": {
     "tool": "fresh structural walk of Apple raw dtree format (node header: nprops u32 LE + nchildren u32 LE; property record: name[32] + length u32 LE + value[length], 4-byte aligned)",
     "source_file": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\dtree.bin",
     "source_sha256": "9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B",
     "source_size": 259884,
-    "parser_note": "values below are the ONLY canonical raw facts; no value was reused from any prior artifact",
+    "parser_note": "booted pruned-tree facts below are the canonical raw facts; 57ZB additionally records the Apple-authoritative IPSW DeviceTree",
     "D37AP_ANS_CHILD_RAW_REPARSE_PASS": true
   },
   "ans_node": {
     "path": "device-tree/arm-io/ans",
-    "node_off": 116068,
-    "node_off_hex": "0x1c564",
     "nprops": 23,
     "nchildren": 1,
     "properties": {
@@ -125,29 +123,6 @@
         "value_offset": 116484,
         "value_offset_hex": "0x1c704",
         "raw_hex": "0100000001000000000000000200000002000000000a0000030000000300000020000000040000000400000002000000050000000500000002000000060000000800000000010000070000000d00000000800000",
-        "decoded_ints": [
-          1,
-          1,
-          0,
-          2,
-          2,
-          2560,
-          3,
-          3,
-          32,
-          4,
-          4,
-          2,
-          5,
-          5,
-          2,
-          6,
-          8,
-          256,
-          7,
-          13,
-          32768
-        ],
         "decoded": [
           1,
           1,
@@ -406,8 +381,6 @@
   },
   "iop_ans_nub_child": {
     "path": "device-tree/arm-io/ans/iop-ans-nub",
-    "node_off": 117464,
-    "node_off_hex": "0x1cad8",
     "nprops": 9,
     "nchildren": 0,
     "property_names_in_file_order": [
@@ -537,6 +510,95 @@
       "rtbuddy": "NOT PRESENT anywhere in dtree.bin"
     }
   },
+  "authoritative": {
+    "source": "Firmware/all_flash/DeviceTree.d37ap.im4p in iPhone15,4_27.0_24A437_Restore.ipsw",
+    "im4p_size": 54230,
+    "container": "IM4P: 0x16 0x04 'IM4P' + 0x16 0x04 'dtre' + 0x16 0x1e 'EmbeddedDeviceTrees-12661.2.16' + bvx2 stream at offset 0x34",
+    "decompress_tool": "python lzfse.decompress(body[4:])",
+    "decompressed_size": 269248,
+    "decompressed_sha256": "7560AA1E4AC07C0D9B57E73A81668DECB5969FE012208A199B58CCADA2CF5E7B",
+    "matches_payloads_v3_dtree_raw_bin": true,
+    "raw_sha256": "7560AA1E4AC07C0D9B57E73A81668DECB5969FE012208A199B58CCADA2CF5E7B",
+    "D37AP_AUTHORITATIVE_DT_EXTRACTION_PASS": true
+  },
+  "authoritative_ans_nub_child": {
+    "path": "device-tree/arm-io/ans/iop-ans-nub",
+    "nprops": 10,
+    "properties": [
+      {
+        "name": "continuous-time",
+        "length": 0,
+        "raw_hex": ""
+      },
+      {
+        "name": "quiesced",
+        "length": 0,
+        "raw_hex": ""
+      },
+      {
+        "name": "compatible",
+        "length": 19,
+        "raw_hex": "696f702d6e75622c727462756464792d763200",
+        "decoded_string": "iop-nub,rtbuddy-v2"
+      },
+      {
+        "name": "shutdown-sleep",
+        "length": 0,
+        "raw_hex": ""
+      },
+      {
+        "name": "AAPL,phandle",
+        "length": 4,
+        "raw_hex": "6a000000"
+      },
+      {
+        "name": "region-size",
+        "length": 8,
+        "raw_hex": "0000000000000000"
+      },
+      {
+        "name": "region-base",
+        "length": 8,
+        "raw_hex": "0000000000000000"
+      },
+      {
+        "name": "crashlog-non-fatal",
+        "length": 0,
+        "raw_hex": ""
+      },
+      {
+        "name": "power-managed",
+        "length": 4,
+        "raw_hex": "01000000"
+      },
+      {
+        "name": "name",
+        "length": 12,
+        "raw_hex": "696f702d616e732d6e756200",
+        "decoded_string": "iop-ans-nub"
+      }
+    ],
+    "D37AP_IOP_ANS_NUB_COMPATIBLE_AUTHORITATIVE": "iop-nub,rtbuddy-v2",
+    "D37AP_IOP_ANS_NUB_DEVICE_TYPE": "ABSENT",
+    "D37AP_ANS_AUTHORITATIVE_COMPATIBLE_PASS": true
+  },
+  "booted_pruned_tree": {
+    "source": "payloads-v3/dtree.bin",
+    "size": 259884,
+    "sha256": "9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B",
+    "producer": "build/phase05e-qemu-sptm-source-build/darwin-vm/dt_fixup.py via get_files.sh patch_dtree()",
+    "del_compat_whitelist": [
+      "AppleARM",
+      "aic",
+      "arm-io",
+      "uart-1,samsung"
+    ],
+    "iop_ans_nub_nprops": 9,
+    "iop_ans_nub_compatible": "ABSENT (deleted by del_compat; NOT in the 4-kext whitelist)",
+    "D37AP_IOP_ANS_NUB_COMPATIBLE_BOOTED": "ABSENT",
+    "repro": "dt_fixup.py dtree.raw.bin out -nvram nvram.bin -> SHA-256 9E84C9ADD... == payloads-v3/dtree.bin (byte-for-byte)",
+    "repro_pass": true
+  },
   "canonical_state": {
     "D37AP_ANS_CHILD_RAW_REPARSE_PASS": true,
     "NVME_LINEAR_SQ_LENGTH": 0,
@@ -544,6 +606,7 @@
     "NVME_LINEAR_SQ_RAW_DT_RECONCILIATION_PASS": true,
     "role": "ANS2",
     "child_node": "iop-ans-nub",
-    "child_compatible": "ABSENT"
+    "child_compatible": "ABSENT",
+    "child_compatible_authoritative": "iop-nub,rtbuddy-v2"
   }
 }
