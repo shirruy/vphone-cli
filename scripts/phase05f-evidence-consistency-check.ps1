@@ -616,13 +616,19 @@ Assert-Equal 'cryptex_plist_version' $cryptex.known_file_proof.reconstruction.pl
 # 5. Cross-artifact: preboom summary must also carry PASS_CLOSED
 Assert-Equal 'cryptex_preboom_closed' $summary.sealed_container_walks.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'PASS_CLOSED'
 Assert-Equal 'cryptex_preboom_next' $summary.storage_gates_open.CRYPTEX_ATTACHMENT_MODEL 'NEXT'
-Assert-Equal 'cryptex_57ZF' $summary.certified.ITERATION_57ZF 'PARTIAL_PASS_REPAIR_REQUIRED'
-Assert-Equal 'cryptex_57ZFA' $summary.certified.ITERATION_57ZFA 'PASS_PENDING_REVIEW'
+Assert-Equal 'cryptex_57ZF' $summary.certified.ITERATION_57ZF 'PASS_CLOSED'
+Assert-Equal 'cryptex_57ZFA' $summary.certified.ITERATION_57ZFA 'PASS_CLOSED'
 Assert-Equal 'cryptex_57ZE_closed' $summary.certified.ITERATION_57ZE 'PASS_CLOSED'
 
 # 6. 57ZFA: checkpoint-map stride/geometry + integrity policy + duplicate-key refusal
 # 6. 57ZFA: checkpoint-map stride/geometry + integrity policy + duplicate-key refusal
 Assert-Equal 'cryptex_stride_used' $cryptex.checkpoint_map.CHECKPOINT_MAP_ENTRY_STRIDE_USED 40
+
+# 57ZF/57ZFA reviewer-state synchronization (PASS_CLOSED)
+Assert-Equal 'cryptex_cs_57ZF' $cryptex.canonical_state.ITERATION_57ZF 'PASS_CLOSED'
+Assert-Equal 'cryptex_cs_57ZFA' $cryptex.canonical_state.ITERATION_57ZFA 'PASS_CLOSED'
+Assert-Equal 'cryptex_cs_gate' $cryptex.canonical_state.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'PASS_CLOSED'
+Assert-Equal 'cryptex_cs_next' $cryptex.canonical_state.next_gate 'CRYPTEX_ATTACHMENT_MODEL'
 Assert-Equal 'cryptex_stride_first_offset' $cryptex.checkpoint_map.CHECKPOINT_MAP_FIRST_ENTRY_OFFSET 40
 Assert-Equal 'cryptex_stride_count' $cryptex.checkpoint_map.CHECKPOINT_MAP_ENTRY_COUNT 5
 Assert-Equal 'cryptex_stride_class' $cryptex.checkpoint_map.'57ZF_CHECKPOINT_STRIDE_ERROR' 'DURABLE_PROSE_ONLY'

@@ -679,9 +679,9 @@
     "CRYPTEX_AUTHORITATIVE_WALK_FAIL_CLOSED_PASS": true,
     "CRYPTEX_AUTHORITATIVE_ROOT_WALK_DURABLE_PASS": true,
     "CRYPTEX_ROOT_WALK_CROSS_ARTIFACT_CONSISTENCY_PASS": true,
-    "ITERATION_57ZF": "PASS_PENDING_REVIEW",
+    "ITERATION_57ZF": "PASS_CLOSED",
     "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK": "PASS_CLOSED",
-    "next_gate": "CRYPTEX_ATTACHMENT_MODEL (after 57ZFA closure)",
+    "next_gate": "CRYPTEX_ATTACHMENT_MODEL",
     "CRYPTEX_CHECKPOINT_MAPPING_STRIDE_PASS": true,
     "CRYPTEX_CHECKPOINT_MAP_REDECODE_PASS": true,
     "CRYPTEX_CHECKPOINT_MAP_GEOMETRY_PASS": true,
@@ -691,7 +691,7 @@
     "CRYPTEX_NOHEADER_FAIL_CLOSED_POLICY_PASS": true,
     "CRYPTEX_ROOT_WALK_KNOWN_FILE_REGRESSION_PASS": true,
     "57ZF_CHECKPOINT_STRIDE_ERROR": "DURABLE_PROSE_ONLY",
-    "ITERATION_57ZFA": "PASS_PENDING_REVIEW"
+    "ITERATION_57ZFA": "PASS_CLOSED"
   },
   "remaining_unknowns": [
     "FEXT extent crypto_id is 4096 on this unencrypted sealed volume; apfs-fuse treats crypto on sealed volumes as out of scope and reads the block directly, which matches this artifact",
