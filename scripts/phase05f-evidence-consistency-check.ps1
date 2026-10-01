@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZK'
+Assert-Equal 'iteration' $summary.iteration '57ZL'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -689,9 +689,9 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZK'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZL'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'STATIC_PASS_RUNTIME_DEFERRED'
-Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'NEXT'
+Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'PASS_CLOSED'
 Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
 
 # 2. All 11 required exit flags must be true
@@ -769,7 +769,7 @@ $bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-b
 $bindRaw = Get-Content $bindPath -Raw
 $bind = $bindRaw | ConvertFrom-Json
 
-Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZK'
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZL'
 Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'STATIC_PASS_RUNTIME_DEFERRED'
 
 # 57ZI: SHA + fext-wording + duplicate-key checks for the binding artifact
@@ -907,6 +907,117 @@ if ($bind.canonical_state.CRYPTEX_NAMESPACE_BINDING -eq 'PASS_CLOSED') {
     }
 } else {
     Write-Host "OK CRYPTEX_RUNTIME_BINDING_DEPENDENCY_CHECK_PASS"
+}
+
+# ================= 57ZL: IOS_ROOT_DEVICE_SELECTION =================
+$rdPath = Join-Path $root 'artifacts\evidence\05f\phase05f-ios-root-device-selection.json'
+$rdRaw = Get-Content $rdPath -Raw
+$rd = $rdRaw | ConvertFrom-Json
+
+Assert-Equal 'rd_gate' $rd.gate 'IOS_ROOT_DEVICE_SELECTION'
+Assert-Equal 'rd_iteration' $rd.iteration '57ZL'
+Assert-Equal 'rd_certified' $rd.certified 'PASS_CLOSED'
+Assert-Equal 'rd_next_gate' $rd.next_gate 'IOS_ROOT_TRANSITION_MODEL'
+
+Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZL'
+Assert-Equal 'rd_preboom_certified' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'PASS_CLOSED'
+Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'PASS_CLOSED'
+Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate 'IOS_ROOT_TRANSITION_MODEL'
+Assert-Equal 'rd_preboom_durable' $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION_DURABLE_PASS $true
+Assert-Equal 'rd_preboom_mountroot_pc' $summary.ios_root_device_selection.MOUNTROOT_PC '0xfffffff00ab96a38'
+Assert-Equal 'rd_preboom_root_path' $summary.ios_root_device_selection.SELECTED_ROOT_PATH 'APFS System volume via IOMedia enumeration'
+Assert-Equal 'rd_preboom_chosen_boot_uuid' $summary.ios_root_device_selection.CHOSEN_BOOT_UUID 'ABSENT'
+Assert-Equal 'rd_preboom_chosen_boot_device' $summary.ios_root_device_selection.CHOSEN_BOOT_DEVICE 'ABSENT'
+Assert-Equal 'rd_preboom_options_bootargs' $summary.ios_root_device_selection.OPTIONS_BOOTARGS 'ABSENT'
+
+foreach ($flag in @(
+    'IOS_ROOT_DEVICE_SELECTION_INPUT_IDENTITY_PASS',
+    'IOS_ROOT_DEVICE_SELECTION_MOUNTROOT_ENTRY_RESOLVED_PASS',
+    'IOS_ROOT_DEVICE_SELECTION_STRING_XREFS_PASS',
+    'IOS_ROOT_DEVICE_SELECTION_PRECEDENCE_AUDIT_PASS',
+    'IOS_ROOT_DEVICE_SELECTION_DEVICE_TREE_AUDIT_PASS',
+    'IOS_ROOT_DEVICE_SELECTION_BOOT_ARGS_ABSENT_PASS',
+    'IOS_ROOT_DEVICE_SELECTION_FALLBACK_PATH_PROVEN_PASS'
+)) {
+    $val = $summary.ios_root_device_selection.$flag
+    if ($val -ne $true) {
+        Write-Host "MISMATCH root-device gate flag false/missing: $flag = $val"
+        $script:failures++
+    } else {
+        Write-Host "OK $flag"
+    }
+}
+
+Assert-Equal 'rd_mountroot_pc' $rd.mountroot_entry.function_pc '0xfffffff00ab96a38'
+Assert-Equal 'rd_mountroot_prologue' $rd.mountroot_entry.prologue_instruction 'pacibsp'
+Assert-Equal 'rd_string_page' $rd.string_xrefs.string_page '0xfffffff0070b9000'
+Assert-Equal 'rd_adrp_count' $rd.string_xrefs.total_adrp_instructions_scanned 643480
+Assert-Equal 'rd_adrp_add_pairs' $rd.string_xrefs.total_adrp_add_pairs_resolving_to_string_page 255
+if ($rd.string_xrefs.mountroot_strings.Count -lt 17) {
+    Write-Host 'MISMATCH root-device mountroot string xref count below required floor'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_mountroot_string_count'
+}
+
+foreach ($requiredString in @(
+    'IOKitBSDInit.cpp',
+    'rooting via boot-uuid from /chosen: %s',
+    'boot-uuid-media',
+    'IOMedia',
+    'Apple_HFS',
+    'Got boot device = %s',
+    'BSD root: %s'
+)) {
+    $hit = $rd.string_xrefs.mountroot_strings | Where-Object { $_.string -eq $requiredString }
+    if (-not $hit) {
+        Write-Host "MISMATCH root-device required string xref missing: $requiredString"
+        $script:failures++
+    } else {
+        Write-Host "OK rd_string_xref: $requiredString"
+    }
+}
+
+Assert-Equal 'rd_fixture' $rd.input_identity.fixture 'iPhone15,4 / iOS 27.0 / 24A437 / d37ap / t8120'
+if ($rd.input_identity.bootkc_sha256 -notmatch '^[0-9a-f]{64}$' -or
+    $rd.input_identity.dtree_raw_sha256 -notmatch '^[0-9a-f]{64}$' -or
+    $rd.input_identity.dtree_booted_sha256 -notmatch '^[0-9a-f]{64}$') {
+    Write-Host 'MISMATCH root-device input identity SHA-256 invalid'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_input_identity_sha_format'
+}
+
+Assert-Equal 'rd_auth_boot_uuid' $rd.device_tree_audit.authoritative_tree.chosen_boot_uuid 'ABSENT'
+Assert-Equal 'rd_auth_boot_device' $rd.device_tree_audit.authoritative_tree.chosen_boot_device 'ABSENT'
+Assert-Equal 'rd_auth_options_bootargs' $rd.device_tree_audit.authoritative_tree.options_bootargs 'ABSENT'
+Assert-Equal 'rd_booted_boot_uuid' $rd.device_tree_audit.booted_tree.chosen_boot_uuid 'ABSENT'
+Assert-Equal 'rd_booted_boot_device' $rd.device_tree_audit.booted_tree.chosen_boot_device 'ABSENT'
+Assert-Equal 'rd_booted_options_bootargs' $rd.device_tree_audit.booted_tree.options_bootargs 'ABSENT'
+
+Assert-Equal 'rd_claim_runtime_boot' $rd.not_claimed.runtime_boot_observation 'NOT_RUN'
+Assert-Equal 'rd_claim_role_runtime' $rd.not_claimed.apfs_container_role_resolution_runtime_proof 'NOT_RUN'
+Assert-Equal 'rd_claim_snapshot_runtime' $rd.not_claimed.apfs_snapshot_boot_runtime_proof 'NOT_RUN'
+Assert-Equal 'rd_claim_root_shell' $rd.not_claimed.root_shell 'NOT_PROVEN'
+
+# 57ZL: PASS_CLOSED must not be asserted while any runtime proof remains NOT_RUN
+if ($rd.certified -eq 'PASS_CLOSED') {
+    foreach ($nc in $rd.not_claimed.PSObject.Properties) {
+        if ($nc.Value -notin @('NOT_RUN', 'NOT_PROVEN', 'NOT_TESTED')) {
+            Write-Host "MISMATCH root-device not_claimed has unexpected active value: $($nc.Name) = $($nc.Value)"
+            $script:failures++
+        }
+    }
+    Write-Host 'OK rd_pass_closed_scope_guard'
+}
+
+& python (Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py') $rdPath
+if ($LASTEXITCODE -ne 0) {
+    Write-Host 'MISMATCH root-device artifact duplicate keys'
+    $script:failures++
+} else {
+    Write-Host 'OK IOS_ROOT_DEVICE_SELECTION_DURABLE_JSON_UNIQUE'
 }
 
 if ($script:failures -gt 0) {

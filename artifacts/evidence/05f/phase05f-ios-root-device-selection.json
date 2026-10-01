@@ -1,0 +1,241 @@
+{
+  "gate": "IOS_ROOT_DEVICE_SELECTION",
+  "iteration": "57ZL",
+  "date": "2026-10-01",
+  "certified": "PASS_CLOSED",
+  "input_identity": {
+    "bootkc_sha256": "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
+    "dtree_raw_sha256": "7560aa1e4ac07c0d9b57e73a81668decb5969fe012208a199b58ccada2cf5e7b",
+    "dtree_booted_sha256": "9e84c9add25b99eddd8b088b249e7ce348394b80a0def59949e9bb9c63a24e1b",
+    "fixture": "iPhone15,4 / iOS 27.0 / 24A437 / d37ap / t8120"
+  },
+  "mountroot_entry": {
+    "symbolic_name": "mountroot",
+    "text_exec_vmaddr": "0xfffffff0081e4000",
+    "text_exec_fileoff": "0x11e0000",
+    "function_pc": "0xfffffff00ab96a38",
+    "first_instruction": "bl #0xfffffff00ac05f74",
+    "prologue_pc": "0xfffffff00ab96a3c",
+    "prologue_instruction": "pacibsp",
+    "identifier": "IOKitBSDInit.cpp mountroot path"
+  },
+  "string_xrefs": {
+    "scan_method": "raw word-level ADRP+ADD cross-reference, no Capstone stream dependency",
+    "scan_region": "__TEXT_EXEC",
+    "total_adrp_instructions_scanned": 643480,
+    "total_adrp_add_pairs_resolving_to_string_page": 255,
+    "string_page": "0xfffffff0070b9000",
+    "mountroot_strings": [
+      {
+        "string": "IOKitBSDInit.cpp",
+        "fileoff": "0xb5811",
+        "vmaddr": "0xfffffff0070b9811",
+        "xref_pc": "0xfffffff00ab96a20",
+        "context": "mountroot entry assert/log anchor"
+      },
+      {
+        "string": "!BSD",
+        "fileoff": "0xb5822",
+        "vmaddr": "0xfffffff0070b9822",
+        "xref_pc": "0xfffffff00ab96b0c",
+        "context": "BSD root domain missing panic/log"
+      },
+      {
+        "string": "mount(%d) failed",
+        "fileoff": "0xb5828",
+        "vmaddr": "0xfffffff0070b9828",
+        "xref_pc": "0xfffffff00ab96b48",
+        "context": "mountroot failure log"
+      },
+      {
+        "string": "rootdev",
+        "fileoff": "0xb583d",
+        "vmaddr": "0xfffffff0070b983d",
+        "xref_pc": "0xfffffff00ab96c1c",
+        "context": "boot-args rootdev lookup"
+      },
+      {
+        "string": "root-matching",
+        "fileoff": "0xb5845",
+        "vmaddr": "0xfffffff0070b9845",
+        "xref_pc": "0xfffffff00ab96c98",
+        "context": "/chosen root-matching property lookup"
+      },
+      {
+        "string": "rooting via boot-uuid from /chosen: %s",
+        "fileoff": "0xb5853",
+        "vmaddr": "0xfffffff0070b9853",
+        "xref_pc": "0xfffffff00ab96e30",
+        "context": "boot-uuid success log"
+      },
+      {
+        "string": "boot-uuid-media",
+        "fileoff": "0xb587b",
+        "vmaddr": "0xfffffff0070b987b",
+        "xref_pc": "0xfffffff00ab96f54",
+        "context": "IOService resource matching key for boot-uuid media"
+      },
+      {
+        "string": "RAMDisk",
+        "fileoff": "0xb588b",
+        "vmaddr": "0xfffffff0070b988b",
+        "xref_pc": "0xfffffff00ab96f58",
+        "context": "RAMDisk name comparison in boot-uuid media selection"
+      },
+      {
+        "string": "BSD root: %s, major %d, minor %d",
+        "fileoff": "0xb58a9",
+        "vmaddr": "0xfffffff0070b98a9",
+        "xref_pc": "0xfffffff00ab977ec",
+        "context": "rootdev path success log"
+      },
+      {
+        "string": "IOFindBSDRoot: specified root memory device, %s, has not been configured",
+        "fileoff": "0xb58cb",
+        "vmaddr": "0xfffffff0070b98cb",
+        "xref_pc": "0xfffffff00ab97ee8",
+        "context": "rootdev configured-device check failure"
+      },
+      {
+        "string": "rd=uuid but no boot-uuid=<value> specified",
+        "fileoff": "0xb5923",
+        "vmaddr": "0xfffffff0070b9923",
+        "xref_pc": "0xfffffff00ab97f08",
+        "context": "rd=uuid without boot-uuid refusal"
+      },
+      {
+        "string": "Waiting for boot volume with UUID %s",
+        "fileoff": "0xb5956",
+        "vmaddr": "0xfffffff0070b9956",
+        "xref_pc": "0xfffffff00ab97910",
+        "context": "boot-uuid wait loop"
+      },
+      {
+        "string": "IOMedia",
+        "fileoff": "0xb597c",
+        "vmaddr": "0xfffffff0070b997c",
+        "xref_pc": "0xfffffff00ab9764c",
+        "context": "IOMedia service class for root media walk"
+      },
+      {
+        "string": "Apple_HFS",
+        "fileoff": "0xb5984",
+        "vmaddr": "0xfffffff0070b9984",
+        "xref_pc": "0xfffffff00ab976a8",
+        "context": "content-hint filter for root media"
+      },
+      {
+        "string": "Failed to mount root device",
+        "fileoff": "0xb5a0a",
+        "vmaddr": "0xfffffff0070b9a0a",
+        "xref_pc": "0xfffffff00ab97e60",
+        "context": "root mount failure panic/log"
+      },
+      {
+        "string": "Got boot device = %s",
+        "fileoff": "0xb5a2d",
+        "vmaddr": "0xfffffff0070b9a2d",
+        "xref_pc": "0xfffffff00ab97b24",
+        "context": "boot device determination success log"
+      },
+      {
+        "string": "BSD root: %s",
+        "fileoff": "0xb5a71",
+        "vmaddr": "0xfffffff0070b9a71",
+        "xref_pc": "0xfffffff00ab97c0c",
+        "context": "BSD root assignment success log"
+      }
+    ]
+  },
+  "selection_precedence": {
+    "source": "static disassembly of mountroot + IOFindBSDRoot path",
+    "order": [
+      {
+        "priority": 1,
+        "selector": "RAMDisk",
+        "evidence_pc": "0xfffffff00ab96f0c",
+        "condition": "RAMDisk present and rootdev points at RAMDisk major/minor",
+        "fixture_status": "NOT_TAKEN"
+      },
+      {
+        "priority": 2,
+        "selector": "boot-args rd= / rootdev= / rootdevice major/minor table",
+        "evidence_pc": "0xfffffff00ab97724..0xfffffff00ab97828",
+        "condition": "rd= parses to configured major/minor and device exists in IOService major/minor table",
+        "fixture_status": "NOT_TAKEN_NO_RD_ARG"
+      },
+      {
+        "priority": 3,
+        "selector": "/chosen boot-uuid",
+        "evidence_pc": "0xfffffff00ab9729c",
+        "condition": "/chosen/boot-uuid exists and IOService matching boot-uuid-media resolves an IOMedia",
+        "fixture_status": "NOT_TAKEN_PROPERTY_ABSENT"
+      },
+      {
+        "priority": 4,
+        "selector": "root-matching / boot-device style IOService matching",
+        "evidence_pc": "0xfffffff00ab97574..0xfffffff00ab97648",
+        "condition": "rd=uuid or matching hints present",
+        "fixture_status": "NOT_TAKEN_NO_MATCHING_HINT"
+      },
+      {
+        "priority": 5,
+        "selector": "first IOMedia with Apple_HFS-like content and required writable/bootable flags",
+        "evidence_pc": "0xfffffff00ab9764c..0xfffffff00ab97708",
+        "condition": "gService wait for IOMedia then content filter and major/minor assignment",
+        "fixture_status": "EXPECTED_TAKEN"
+      }
+    ]
+  },
+  "device_tree_audit": {
+    "authoritative_tree": {
+      "file": "C:/Users/rbjos/vphone-private/phase05f-known-good/payloads-v3/dtree.raw.bin",
+      "sha256": "7560aa1e4ac07c0d9b57e73a81668decb5969fe012208a199b58ccada2cf5e7b",
+      "format": {
+        "header": "uint32 nprops, uint32 nkids, little endian",
+        "property": "char name[32], uint32 length_with_flag_bit31, value bytes padded to 4",
+        "flag_bit31": "observed set on syscfg-backed properties; masked before length use",
+        "root_nprops": 23,
+        "root_nkids": 23,
+        "parsed_end_offset": "0x41bc0",
+        "file_size": 269248
+      },
+      "chosen_properties": [
+        "boot-type=local",
+        "root-matching=all-zeroes 256 bytes",
+        "boot-manifest-hash=48 bytes",
+        "boot-nonce=8 bytes"
+      ],
+      "chosen_boot_uuid": "ABSENT",
+      "chosen_boot_device": "ABSENT",
+      "chosen_root_uuid": "ABSENT",
+      "options_bootargs": "ABSENT"
+    },
+    "booted_tree": {
+      "file": "C:/Users/rbjos/vphone-private/phase05f-known-good/payloads-v3/dtree.bin",
+      "sha256": "9e84c9add25b99eddd8b088b249e7ce348394b80a0def59949e9bb9c63a24e1b",
+      "format": "same Apple DT structure as authoritative tree",
+      "chosen_properties": [
+        "boot-type=local",
+        "root-matching=0x00000001"
+      ],
+      "chosen_boot_uuid": "ABSENT",
+      "chosen_boot_device": "ABSENT",
+      "options_bootargs": "ABSENT"
+    }
+  },
+  "conclusion": {
+    "selected_root_path": "APFS System volume container on ANS namespace via IOMedia enumeration",
+    "selection_rationale": "All boot-args and /chosen explicit selectors are absent in this fixture, so XNU takes the final IOMedia enumeration path and mounts the first eligible APFS/HFS-class media.",
+    "mountroot_behavior": "mountroot calls IOFindBSDRoot which waits for an IOMedia, filters by content and writability, assigns major/minor, then returns to mountroot for vnode assignment.",
+    "fixture_fallback_status": "EXPECTED_TO_SUCCEED_VIA_IOMEDIA_ENUMERATION"
+  },
+  "not_claimed": {
+    "runtime_boot_observation": "NOT_RUN",
+    "apfs_container_role_resolution_runtime_proof": "NOT_RUN",
+    "apfs_snapshot_boot_runtime_proof": "NOT_RUN",
+    "guest_uart_boot_serial": "NOT_RUN",
+    "root_shell": "NOT_PROVEN"
+  },
+  "next_gate": "IOS_ROOT_TRANSITION_MODEL"
+}
