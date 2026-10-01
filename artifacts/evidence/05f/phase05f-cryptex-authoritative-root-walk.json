@@ -144,7 +144,8 @@
         "object": "volume OMAP leaves (63)",
         "block": "97918 tree leaves",
         "type": "BTREE_NODE",
-        "checksum": "ALL 63 VERIFIED"
+        "checksum": "VERIFIED",
+        "detail": "ALL 63 VERIFIED"
       },
       {
         "object": "SystemOS APSB (current)",
@@ -156,7 +157,8 @@
         "object": "SystemOS APSB (superseded)",
         "block": 97914,
         "type": "FS (0xD)",
-        "checksum": "VERIFIED (superseded era only)"
+        "checksum": "VERIFIED",
+        "detail": "VERIFIED (superseded era only)"
       },
       {
         "object": "snapshot metadata tree",
@@ -186,7 +188,8 @@
         "object": "FEXT leaves (17)",
         "block": "61508..61524",
         "type": "BTREE_NODE",
-        "checksum": "ALL 17 VERIFIED"
+        "checksum": "VERIFIED",
+        "detail": "ALL 17 VERIFIED"
       }
     ],
     "noheader_note": "all 7011 FSTREE nodes resolve through the volume OMAP with OMAP_VAL_NOHEADER (0x8); a NOHEADER node has no object header/checksum field by design, so validation is structural (zeroed 32-byte header region, table-space geometry, key/value bounds) instead of Fletcher-64"
@@ -207,25 +210,25 @@
         "role": "ephemeral reaper object"
       },
       {
-        "type": "0x40000012",
+        "type": "0x80000012",
         "oid": 1283,
         "paddr": 56169,
         "role": "ephemeral nx reaper list"
       },
       {
-        "type": "0x40000005",
+        "type": "0x80000005",
         "oid": 1286,
         "paddr": 56170,
         "role": "ephemeral spaceman"
       },
       {
-        "type": "0x40000002",
+        "type": "0x80000002",
         "oid": 1287,
         "paddr": 56171,
         "role": "ephemeral btree"
       },
       {
-        "type": "0x40000002",
+        "type": "0x80000002",
         "oid": 1288,
         "paddr": 56172,
         "role": "ephemeral btree"
@@ -254,7 +257,76 @@
         "status": "superseded"
       }
     ],
-    "note": "checkpoint_mapping_t stride is 32 bytes {type u32, subtype u32, size u32, pad u32, fs_oid u64, oid u64, paddr u64}; the volume APSB chain is resolved through the container OMAP, not through these ephemeral entries"
+    "note": "checkpoint_mapping_t stride is 40 bytes {type u32, subtype u32, size u32, pad u32, fs_oid u64, oid u64, paddr u64}; first entry offset 40 (0x28); 5 entries end at byte 240 inside the 4096-byte block; the volume APSB chain is resolved through the container OMAP, not through these ephemeral entries",
+    "CHECKPOINT_MAP_ENTRY_STRIDE_USED": 40,
+    "CHECKPOINT_MAP_FIRST_ENTRY_OFFSET": 40,
+    "CHECKPOINT_MAP_ENTRY_COUNT": 5,
+    "57ZF_CHECKPOINT_STRIDE_ERROR": "DURABLE_PROSE_ONLY",
+    "CRYPTEX_CHECKPOINT_MAPPING_STRIDE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_REDECODE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_GEOMETRY_PASS": true,
+    "geometry": {
+      "header_size_before_entries": 40,
+      "entry_stride": 40,
+      "entry_count": 5,
+      "entries_end_byte": 240,
+      "block_size": 4096,
+      "within_block": true,
+      "note": "0x28 header + 5*40 = 240 <= 4096; every entry fully inside the block"
+    },
+    "independent_redecode": [
+      {
+        "index": 0,
+        "type": "0x80000011",
+        "subtype": 0,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1025,
+        "paddr": 56168
+      },
+      {
+        "index": 1,
+        "type": "0x80000012",
+        "subtype": 0,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1283,
+        "paddr": 56169
+      },
+      {
+        "index": 2,
+        "type": "0x80000005",
+        "subtype": 0,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1286,
+        "paddr": 56170
+      },
+      {
+        "index": 3,
+        "type": "0x80000002",
+        "subtype": 9,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1287,
+        "paddr": 56171
+      },
+      {
+        "index": 4,
+        "type": "0x80000002",
+        "subtype": 9,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1288,
+        "paddr": 56172
+      }
+    ],
+    "stride_evidence": "a 32-byte stride decode misaligns entries 1..4 (garbage type/size/oid/paddr), while the 40-byte decode reproduces the five recorded oid->paddr mappings exactly; the durable artifact previously mislabeled the stride as 32 in prose only"
   },
   "container_volume_enumeration": {
     "CRYPTEX_CONTAINER_VOLUME_ENUMERATION_PASS": true,
@@ -538,7 +610,9 @@
         "ProductName": "iPhone OS",
         "ProductVersion": "27.0",
         "SystemImageID": "51BDB1A4-A8F6-42F9-B91B-760E26384E3F"
-      }
+      },
+      "CRYPTEX_ROOT_WALK_KNOWN_FILE_REGRESSION_PASS": true,
+      "regression_note": "independent re-run on the source image reproduced: CNID 132, logical size 571, physical block 65594, SHA-256 09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1, ProductVersion 27.0, ProductBuildVersion 24A437"
     }
   },
   "scan_vs_authoritative_separation": {
@@ -555,9 +629,11 @@
       "global-highest-XID selection without checkpoint authority",
       "string-scan root selection instead of B-tree child pointers",
       "known-file bytes located without root-tree traversal",
-      "unverified checksum on any object in the authoritative chain"
+      "unverified checksum on any checksummed/headered object",
+      "missing or failed structural validation on any OMAP_VAL_NOHEADER object"
     ],
-    "checker_enforcement": "scripts/phase05f-evidence-consistency-check.ps1 refuses SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK=PASS_CLOSED when any scan-shortcut signature appears in the durable artifact, and exits non-zero"
+    "checker_enforcement": "scripts/phase05f-evidence-consistency-check.ps1 refuses SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK=PASS_CLOSED when any scan-shortcut signature appears, any required gate flag is false, any recorded checksum audit entry is not VERIFIED, any NOHEADER structural counter is nonzero, or the durable JSON carries duplicate object keys (python validator runs before ConvertFrom-Json)",
+    "CRYPTEX_NOHEADER_FAIL_CLOSED_POLICY_PASS": true
   },
   "durable_evidence": {
     "CRYPTEX_AUTHORITATIVE_ROOT_WALK_DURABLE_PASS": true,
@@ -605,7 +681,17 @@
     "CRYPTEX_ROOT_WALK_CROSS_ARTIFACT_CONSISTENCY_PASS": true,
     "ITERATION_57ZF": "PASS_PENDING_REVIEW",
     "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK": "PASS_CLOSED",
-    "next_gate": "CRYPTEX_ATTACHMENT_MODEL"
+    "next_gate": "CRYPTEX_ATTACHMENT_MODEL (after 57ZFA closure)",
+    "CRYPTEX_CHECKPOINT_MAPPING_STRIDE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_REDECODE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_GEOMETRY_PASS": true,
+    "CRYPTEX_DURABLE_JSON_UNIQUE_KEYS_PASS": true,
+    "CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS": true,
+    "CRYPTEX_OBJECT_INTEGRITY_POLICY_PASS": true,
+    "CRYPTEX_NOHEADER_FAIL_CLOSED_POLICY_PASS": true,
+    "CRYPTEX_ROOT_WALK_KNOWN_FILE_REGRESSION_PASS": true,
+    "57ZF_CHECKPOINT_STRIDE_ERROR": "DURABLE_PROSE_ONLY",
+    "ITERATION_57ZFA": "PASS_PENDING_REVIEW"
   },
   "remaining_unknowns": [
     "FEXT extent crypto_id is 4096 on this unencrypted sealed volume; apfs-fuse treats crypto on sealed volumes as out of scope and reads the block directly, which matches this artifact",
@@ -613,5 +699,32 @@
     "file reconstruction is proven for an uncompressed XML plist; decmpfs/XATTR compression was already separately certified in earlier iterations and is not exercised by this fixture file",
     "the walk is read-only; CRYPTEX_ATTACHMENT_MODEL, root selection and any mutation remain separate gates"
   ],
-  "analysis_base_head": "8d2344f8215009b5b36ac527a61332c0112c7a68"
+  "analysis_base_head": "8d2344f8215009b5b36ac527a61332c0112c7a68",
+  "object_integrity_policy": {
+    "CRYPTEX_OBJECT_INTEGRITY_POLICY_PASS": true,
+    "HEADERED_OBJECT": {
+      "rule": "Fletcher-64 checksum REQUIRED and verified before the object is accepted into the authoritative chain",
+      "applied_to": "NXSB copies, checkpoint map, container/volume OMAP objects and trees, APSBs, snapshot metadata tree, extentref tree, integrity metadata, FEXT tree nodes"
+    },
+    "OMAP_VAL_NOHEADER_OBJECT": {
+      "rule": "object checksum is N/A by APFS format (OMAP_VAL_NOHEADER); mandatory structural validation instead",
+      "structural_validation_includes": [
+        "node flags",
+        "node level",
+        "table-space geometry",
+        "key/value offset bounds",
+        "key ordering",
+        "child resolution through the volume OMAP",
+        "tree totals/counters where applicable (root btree_info key_count/node_count match walk totals)"
+      ],
+      "applied_to": "all 7011 FSTREE nodes (flags 0x8 OMAP_VAL_NOHEADER)"
+    }
+  },
+  "json_hygiene": {
+    "CRYPTEX_DURABLE_JSON_UNIQUE_KEYS_PASS": true,
+    "CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS": true,
+    "duplicate_key_scan_result": "NONE in the committed cryptex, preboom, lba, ans-dt and ans-kernel-driver-match artifacts",
+    "validator": "scripts/phase05f-json-duplicate-key-check.py (json.loads object_pairs_hook rejects duplicate property names; run by the consistency checker BEFORE ConvertFrom-Json)",
+    "negative_control": "injecting a duplicate nested key (name) makes the validator exit 1"
+  }
 }

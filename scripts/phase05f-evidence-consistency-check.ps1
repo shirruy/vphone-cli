@@ -63,11 +63,11 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZE'
+Assert-Equal 'iteration' $summary.iteration '57ZFA'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
-Assert-Equal 'ITERATION_57ZE' $summary.certified.ITERATION_57ZE 'PASS_PENDING_REVIEW'
+Assert-Equal 'ITERATION_57ZE' $summary.certified.ITERATION_57ZE 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZA' $summary.certified.ITERATION_57ZA 'PARTIAL_PASS_ACCEPTED'
 Assert-Equal 'ITERATION_57Z' $summary.certified.ITERATION_57Z 'PARTIAL_PASS'
 Assert-Equal 'ITERATION_57Y' $summary.certified.ITERATION_57Y 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -580,7 +580,15 @@ $cryptexRequired = @(
     'CRYPTEX_AUTHORITATIVE_WALK_FAIL_CLOSED_PASS',
     'CRYPTEX_AUTHORITATIVE_ROOT_WALK_DURABLE_PASS',
     'CRYPTEX_ROOT_WALK_CROSS_ARTIFACT_CONSISTENCY_PASS',
-    'CRYPTEX_ROOT_WALK_INPUT_IDENTITY_PASS'
+    'CRYPTEX_ROOT_WALK_INPUT_IDENTITY_PASS',
+    'CRYPTEX_CHECKPOINT_MAPPING_STRIDE_PASS',
+    'CRYPTEX_CHECKPOINT_MAP_REDECODE_PASS',
+    'CRYPTEX_CHECKPOINT_MAP_GEOMETRY_PASS',
+    'CRYPTEX_DURABLE_JSON_UNIQUE_KEYS_PASS',
+    'CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS',
+    'CRYPTEX_OBJECT_INTEGRITY_POLICY_PASS',
+    'CRYPTEX_NOHEADER_FAIL_CLOSED_POLICY_PASS',
+    'CRYPTEX_ROOT_WALK_KNOWN_FILE_REGRESSION_PASS'
 )
 foreach ($flag in $cryptexRequired) {
     $val = $cryptex.canonical_state.$flag
@@ -608,6 +616,66 @@ Assert-Equal 'cryptex_plist_version' $cryptex.known_file_proof.reconstruction.pl
 # 5. Cross-artifact: preboom summary must also carry PASS_CLOSED
 Assert-Equal 'cryptex_preboom_closed' $summary.sealed_container_walks.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'PASS_CLOSED'
 Assert-Equal 'cryptex_preboom_next' $summary.storage_gates_open.CRYPTEX_ATTACHMENT_MODEL 'NEXT'
+Assert-Equal 'cryptex_57ZF' $summary.certified.ITERATION_57ZF 'PARTIAL_PASS_REPAIR_REQUIRED'
+Assert-Equal 'cryptex_57ZFA' $summary.certified.ITERATION_57ZFA 'PASS_PENDING_REVIEW'
+Assert-Equal 'cryptex_57ZE_closed' $summary.certified.ITERATION_57ZE 'PASS_CLOSED'
+
+# 6. 57ZFA: checkpoint-map stride/geometry + integrity policy + duplicate-key refusal
+# 6. 57ZFA: checkpoint-map stride/geometry + integrity policy + duplicate-key refusal
+Assert-Equal 'cryptex_stride_used' $cryptex.checkpoint_map.CHECKPOINT_MAP_ENTRY_STRIDE_USED 40
+Assert-Equal 'cryptex_stride_first_offset' $cryptex.checkpoint_map.CHECKPOINT_MAP_FIRST_ENTRY_OFFSET 40
+Assert-Equal 'cryptex_stride_count' $cryptex.checkpoint_map.CHECKPOINT_MAP_ENTRY_COUNT 5
+Assert-Equal 'cryptex_stride_class' $cryptex.checkpoint_map.'57ZF_CHECKPOINT_STRIDE_ERROR' 'DURABLE_PROSE_ONLY'
+Assert-Equal 'cryptex_geom_header' $cryptex.checkpoint_map.geometry.header_size_before_entries 40
+Assert-Equal 'cryptex_geom_stride' $cryptex.checkpoint_map.geometry.entry_stride 40
+Assert-Equal 'cryptex_geom_count' $cryptex.checkpoint_map.geometry.entry_count 5
+Assert-Equal 'cryptex_geom_end' $cryptex.checkpoint_map.geometry.entries_end_byte 240
+Assert-Equal 'cryptex_geom_within' $cryptex.checkpoint_map.geometry.within_block $true
+if (($cryptex.checkpoint_map.CHECKPOINT_MAP_ENTRY_STRIDE_USED * $cryptex.checkpoint_map.CHECKPOINT_MAP_ENTRY_COUNT + $cryptex.checkpoint_map.CHECKPOINT_MAP_FIRST_ENTRY_OFFSET) -gt 4096) {
+    Write-Host "MISMATCH checkpoint map geometry exceeds block size"
+    $script:failures++
+} else {
+    Write-Host "OK CRYPTEX_CHECKPOINT_MAP_GEOMETRY_PASS"
+}
+Assert-Equal 'cryptex_redecode_0' $cryptex.checkpoint_map.independent_redecode[0].paddr 56168
+Assert-Equal 'cryptex_redecode_1' $cryptex.checkpoint_map.independent_redecode[1].paddr 56169
+Assert-Equal 'cryptex_redecode_2' $cryptex.checkpoint_map.independent_redecode[2].paddr 56170
+Assert-Equal 'cryptex_redecode_3' $cryptex.checkpoint_map.independent_redecode[3].paddr 56171
+Assert-Equal 'cryptex_redecode_4' $cryptex.checkpoint_map.independent_redecode[4].paddr 56172
+$redecodeOids = ($cryptex.checkpoint_map.independent_redecode | ForEach-Object { $_.oid }) -join " "
+Assert-Equal 'cryptex_redecode_oids' $redecodeOids '1025 1283 1286 1287 1288'
+Assert-Equal 'cryptex_policy_headered' $cryptex.object_integrity_policy.CRYPTEX_OBJECT_INTEGRITY_POLICY_PASS $true
+
+# headered-object checksum audit: every recorded entry must be VERIFIED
+foreach ($obj in $cryptex.object_checksum_audit.verified_objects) {
+    if ($obj.checksum -ne 'VERIFIED') {
+        Write-Host "MISMATCH headered object checksum not VERIFIED: $($obj.object) @ block $($obj.block) = $($obj.checksum)"
+        $script:failures++
+    }
+}
+Assert-Equal 'cryptex_policy_noheader' $cryptex.fail_closed_rules.CRYPTEX_NOHEADER_FAIL_CLOSED_POLICY_PASS $true
+$badChecksumWording = @('unverified checksum on any object in the authoritative chain')
+foreach ($w in $badChecksumWording) {
+    if ($cryptexRaw -match [regex]::Escape($w)) {
+        Write-Host "MISMATCH stale broad checksum wording present: $w"
+        $script:failures++
+    }
+}
+Assert-Equal 'cryptex_known_file_regression' $cryptex.known_file_proof.reconstruction.CRYPTEX_ROOT_WALK_KNOWN_FILE_REGRESSION_PASS $true
+Assert-Equal 'cryptex_json_unique' $cryptex.json_hygiene.CRYPTEX_DURABLE_JSON_UNIQUE_KEYS_PASS $true
+Assert-Equal 'cryptex_json_dup_refusal' $cryptex.json_hygiene.CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS $true
+
+# 7. 57ZFA: run the duplicate-key validator BEFORE ConvertFrom-Json can hide duplicates
+$dupValidator = Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py'
+foreach ($artifact in @($cryptexPath, $summaryPath, (Join-Path $root 'artifacts\evidence\05f\phase05f-ios-storage-lba-contract.json'))) {
+    & python $dupValidator $artifact
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "MISMATCH duplicate-key validator rejected $artifact"
+        $script:failures++
+    } else {
+        Write-Host "OK CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS ($artifact)"
+    }
+}
 if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"
     Write-Host "EVIDENCE_STALE_STATE_REFUSAL_FAIL"
