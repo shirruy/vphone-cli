@@ -1,6 +1,6 @@
 {
   "gate": "IOS_ROOT_DEVICE_SELECTION",
-  "iteration": "57ZM",
+  "iteration": "57ZN",
   "date": "2026-10-01",
   "certified": "PARTIAL_PASS_REPAIR_REQUIRED",
   "input_identity": {
@@ -147,46 +147,6 @@
       }
     ]
   },
-  "selection_precedence": {
-    "source": "static disassembly of mountroot + IOFindBSDRoot path",
-    "order": [
-      {
-        "priority": 1,
-        "selector": "RAMDisk",
-        "evidence_pc": "0xfffffff00ab96f0c",
-        "condition": "RAMDisk present and rootdev points at RAMDisk major/minor",
-        "fixture_status": "NOT_TAKEN"
-      },
-      {
-        "priority": 2,
-        "selector": "boot-args rd= / rootdev= / rootdevice major/minor table",
-        "evidence_pc": "0xfffffff00ab97724..0xfffffff00ab97828",
-        "condition": "rd= parses to configured major/minor and device exists in IOService major/minor table",
-        "fixture_status": "NOT_TAKEN_NO_RD_ARG"
-      },
-      {
-        "priority": 3,
-        "selector": "/chosen boot-uuid",
-        "evidence_pc": "0xfffffff00ab9729c",
-        "condition": "/chosen/boot-uuid exists and IOService matching boot-uuid-media resolves an IOMedia",
-        "fixture_status": "NOT_TAKEN_PROPERTY_ABSENT"
-      },
-      {
-        "priority": 4,
-        "selector": "root-matching / boot-device style IOService matching",
-        "evidence_pc": "0xfffffff00ab97574..0xfffffff00ab97648",
-        "condition": "rd=uuid or matching hints present",
-        "fixture_status": "NOT_TAKEN_NO_MATCHING_HINT"
-      },
-      {
-        "priority": 5,
-        "selector": "first IOMedia with Apple_HFS-like content and required writable/bootable flags",
-        "evidence_pc": "0xfffffff00ab9764c..0xfffffff00ab97708",
-        "condition": "gService wait for IOMedia then content filter and major/minor assignment",
-        "fixture_status": "EXPECTED_TAKEN"
-      }
-    ]
-  },
   "device_tree_audit": {
     "authoritative_tree": {
       "file": "C:/Users/rbjos/vphone-private/phase05f-known-good/payloads-v3/dtree.raw.bin",
@@ -200,35 +160,40 @@
         "parsed_end_offset": "0x41bc0",
         "file_size": 269248
       },
-      "chosen_properties": [
-        "boot-type=local",
-        "root-matching=all-zeroes 256 bytes",
-        "boot-manifest-hash=48 bytes",
-        "boot-nonce=8 bytes"
-      ],
       "chosen_boot_uuid": "ABSENT",
       "chosen_boot_device": "ABSENT",
       "chosen_root_uuid": "ABSENT",
-      "options_bootargs": "ABSENT"
+      "options_bootargs": "ABSENT",
+      "root_matching_length": 256,
+      "root_matching_bytes": "256 x 0x00",
+      "root_matching_classification": "SERIALIZED_MATCH_DATA"
     },
     "booted_tree": {
       "file": "C:/Users/rbjos/vphone-private/phase05f-known-good/payloads-v3/dtree.bin",
       "sha256": "9e84c9add25b99eddd8b088b249e7ce348394b80a0def59949e9bb9c63a24e1b",
       "format": "same Apple DT structure as authoritative tree",
-      "chosen_properties": [
-        "boot-type=local",
-        "root-matching=0x00000001"
-      ],
       "chosen_boot_uuid": "ABSENT",
       "chosen_boot_device": "ABSENT",
-      "options_bootargs": "ABSENT"
-    }
+      "options_bootargs": "ABSENT",
+      "root_matching_length": 256,
+      "root_matching_bytes": "256 x 0x00",
+      "root_matching_classification": "SERIALIZED_MATCH_DATA"
+    },
+    "historical_superseded_findings": {
+      "note": "NOT active; superseded by root_matching_semantics + device_tree_audit single state",
+      "superseded_claims": [
+        "booted root-matching = 0x00000001 (57ZL; disproven by byte audit)",
+        "selection_precedence IOMedia fallback used a non-proven classification (57ZL; replaced by PROVEN_TAKEN_STATIC)"
+      ]
+    },
+    "IOS_ROOT_MATCHING_SINGLE_STATE_PASS": true
   },
   "conclusion": {
     "selected_root_path": "MOUNTROOT_MECHANISM_STATICALLY_PROVEN; exact root media/namespace identity RUNTIME_DEFERRED",
     "selection_rationale": "all explicit selectors absent/inert in fixture; final IOMedia enumeration path is the remaining route, but the winning media/namespace cannot be named without runtime storage publication",
     "correction_vs_57ZL": "57ZL claim of a specific ANS System root selection withdrawn",
-    "root_matching_correction": "booted root-matching is 256 zero bytes, not 0x00000001"
+    "root_matching_correction": "booted root-matching is 256 zero bytes, not 0x00000001",
+    "correction_vs_57ZM": "restore NXSB block_count/xid labeling corrected; container identities separated; single-state cleanup done"
   },
   "not_claimed": {
     "runtime_boot_observation": "NOT_RUN",
@@ -239,7 +204,7 @@
     "ans_nvme_implementation": "NOT_STARTED_ITERATION_58_BLOCKED"
   },
   "next_gate": "IOS_ROOT_TRANSITION_MODEL (static investigation MAY proceed; runtime root-device certification deferred)",
-  "supersedes": "57ZL (reviewer verdict: PARTIAL_PASS_REPAIR_REQUIRED, gate reopened)",
+  "supersedes": "57ZM (reviewer verdict: PARTIAL_PASS_REPAIR_REQUIRED; evidence-certification repair)",
   "mountroot_mechanism": {
     "IOS_MOUNTROOT_SELECTION_MECHANISM_PASS": true,
     "status": "PASS_STATIC",
@@ -293,7 +258,8 @@
         "evidence": "all explicit selectors fail; final path is the only remaining route"
       }
     ],
-    "claim_level_rule": "PROVEN_TAKEN_STATIC is static control-flow proof only; runtime confirmation remains deferred"
+    "claim_level_rule": "PROVEN_TAKEN_STATIC is static control-flow proof only; runtime confirmation remains deferred",
+    "IOS_ROOT_SELECTOR_SINGLE_STATE_PASS": true
   },
   "media_match_predicate": {
     "IOS_ROOT_IOMEDIA_MATCH_PREDICATE_PASS": true,
@@ -418,45 +384,15 @@
     "per_nsid_runtime_proof": "PENDING_RUNTIME",
     "bsd_name_assignment": "PENDING_RUNTIME"
   },
-  "system_container": {
-    "IOS_SYSTEM_APFS_CONTAINER_IDENTITY_PASS": true,
-    "authority": "prior PASS_CLOSED authoritative walks (57ZF/57ZG artifacts), re-cited here as identity evidence",
-    "cryptex_container": {
-      "nx_uuid": "bd649fe5ae104b79b7d892bb32bdef60",
-      "xid": 15,
-      "source": "phase05f-cryptex-authoritative-root-walk.json"
-    },
-    "base_container_xid": 491,
-    "note": "filename is not proof; identities come from checksum-verified authoritative metadata walks"
-  },
-  "volume_inventory": {
-    "IOS_SYSTEM_CONTAINER_VOLUME_ENUMERATION_PASS": true,
-    "base_system": {
-      "name": "Rave24A437.D37OS",
-      "uuid": "9a503cf26d7a4fdaa233600dd13b4994",
-      "role": 0,
-      "fs_flags": "0x1 UNENCRYPTED",
-      "root_tree_oid": 1028,
-      "nx_xid": 491
-    },
-    "system_cryptex": {
-      "name": "Rave24A437.D37SystemCryptex",
-      "uuid": "7f74e822669746de878e1b0172ed0eb9",
-      "role": 0,
-      "fs_flags": "0x1 UNENCRYPTED",
-      "incompat": "0x28 SEALED_VOLUME|NORMALIZATION_INSENSITIVE",
-      "root_tree_oid": 1291,
-      "nx_xid": 15
-    },
-    "note": "enumerate-both-volumes requirement satisfied by the two authoritative walks; Data volume is NOT in the decrypted System image"
-  },
   "volume_group": {
     "IOS_ROOT_VOLUME_GROUP_SELECTION_PASS": true,
     "system_volume_uuid": "9a503cf26d7a4fdaa233600dd13b4994",
     "data_volume_uuid": "STATIC_UNRESOLVED",
     "volume_group_uuid": "STATIC_UNRESOLVED",
     "missing_side": "Data volume absent from decrypted System container; pairing metadata location NOT_YET_LOCATED",
-    "scope": "identity/pairing only; Data lifecycle audit remains a separate OPEN gate"
+    "scope": "identity/pairing only; Data lifecycle audit remains a separate OPEN gate",
+    "IOS_ROOT_VOLUME_GROUP_CLAIM_LEVEL_PASS": true,
+    "claim_state": "STATIC_UNRESOLVED_RUNTIME_DEFERRED"
   },
   "boot_manifest_role": {
     "IOS_BOOT_MANIFEST_ROOT_SELECTION_ROLE_PASS": true,
@@ -470,53 +406,43 @@
     "IOS_PREBOOT_ROOT_SELECTION_METADATA_PASS": true,
     "classification": "PENDING_RUNTIME_AUDIT",
     "reason": "Preboot volume is not present in the restore fixture container; its metadata contribution to root selection cannot be audited without a normal-boot image set",
-    "not_claimed": "no Preboot root-selection contribution is claimed"
+    "not_claimed": "no Preboot root-selection contribution is claimed",
+    "IOS_PREBOOT_ROOT_SELECTION_CLAIM_LEVEL_PASS": true,
+    "claim_state": "STATIC_UNRESOLVED_RUNTIME_DEFERRED"
   },
   "root_identity_chain": {
-    "IOS_ROOT_IDENTITY_CHAIN_PASS": true,
+    "IOS_ROOT_IDENTITY_CHAIN_SINGLE_STATE_PASS": true,
+    "no_implicit_transitions": true,
     "links": [
       {
-        "link": "selector source (boot-args / /chosen)",
-        "status": "PROVEN",
-        "evidence": "all explicit selectors ABSENT/INERT in fixture"
+        "link": "selector mechanism",
+        "status": "PROVEN"
       },
       {
-        "link": "matching function (IOService matching in IOFindBSDRoot)",
-        "status": "PROVEN",
-        "evidence": "disassembly 0xfffffff00ab96a38..0xfffffff00ab98000"
+        "link": "fallback IOMedia path",
+        "status": "PROVEN_STATIC"
       },
       {
-        "link": "storage service (ANS controller)",
-        "status": "STATIC_UNRESOLVED",
-        "evidence": "controller class proven in 57Y-57ZB; instance-level match is runtime"
+        "link": "winning IOMedia instance",
+        "status": "RUNTIME_DEFERRED"
       },
       {
-        "link": "ANS namespace",
-        "status": "RUNTIME_DEFERRED",
-        "evidence": "per-NSID publication PENDING_RUNTIME"
+        "link": "winning ANS namespace",
+        "status": "RUNTIME_DEFERRED"
       },
       {
-        "link": "IOMedia/block device",
-        "status": "RUNTIME_DEFERRED",
-        "evidence": "publication chain shared-path only"
+        "link": "normal-boot base System container identity",
+        "status": "PROVEN_FROM_IMAGE"
       },
       {
-        "link": "APFS container",
-        "status": "SPLIT",
-        "evidence": "restore fixture: own ramdisk container PROVEN; normal-boot SystemOS container identities PROVEN via prior authoritative walks"
+        "link": "normal-boot System volume identity",
+        "status": "PROVEN_FROM_IMAGE"
       },
       {
-        "link": "System APSB",
-        "status": "PROVEN",
-        "evidence": "checksum-verified APSBs in 57ZF/57ZG artifacts"
-      },
-      {
-        "link": "root System volume",
-        "status": "PROVEN_FOR_IMAGES",
-        "evidence": "base 9a503cf2... / cryptex 7f74e822... identities; which one becomes root at runtime is RUNTIME_DEFERRED"
+        "link": "runtime association between winning media and that container",
+        "status": "RUNTIME_DEFERRED"
       }
-    ],
-    "no_implicit_transitions": true
+    ]
   },
   "minimum_contract": {
     "MINIMUM_IOS_ROOT_DEVICE_SELECTION_CONTRACT_PASS": true,
@@ -546,5 +472,174 @@
     "Data volume UUID and volume-group pairing metadata location",
     "Preboot metadata contribution",
     "runtime confirmation of every STATIC_UNRESOLVED / RUNTIME_DEFERRED link"
-  ]
+  ],
+  "restore_nxsb": {
+    "RESTORE_NXSB_FIELD_LAYOUT_PASS": true,
+    "RESTORE_AUTHORITATIVE_NXSB_PASS": true,
+    "RESTORE_NXSB_OBJECT_XID_PASS": true,
+    "RESTORE_NXSB_BLOCK_COUNT_PASS": true,
+    "layout_source": "canonical APFS obj_phys + nx_superblock offsets; Fletcher-64 per repo apfs_reader.cpp (sum from 0x08, c1=M-((s1+s2)%M), c2=M-((s1+c1)%M))",
+    "correction_vs_57ZM": "57ZM labeled 59392 as NXSB xid; it is nx_block_count at offset 0x28; actual object xid is at 0x10",
+    "authoritative_nxsb": {
+      "block_index": 0,
+      "file_offset": "0x0",
+      "NX_OBJECT_OID": 1,
+      "NX_OBJECT_XID": 9,
+      "type": "0x80000001 (NXSB | NONPERSISTENT)",
+      "magic": "NXSB",
+      "NX_BLOCK_SIZE": 4096,
+      "NX_BLOCK_COUNT": 59392,
+      "NX_UUID": "4ada299f-6451-4a1f-a5fe-df42ab77e45d",
+      "NX_NEXT_OID": 1297,
+      "NX_NEXT_XID": 10,
+      "checksum_valid": true
+    },
+    "checkpoint_candidates": [
+      {
+        "block_index": 2,
+        "xid": 1,
+        "block_count": 341914,
+        "checksum_valid": true
+      },
+      {
+        "block_index": 4,
+        "xid": 2,
+        "block_count": 341914,
+        "checksum_valid": true
+      },
+      {
+        "block_index": 6,
+        "xid": 3,
+        "block_count": 341914,
+        "checksum_valid": true
+      },
+      {
+        "block_index": 8,
+        "xid": 4,
+        "block_count": 341914,
+        "checksum_valid": true
+      },
+      {
+        "block_index": 10,
+        "xid": 5,
+        "block_count": 341914,
+        "checksum_valid": true
+      },
+      {
+        "block_index": 12,
+        "xid": 6,
+        "block_count": 341914,
+        "checksum_valid": true
+      },
+      {
+        "block_index": 14,
+        "xid": 7,
+        "block_count": 341914,
+        "checksum_valid": true
+      }
+    ],
+    "classification": "block 0 is the last-clean/current checkpoint (highest xid 9, checksum-valid); blocks 2..14 are older checkpoint candidates xid 1..7, all checksum-valid"
+  },
+  "container_identity": {
+    "CONTAINER_IDENTITY_SEPARATION_PASS": true,
+    "BASE_SYSTEM_CONTAINER_IDENTITY_PASS": true,
+    "SYSTEM_CRYPTEX_CONTAINER_IDENTITY_PASS": true,
+    "RESTORE_CONTAINER_IDENTITY_PASS": true,
+    "RESTORE_APFS_CONTAINER_IDENTITY_PASS": true,
+    "base_system_container": {
+      "image": "system-os-decrypted.dmg",
+      "NX_UUID": "f9023b16-bb2f-46ec-b1dc-a3c8cb4ce65b",
+      "NX_OBJECT_XID": 491,
+      "NX_OBJECT_OID": 1,
+      "NX_BLOCK_SIZE": 4096,
+      "NX_BLOCK_COUNT": 2347520,
+      "NX_NEXT_OID": 57061,
+      "NX_NEXT_XID": 492,
+      "checksum_valid": true,
+      "evidence_source": "fresh checksum-valid canonical parse of system-os-decrypted.dmg block 0 (57ZN)"
+    },
+    "system_cryptex_container": {
+      "image": "cryptex-systemos-decrypted.dmg",
+      "NX_UUID": "bd649fe5-ae10-4b79-b7d8-92bb32bdef60",
+      "NX_OBJECT_XID": 15,
+      "NX_OBJECT_OID": 1,
+      "NX_BLOCK_SIZE": 4096,
+      "NX_BLOCK_COUNT": 1468416,
+      "NX_NEXT_OID": 8302,
+      "NX_NEXT_XID": 16,
+      "checksum_valid": true,
+      "evidence_source": "fresh checksum-valid canonical parse of cryptex-systemos-decrypted.dmg block 0 (57ZN); agrees with 57ZF walk xid 15"
+    },
+    "restore_ramdisk_container": {
+      "image": "ramdisk.dmg",
+      "NX_UUID": "4ada299f-6451-4a1f-a5fe-df42ab77e45d",
+      "NX_OBJECT_XID": 9,
+      "NX_OBJECT_OID": 1,
+      "NX_BLOCK_SIZE": 4096,
+      "NX_BLOCK_COUNT": 59392,
+      "NX_NEXT_OID": 1297,
+      "NX_NEXT_XID": 10,
+      "checksum_valid": true,
+      "RESTORE_CONTAINER_UUID": "4ada299f-6451-4a1f-a5fe-df42ab77e45d",
+      "RESTORE_CONTAINER_BYTE_SIZE": 243269632,
+      "evidence_source": "fresh checksum-valid canonical parse of ramdisk.dmg block 0 (57ZN)"
+    }
+  },
+  "IOS_SYSTEM_APFS_CONTAINER_IDENTITY_PASS": true,
+  "volume_enumeration": {
+    "IOS_BASE_SYSTEM_CONTAINER_VOLUME_ENUMERATION_PASS": true,
+    "IOS_CRYPTEX_CONTAINER_VOLUME_ENUMERATION_PASS": true,
+    "IOS_RESTORE_CONTAINER_VOLUME_ENUMERATION_PASS": true,
+    "base_system_container_volumes": [
+      {
+        "name": "Rave24A437.D37OS",
+        "volume_uuid": "9a503cf26d7a4fdaa233600dd13b4994",
+        "role": 0,
+        "fs_flags": "0x1 UNENCRYPTED",
+        "root_tree_oid": 1028,
+        "proof": "checksum-verified APSB block 65536 via authoritative walk (57ZG artifact)"
+      }
+    ],
+    "cryptex_container_volumes": [
+      {
+        "name": "Rave24A437.D37SystemCryptex",
+        "volume_uuid": "7f74e822669746de878e1b0172ed0eb9",
+        "role": 0,
+        "fs_flags": "0x1 UNENCRYPTED",
+        "incompat": "0x28 SEALED_VOLUME|NORMALIZATION_INSENSITIVE",
+        "root_tree_oid": 1291,
+        "proof": "57ZF authoritative walk: NXSB xid15 -> OMAP -> APSB 97922"
+      }
+    ],
+    "restore_container_volumes": [
+      {
+        "name": "ramdisk",
+        "identity_class": "RAW_KEY8_ONLY",
+        "raw_key8": "cdf0d805dfddd318",
+        "apsb_block_rel_nx": 1461,
+        "volume_uuid_claim": "REFUSED_UNTIL_APSB_FIELD_PARSE_CERTIFIED"
+      },
+      {
+        "name": "ramdisk",
+        "identity_class": "RAW_KEY8_ONLY",
+        "raw_key8": "5846eee3deddd318",
+        "apsb_block_rel_nx": 51214,
+        "volume_uuid_claim": "REFUSED_UNTIL_APSB_FIELD_PARSE_CERTIFIED"
+      }
+    ],
+    "IOS_ROOT_VOLUME_IDENTITY_CLAIM_LEVEL_PASS": true,
+    "note": "volume counts are PROVEN_FOR_ENUMERATED_APSS; exhaustive in-container enumeration beyond these APSBs is not claimed"
+  },
+  "IOS_SYSTEM_CONTAINER_VOLUME_ENUMERATION_PASS": null,
+  "apfs_root_volume_lookup": {
+    "IOS_APFS_ROOT_VOLUME_LOOKUP_EVIDENCE_PASS": true,
+    "claim_state": "STATIC_UNRESOLVED",
+    "reason": "no durable static consumer proof for which APFS volume becomes root after media selection; deferred to runtime/storage stage"
+  },
+  "claim_layers": {
+    "IOS_ROOT_SELECTION_LAYER_SEPARATION_PASS": true,
+    "mountroot_selection_mechanism": "STATICALLY_PROVEN",
+    "normal_boot_image_container_volume_identities": "STATICALLY_PROVEN_FROM_IMAGES",
+    "runtime_winning_namespace_media_instance": "RUNTIME_DEFERRED"
+  }
 }
