@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZFA'
+Assert-Equal 'iteration' $summary.iteration '57ZG'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -615,7 +615,7 @@ Assert-Equal 'cryptex_plist_version' $cryptex.known_file_proof.reconstruction.pl
 
 # 5. Cross-artifact: preboom summary must also carry PASS_CLOSED
 Assert-Equal 'cryptex_preboom_closed' $summary.sealed_container_walks.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'PASS_CLOSED'
-Assert-Equal 'cryptex_preboom_next' $summary.storage_gates_open.CRYPTEX_ATTACHMENT_MODEL 'NEXT'
+Assert-Equal 'cryptex_preboom_next' $summary.storage_gates_open.CRYPTEX_ATTACHMENT_MODEL 'PASS_CLOSED'
 Assert-Equal 'cryptex_57ZF' $summary.certified.ITERATION_57ZF 'PASS_CLOSED'
 Assert-Equal 'cryptex_57ZFA' $summary.certified.ITERATION_57ZFA 'PASS_CLOSED'
 Assert-Equal 'cryptex_57ZE_closed' $summary.certified.ITERATION_57ZE 'PASS_CLOSED'
@@ -682,6 +682,87 @@ foreach ($artifact in @($cryptexPath, $summaryPath, (Join-Path $root 'artifacts\
         Write-Host "OK CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS ($artifact)"
     }
 }
+
+# ================= 57ZG: CRYPTEX_ATTACHMENT_MODEL =================
+$attachPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-attachment-model.json'
+$attachRaw = Get-Content $attachPath -Raw
+$attach = $attachRaw | ConvertFrom-Json
+
+# 1. Iteration + gate state
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZG'
+Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'PASS_CLOSED'
+Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'NEXT'
+Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+
+# 2. All 11 required exit flags must be true
+$attachRequired = @(
+    'CRYPTEX_ATTACHMENT_INPUT_IDENTITY_PASS',
+    'CRYPTEX_ATTACHMENT_ACTOR_PASS',
+    'CRYPTEX_ATTACHMENT_SOURCE_PASS',
+    'CRYPTEX_ATTACHMENT_TARGET_PASS',
+    'CRYPTEX_ATTACHMENT_MECHANISM_PASS',
+    'CRYPTEX_ATTACHMENT_TIMING_PASS',
+    'CRYPTEX_ATTACHMENT_METADATA_PASS',
+    'CRYPTEX_ATTACHMENT_PATH_PROVENANCE_PASS',
+    'CRYPTEX_ATTACHMENT_ORDERING_PASS',
+    'CRYPTEX_ATTACHMENT_MODEL_DURABLE_PASS',
+    'CRYPTEX_ATTACHMENT_CROSS_ARTIFACT_CONSISTENCY_PASS'
+)
+foreach ($flag in $attachRequired) {
+    $val = $attach.canonical_state.$flag
+    if ($val -ne $true) {
+        Write-Host "MISMATCH attachment gate flag false/missing: $flag = $val"
+        $script:failures++
+    } else {
+        Write-Host "OK $flag"
+    }
+}
+
+# 3. Volume identities must agree with the cryptex + preboom artifacts
+Assert-Equal 'attach_cryptex_uuid' $attach.volume_identity.system_cryptex_volume.uuid $cryptex.systemos_volume_identity.volume_uuid
+Assert-Equal 'attach_cryptex_name' $attach.volume_identity.system_cryptex_volume.name $cryptex.systemos_volume_identity.volume_name
+Assert-Equal 'attach_base_name' $attach.volume_identity.base_system_volume.name 'Rave24A437.D37OS'
+Assert-Equal 'attach_base_uuid' $attach.volume_identity.base_system_volume.uuid '9a503cf26d7a4fdaa233600dd13b4994'
+Assert-Equal 'attach_prov_sv_sha' $attach.path_provenance.example.cryptex_sha256 $cryptex.known_file_proof.reconstruction.sha256
+
+# 4. Fail-closed: attachment model must not be based on weak shortcuts
+$attachShortcuts = @(
+    'matching directory names alone',
+    'image contents alone',
+    'historical iOS behavior',
+    'public implementations without current-build evidence',
+    'guessed mount paths'
+)
+foreach ($sig in $attachShortcuts) {
+    if ($attachRaw -match [regex]::Escape("based only on") -and $attachRaw -match [regex]::Escape($sig)) {
+        # allowed only inside the explicit rejection list; verify the rejection list exists
+        if ($attach.current_build_evidence.not_used_as_proof -notcontains $sig) {
+            Write-Host "MISMATCH attachment shortcut present outside rejection list: $sig"
+            $script:failures++
+        }
+    }
+}
+$attachRejectList = $attach.current_build_evidence.not_used_as_proof
+foreach ($required in $attachShortcuts) {
+    if ($attachRejectList -notcontains $required) {
+        Write-Host "MISMATCH attachment rejection list missing: $required"
+        $script:failures++
+    }
+}
+if ($attach.current_build_evidence.CRYPTEX_ATTACHMENT_CROSS_ARTIFACT_CONSISTENCY_PASS -ne $true) {
+    Write-Host "MISMATCH attachment cross-artifact consistency flag not true"
+    $script:failures++
+}
+
+# 5. Duplicate-key validation for the attachment artifact
+& python (Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py') $attachPath
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "MISMATCH attachment artifact duplicate keys"
+    $script:failures++
+} else {
+    Write-Host "OK CRYPTEX_ATTACHMENT_DURABLE_JSON_UNIQUE"
+}
+
 if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"
     Write-Host "EVIDENCE_STALE_STATE_REFUSAL_FAIL"
