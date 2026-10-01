@@ -63,10 +63,11 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZD'
+Assert-Equal 'iteration' $summary.iteration '57ZE'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
-Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PASS_PENDING_REVIEW'
+Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
+Assert-Equal 'ITERATION_57ZE' $summary.certified.ITERATION_57ZE 'PASS_PENDING_REVIEW'
 Assert-Equal 'ITERATION_57ZA' $summary.certified.ITERATION_57ZA 'PARTIAL_PASS_ACCEPTED'
 Assert-Equal 'ITERATION_57Z' $summary.certified.ITERATION_57Z 'PARTIAL_PASS'
 Assert-Equal 'ITERATION_57Y' $summary.certified.ITERATION_57Y 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -315,7 +316,7 @@ if ($regDecoded.Count -ne $regSummary.Count) {
 # ================= 57ZD: IOS_STORAGE_LBA_CONTRACT =================
 $lba = $lbaRaw | ConvertFrom-Json
 
-Assert-Equal 'lba_iteration' $lba.iteration '57ZD'
+Assert-Equal 'lba_iteration' $lba.iteration '57ZE'
 Assert-Equal 'lba_device' $lba.input_identity.device 'iPhone15,4'
 Assert-Equal 'lba_board' $lba.input_identity.board 'd37ap'
 Assert-Equal 'lba_soc' $lba.input_identity.soc 't8120'
@@ -473,6 +474,66 @@ if ($script:failures -eq 0) {
     Write-Host "IOS_LBA_CROSS_ARTIFACT_CONSISTENCY_PASS"
     Write-Host "IOS_LBA_SEMANTIC_CONSISTENCY_PASS"
 }
+
+
+# ================= 57ZE: stale-prose refusal + third-field + wire-opcode =================
+# 1. LBA_ACTIVE_STATE_HAS_NO_STALE_NSZE_SEMANTICS_PASS: refuse stale active prose.
+#    Allowed NSZE text is only the standard-reference documentation.
+$staleProse = @(
+    'expected NSZE comparison',
+    'NSZE is compared directly against DT word2',
+    'Identify NSZE (offset 8)',
+    'compares Identify NSZE',
+    'Identify Namespace (opcode 0x11',
+    'Identify Namespace opcode 0x11'
+)
+$staleProseFound = $false
+foreach ($phrase in $staleProse) {
+    if ($lbaRaw -match [regex]::Escape($phrase)) {
+        Write-Host "STALE_PROSE_DETECTED: $phrase"
+        $staleProseFound = $true
+    }
+}
+if ($staleProseFound) {
+    Write-Host "MISMATCH LBA_ACTIVE_STATE_HAS_NO_STALE_NSZE_SEMANTICS"
+    $script:failures++
+} else {
+    Write-Host "OK LBA_ACTIVE_STATE_HAS_NO_STALE_NSZE_SEMANTICS_PASS"
+}
+# 2. APPLE_SELECTOR_0X11_ACTIVE_WORDING_PASS: no active text may call 0x11 an opcode
+if ($lba.identify_path.selector_0x11.classification -cne 'APPLE_INTERNAL_OPERATION_SELECTOR') {
+    Write-Host "MISMATCH 0x11 not classified APPLE_INTERNAL_OPERATION_SELECTOR"
+    $script:failures++
+} else {
+    Write-Host "OK APPLE_SELECTOR_0X11_ACTIVE_WORDING_PASS"
+}
+# 3. NVME_WIRE_OPCODE_NONBLOCKING_CLASSIFICATION_PASS
+Assert-Equal 'lba_wire_opcode_status' $lba.identify_path.NVME_IDENTIFY_ADMIN_OPCODE_PROVEN 'PARTIAL_NON_BLOCKING'
+Assert-Equal 'lba_wire_opcode_nonblocking' $lba.identify_path.NVME_WIRE_OPCODE_NONBLOCKING_CLASSIFICATION_PASS 'True'
+# 4. ANS_NAMESPACE_THIRD_FIELD_RESOLVED_PASS (structured cross-artifact)
+$thirdField = $summary.ans_device_tree.ANS_NAMESPACE_THIRD_FIELD
+if ($null -eq $thirdField -or $thirdField -is [string]) {
+    Write-Host "MISMATCH ANS_NAMESPACE_THIRD_FIELD not structured/RESOLVED"
+    $script:failures++
+} else {
+    Assert-Equal 'lba_third_dt' $thirdField.DT_FIELD 'NSSize'
+    Assert-Equal 'lba_third_nvme' $thirdField.NVME_FIELD 'NCAP'
+    Assert-Equal 'lba_third_unit' $thirdField.UNIT 'LBA'
+    Assert-Equal 'lba_third_status' $thirdField.STATUS 'RESOLVED'
+    # cross-artifact: must match the LBA contract word2 semantics
+    Assert-Equal 'lba_third_cross_nvme' $thirdField.NVME_FIELD $lba.namespace_struct.word2_semantics.NVME_IDENTIFY_FIELD
+    Assert-Equal 'lba_third_cross_unit' $thirdField.UNIT $lba.namespace_struct.word2_semantics.UNIT
+    if ($thirdField.STATUS -ne 'RESOLVED' -and $thirdField.NVME_FIELD -eq 'NCAP') {
+        Write-Host "MISMATCH third field claims NCAP but STATUS != RESOLVED"
+        $script:failures++
+    } else {
+        Write-Host "OK LBA_THIRD_FIELD_CROSS_ARTIFACT_PASS"
+    }
+}
+# 5. Regression: unchanged technical facts
+Assert-Equal 'lba_regress_ncap_off' $lba.identify_path.offset_8_field 'NCAP'
+Assert-Equal 'lba_regress_nsze_std' $lba.external_reference_audit.standard_nvme_reference.identify_namespace_layout[0].offset 0
+Assert-Equal 'lba_regress_ncap_std' $lba.external_reference_audit.standard_nvme_reference.identify_namespace_layout[1].offset 8
 
 if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"

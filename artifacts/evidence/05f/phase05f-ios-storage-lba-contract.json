@@ -1,6 +1,6 @@
 {
   "gate": "IOS_STORAGE_LBA_CONTRACT",
-  "iteration": "57ZD",
+  "iteration": "57ZE",
   "date": "2026-09-30",
   "input_identity": {
     "device": "iPhone15,4",
@@ -80,7 +80,7 @@
         "width": 4,
         "endianness": "little",
         "dest_field": "NSSize",
-        "use": "logged as NSSize ('%s::%d:NSSize\\t\\t: %u' 0x8cdcec); ALSO the expected NSZE comparison value in ValidateNamespaceSize (ldr w8,[x9] where x9 = fNamespaces+4+nsid*12: i.e. record[nsid-1].word2)"
+        "use": "logged as NSSize ('%s::%d:NSSize\\t\\t: %u' 0x8cdcec); ALSO the expected NCAP comparison value in ValidateNamespaceSize (ldr w8,[x9] where x9 = fNamespaces+4+nsid*12: i.e. record[nsid-1].word2)"
       }
     ],
     "records": [
@@ -150,7 +150,7 @@
       {
         "fn": "AppleEmbeddedNVMeController::ValidateNamespaceSize",
         "vm": "0xfffffff009c7eb00",
-        "role": "Identify Namespace (opcode 0x11, 0x1000-byte buffer), parses FLBAS (byte 0x1a) and LBAF entry (offset 0x80 + 4*flbas), checks METADATA_SIZE==0, then asserts logicalBlockSize==4096 (0x8cde5b) or logs 'Invalid LogicalBlockSize=%d' (0x8cdde8); compares Identify NSZE (offset 8) against fNamespaces record word2"
+        "role": "Apple internal operation selector 0x11 with a 0x1000-byte response buffer whose parsed layout matches Identify Namespace: parses FLBAS (byte 0x1a) and LBAF entry (offset 0x80 + 4*flbas), checks METADATA_SIZE==0, then asserts logicalBlockSize==4096 (0x8cde5b) or logs 'Invalid LogicalBlockSize=%d' (0x8cdde8); compares Identify NCAP (offset 8) against fNamespaces record word2"
       }
     ]
   },
@@ -189,13 +189,15 @@
     "offset_8_field": "NCAP",
     "offset_8_note": "Standard NVMe Identify Namespace layout: NSZE u64 @0x00, NCAP u64 @0x08, NUSE u64 @0x10. The disassembly reads u32 at buffer+8 (ldr w8,[x0,#8] at 0x9c7ec04) with no prior +8 pointer advance, so the compared field is NCAP, not NSZE. Capacity unit remains LBAs either way (NCAP is defined in LBAs).",
     "APPLE_NVME_COMMAND_SELECTOR_0X11_SEMANTICS_PASS": true,
-    "NVME_IDENTIFY_ADMIN_OPCODE_PROVEN": "PARTIAL",
+    "NVME_IDENTIFY_ADMIN_OPCODE_PROVEN": "PARTIAL_NON_BLOCKING",
     "selector_0x11": {
       "classification": "APPLE_INTERNAL_OPERATION_SELECTOR",
       "evidence": "ValidateNamespaceSize passes w0=0x11 to stub 0xfffffff009cd711c (auth-stub slot 0xfffffff0080d0678 -> 0xfffffff00ab205ec command-object wrapper); a sibling path at 0x9c7e650 passes w0=0x12 with a 0x4000 buffer, confirming 0x11/0x12 are an Apple internal operation/selector enum, not the NVMe wire opcode",
       "wire_opcode": "NOT_STATICALLY_RECOVERED - the standard NVMe Admin Identify opcode (0x06) is expected to be written inside the Apple command-object/ANS submission path which is runtime-initialized; claiming the wire opcode would require tracing the command-structure write, which is beyond this gate",
       "standard_reference": "standard NVMe Admin Identify opcode = 0x06 (corroborative reference only)"
-    }
+    },
+    "NVME_WIRE_OPCODE_NONBLOCKING_CLASSIFICATION_PASS": true,
+    "wire_opcode_nonblocking_note": "The standard wire opcode byte is NOT required to prove the LBA-size contract: the response layout, LBADS, NCAP, and guest-visible LBA size are all proven from the parsed 0x1000-byte response buffer. Standard Admin Identify opcode 0x06 was NOT observed in Apple runtime code and is recorded only as a corroborative reference."
   },
   "lba_proof": {
     "IOS_GUEST_VISIBLE_LBA_SIZE_PASS": true,
@@ -203,7 +205,7 @@
     "NVME_NAMESPACE_LBA_SHIFT": 12,
     "proof_chain": "Identify Namespace -> LBAF[FLBAS].LBADS must equal 12 (cmp w8,#0xc) -> 1<<12 = 4096; failure asserts 'logicalBlockSize == 4096'",
     "IOS_NAMESPACE_CAPACITY_UNIT_PASS": true,
-    "capacity_unit": "LBA (logical block addresses); NSZE is compared directly against DT word2 without scaling, and NSZE is defined in LBAs; block counts are 'numBlocks' (Identified numBlocks %d Expected numBlocks %d)",
+    "capacity_unit": "LBA (logical block addresses); NCAP is compared directly against DT word2 without scaling, and NCAP is defined in LBAs; block counts are 'numBlocks' (Identified numBlocks %d Expected numBlocks %d)",
     "overflow_safe": "count derived as length/12 via magic-multiply (umull + lsr #35) on u32 length; no shift overflow path found"
   },
   "namespace_map": {
@@ -407,21 +409,25 @@
     "HOST_BACKING_SECTOR_SIZE": "UNPROVEN_IMPLEMENTATION_DETAIL",
     "APFS_CONTAINER_BLOCK_SIZE": 4096,
     "next_gate": "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK",
-    "iteration": "57ZD",
+    "iteration": "57ZE",
     "IDENTIFY_NAMESPACE_CAPACITY_FIELD_OFFSET_PASS": true,
     "ANS_NAMESPACE_WORD2_FIELD_IDENTITY_PASS": true,
     "APPLE_NVME_COMMAND_SELECTOR_0X11_SEMANTICS_PASS": true,
-    "NVME_IDENTIFY_ADMIN_OPCODE_PROVEN": "PARTIAL",
+    "NVME_IDENTIFY_ADMIN_OPCODE_PROVEN": "PARTIAL_NON_BLOCKING",
     "HOST_BACKING_VS_GUEST_LBA_SEPARATION_PASS": true,
     "IOS_NAMESPACE_PUBLICATION_STATE_CONSISTENCY_PASS": true,
     "IOS_NAMESPACE_SHARED_PUBLICATION_PATH_PASS": true,
     "PER_NSID_PUBLICATION_RUNTIME_CONFIRMED": false,
     "IOS_STORAGE_LBA_SEMANTIC_CONSISTENCY_PASS": true,
     "IOS_LBA_SEMANTIC_CONSISTENCY_PASS": true,
-    "IDENTIFY_NAMESPACE_CAPACITY_FIELD": "NCAP"
+    "IDENTIFY_NAMESPACE_CAPACITY_FIELD": "NCAP",
+    "LBA_ACTIVE_STATE_HAS_NO_STALE_NSZE_SEMANTICS_PASS": true,
+    "APPLE_SELECTOR_0X11_ACTIVE_WORDING_PASS": true,
+    "ANS_NAMESPACE_THIRD_FIELD_RESOLVED_PASS": true,
+    "NVME_WIRE_OPCODE_NONBLOCKING_CLASSIFICATION_PASS": true
   },
   "remaining_unknowns": [
-    "standard wire opcode byte is NOT statically recovered (Apple internal selector 0x11 -> command-object wrapper; standard Admin Identify 0x06 expected but not proven from the command structure)",
+    "standard wire opcode byte is NOT statically recovered and is classified PARTIAL_NON_BLOCKING (not required for the LBA contract)",
     "per-NSID publication on real guest is PENDING_RUNTIME (shared attach path statically proven only)",
     "exact nstype semantic labels (1/2/3/4/5/8/13) remain runtime-identified",
     "NSID1 final capacity depends on runtime inByteCapacity/NVRAM burn-in values",
