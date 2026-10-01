@@ -691,8 +691,8 @@ $attach = $attachRaw | ConvertFrom-Json
 # 1. Iteration + gate state
 Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZL'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'STATIC_PASS_RUNTIME_DEFERRED'
-Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'PASS_CLOSED'
-Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'OPEN'
+Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED_PENDING_57ZM'
 
 # 2. All 11 required exit flags must be true
 $attachRequired = @(
@@ -915,21 +915,37 @@ $rdRaw = Get-Content $rdPath -Raw
 $rd = $rdRaw | ConvertFrom-Json
 
 Assert-Equal 'rd_gate' $rd.gate 'IOS_ROOT_DEVICE_SELECTION'
-Assert-Equal 'rd_iteration' $rd.iteration '57ZL'
-Assert-Equal 'rd_certified' $rd.certified 'PASS_CLOSED'
-Assert-Equal 'rd_next_gate' $rd.next_gate 'IOS_ROOT_TRANSITION_MODEL'
+Assert-Equal 'rd_iteration' $rd.iteration '57ZM'
+Assert-Equal 'rd_certified' $rd.certified 'PARTIAL_PASS_REPAIR_REQUIRED'
+Assert-Equal 'rd_mechanism_status' $rd.mountroot_mechanism.status 'PASS_STATIC'
+Assert-Equal 'rd_mechanism_pc' $rd.mountroot_mechanism.mountroot_pc '0xfffffff00ab96a38'
+Assert-Equal 'rd_claim_gate_state' $rd.claim_level.gate_proposed_state 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
+Assert-Equal 'rd_claim_mechanism' $rd.claim_level.mountroot_selection_mechanism 'STATICALLY_PROVEN'
+Assert-Equal 'rd_claim_media_identity' $rd.claim_level.exact_root_media_identity 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_claim_namespace_identity' $rd.claim_level.exact_root_namespace_identity 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_selected_nsid' $rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_selected_nsid_status' $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
 
 Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZL'
-Assert-Equal 'rd_preboom_certified' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'PASS_CLOSED'
-Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'PASS_CLOSED'
-Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
-Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate 'IOS_ROOT_TRANSITION_MODEL'
+Assert-Equal 'rd_preboom_57zl_state' $summary.certified.ITERATION_57ZL 'PARTIAL_PASS_REPAIR_REQUIRED'
+Assert-Equal 'rd_preboom_root_gate' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'OPEN'
+Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'OPEN'
+Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED_PENDING_57ZM'
+Assert-Equal 'rd_preboom_gate_state' $summary.ios_root_device_selection.GATE_PROPOSED_STATE 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
+Assert-Equal 'rd_preboom_nsid' $summary.ios_root_device_selection.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_preboom_nsid_status' $summary.ios_root_device_selection.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
+Assert-Equal 'rd_preboom_media_identity' $summary.ios_root_device_selection.EXACT_ROOT_MEDIA_IDENTITY 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_preboom_namespace_identity' $summary.ios_root_device_selection.EXACT_ROOT_NAMESPACE_IDENTITY 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_preboom_restore_container' $summary.ios_root_device_selection.RESTORE_FIXTURE_CONTAINER_UUID '4ada299f-6451-4a1f-a5fe-df42ab77e45d'
+Assert-Equal 'rd_preboom_boot_manifest_role' $summary.ios_root_device_selection.BOOT_MANIFEST_ROLE 'BOOT_ASSET_SELECTION_ONLY'
+Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate '57ZM_REVIEW (gate OPEN; transition BLOCKED_PENDING_57ZM)'
 Assert-Equal 'rd_preboom_durable' $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION_DURABLE_PASS $true
+Assert-Equal 'rd_preboom_mechanism' $summary.ios_root_device_selection.IOS_MOUNTROOT_SELECTION_MECHANISM_PASS $true
 Assert-Equal 'rd_preboom_mountroot_pc' $summary.ios_root_device_selection.MOUNTROOT_PC '0xfffffff00ab96a38'
-Assert-Equal 'rd_preboom_root_path' $summary.ios_root_device_selection.SELECTED_ROOT_PATH 'APFS System volume via IOMedia enumeration'
 Assert-Equal 'rd_preboom_chosen_boot_uuid' $summary.ios_root_device_selection.CHOSEN_BOOT_UUID 'ABSENT'
 Assert-Equal 'rd_preboom_chosen_boot_device' $summary.ios_root_device_selection.CHOSEN_BOOT_DEVICE 'ABSENT'
 Assert-Equal 'rd_preboom_options_bootargs' $summary.ios_root_device_selection.OPTIONS_BOOTARGS 'ABSENT'
+Assert-Equal 'rd_preboom_root_matching_bytes' $summary.ios_root_device_selection.ROOT_MATCHING_BOOTED_BYTES '256 x 0x00 (SERIALIZED_MATCH_DATA, inert)'
 
 foreach ($flag in @(
     'IOS_ROOT_DEVICE_SELECTION_INPUT_IDENTITY_PASS',
@@ -938,7 +954,25 @@ foreach ($flag in @(
     'IOS_ROOT_DEVICE_SELECTION_PRECEDENCE_AUDIT_PASS',
     'IOS_ROOT_DEVICE_SELECTION_DEVICE_TREE_AUDIT_PASS',
     'IOS_ROOT_DEVICE_SELECTION_BOOT_ARGS_ABSENT_PASS',
-    'IOS_ROOT_DEVICE_SELECTION_FALLBACK_PATH_PROVEN_PASS'
+    'IOS_ROOT_DEVICE_SELECTION_FALLBACK_PATH_PROVEN_PASS',
+    'IOS_ROOT_MATCHING_PROPERTY_SEMANTICS_PASS',
+    'IOS_ROOT_SELECTOR_CONTROL_FLOW_PASS',
+    'IOS_ROOT_IOMEDIA_MATCH_PREDICATE_PASS',
+    'IOS_ROOT_IOMEDIA_CANDIDATE_INVENTORY_PASS',
+    'IOS_ROOT_NAMESPACE_TO_MEDIA_MAP_PASS',
+    'IOS_ROOT_NAMESPACE_IDENTITY_CLASSIFICATION_PASS',
+    'IOS_ROOT_BLOCK_DEVICE_PUBLICATION_PASS',
+    'IOS_SYSTEM_APFS_CONTAINER_IDENTITY_PASS',
+    'IOS_ROOT_SYSTEM_VOLUME_IDENTITY_PASS',
+    'IOS_SYSTEM_CONTAINER_VOLUME_ENUMERATION_PASS',
+    'IOS_ROOT_VOLUME_GROUP_SELECTION_PASS',
+    'IOS_APFS_ROOT_VOLUME_LOOKUP_PASS',
+    'IOS_BOOT_MANIFEST_ROOT_SELECTION_ROLE_PASS',
+    'IOS_PREBOOT_ROOT_SELECTION_METADATA_PASS',
+    'IOS_RESTORE_MODE_ROOT_SELECTION_PASS',
+    'IOS_ROOT_IDENTITY_CHAIN_PASS',
+    'IOS_ROOT_SELECTION_CLAIM_LEVEL_PASS',
+    'MINIMUM_IOS_ROOT_DEVICE_SELECTION_CONTRACT_PASS'
 )) {
     $val = $summary.ios_root_device_selection.$flag
     if ($val -ne $true) {
@@ -950,6 +984,77 @@ foreach ($flag in @(
 }
 
 Assert-Equal 'rd_mountroot_pc' $rd.mountroot_entry.function_pc '0xfffffff00ab96a38'
+
+# 57ZM: root-matching contradiction must never reappear
+if ($rd.root_matching_semantics.booted_value -ne '256 x 0x00') {
+    Write-Host 'MISMATCH root-matching booted value not the audited zeroed blob'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_root_matching_booted_zeroed'
+}
+Assert-Equal 'rd_root_matching_class' $rd.root_matching_semantics.classification 'SERIALIZED_MATCH_DATA'
+Assert-Equal 'rd_root_matching_consumer' $rd.root_matching_semantics.consumer_pc '0xfffffff00ab96c98'
+Assert-Equal 'rd_root_matching_resolved' $rd.root_matching_semantics.contradiction_resolved $true
+
+# 57ZM: selector control flow must use honest PROVEN_* classifications, never EXPECTED_TAKEN
+foreach ($sel in $rd.selector_control_flow.selectors) {
+    if ($sel.fixture_classification -notin @('PROVEN_TAKEN', 'PROVEN_TAKEN_STATIC', 'PROVEN_NOT_TAKEN', 'STATIC_UNRESOLVED')) {
+        Write-Host "MISMATCH selector classification not in allowed set: $($sel.name) = $($sel.fixture_classification)"
+        $script:failures++
+    }
+    if ($sel.fixture_classification -eq 'EXPECTED_TAKEN') {
+        Write-Host "MISMATCH selector uses banned EXPECTED_TAKEN classification: $($sel.name)"
+        $script:failures++
+    }
+}
+Write-Host 'OK rd_selector_classification_set'
+
+if ($rd.claim_level.exact_root_media_identity -eq 'PROVEN' -and $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS -ne 'PROVEN') {
+    Write-Host 'MISMATCH media identity PROVEN while namespace identity not PROVEN'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_identity_chain_dependency_check_pass'
+}
+
+if ($rd.root_identity_chain.no_implicit_transitions -ne $true) {
+    Write-Host 'MISMATCH identity chain missing no_implicit_transitions guard'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_identity_chain_no_implicit_transitions'
+}
+
+if ($rd.restore_mode.separation_rule -notmatch 'separate claims') {
+    Write-Host 'MISMATCH restore-mode separation rule missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_restore_mode_separation'
+}
+Assert-Equal 'rd_restore_container_uuid' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.ramdisk_container_uuid '4ada299f-6451-4a1f-a5fe-df42ab77e45d'
+
+# 57ZM: exact identity values (media predicate, container, volumes, group, manifest role)
+Assert-Equal 'rd_media_class' $rd.media_match_predicate.service_class 'IOMedia'
+Assert-Equal 'rd_media_content_filter' $rd.media_match_predicate.content_filter 'Apple_HFS-class string compare (xref 0xfffffff00ab976a8, string 0xfffffff0070b9984)'
+Assert-Equal 'rd_container_uuid' $rd.system_container.cryptex_container.nx_uuid 'bd649fe5ae104b79b7d892bb32bdef60'
+Assert-Equal 'rd_container_xid' $rd.system_container.cryptex_container.xid 15
+Assert-Equal 'rd_base_system_uuid' $rd.volume_inventory.base_system.uuid '9a503cf26d7a4fdaa233600dd13b4994'
+Assert-Equal 'rd_base_system_name' $rd.volume_inventory.base_system.name 'Rave24A437.D37OS'
+Assert-Equal 'rd_base_system_role' $rd.volume_inventory.base_system.role 0
+Assert-Equal 'rd_cryptex_volume_uuid' $rd.volume_inventory.system_cryptex.uuid '7f74e822669746de878e1b0172ed0eb9'
+Assert-Equal 'rd_cryptex_volume_name' $rd.volume_inventory.system_cryptex.name 'Rave24A437.D37SystemCryptex'
+Assert-Equal 'rd_volume_group_system' $rd.volume_group.system_volume_uuid '9a503cf26d7a4fdaa233600dd13b4994'
+Assert-Equal 'rd_volume_group_data_unresolved' $rd.volume_group.data_volume_uuid 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_volume_group_group_unresolved' $rd.volume_group.volume_group_uuid 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_boot_manifest_role_value' $rd.boot_manifest_role.classification 'BOOT_ASSET_SELECTION_ONLY'
+Assert-Equal 'rd_ns_map_flag' $rd.namespace_to_media_map.IOS_ROOT_NAMESPACE_TO_MEDIA_MAP_PASS $true
+Assert-Equal 'rd_ns1_not_root_proven' $rd.namespace_to_media_map.records[0].root_proven $false
+
+# 57ZM: no concrete NSID may be claimed as PROVEN
+if ($rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID -match '^\d+$') {
+    Write-Host 'MISMATCH concrete NSID claimed without PROVEN status'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_no_concrete_nsid_claim'
+}
 Assert-Equal 'rd_mountroot_prologue' $rd.mountroot_entry.prologue_instruction 'pacibsp'
 Assert-Equal 'rd_string_page' $rd.string_xrefs.string_page '0xfffffff0070b9000'
 Assert-Equal 'rd_adrp_count' $rd.string_xrefs.total_adrp_instructions_scanned 643480
