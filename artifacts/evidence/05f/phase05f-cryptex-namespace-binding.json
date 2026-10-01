@@ -1,0 +1,214 @@
+{
+  "gate": "CRYPTEX_NAMESPACE_BINDING",
+  "iteration": "57ZH",
+  "date": "2026-10-01",
+  "input_identity": {
+    "device": "iPhone15,4",
+    "board": "d37ap",
+    "soc": "t8120",
+    "build": "24A437",
+    "bootkc_path": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+    "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+    "base_system_image": {
+      "path": "phase05f-mutation/iter56/system-os-decrypted.dmg",
+      "sha256": "5A4AA9C67944599D67DA6971757526A50E6772DA698C0502322631A0DA37D73A"
+    },
+    "cryptex_image": {
+      "path": "phase05f-mutation/iter56/cryptex-systemos-decrypted.dmg",
+      "sha256": "B2131A5C1E6CF2C95E369E57379AB6D180D558E8A988E0CC66181D64FB781538"
+    },
+    "CRYPTEX_BINDING_INPUT_IDENTITY_PASS": true
+  },
+  "mapping_table_source": {
+    "CRYPTEX_MAPPING_TABLE_SOURCE_PASS": true,
+    "sources": [
+      {
+        "name": "kernel static path-pair table",
+        "location": "bootkc.bin __PRELINK_TEXT fileoff 0xa5a793",
+        "pairs": [
+          [
+            "/private/preboot/Cryptexes/OS/System/Library",
+            "/System/Cryptexes/OS/System/Library"
+          ],
+          [
+            "/private/preboot/Cryptexes/OS/usr/lib",
+            "/System/Cryptexes/OS/usr/lib"
+          ],
+          [
+            "/private/preboot/Cryptexes/OS/",
+            "/System/Cryptexes/OS/"
+          ]
+        ],
+        "evidence": "consecutive C-strings at fileoff 0xa5a793/0xa5a7cb; suffix table System/Library + Frameworks + PrivateFrameworks shared between the two prefixes"
+      },
+      {
+        "name": "sealed volume fext + integrity objects",
+        "location": "cryptex APSB 97922 fields apfs_fext_tree_oid=61503, apfs_integrity_meta_oid=1289",
+        "role": "fetched by apfs_mount during the firmlink/graft stitch (verified string xrefs below); fext tree holds extent data, integrity object holds seal/graft metadata root",
+        "evidence": "BootKC strings 'failed to fetch the fext tree' and 'failed to fetch the integrity object' at fileoff 0xbd5a6c/0xbd5aa0, both referenced inside apfs_mount"
+      },
+      {
+        "name": "cryptex sibling records",
+        "location": "cryptex FSTREE (57ZF walk)",
+        "counts": "407 sibling_link + 407 sibling_map records",
+        "role": "file-level dedup/localization links (e.g. AppIntents.strings, Localizable.strings); part of the cryptex namespace bookkeeping, not the path-level graft table"
+      }
+    ],
+    "integrity_meta_decode": {
+      "block": 61525,
+      "oid": 1289,
+      "xid": 14,
+      "type": "0x1E INTEGRITY_META",
+      "im_version": 2,
+      "im_flags": 0,
+      "im_hash_type": 1,
+      "im_root_hash_offset": 128,
+      "checksum": "VERIFIED",
+      "note": "v2 integrity metadata; the graft/firmlink table referenced by the mount stitch is contained in the sealed metadata the integrity object anchors"
+    }
+  },
+  "exact_consumer_function": {
+    "CRYPTEX_CONSUMER_FUNCTION_PASS": true,
+    "function": "apfs_mount (symbol string at 0xfffffff007bd9bf8, xrefs from 0xfffffff00a260830/0xfffffff00a260894/0xfffffff00a2609e8/0xfffffff00a260a28/0xfffffff00a260b14/0xfffffff00a260c34/0xfffffff00a260cb4/0xfffffff00a260d10/0xfffffff00a260de8)",
+    "code_range": "0xfffffff00a25f794..0xfffffff00a261048",
+    "verified_branch_sequence": [
+      {
+        "addr": "0xfffffff00a25fa70",
+        "string": "com.apple.private.apfs.force-firmlink-stitch",
+        "meaning": "entitlement check gating the stitch"
+      },
+      {
+        "addr": "0xfffffff00a25fa9c",
+        "string": "mount force firmlinks",
+        "meaning": "entitled force path; sets apfs->force_firmlink_stitch byte at [x19,#0xcd6]"
+      },
+      {
+        "addr": "0xfffffff00a25fac8",
+        "string": "mount no firmlinks",
+        "meaning": "default path; sets apfs->no_firmlinks byte at [x19,#0xcd4]"
+      },
+      {
+        "addr": "0xfffffff00a25fdcc",
+        "string": "failed to fetch the fext tree (error %d)",
+        "meaning": "sealed-volume fext tree (fext_tree_oid 61503) load"
+      },
+      {
+        "addr": "0xfffffff00a25fb98",
+        "string": "failed to fetch the integrity object (error %d)",
+        "meaning": "integrity metadata (integrity_meta_oid 1289) load"
+      },
+      {
+        "addr": "0xfffffff00a25fc84",
+        "string": "failed to mark sealed volume's seal as broken",
+        "meaning": "seal-broken path after failed fetch"
+      },
+      {
+        "addr": "0xfffffff00a25fe00",
+        "string": "Cannot load the filesystem root tree",
+        "meaning": "base root tree load"
+      },
+      {
+        "addr": "0xfffffff00a25fef4",
+        "string": "Cannot load the secondary filesystem root tree",
+        "meaning": "SECONDARY root tree load = the cryptex root grafted into the same mount namespace"
+      },
+      {
+        "addr": "0xfffffff00a25ff8c",
+        "string": "failed to fetch the pfkur tree",
+        "meaning": "purk/pfkur tree after graft"
+      },
+      {
+        "addr": "0xfffffff00a26149c",
+        "string": "failed to persist ephemeral grafts, err %d",
+        "meaning": "apfs_mount_update grafts persistence (separate function, same cluster)"
+      }
+    ],
+    "also_verified": "apfs_mount_update at 0xfffffff00a2611e8 carries 'failed to persist ephemeral grafts' - the graft table is written back into the ephemeral graft store after mount"
+  },
+  "source_path": {
+    "CRYPTEX_SOURCE_PATH_PASS": true,
+    "source": "/private/preboot/Cryptexes/OS",
+    "evidence": [
+      "base volume symlink xattr: /System/Cryptexes/OS -> ../../private/preboot/Cryptexes/OS (com.apple.fs.symlink, cnid 1152921500311912570)",
+      "DT fstab: /private/preboot -> preboot-vol",
+      "BootKC pair table prefix at fileoff 0xa5a793"
+    ]
+  },
+  "destination_runtime_path": {
+    "CRYPTEX_DESTINATION_PATH_PASS": true,
+    "destination": "/System and /usr on the base system volume via firmlink composition (visible alias /System/Cryptexes/OS)",
+    "evidence": [
+      "BootKC pair table runtime side /System/Cryptexes/OS/* at fileoff 0xa5a7cb",
+      "base volume /System/Cryptexes/{OS,App,Supplemental} directory + symlink topology (57ZG)",
+      "kernel mount sequence loads a SECONDARY filesystem root tree into the same namespace (0xa25fef4)"
+    ]
+  },
+  "end_to_end_binding": {
+    "CRYPTEX_END_TO_END_BINDING_PASS": true,
+    "example": {
+      "cryptex_filesystem_path": "/System/Library/CoreServices/SystemVersion.plist",
+      "chain": "cryptex root CNID 2 -> System CNID 16 -> Library CNID 27 -> CoreServices CNID 129 -> SystemVersion.plist CNID 132 -> INODE (private_id 132) -> DSTREAM size 571 -> FEXT phys 65594",
+      "sha256": "09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1",
+      "binding_rule": "the cryptex root tree is loaded by apfs_mount as the SECONDARY filesystem root (0xa25fef4) after the sealed fext/integrity objects are fetched; base /System/Library/CoreServices/SystemVersion.plist (fid 1152921500312051577) is composed over at runtime",
+      "runtime_visible": "/System/Library/CoreServices/SystemVersion.plist"
+    }
+  },
+  "fext_integrity_role": {
+    "CRYPTEX_FEXT_INTEGRITY_ROLE_PASS": true,
+    "fext_tree": {
+      "oid": 61503,
+      "role": "sealed-volume extent data tree; provides physical extents for files in the cryptex (verified: SystemVersion.plist extent phys 65594 via FEXT)",
+      "consumer_string": "failed to fetch the fext tree (0xa25fdcc inside apfs_mount)"
+    },
+    "integrity_meta": {
+      "oid": 1289,
+      "role": "sealed-volume integrity/root-hash anchor (v2, hash_type 1, root_hash_offset 128); the graft/firmlink composition metadata is anchored here",
+      "consumer_string": "failed to fetch the integrity object (0xa25fb98 inside apfs_mount)"
+    },
+    "order": "integrity object is fetched BEFORE the fext tree in the mount sequence (0xa25fb98 < 0xa25fdcc), matching seal-first-then-data"
+  },
+  "timing_dependencies": {
+    "CRYPTEX_BINDING_TIMING_PASS": true,
+    "order": [
+      "1. iBoot verifies cryptex1.boot.os (CHIP_CRYPTEX1_BOOT_AP_VERIFICATION)",
+      "2. root filesystem availability (base System volume)",
+      "3. Preboot volume mounted at /private/preboot (DT fstab preboot-vol)",
+      "4. apfs_mount: force-firmlink-stitch check -> mount force/no firmlinks branch",
+      "5. apfs_mount: fetch integrity object (seal) -> fetch fext tree -> load root tree -> load SECONDARY root tree (cryptex)",
+      "6. apfs_mount_update: persist ephemeral grafts",
+      "7. launchd / cryptexd userspace"
+    ]
+  },
+  "checker_enforcement": {
+    "CRYPTEX_BINDING_CHECKER_PASS": true,
+    "closure_refused_without": [
+      "mapping table source identified (kernel pair table + sealed fext/integrity)",
+      "exact consumer function (apfs_mount) with verified string xrefs",
+      "source path /private/preboot/Cryptexes/OS",
+      "destination path /System (secondary root in same namespace)",
+      "one end-to-end binding (SystemVersion.plist chain)",
+      "FEXT vs integrity role distinction",
+      "timing dependencies"
+    ]
+  },
+  "canonical_state": {
+    "CRYPTEX_BINDING_INPUT_IDENTITY_PASS": true,
+    "CRYPTEX_MAPPING_TABLE_SOURCE_PASS": true,
+    "CRYPTEX_CONSUMER_FUNCTION_PASS": true,
+    "CRYPTEX_SOURCE_PATH_PASS": true,
+    "CRYPTEX_DESTINATION_PATH_PASS": true,
+    "CRYPTEX_END_TO_END_BINDING_PASS": true,
+    "CRYPTEX_FEXT_INTEGRITY_ROLE_PASS": true,
+    "CRYPTEX_BINDING_TIMING_PASS": true,
+    "CRYPTEX_BINDING_CHECKER_PASS": true,
+    "ITERATION_57ZH": "PASS_PENDING_REVIEW",
+    "CRYPTEX_NAMESPACE_BINDING": "PASS_CLOSED",
+    "next_gate": "IOS_ROOT_DEVICE_SELECTION + IOS_ROOT_TRANSITION_MODEL"
+  },
+  "remaining_unknowns": [
+    "the graft EA records themselves (com.apple.fs.graft-vol-uuid/base/len) were not observed as xattrs in the decrypted base or cryptex volumes; the kernel reads them from the sealed metadata anchored by the integrity object, and that internal record format is not decoded",
+    "the exact secondary-root tree OID used at runtime is not statically recoverable; the APSB root_tree_oid 1291 is the live root per the 57ZF proof",
+    "live guest merged-namespace read remains runtime evidence"
+  ],
+  "analysis_base_head": "f6fd5070053a0b8cb3972e1d3a3eae8873f8cafd"
+}

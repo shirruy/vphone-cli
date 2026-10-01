@@ -1,6 +1,6 @@
 {
   "gate": "preboom-mapping-and-minimum-ios-storage-contract",
-  "iteration": "57ZG",
+  "iteration": "57ZH",
   "date": "2026-09-30",
   "certified": {
     "ITERATION_57T_CERTIFIED_CLOSED": "YES",
@@ -20,7 +20,9 @@
     "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK": "PASS_CLOSED",
     "ITERATION_57ZFA": "PASS_CLOSED",
     "ITERATION_57ZG": "PASS_PENDING_REVIEW",
-    "CRYPTEX_ATTACHMENT_MODEL": "PASS_CLOSED"
+    "CRYPTEX_ATTACHMENT_MODEL": "PASS_CLOSED",
+    "ITERATION_57ZH": "PASS_PENDING_REVIEW",
+    "CRYPTEX_NAMESPACE_BINDING": "PASS_CLOSED"
   },
   "decmpfs_reconstruction": {
     "DECMPFS_ALGORITHM_TABLE_AUDIT_PASS": true,

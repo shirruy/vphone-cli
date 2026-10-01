@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZG'
+Assert-Equal 'iteration' $summary.iteration '57ZH'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -689,7 +689,7 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZG'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZH'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'PASS_CLOSED'
 Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'NEXT'
 Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
@@ -761,6 +761,60 @@ if ($LASTEXITCODE -ne 0) {
     $script:failures++
 } else {
     Write-Host "OK CRYPTEX_ATTACHMENT_DURABLE_JSON_UNIQUE"
+}
+
+
+# ================= 57ZH: CRYPTEX_NAMESPACE_BINDING =================
+$bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-binding.json'
+$bindRaw = Get-Content $bindPath -Raw
+$bind = $bindRaw | ConvertFrom-Json
+
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZH'
+Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'PASS_CLOSED'
+
+$bindRequired = @(
+    'CRYPTEX_BINDING_INPUT_IDENTITY_PASS',
+    'CRYPTEX_MAPPING_TABLE_SOURCE_PASS',
+    'CRYPTEX_CONSUMER_FUNCTION_PASS',
+    'CRYPTEX_SOURCE_PATH_PASS',
+    'CRYPTEX_DESTINATION_PATH_PASS',
+    'CRYPTEX_END_TO_END_BINDING_PASS',
+    'CRYPTEX_FEXT_INTEGRITY_ROLE_PASS',
+    'CRYPTEX_BINDING_TIMING_PASS',
+    'CRYPTEX_BINDING_CHECKER_PASS'
+)
+foreach ($flag in $bindRequired) {
+    $val = $bind.canonical_state.$flag
+    if ($val -ne $true) {
+        Write-Host "MISMATCH binding gate flag false/missing: $flag = $val"
+        $script:failures++
+    } else {
+        Write-Host "OK $flag"
+    }
+}
+
+# exact consumer function + xrefs must be present
+if ($bind.exact_consumer_function.function -notmatch '^apfs_mount') { Write-Host 'MISMATCH binding consumer function'; $script:failures++ } else { Write-Host 'OK CRYPTEX_CONSUMER_FUNCTION_PASS' }
+if ($bind.exact_consumer_function.verified_branch_sequence.Count -lt 8) {
+    Write-Host "MISMATCH binding consumer branch sequence incomplete"
+    $script:failures++
+} else {
+    Write-Host "OK CRYPTEX_CONSUMER_FUNCTION_PASS"
+}
+Assert-Equal 'bind_mapping_pairtable' $bind.mapping_table_source.sources[0].location 'bootkc.bin __PRELINK_TEXT fileoff 0xa5a793'
+Assert-Equal 'bind_source_path' $bind.source_path.source '/private/preboot/Cryptexes/OS'
+Assert-Equal 'bind_dest_path' $bind.destination_runtime_path.destination '/System and /usr on the base system volume via firmlink composition (visible alias /System/Cryptexes/OS)'
+Assert-Equal 'bind_e2e_sha' $bind.end_to_end_binding.example.sha256 '09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1'
+Assert-Equal 'bind_fext_oid' $bind.fext_integrity_role.fext_tree.oid 61503
+Assert-Equal 'bind_integrity_oid' $bind.fext_integrity_role.integrity_meta.oid 1289
+
+# duplicate-key validation
+& python (Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py') $bindPath
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "MISMATCH binding artifact duplicate keys"
+    $script:failures++
+} else {
+    Write-Host "OK CRYPTEX_BINDING_DURABLE_JSON_UNIQUE"
 }
 
 if ($script:failures -gt 0) {
