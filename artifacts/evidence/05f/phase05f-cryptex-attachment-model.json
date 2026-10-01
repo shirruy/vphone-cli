@@ -1,6 +1,6 @@
 {
   "gate": "CRYPTEX_ATTACHMENT_MODEL",
-  "iteration": "57ZG",
+  "iteration": "57ZJ",
   "date": "2026-10-01",
   "input_identity": {
     "device": "iPhone15,4",
@@ -344,9 +344,10 @@
     "CRYPTEX_ATTACHMENT_ORDERING_PASS": true,
     "CRYPTEX_ATTACHMENT_MODEL_DURABLE_PASS": true,
     "CRYPTEX_ATTACHMENT_CROSS_ARTIFACT_CONSISTENCY_PASS": true,
-    "ITERATION_57ZG": "PASS_PENDING_REVIEW",
-    "CRYPTEX_ATTACHMENT_MODEL": "PASS_CLOSED",
-    "next_gate": "IOS_ROOT_DEVICE_SELECTION + IOS_ROOT_TRANSITION_MODEL"
+    "ITERATION_57ZG": "PARTIAL_PASS_REPAIR_REQUIRED",
+    "CRYPTEX_ATTACHMENT_MODEL": "OPEN",
+    "next_gate": "IOS_ROOT_DEVICE_SELECTION + IOS_ROOT_TRANSITION_MODEL",
+    "CRYPTEX_NAMESPACE_BINDING": "OPEN"
   },
   "remaining_unknowns": [
     "the exact runtime consumption of the firmlink table was not executed on a guest; the static kernel machinery, EA names, sealed metadata the stitch reads, and mountpoint topology are proven, but a live merged-namespace read remains guest-runtime evidence",

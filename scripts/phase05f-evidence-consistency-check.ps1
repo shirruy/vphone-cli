@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZI'
+Assert-Equal 'iteration' $summary.iteration '57ZJ'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -615,7 +615,7 @@ Assert-Equal 'cryptex_plist_version' $cryptex.known_file_proof.reconstruction.pl
 
 # 5. Cross-artifact: preboom summary must also carry PASS_CLOSED
 Assert-Equal 'cryptex_preboom_closed' $summary.sealed_container_walks.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'PASS_CLOSED'
-Assert-Equal 'cryptex_preboom_next' $summary.storage_gates_open.CRYPTEX_ATTACHMENT_MODEL 'PASS_CLOSED'
+Assert-Equal 'cryptex_preboom_next' $summary.storage_gates_open.CRYPTEX_ATTACHMENT_MODEL 'OPEN'
 Assert-Equal 'cryptex_57ZF' $summary.certified.ITERATION_57ZF 'PASS_CLOSED'
 Assert-Equal 'cryptex_57ZFA' $summary.certified.ITERATION_57ZFA 'PASS_CLOSED'
 Assert-Equal 'cryptex_57ZE_closed' $summary.certified.ITERATION_57ZE 'PASS_CLOSED'
@@ -689,10 +689,10 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZI'
-Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'PASS_CLOSED'
-Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'NEXT'
-Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZJ'
+Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'OPEN'
+Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'BLOCKED'
+Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED'
 
 # 2. All 11 required exit flags must be true
 $attachRequired = @(
@@ -769,8 +769,8 @@ $bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-b
 $bindRaw = Get-Content $bindPath -Raw
 $bind = $bindRaw | ConvertFrom-Json
 
-Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZI'
-Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'PASS_CLOSED'
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZJ'
+Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'OPEN'
 
 # 57ZI: SHA + fext-wording + duplicate-key checks for the binding artifact
 Assert-Equal 'bind_e2e_sha' $bind.end_to_end_binding.example.sha256 '09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1'
@@ -784,6 +784,28 @@ if ($LASTEXITCODE -ne 0) {
     $script:failures++
 } else {
     Write-Host 'OK CRYPTEX_BINDING_DURABLE_JSON_UNIQUE'
+
+# 57ZJ: expected-FALSE flags (honest STATIC_UNRESOLVED classification)
+Assert-Equal 'bind_concrete_graft_record' $bind.canonical_state.CRYPTEX_CONCRETE_GRAFT_RECORD_PASS $false
+Assert-Equal 'bind_graft_vol_identity' $bind.canonical_state.CRYPTEX_GRAFT_VOLUME_IDENTITY_PASS $false
+Assert-Equal 'bind_graft_range_membership' $bind.canonical_state.CRYPTEX_GRAFT_RANGE_MEMBERSHIP_PASS $false
+Assert-Equal 'bind_runtime_graft_match' $bind.canonical_state.CRYPTEX_RUNTIME_GRAFT_MATCH_PASS $false
+Assert-Equal 'bind_ordinary_path' $bind.canonical_state.CRYPTEX_ORDINARY_PATH_BINDING_PASS $false
+Assert-Equal 'bind_blocked_guest_stage' $bind.canonical_state.CRYPTEX_RUNTIME_BINDING_PROOF_BLOCKED_BY_GUEST_BOOT_STAGE $true
+Assert-Equal 'bind_feature_constants' $bind.canonical_state.APFS_INCOMPAT_FEATURE_CONSTANTS_PASS $true
+Assert-Equal 'bind_feature_bit_consistency' $bind.canonical_state.APFS_FEATURE_BIT_CONSISTENCY_PASS $true
+
+# 57ZJ: feature-bit consistency - PFK bit6 must NOT be classified as SECONDARY_FSROOT
+if ($bindRaw -match '0x40 = SECONDARY_FSROOT' -or $bindRaw -match '0x00000040.*SECONDARY_FSROOT') {
+    Write-Host 'MISMATCH PFK bit6 classified as SECONDARY_FSROOT'
+    $script:failures++
+}
+if ($bindRaw -match 'secondary root tree = Cryptex' -or $bindRaw -match 'secondary root composed into the same namespace') {
+    Write-Host 'MISMATCH stale secondary-root=cryptex wording present'
+    $script:failures++
+}
+Assert-Equal 'bind_concrete_record_false' $bind.canonical_state.CRYPTEX_CONCRETE_GRAFT_RECORD_PASS $false
+Assert-Equal 'bind_blocked_guest' $bind.canonical_state.CRYPTEX_RUNTIME_BINDING_PROOF_BLOCKED_BY_GUEST_BOOT_STAGE $true
 }
 
 # 57ZI: SECONDARY_FSROOT must be FALSE and dependency-checked
@@ -807,7 +829,7 @@ $ziRequired = @(
     'CRYPTEX_GRAFT_EA_VALUE_FLOW_PASS',
     'APFS_EPHEMERAL_GRAFT_MODEL_PASS',
     'CRYPTEX_RUNTIME_LOOKUP_CONSUMER_PASS',
-    'CRYPTEX_ORDINARY_PATH_BINDING_PASS',
+    # CRYPTEX_ORDINARY_PATH_BINDING_PASS expected FALSE (STATIC_UNRESOLVED)
     'CRYPTEX_FEXT_INTEGRITY_NON_OVERCLAIM_PASS',
     'CRYPTEX_SYSTEMVERSION_PROVENANCE_PASS',
     'CRYPTEX_RUNTIME_BINDING_DEPENDENCY_CHECK_PASS'
