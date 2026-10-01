@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZN'
+Assert-Equal 'iteration' $summary.iteration '57ZO'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -689,7 +689,7 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZN'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZO'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'STATIC_PASS_RUNTIME_DEFERRED'
 Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'OPEN'
 Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED_PENDING_57ZM'
@@ -769,7 +769,7 @@ $bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-b
 $bindRaw = Get-Content $bindPath -Raw
 $bind = $bindRaw | ConvertFrom-Json
 
-Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZN'
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZO'
 Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'STATIC_PASS_RUNTIME_DEFERRED'
 
 # 57ZI: SHA + fext-wording + duplicate-key checks for the binding artifact
@@ -915,7 +915,7 @@ $rdRaw = Get-Content $rdPath -Raw
 $rd = $rdRaw | ConvertFrom-Json
 
 Assert-Equal 'rd_gate' $rd.gate 'IOS_ROOT_DEVICE_SELECTION'
-Assert-Equal 'rd_iteration' $rd.iteration '57ZN'
+Assert-Equal 'rd_iteration' $rd.iteration '57ZO'
 Assert-Equal 'rd_certified' $rd.certified 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'rd_mechanism_status' $rd.mountroot_mechanism.status 'PASS_STATIC'
 Assert-Equal 'rd_mechanism_pc' $rd.mountroot_mechanism.mountroot_pc '0xfffffff00ab96a38'
@@ -926,7 +926,7 @@ Assert-Equal 'rd_claim_namespace_identity' $rd.claim_level.exact_root_namespace_
 Assert-Equal 'rd_selected_nsid' $rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_selected_nsid_status' $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
 
-Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZN'
+Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZO'
 Assert-Equal 'rd_preboom_57zl_state' $summary.certified.ITERATION_57ZL 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'rd_preboom_root_gate' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'OPEN'
 Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'OPEN'
@@ -938,7 +938,7 @@ Assert-Equal 'rd_preboom_media_identity' $summary.ios_root_device_selection.EXAC
 Assert-Equal 'rd_preboom_namespace_identity' $summary.ios_root_device_selection.EXACT_ROOT_NAMESPACE_IDENTITY 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_preboom_restore_container' $summary.ios_root_device_selection.RESTORE_FIXTURE_CONTAINER_UUID '4ada299f-6451-4a1f-a5fe-df42ab77e45d'
 Assert-Equal 'rd_preboom_boot_manifest_role' $summary.ios_root_device_selection.BOOT_MANIFEST_ROLE 'BOOT_ASSET_SELECTION_ONLY'
-Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate '57ZN_REVIEW (certification run; transition still BLOCKED_PENDING_57ZN acceptance)'
+Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate '57ZO_REVIEW (final certification; transition BLOCKED_PENDING_57ZO acceptance)'
 Assert-Equal 'rd_preboom_durable' $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION_DURABLE_PASS $true
 Assert-Equal 'rd_preboom_mechanism' $summary.ios_root_device_selection.IOS_MOUNTROOT_SELECTION_MECHANISM_PASS $true
 Assert-Equal 'rd_preboom_mountroot_pc' $summary.ios_root_device_selection.MOUNTROOT_PC '0xfffffff00ab96a38'
@@ -964,9 +964,18 @@ foreach ($flag in @(
     'IOS_ROOT_BLOCK_DEVICE_PUBLICATION_PASS',
     'IOS_SYSTEM_APFS_CONTAINER_IDENTITY_PASS',
     'IOS_ROOT_SYSTEM_VOLUME_IDENTITY_PASS',
-    'IOS_BASE_SYSTEM_CONTAINER_VOLUME_ENUMERATION_PASS',
-    'IOS_CRYPTEX_CONTAINER_VOLUME_ENUMERATION_PASS',
-    'IOS_RESTORE_CONTAINER_VOLUME_ENUMERATION_PASS',
+    'IOS_BASE_SYSTEM_KNOWN_VOLUME_IDENTITY_PASS',
+    'IOS_CRYPTEX_KNOWN_VOLUME_IDENTITY_PASS',
+    'IOS_RESTORE_KNOWN_VOLUME_IDENTITY_PASS',
+    'CONTAINER_VOLUME_ENUMERATION_CLAIM_LEVEL_PASS',
+    'ROOT_SELECTION_APFS_REPARSE_DURABLE_PASS',
+    'ROOT_SELECTION_NEGATIVE_CONTROL_HARNESS_DURABLE_PASS',
+    'ROOT_SELECTION_NEGATIVE_CONTROLS_PASS',
+    'IOS_ROOT_RUNTIME_IDENTITY_DEFERRED_PASS',
+    'IOS_ROOT_DEVICE_SELECTION_STATIC_MODEL_PASS',
+    'IOS_ROOT_VOLUME_GROUP_SINGLE_STATE_PASS',
+    'IOS_PREBOOT_ROOT_SELECTION_SINGLE_STATE_PASS',
+    'IOS_ROOT_UNRESOLVED_PASS_REFUSAL_PASS',
     'IOS_ROOT_MATCHING_SINGLE_STATE_PASS',
     'IOS_ROOT_SELECTOR_SINGLE_STATE_PASS',
     'IOS_ROOT_VOLUME_IDENTITY_CLAIM_LEVEL_PASS',
@@ -1048,8 +1057,8 @@ if ($rd.restore_nxsb.authoritative_nxsb.checksum_valid -ne $true) {
 } else {
     Write-Host 'OK rd_nxsb_checksum_proof'
 }
-if ($rd.restore_nxsb.RESTORE_NXSB_FIELD_LAYOUT_PASS -ne $true -or $rd.restore_nxsb.RESTORE_AUTHORITATIVE_NXSB_PASS -ne $true) {
-    Write-Host 'MISMATCH restore NXSB layout/authoritative flags not true'
+if ($rd.restore_nxsb.RESTORE_NXSB_FIELD_LAYOUT_PASS -ne $true) {
+    Write-Host 'MISMATCH restore NXSB field-layout flag not true'
     $script:failures++
 } else {
     Write-Host 'OK rd_nxsb_layout_flags'
@@ -1148,6 +1157,108 @@ if ($rd.root_identity_chain.IOS_ROOT_IDENTITY_CHAIN_SINGLE_STATE_PASS -ne $true)
     $script:failures++
 } else {
     Write-Host 'OK rd_identity_chain_single_state'
+}
+
+# 57ZO: single-state PASS booleans must be false (no unresolved PASS)
+if ($rd.volume_group.IOS_ROOT_VOLUME_GROUP_SELECTION_PASS -ne $false) {
+    Write-Host 'MISMATCH volume-group PASS must be false while UUID unresolved'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_volume_group_pass_false'
+}
+if ($rd.preboot_metadata.IOS_PREBOOT_ROOT_SELECTION_METADATA_PASS -ne $false) {
+    Write-Host 'MISMATCH preboot PASS must be false while deferred'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_preboot_pass_false'
+}
+if ($rd.volume_group.IOS_ROOT_VOLUME_GROUP_SINGLE_STATE_PASS -ne $true -or
+    $rd.preboot_metadata.IOS_PREBOOT_ROOT_SELECTION_SINGLE_STATE_PASS -ne $true) {
+    Write-Host 'MISMATCH single-state flags missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_single_state_flags'
+}
+if ($rd.IOS_ROOT_UNRESOLVED_PASS_REFUSAL_PASS -ne $true) {
+    Write-Host 'MISMATCH unresolved-PASS refusal flag missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_unresolved_pass_refusal'
+}
+
+# 57ZO: restore checkpoint classification
+if ($rd.restore_nxsb.RESTORE_AUTHORITATIVE_NXSB_PASS -ne $false) {
+    Write-Host 'MISMATCH RESTORE_AUTHORITATIVE_NXSB_PASS must be false (no ring proof)'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_authoritative_nxsb_pass_false'
+}
+if ($rd.restore_nxsb.RESTORE_BLOCK0_NXSB_IDENTITY_PASS -ne $true) {
+    Write-Host 'MISMATCH block0 NXSB identity flag missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_block0_nxsb_identity'
+}
+if ($rd.restore_nxsb.RESTORE_NXSB_SCAN_VS_CHECKPOINT_SEPARATION_PASS -ne $true) {
+    Write-Host 'MISMATCH scan-vs-checkpoint separation flag missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_scan_vs_checkpoint_separation'
+}
+if ($rd.restore_nxsb.checkpoint_candidates_classification -ne 'NXSB_MAGIC_CHECKSUM_VALID_FOREIGN_OR_STALE_CANDIDATES') {
+    Write-Host 'MISMATCH checkpoint candidates not classified as foreign/stale'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_foreign_stale_classification'
+}
+
+# 57ZO: volume enumeration claim level (KNOWN identity, not exhaustive enumeration)
+foreach ($flag in @(
+    'IOS_BASE_SYSTEM_KNOWN_VOLUME_IDENTITY_PASS',
+    'IOS_CRYPTEX_KNOWN_VOLUME_IDENTITY_PASS',
+    'IOS_RESTORE_KNOWN_VOLUME_IDENTITY_PASS',
+    'CONTAINER_VOLUME_ENUMERATION_CLAIM_LEVEL_PASS'
+)) {
+    $val = $rd.volume_enumeration.$flag
+    if ($val -ne $true) {
+        Write-Host "MISMATCH known-volume/claim-level flag false/missing: $flag"
+        $script:failures++
+    } else {
+        Write-Host "OK $flag"
+    }
+}
+
+# 57ZO: runtime-deferred preserved
+Assert-Equal 'rd_nsid_deferred' $rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
+Assert-Equal 'rd_nsid_status' $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
+Assert-Equal 'rd_media_deferred' $rd.claim_level.exact_root_media_identity 'STATIC_UNRESOLVED'
+if ($rd.IOS_ROOT_RUNTIME_IDENTITY_DEFERRED_PASS -ne $true -or $rd.IOS_ROOT_DEVICE_SELECTION_STATIC_MODEL_PASS -ne $true) {
+    Write-Host 'MISMATCH runtime-deferred / static-model flags missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_runtime_deferred_flags'
+}
+
+# 57ZO: final single-state root chain link statuses
+$chainStatuses = @('PROVEN', 'PROVEN_STATIC', 'PROVEN_FROM_IMAGE', 'PROVEN_FROM_IMAGE', 'RUNTIME_DEFERRED', 'RUNTIME_DEFERRED', 'RUNTIME_DEFERRED')
+$chainLinks = @('selector mechanism', 'fallback IOMedia path', 'base System container', 'base System known volume', 'winning ANS namespace', 'winning IOMedia instance', 'runtime association')
+for ($i = 0; $i -lt 7; $i++) {
+    $link = $rd.root_identity_chain.links[$i]
+    if ($link.status -ne $chainStatuses[$i]) {
+        Write-Host "MISMATCH identity chain link[$i] status: $($link.status) != $($chainStatuses[$i])"
+        $script:failures++
+    }
+}
+Write-Host 'OK rd_final_chain_single_state'
+
+# 57ZO: durable scripts must exist (parser + negative-control harness)
+foreach ($script in @('scripts\phase05f-nxsb-reparse.py', 'scripts\phase05f-root-selection-negative-controls.py')) {
+    if (-not (Test-Path (Join-Path $root $script))) {
+        Write-Host "MISMATCH durable script missing: $script"
+        $script:failures++
+    } else {
+        Write-Host "OK durable_script_present: $script"
+    }
 }
 
 # 57ZM: exact identity values (media predicate, container, volumes, group, manifest role)

@@ -1,6 +1,6 @@
 {
   "gate": "IOS_ROOT_DEVICE_SELECTION",
-  "iteration": "57ZN",
+  "iteration": "57ZO",
   "date": "2026-10-01",
   "certified": "PARTIAL_PASS_REPAIR_REQUIRED",
   "input_identity": {
@@ -204,7 +204,7 @@
     "ans_nvme_implementation": "NOT_STARTED_ITERATION_58_BLOCKED"
   },
   "next_gate": "IOS_ROOT_TRANSITION_MODEL (static investigation MAY proceed; runtime root-device certification deferred)",
-  "supersedes": "57ZM (reviewer verdict: PARTIAL_PASS_REPAIR_REQUIRED; evidence-certification repair)",
+  "supersedes": "57ZN (reviewer verdict: PARTIAL_PASS_REPAIR_REQUIRED; final certification cleanup)",
   "mountroot_mechanism": {
     "IOS_MOUNTROOT_SELECTION_MECHANISM_PASS": true,
     "status": "PASS_STATIC",
@@ -385,14 +385,15 @@
     "bsd_name_assignment": "PENDING_RUNTIME"
   },
   "volume_group": {
-    "IOS_ROOT_VOLUME_GROUP_SELECTION_PASS": true,
+    "IOS_ROOT_VOLUME_GROUP_SELECTION_PASS": false,
     "system_volume_uuid": "9a503cf26d7a4fdaa233600dd13b4994",
     "data_volume_uuid": "STATIC_UNRESOLVED",
     "volume_group_uuid": "STATIC_UNRESOLVED",
     "missing_side": "Data volume absent from decrypted System container; pairing metadata location NOT_YET_LOCATED",
     "scope": "identity/pairing only; Data lifecycle audit remains a separate OPEN gate",
     "IOS_ROOT_VOLUME_GROUP_CLAIM_LEVEL_PASS": true,
-    "claim_state": "STATIC_UNRESOLVED_RUNTIME_DEFERRED"
+    "claim_state": "STATIC_UNRESOLVED_RUNTIME_DEFERRED",
+    "IOS_ROOT_VOLUME_GROUP_SINGLE_STATE_PASS": true
   },
   "boot_manifest_role": {
     "IOS_BOOT_MANIFEST_ROOT_SELECTION_ROLE_PASS": true,
@@ -403,12 +404,13 @@
     "note": "static classification; runtime SEC validation not claimed"
   },
   "preboot_metadata": {
-    "IOS_PREBOOT_ROOT_SELECTION_METADATA_PASS": true,
+    "IOS_PREBOOT_ROOT_SELECTION_METADATA_PASS": false,
     "classification": "PENDING_RUNTIME_AUDIT",
     "reason": "Preboot volume is not present in the restore fixture container; its metadata contribution to root selection cannot be audited without a normal-boot image set",
     "not_claimed": "no Preboot root-selection contribution is claimed",
     "IOS_PREBOOT_ROOT_SELECTION_CLAIM_LEVEL_PASS": true,
-    "claim_state": "STATIC_UNRESOLVED_RUNTIME_DEFERRED"
+    "claim_state": "STATIC_UNRESOLVED_RUNTIME_DEFERRED",
+    "IOS_PREBOOT_ROOT_SELECTION_SINGLE_STATE_PASS": true
   },
   "root_identity_chain": {
     "IOS_ROOT_IDENTITY_CHAIN_SINGLE_STATE_PASS": true,
@@ -423,23 +425,23 @@
         "status": "PROVEN_STATIC"
       },
       {
-        "link": "winning IOMedia instance",
-        "status": "RUNTIME_DEFERRED"
+        "link": "base System container identity",
+        "status": "PROVEN_FROM_IMAGE"
+      },
+      {
+        "link": "base System known volume identity",
+        "status": "PROVEN_FROM_IMAGE"
       },
       {
         "link": "winning ANS namespace",
         "status": "RUNTIME_DEFERRED"
       },
       {
-        "link": "normal-boot base System container identity",
-        "status": "PROVEN_FROM_IMAGE"
+        "link": "winning IOMedia instance",
+        "status": "RUNTIME_DEFERRED"
       },
       {
-        "link": "normal-boot System volume identity",
-        "status": "PROVEN_FROM_IMAGE"
-      },
-      {
-        "link": "runtime association between winning media and that container",
+        "link": "runtime IOMedia to System container association",
         "status": "RUNTIME_DEFERRED"
       }
     ]
@@ -475,7 +477,7 @@
   ],
   "restore_nxsb": {
     "RESTORE_NXSB_FIELD_LAYOUT_PASS": true,
-    "RESTORE_AUTHORITATIVE_NXSB_PASS": true,
+    "RESTORE_AUTHORITATIVE_NXSB_PASS": false,
     "RESTORE_NXSB_OBJECT_XID_PASS": true,
     "RESTORE_NXSB_BLOCK_COUNT_PASS": true,
     "layout_source": "canonical APFS obj_phys + nx_superblock offsets; Fletcher-64 per repo apfs_reader.cpp (sum from 0x08, c1=M-((s1+s2)%M), c2=M-((s1+c1)%M))",
@@ -499,46 +501,57 @@
         "block_index": 2,
         "xid": 1,
         "block_count": 341914,
-        "checksum_valid": true
+        "checksum_valid": true,
+        "classification": "FOREIGN_OR_STALE_CANDIDATE"
       },
       {
         "block_index": 4,
         "xid": 2,
         "block_count": 341914,
-        "checksum_valid": true
+        "checksum_valid": true,
+        "classification": "FOREIGN_OR_STALE_CANDIDATE"
       },
       {
         "block_index": 6,
         "xid": 3,
         "block_count": 341914,
-        "checksum_valid": true
+        "checksum_valid": true,
+        "classification": "FOREIGN_OR_STALE_CANDIDATE"
       },
       {
         "block_index": 8,
         "xid": 4,
         "block_count": 341914,
-        "checksum_valid": true
+        "checksum_valid": true,
+        "classification": "FOREIGN_OR_STALE_CANDIDATE"
       },
       {
         "block_index": 10,
         "xid": 5,
         "block_count": 341914,
-        "checksum_valid": true
+        "checksum_valid": true,
+        "classification": "FOREIGN_OR_STALE_CANDIDATE"
       },
       {
         "block_index": 12,
         "xid": 6,
         "block_count": 341914,
-        "checksum_valid": true
+        "checksum_valid": true,
+        "classification": "FOREIGN_OR_STALE_CANDIDATE"
       },
       {
         "block_index": 14,
         "xid": 7,
         "block_count": 341914,
-        "checksum_valid": true
+        "checksum_valid": true,
+        "classification": "FOREIGN_OR_STALE_CANDIDATE"
       }
     ],
-    "classification": "block 0 is the last-clean/current checkpoint (highest xid 9, checksum-valid); blocks 2..14 are older checkpoint candidates xid 1..7, all checksum-valid"
+    "classification": "block 0 is checksum-valid and self-consistent (RESTORE_BLOCK0_NXSB_IDENTITY_PASS). Blocks 2..14 carry NXSB magic + valid checksum but report block_count=341914 while the restore container is 59392 blocks, so they are NOT checkpoint copies of this container; no checkpoint-ring membership is claimed. RESTORE_AUTHORITATIVE_NXSB_PASS=false.",
+    "RESTORE_BLOCK0_NXSB_IDENTITY_PASS": true,
+    "RESTORE_NXSB_SCAN_VS_CHECKPOINT_SEPARATION_PASS": true,
+    "checkpoint_ring": "NOT_REQUIRED_FOR_ROOT_SELECTION_STATIC_GATE",
+    "checkpoint_candidates_classification": "NXSB_MAGIC_CHECKSUM_VALID_FOREIGN_OR_STALE_CANDIDATES"
   },
   "container_identity": {
     "CONTAINER_IDENTITY_SEPARATION_PASS": true,
@@ -587,9 +600,6 @@
   },
   "IOS_SYSTEM_APFS_CONTAINER_IDENTITY_PASS": true,
   "volume_enumeration": {
-    "IOS_BASE_SYSTEM_CONTAINER_VOLUME_ENUMERATION_PASS": true,
-    "IOS_CRYPTEX_CONTAINER_VOLUME_ENUMERATION_PASS": true,
-    "IOS_RESTORE_CONTAINER_VOLUME_ENUMERATION_PASS": true,
     "base_system_container_volumes": [
       {
         "name": "Rave24A437.D37OS",
@@ -628,7 +638,11 @@
       }
     ],
     "IOS_ROOT_VOLUME_IDENTITY_CLAIM_LEVEL_PASS": true,
-    "note": "volume counts are PROVEN_FOR_ENUMERATED_APSS; exhaustive in-container enumeration beyond these APSBs is not claimed"
+    "note": "KNOWN_VOLUME_IDENTITY gates: each container has at least one checksum-verified APSB identity; exhaustive in-container enumeration beyond the listed APSBs is NOT claimed.",
+    "IOS_BASE_SYSTEM_KNOWN_VOLUME_IDENTITY_PASS": true,
+    "IOS_CRYPTEX_KNOWN_VOLUME_IDENTITY_PASS": true,
+    "IOS_RESTORE_KNOWN_VOLUME_IDENTITY_PASS": true,
+    "CONTAINER_VOLUME_ENUMERATION_CLAIM_LEVEL_PASS": true
   },
   "IOS_SYSTEM_CONTAINER_VOLUME_ENUMERATION_PASS": null,
   "apfs_root_volume_lookup": {
@@ -641,5 +655,24 @@
     "mountroot_selection_mechanism": "STATICALLY_PROVEN",
     "normal_boot_image_container_volume_identities": "STATICALLY_PROVEN_FROM_IMAGES",
     "runtime_winning_namespace_media_instance": "RUNTIME_DEFERRED"
+  },
+  "IOS_ROOT_UNRESOLVED_PASS_REFUSAL_PASS": true,
+  "IOS_ROOT_RUNTIME_IDENTITY_DEFERRED_PASS": true,
+  "IOS_ROOT_DEVICE_SELECTION_STATIC_MODEL_PASS": true,
+  "negative_controls": {
+    "ROOT_SELECTION_NEGATIVE_CONTROLS_PASS": true,
+    "TOTAL_NEGATIVE_CONTROLS": 34,
+    "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
+    "RESTORED_BASELINE_EXIT": 0,
+    "harness": "scripts/phase05f-root-selection-negative-controls.py",
+    "parser": "scripts/phase05f-nxsb-reparse.py",
+    "note": "34 mutations, each individually restored; all EXIT=1; restored baseline EXIT=0",
+    "verified_run": {
+      "date": "2026-10-01",
+      "TOTAL_NEGATIVE_CONTROLS": 34,
+      "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
+      "RESTORED_BASELINE_EXIT": 0,
+      "ALL_NEGATIVE_CONTROLS_PASS": true
+    }
   }
 }
