@@ -459,7 +459,7 @@ Assert-Equal 'lba_next_gate' $lba.canonical_state.next_gate 'SEALED_CRYPTEX_AUTH
 
 # --- preboom summary cross-check ---
 Assert-Equal 'x_preboom_lba_contract' $summary.storage_gates_open.IOS_STORAGE_LBA_CONTRACT 'PASS_CLOSED'
-Assert-Equal 'x_preboom_lba_next' $summary.storage_gates_open.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'NEXT'
+Assert-Equal 'x_preboom_lba_next' $summary.storage_gates_open.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'PASS_CLOSED'
 $sumLba = $summary.ios_storage_lba
 Assert-Equal 'x_preboom_lba_size' $sumLba.NVME_NAMESPACE_LBA_SIZE 4096
 Assert-Equal 'x_preboom_lba_shift' $sumLba.NVME_NAMESPACE_LBA_SHIFT 12
@@ -535,6 +535,79 @@ Assert-Equal 'lba_regress_ncap_off' $lba.identify_path.offset_8_field 'NCAP'
 Assert-Equal 'lba_regress_nsze_std' $lba.external_reference_audit.standard_nvme_reference.identify_namespace_layout[0].offset 0
 Assert-Equal 'lba_regress_ncap_std' $lba.external_reference_audit.standard_nvme_reference.identify_namespace_layout[1].offset 8
 
+# ================= 57ZF: SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK =================
+$cryptexPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-authoritative-root-walk.json'
+$cryptexRaw = Get-Content $cryptexPath -Raw
+$cryptex = $cryptexRaw | ConvertFrom-Json
+
+# 1. Input identity must agree across cryptex + preboom + LBA artifacts
+Assert-Equal 'cryptex_identity_sha' $cryptex.input_identity.cryptex_image.sha256 $lba.input_identity.cryptex_image.sha256
+Assert-Equal 'cryptex_identity_size' $cryptex.input_identity.cryptex_image.size $lba.input_identity.cryptex_image.size
+Assert-Equal 'cryptex_identity_blocksize' $cryptex.input_identity.cryptex_image.apfs_block_size 4096
+Assert-Equal 'cryptex_identity_lba4096' $cryptex.input_identity.cryptex_image.lba_4096_alignment $true
+
+# 2. Scan-shortcut signatures must be absent from the durable cryptex artifact
+$cryptexShortcuts = @(
+    'magic scan only',
+    'highest physical APSB block',
+    'highest XID found globally',
+    'string-search selected root',
+    'known file path found without root-tree traversal'
+)
+$cryptexShortcutFound = $false
+foreach ($sig in $cryptexShortcuts) {
+    if ($cryptexRaw -match [regex]::Escape($sig)) {
+        Write-Host "MISMATCH cryptex scan-shortcut signature present: $sig"
+        $cryptexShortcutFound = $true
+    }
+}
+if ($cryptexShortcutFound) { $script:failures++ } else { Write-Host "OK CRYPTEX_AUTHORITATIVE_WALK_FAIL_CLOSED_PASS" }
+
+# 3. Closure gate: all 16 required PASS flags must be true
+$cryptexRequired = @(
+    'CRYPTEX_AUTHORITATIVE_NXSB_PASS',
+    'CRYPTEX_AUTHORITATIVE_OBJECT_CHECKSUM_PASS',
+    'CRYPTEX_CHECKPOINT_MAP_PASS',
+    'CRYPTEX_CONTAINER_VOLUME_ENUMERATION_PASS',
+    'CRYPTEX_SYSTEMOS_VOLUME_IDENTITY_PASS',
+    'CRYPTEX_VOLUME_OMAP_PASS',
+    'CRYPTEX_SNAPSHOT_METADATA_ENUMERATION_PASS',
+    'CRYPTEX_AUTHORITATIVE_SNAPSHOT_PASS',
+    'CRYPTEX_AUTHORITATIVE_ROOT_TREE_RESOLUTION_PASS',
+    'CRYPTEX_AUTHORITATIVE_FILESYSTEM_WALK_PASS',
+    'CRYPTEX_ROOT_WALK_KNOWN_FILE_PROOF_PASS',
+    'CRYPTEX_SCAN_VS_AUTHORITATIVE_WALK_SEPARATION_PASS',
+    'CRYPTEX_AUTHORITATIVE_WALK_FAIL_CLOSED_PASS',
+    'CRYPTEX_AUTHORITATIVE_ROOT_WALK_DURABLE_PASS',
+    'CRYPTEX_ROOT_WALK_CROSS_ARTIFACT_CONSISTENCY_PASS',
+    'CRYPTEX_ROOT_WALK_INPUT_IDENTITY_PASS'
+)
+foreach ($flag in $cryptexRequired) {
+    $val = $cryptex.canonical_state.$flag
+    if ($val -ne $true) {
+        Write-Host "MISMATCH cryptex gate flag false/missing: $flag = $val"
+        $script:failures++
+    } else {
+        Write-Host "OK $flag"
+    }
+}
+
+# 4. Volume identity + walk shape must match the recorded authoritative values
+Assert-Equal 'cryptex_vol_name' $cryptex.systemos_volume_identity.volume_name 'Rave24A437.D37SystemCryptex'
+Assert-Equal 'cryptex_vol_uuid' $cryptex.systemos_volume_identity.volume_uuid '7f74e822669746de878e1b0172ed0eb9'
+Assert-Equal 'cryptex_root_tree_oid' $cryptex.root_tree_resolution.root_tree_oid 1291
+Assert-Equal 'cryptex_root_block' $cryptex.root_tree_resolution.resolved_physical_block 61526
+Assert-Equal 'cryptex_walk_nodes' $cryptex.filesystem_walk.nodes_walked 7011
+Assert-Equal 'cryptex_walk_records' $cryptex.filesystem_walk.records_decoded 457595
+Assert-Equal 'cryptex_walk_failures' $cryptex.filesystem_walk.checksum_or_structural_failures 0
+Assert-Equal 'cryptex_known_file_cnid' $cryptex.known_file_proof.inode.cnid 132
+Assert-Equal 'cryptex_known_file_sha' $cryptex.known_file_proof.reconstruction.sha256 '09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1'
+Assert-Equal 'cryptex_plist_build' $cryptex.known_file_proof.reconstruction.plist_contents.ProductBuildVersion '24A437'
+Assert-Equal 'cryptex_plist_version' $cryptex.known_file_proof.reconstruction.plist_contents.ProductVersion '27.0'
+
+# 5. Cross-artifact: preboom summary must also carry PASS_CLOSED
+Assert-Equal 'cryptex_preboom_closed' $summary.sealed_container_walks.SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK 'PASS_CLOSED'
+Assert-Equal 'cryptex_preboom_next' $summary.storage_gates_open.CRYPTEX_ATTACHMENT_MODEL 'NEXT'
 if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"
     Write-Host "EVIDENCE_STALE_STATE_REFUSAL_FAIL"
