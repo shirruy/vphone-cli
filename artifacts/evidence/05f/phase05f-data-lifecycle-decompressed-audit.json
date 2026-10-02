@@ -1,6 +1,6 @@
 {
   "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
-  "iteration": "57ZZ",
+  "iteration": "57ZZ_PART3",
   "date": "2026-10-02",
   "DATA_PRODUCER_DECOMPRESSED_STRING_AUDIT_PASS": true,
   "DATA_PRODUCER_IMPORT_GRAPH_PASS": true,
@@ -848,7 +848,7 @@
     "volume_creation_api": {
       "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
       "found_in": "restored_external",
-      "significance": "primary volume creation interface in restore daemon; includes role, case sensitivity, reserve/quota, and pairedVolume parameters"
+      "significance": "selector present in restored_external; call-chain not yet proven. PRIMARY_CREATION_INTERFACE=STATIC_UNRESOLVED until call-site evidence."
     },
     "volume_group_uuid": {
       "property": "volumeGroupUUID",
@@ -858,7 +858,7 @@
     "newfs_apfs_invocation": {
       "string": "/sbin/newfs_apfs -s %lld System.Data.User.Preboot.Baseband Data.xART.Scratch.Update.Recovery -o.role",
       "found_in": "restored_external",
-      "significance": "restored_external spawns newfs_apfs with role support and standard iOS volume names"
+      "significance": "string cluster present; asr imports _posix_spawn and _execv. Spawn/exec chain not yet proven. DATA_NEWFS_APFS_EXECUTION=STRING_PRESENT_CALLSITE_UNRESOLVED"
     },
     "apfs_framework_volume_apis": {
       "imports": [
@@ -870,12 +870,18 @@
         "_APFSVolumeUpdateBounds"
       ],
       "found_in": "restored_external + asr",
-      "significance": "APFS.framework exposes C-level volume create/delete/role functions consumed by restore tooling"
+      "significance": "APFS.framework EXPORTS these symbols (defined/external in APFS.framework). restored_external and asr IMPORT them (proven undefined symbols in their symbol tables). See phase05f-data-lifecycle-symbol-imports.json."
     },
     "paired_volume_parameter": {
       "selector_part": "pairedVolume:error:",
       "found_in": "restored_external addVolume selector",
       "significance": "explicit pairedVolume parameter in the volume creation API, directly relevant to System/Data group pairing"
     }
-  }
+  },
+  "import_graph_terminology": {
+    "DATA_PRODUCER_DYLIB_DEPENDENCY_GRAPH_PASS": true,
+    "note": "LC_LOAD_DYLIB analysis proves library dependencies only; actual function-symbol imports proven separately via LC_SYMTAB nlist undefined-symbol analysis"
+  },
+  "APFS_FUNCTION_NAMES_PRESENT": true,
+  "APFS_SYMBOL_IMPORT_STATUS": "PROVEN"
 }

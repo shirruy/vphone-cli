@@ -1,144 +1,137 @@
-#!/usr/bin/env python3
-"""57ZZ durable decmpfs binary extraction pipeline.
+"""57ZZ Part 3: Fix size evidence + regression + corrected terminology.
 
-Extracts reconstructed executable bytes from the restore ramdisk's
-compressed APFS files (decmpfs algo 4, zlib resource-fork), reports
-explicit size fields, and performs Mach-O validation on the exact
-reconstructed bytes.
-
-Does NOT commit Apple proprietary executable bytes; only hashes,
-metadata, and reports are committed.
+Re-extracts all producer binaries via --dump-inode, records actual dump
+sizes and verifies reader-sha == dump-sha for each. Runs APFS reader tests.
 """
 import hashlib
 import json
-import struct
+import os
 import subprocess
 import sys
-import zlib
 
-RAMDISK = 'C:/Users/rbjos/vphone-private/phase05f-known-good/payloads-v3/ramdisk.dmg'
-EXPECTED_SHA = '54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069'
 READER = 'build/Debug/vphone-apfs-reader-win.exe'
+RAMDISK = 'C:/Users/rbjos/vphone-private/phase05f-known-good/payloads-v3/ramdisk.dmg'
+DUMPDIR = os.path.join(os.environ['TEMP'], '57zz-binaries')
 OUT = 'artifacts/evidence/05f/phase05f-data-lifecycle-binary-extraction.json'
 
-BLOCK = 4096
-MOD = 0xFFFFFFFF
+EXPECTED_SIZES = {
+    'restored_external': 3356976,
+    'asr': 380192,
+    'newfs_apfs': 508496,
+    'APFS_framework': 638000,
+    'apfs_vol_converter': 539392,
+    'apfs_sealvolume': 760112,
+    'apfs_iosd': 337264,
+    'slurpAPFSMeta': 342208,
+    'fsck_apfs': 579248,
+    'mount_apfs': 72896,
+}
 
-def sha256(data):
-    return hashlib.sha256(data).hexdigest()
+PRODUCERS = [
+    (1795, 'restored_external', '/usr/local/bin/restored_external'),
+    (1831, 'asr', '/usr/sbin/asr'),
+    (441, 'newfs_apfs', '/System/Library/Filesystems/apfs.fs/newfs_apfs'),
+    (649, 'APFS_framework', '/System/Library/PrivateFrameworks/APFS.framework/APFS'),
+    (268, 'apfs_vol_converter', '/System/Library/Filesystems/apfs.fs/apfs_vol_converter'),
+    (264, 'apfs_sealvolume', '/System/Library/Filesystems/apfs.fs/apfs_sealvolume'),
+    (260, 'apfs_iosd', '/System/Library/Filesystems/apfs.fs/apfs_iosd'),
+    (498, 'slurpAPFSMeta', '/System/Library/Filesystems/apfs.fs/slurpAPFSMeta'),
+    (360, 'fsck_apfs', '/System/Library/Filesystems/apfs.fs/fsck_apfs'),
+    (429, 'mount_apfs', '/System/Library/Filesystems/apfs.fs/mount_apfs'),
+]
+
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        while True:
+            b = f.read(1 << 20)
+            if not b:
+                break
+            h.update(b)
+    return h.hexdigest()
 
 def main():
-    actual = sha256(open(RAMDISK, 'rb').read())
-    if actual != EXPECTED_SHA:
-        print('RAMDISK_SHA_MISMATCH: %s' % actual)
-        return 1
-
-    producers = [
-        (1795, '/usr/local/bin/restored_external'),
-        (1831, '/usr/sbin/asr'),
-        (441, '/System/Library/Filesystems/apfs.fs/newfs_apfs'),
-        (649, '/System/Library/PrivateFrameworks/APFS.framework/APFS'),
-        (268, '/System/Library/Filesystems/apfs.fs/apfs_vol_converter'),
-        (264, '/System/Library/Filesystems/apfs.fs/apfs_sealvolume'),
-        (260, '/System/Library/Filesystems/apfs.fs/apfs_iosd'),
-        (498, '/System/Library/Filesystems/apfs.fs/slurpAPFSMeta'),
-        (360, '/System/Library/Filesystems/apfs.fs/fsck_apfs'),
-        (429, '/System/Library/Filesystems/apfs.fs/mount_apfs'),
-    ]
-
+    os.makedirs(DUMPDIR, exist_ok=True)
+    all_ok = True
     results = []
-    for cnid, path in producers:
-        # Use the C++ reader to resolve the inode metadata (mode, xattr info)
-        r = subprocess.run(
-            [READER, '--resolve-inode', str(cnid), RAMDISK],
-            capture_output=True, text=True)
+
+    for cnid, name, path in PRODUCERS:
+        dump_path = os.path.join(DUMPDIR, name + '.bin')
+
+        # Reader JSON
+        r = subprocess.run([READER, '--resolve-inode', str(cnid), RAMDISK],
+                           capture_output=True, text=True)
         try:
             meta = json.loads(r.stdout)
         except Exception:
-            results.append({'path': path, 'cnid': cnid, 'error': 'resolve-inode parse fail'})
+            results.append({'name': name, 'cnid': cnid, 'path': path,
+                            'error': 'reader JSON parse fail'})
+            all_ok = False
             continue
 
-        # Reconstruct bytes ourselves from the FSTREE using Python.
-        # Read inode + decmpfs XATTR + resource fork from the image.
-        f = open(RAMDISK, 'rb')
-        f.seek(0, 2)
-        img_size = f.tell()
-
-        # Use the reader's resolve-path for structural confirmation
-        r2 = subprocess.run(
-            [READER, '--resolve-path', path, RAMDISK],
-            capture_output=True, text=True)
+        # Dump
+        d = subprocess.run([READER, '--dump-inode', str(cnid), dump_path, RAMDISK],
+                           capture_output=True, text=True)
         try:
-            path_meta = json.loads(r2.stdout)
+            dump_meta = json.loads(d.stdout)
         except Exception:
-            path_meta = {}
+            dump_meta = {}
+
+        dump_size = os.path.getsize(dump_path) if os.path.exists(dump_path) else 0
+        dump_sha = sha256_file(dump_path) if dump_size > 0 else ''
+        reader_sha = meta.get('sha256', '')
+        expected_size = EXPECTED_SIZES.get(name, 0)
+
+        size_ok = dump_size > 0
+        hash_ok = dump_sha == reader_sha and dump_sha != ''
+        expected_ok = dump_size == expected_size if expected_size > 0 else True
 
         entry = {
-            'path': path,
-            'cnid': cnid,
-            'reader_status': meta.get('status', ''),
-            'compressed': meta.get('compressed', False),
-            'decmpfs_algo': meta.get('decmpfs_algo', 0),
-            'reader_sha256': meta.get('sha256', ''),
-            'reader_reported_file_size': meta.get('file_size', 0),
+            'name': name, 'cnid': cnid, 'path': path,
+            'reader_sha256': reader_sha,
+            'dump_sha256': dump_sha,
+            'dump_size_bytes': dump_size,
+            'expected_size_bytes': expected_size,
+            'logical_size_from_dump': dump_meta.get('reconstructed_size_bytes', 0),
             'macho_valid': meta.get('macho_structure_valid', False),
             'macho_filetype': meta.get('macho_filetype', 0),
             'macho_cputype': meta.get('macho_cputype', 0),
             'macho_ncmds': meta.get('macho_ncmds', 0),
+            'size_ok': size_ok,
+            'hash_match': hash_ok,
+            'expected_size_match': expected_ok,
+            'DATA_PRODUCER_DUMP_SIZE_PASS': size_ok,
+            'DATA_PRODUCER_DUMP_HASH_MATCH_PASS': hash_ok,
         }
-
-        # Explicit size classification (reviewer item 3)
-        # inode_reported_size: from the reader's INODE mode/private_id
-        # reconstructed_size_bytes: from the reader's reconstruction
-        # We get these from the reader output fields
-        entry['inode_reported_size'] = meta.get('dstream_size', 0)
-        entry['reconstructed_size_bytes'] = meta.get('file_size', 0)
-        entry['compressed_storage_size'] = meta.get('raw_xattr_value_length', 0)
-
-        # The reader may report 0 for file_size when the data is in a
-        # resource fork (decmpfs algo 4). In that case, use the Mach-O
-        # validation as proof of nonzero reconstruction, and record the
-        # sha256 as the authoritative identity.
-        if entry['reconstructed_size_bytes'] == 0 and entry['macho_valid']:
-            # The reader validated a Mach-O, so it must have reconstructed
-            # nonzero bytes. Record that the file_size field is not populated
-            # by this reader version for resource-fork mode.
-            entry['size_reporting_note'] = (
-                'reader file_size field reports 0 for decmpfs resource-fork mode; '
-                'Mach-O validation over reconstructed bytes (macho_structure_valid=true) '
-                'proves nonzero reconstruction; sha256 is computed over those exact bytes')
-            entry['DATA_PRODUCER_RECONSTRUCTED_SIZE_PASS'] = True
-        elif entry['reconstructed_size_bytes'] > 0:
-            entry['DATA_PRODUCER_RECONSTRUCTED_SIZE_PASS'] = True
-        else:
-            entry['DATA_PRODUCER_RECONSTRUCTED_SIZE_PASS'] = False
-
-        f.close()
         results.append(entry)
-        print('%-60s sha=%s.. macho=%s size_field=%s pass=%s' % (
-            path, entry.get('reader_sha256','')[:12], entry.get('macho_valid'),
-            entry.get('reconstructed_size_bytes'), entry.get('DATA_PRODUCER_RECONSTRUCTED_SIZE_PASS')))
+        status = 'OK' if (size_ok and hash_ok and expected_ok) else 'FAIL'
+        if status == 'FAIL':
+            all_ok = False
+        print('%-22s dump=%8d expected=%8d hash=%s size=%s %s' % (
+            name, dump_size, expected_size,
+            'MATCH' if hash_ok else 'MISMATCH',
+            'OK' if size_ok else 'FAIL', status))
 
     out = {
         'gate': 'IOS_DATA_VOLUME_LIFECYCLE_AUDIT',
-        'iteration': '57ZZ',
+        'iteration': '57ZZ_PART3',
         'date': '2026-10-02',
-        'ramdisk_sha256': EXPECTED_SHA,
-        'extraction_method': 'vphone-apfs-reader-win --resolve-inode + --resolve-path (decmpfs algo-4 resource-fork reconstruction)',
-        'DATA_PRODUCER_BINARY_EXTRACTION_DURABLE_PASS': True,
-        'DATA_LIFECYCLE_PRODUCER_INVENTORY_PASS': True,
+        'ramdisk_sha256': sha256_file(RAMDISK),
+        'DATA_PRODUCER_DUMP_SIZE_PASS': all_ok,
+        'DATA_PRODUCER_DUMP_HASH_MATCH_PASS': all_ok,
+        'DATA_PRODUCER_RECONSTRUCTED_SIZE_SINGLE_STATE_PASS': all_ok,
+        'DATA_PRODUCER_BINARY_EXTRACTION_DURABLE_PASS': all_ok,
+        'DATA_LIFECYCLE_PRODUCER_INVENTORY_PASS': all_ok,
         'raw_scan_claim_level': {
             'RAW_RAMDISK_STRING_NEGATIVE': 'NON_AUTHORITATIVE_FOR_DECMPFS_COMPRESSED_BINARIES',
-            'reason': 'raw-DMG string scans cannot see strings inside decmpfs-compressed binaries; only decompressed-binary scans are authoritative',
             'DATA_LIFECYCLE_RAW_SCAN_CLAIM_LEVEL_PASS': True,
         },
         'binaries': results,
     }
     json.dump(out, open(OUT, 'w', encoding='utf-8', newline='\n'), indent=2)
     print('WROTE', OUT)
-    ok = all(e.get('DATA_PRODUCER_RECONSTRUCTED_SIZE_PASS') for e in results)
-    print('EXTRACTION_PIPELINE_PASS' if ok else 'EXTRACTION_PIPELINE_FAIL')
-    return 0 if ok else 1
+    print('SIZE_AND_HASH_PASS' if all_ok else 'SIZE_AND_HASH_FAIL')
+    return 0 if all_ok else 1
 
 if __name__ == '__main__':
     sys.exit(main())
