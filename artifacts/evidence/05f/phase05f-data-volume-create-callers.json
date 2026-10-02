@@ -1,0 +1,78 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART8",
+  "date": "2026-10-02",
+  "status": "INTERMEDIATE",
+  "findings": {
+    "caller_preceding_calls": {
+      "0x100024428": [
+        {
+          "vm": "0x100024420",
+          "target": "0x1001bcc50",
+          "symbol": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x100024428",
+          "target": "0x1001bc990",
+          "symbol": "_APFSVolumeCreate"
+        }
+      ],
+      "0x10003f970": [
+        {
+          "vm": "0x10003f968",
+          "target": "0x1001bcc50",
+          "symbol": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10003f970",
+          "target": "0x1001bc990",
+          "symbol": "_APFSVolumeCreate"
+        }
+      ],
+      "0x100053458": [
+        {
+          "vm": "0x100053450",
+          "target": "0x1001bcc50",
+          "symbol": "_CCKDFParametersCreateHkfs"
+        },
+        {
+          "vm": "0x100053458",
+          "target": "0x1001bc990",
+          "symbol": "_APFSVolumeCreate"
+        }
+      ],
+      "pattern": "Every _APFSVolumeCreate call is immediately preceded by _CCKDFParametersCreateHkdf"
+    },
+    "dictionary_key_discovery": {
+      "finding": "The com.apple.apfs.volume.* string literals are NOT present in restored_external. They are APFS.framework CFString constants.",
+      "import_mechanism": "_kAPFSVolumeRoleKey etc. are undefined symbols (n_value=0) imported from APFS.framework",
+      "symtab_indices": {
+        "_kAPFSVolumeCaseSensitiveKey": 1105,
+        "_kAPFSVolumeFSIndexKey": 1106,
+        "_kAPFSVolumeGroupSiblingFSIndexKey": 1107,
+        "_kAPFSVolumeNameKey": 1108,
+        "_kAPFSVolumeNoAutomountAtCreateKey": 1109,
+        "_kAPFSVolumeQuotaSizeKey": 1110,
+        "_kAPFSVolumeReserveSizeKey": 1111,
+        "_kAPFSVolumeRoleKey": 1112
+      },
+      "chained_fixups": {
+        "format": "DYLD_CHAINED_FORMAT_IMPORT (2)",
+        "imports_count": 1501,
+        "next_step": "Parse format-2 chained fixup bindings to resolve GOT addresses for kAPFSVolume imports, then scan __text for ADRP+LDR xrefs"
+      }
+    },
+    "caller_context_analysis": {
+      "note": "Every _APFSVolumeCreate call site is preceded by _CCKDFParametersCreateHkdf (key derivation parameters), suggesting encryption setup occurs immediately before volume creation in the restore path. The options dictionary (x1) is constructed by a higher-level function and passed down as a parameter. The kAPFSVolume CFString constants are accessed via chained-fixup GOT bindings from APFS.framework, requiring format-2 import parsing.",
+      "encryption_hint": "HKDF key derivation immediately before volume creation suggests encrypted volume setup"
+    }
+  },
+  "remaining_unknowns": [
+    "Chained fixup format-2 parsing needed to resolve kAPFSVolume GOT slots",
+    "Dictionary construction function not yet identified",
+    "Which caller creates the Data volume specifically",
+    "Role=0x40 producer at the dictionary construction site",
+    "group_sibling_fsindex source",
+    "volumeGroupUUID producer"
+  ]
+}
