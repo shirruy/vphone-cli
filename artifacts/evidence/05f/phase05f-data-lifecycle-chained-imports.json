@@ -135,5 +135,24 @@
     ]
   },
   "note": "quota_size key not yet located in this scan; full scan of all ordinals needed",
-  "next_step": "ADRP+LDR xrefs from __text code to these bind VMs -> dictionary construction sites"
+  "next_step": "ADRP+LDR xrefs from __text code to these bind VMs -> dictionary construction sites",
+  "bind_location_analysis": {
+    "discovery": "kAPFSVolume bind pointers are inline in __TEXT (in __const data sections), not in __got/__auth_got",
+    "interpretation": "The bind pointers are chained-fixup values embedded within constant data in the __TEXT segment. They are CFString object references (APFS.framework exports) referenced from ObjC/Swift metadata or CF data structures. They are NOT directly loaded by ADRP+LDR from executable code \u2014 the access path goes through higher-level data structures.",
+    "role_key_bind": {
+      "file": "0x138070",
+      "vm": "0x100138070",
+      "context": "data in __TEXT __const"
+    },
+    "sibling_key_bind": {
+      "file": "0x192478",
+      "vm": "0x100192478",
+      "context": "data in __TEXT __const"
+    },
+    "xref_result": "no direct ADRP+LDR xrefs found from executable code to these bind VMs",
+    "next_approach": "The dictionary construction likely uses ObjC literal syntax or CF API calls that reference these keys through __cfstring or __objc_dictobj sections. Need to trace from the _APFSVolumeCreate callers backward through their x1 (dictionary) provenance chain to find who constructed it.",
+    "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": true,
+    "DATA_LIFECYCLE_APFS_KEY_XREF_STATUS": "INDIRECT_THROUGH_DATA_STRUCTURES"
+  },
+  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": true
 }
