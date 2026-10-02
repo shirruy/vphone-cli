@@ -1,26 +1,119 @@
 {
   "gate": "ARM64_DATAFLOW_ENGINE",
-  "iteration": "57ZZ_PART14C",
-  "ARM64_ABI_REGISTER_CLASSIFICATION_PASS": true,
-  "ARM64_CALL_BOUNDARY_FAIL_CLOSED_PASS": true,
-  "ARM64_DATAFLOW_EXPLICIT_PROVENANCE_STATE_PASS": true,
-  "ARM64_UNSUPPORTED_INSTRUCTION_FAIL_CLOSED_PASS": true,
+  "iteration": "57ZZ_PART14D",
+  "CONTROL_FLOW_MODEL": "LINEAR_BASIC_BLOCK_FAIL_CLOSED",
   "unit_tests": [
     {
       "name": "volatile_x1_killed_by_bl",
-      "expected": "CALL_CLOBBERED_UNKNOWN",
-      "actual": "CALL_CLOBBERED_UNKNOWN"
+      "expected_states": [
+        "CALL_CLOBBERED_UNKNOWN"
+      ],
+      "actual_state": "CALL_CLOBBERED_UNKNOWN",
+      "pass": true
     },
     {
       "name": "x0_callee_return",
-      "expected": "CALLEE_RETURN",
-      "actual": "CALLEE_RETURN"
+      "expected_states": [
+        "CALLEE_RETURN"
+      ],
+      "actual_state": "CALLEE_RETURN",
+      "pass": true
     },
     {
       "name": "x19_preserved_across_bl",
-      "expected": "REGISTER_ALIAS or STACK_SPILL",
-      "actual": "REGISTER_ALIAS"
+      "expected_states": [
+        "FUNCTION_ENTRY_ARGUMENT",
+        "REGISTER_ALIAS"
+      ],
+      "actual_state": "REGISTER_ALIAS",
+      "pass": true
+    },
+    {
+      "name": "wrong_expected_state_must_fail",
+      "expected_states": [
+        "CONSTANT"
+      ],
+      "actual_state": "CALL_CLOBBERED_UNKNOWN",
+      "pass": false,
+      "is_negative_meta_test": true
+    },
+    {
+      "name": "w1_write_defines_x1",
+      "expected_states": [
+        "CALLEE_RETURN",
+        "CALL_CLOBBERED_UNKNOWN"
+      ],
+      "actual_state": "CALL_CLOBBERED_UNKNOWN",
+      "pass": true
+    },
+    {
+      "name": "str_does_not_define_source",
+      "expected_states": [
+        "FUNCTION_ENTRY_ARGUMENT",
+        "REGISTER_ALIAS"
+      ],
+      "actual_state": "REGISTER_ALIAS",
+      "pass": true
+    },
+    {
+      "name": "callee_saved_x28_preserved",
+      "expected_states": [
+        "FUNCTION_ENTRY_ARGUMENT",
+        "REGISTER_ALIAS"
+      ],
+      "actual_state": "REGISTER_ALIAS",
+      "pass": true
+    },
+    {
+      "name": "volatile_x18_clobbered",
+      "expected_states": [
+        "CALL_CLOBBERED_UNKNOWN"
+      ],
+      "actual_state": "CALL_CLOBBERED_UNKNOWN",
+      "pass": true
+    },
+    {
+      "name": "register_plus_immediate_declared_state",
+      "expected_states": [
+        "REGISTER_PLUS_IMMEDIATE"
+      ],
+      "actual_state": "REGISTER_PLUS_IMMEDIATE",
+      "pass": true
+    },
+    {
+      "name": "function_entry_terminal_register_correct",
+      "expected_states": [
+        "FUNCTION_ENTRY_ARGUMENT"
+      ],
+      "actual_state": "FUNCTION_ENTRY_ARGUMENT",
+      "pass": true
+    },
+    {
+      "name": "cfg_claim_level_linear_fail_closed",
+      "expected_states": [
+        "LINEAR_BASIC_BLOCK_FAIL_CLOSED"
+      ],
+      "actual_state": "LINEAR_BASIC_BLOCK_FAIL_CLOSED",
+      "pass": true
+    },
+    {
+      "name": "conditional_select_static_unresolved",
+      "expected_states": [
+        "STATIC_UNRESOLVED"
+      ],
+      "actual_state": "STATIC_UNRESOLVED",
+      "pass": true
     }
   ],
-  "ARM64_DATAFLOW_UNIT_TEST_PASS": true
+  "total_tests": 12,
+  "ALL_UNIT_TESTS_PASS": true,
+  "ARM64_DATAFLOW_UNIT_TEST_EXPECTATION_ENFORCEMENT_PASS": true,
+  "ARM64_DATAFLOW_TEST_HARNESS_NEGATIVE_CONTROL_PASS": true,
+  "ARM64_XW_REGISTER_ALIAS_MODEL_PASS": true,
+  "ARM64_STORE_REGISTER_NONDEFINITION_PASS": true,
+  "ARM64_STP_REGISTER_NONDEFINITION_PASS": true,
+  "ARM64_PROVENANCE_STATE_ENUMERATION_PASS": true,
+  "ARM64_NO_UNDECLARED_PROVENANCE_STATE_PASS": true,
+  "ARM64_FUNCTION_ENTRY_ARGUMENT_IDENTITY_PASS": true,
+  "ARM64_CONTROL_FLOW_CLAIM_LEVEL_PASS": true
 }
