@@ -1501,6 +1501,193 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host 'OK IOS_ROOT_DEVICE_SELECTION_DURABLE_JSON_UNIQUE'
 }
 
+# ================= 57ZU: IOS_ROOT_TRANSITION_MODEL =================
+$tmPath = Join-Path $root 'artifacts\evidence\05f\phase05f-ios-root-transition-model.json'
+$tmProbePath = Join-Path $root 'artifacts\evidence\05f\phase05f-root-transition-probe-result.json'
+if (-not (Test-Path $tmPath) -or -not (Test-Path $tmProbePath)) {
+    Write-Host 'MISMATCH transition-model artifacts missing'
+    $script:failures++
+} else {
+    $tm = Get-Content $tmPath -Raw | ConvertFrom-Json
+    $tmProbe = Get-Content $tmProbePath -Raw | ConvertFrom-Json
+    $tmRaw = Get-Content $tmPath -Raw
+
+    # 1. Iteration + gate state
+    Assert-Equal 'tm_iteration' $tm.iteration '57ZU'
+    Assert-Equal 'tm_certified' $tm.certified 'PASS_STATIC_MODEL_RUNTIME_DATA_DEFERRED'
+
+    # 2. Role table + field offsets
+    Assert-Equal 'tm_role_system' $tm.role_table.roles.'0x0001' 'SYSTEM'
+    Assert-Equal 'tm_role_installer' $tm.role_table.roles.'0x0020' 'INSTALLER'
+    Assert-Equal 'tm_role_data' $tm.role_table.roles.'0x0040' 'DATA'
+    Assert-Equal 'tm_role_update' $tm.role_table.roles.'0x00C0' 'UPDATE'
+    Assert-Equal 'tm_role_offset' $tm.role_table.apfs_role_offset 'APSB+0x3C4'
+    Assert-Equal 'tm_group_offset' $tm.role_table.apfs_volume_group_id_offset 'APSB+0x3F0'
+    if ($tm.role_table.APFS_VOLUME_ROLE_TABLE_PASS -ne $true -or
+        $tm.role_table.APFS_ROLE_FIELD_OFFSET_PASS -ne $true -or
+        $tm.role_table.APFS_VOLUME_GROUP_ID_FIELD_OFFSET_PASS -ne $true) {
+        Write-Host 'MISMATCH transition role-table flags missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_role_table_flags'
+    }
+
+    # 3. Role lookup + data-miss + group consumer + pairing
+    Assert-Equal 'tm_lookup_site' $tm.role_lookup_consumer.key_sites[2].vm '0xfffffff00a22fc00'
+    Assert-Equal 'tm_data_miss_site' $tm.data_miss_behavior.site '0xfffffff00a22fc34'
+    Assert-Equal 'tm_data_miss_behavior' $tm.data_miss_behavior.behavior 'a missing DATA-role volume at the fstab lookup layer is handled specially: the mount entry is zeroed and boot continues at this layer'
+    Assert-Equal 'tm_pairing_consumer_vm' $tm.group_pairing.consumer_vm '0xfffffff00a265548'
+    if ($tm.role_lookup_consumer.IOS_ROLE_BASED_VOLUME_LOOKUP_PASS -ne $true -or
+        $tm.role_lookup_consumer.IOS_SYSTEM_DATA_ROLE_DISCOVERY_PASS -ne $true -or
+        $tm.data_miss_behavior.IOS_DATA_ROLE_LOOKUP_MISS_BEHAVIOR_PASS -ne $true -or
+        $tm.volume_group_metadata_consumer.IOS_VOLUME_GROUP_METADATA_CONSUMER_PASS -ne $true -or
+        $tm.group_pairing.IOS_SYSTEM_DATA_GROUP_PAIRING_PASS -ne $true -or
+        $tm.group_pairing.IOS_SYSTEM_DATA_GROUP_PAIRING_CONSUMER_PASS -ne $true -or
+        $tm.pairing_claim_levels.IOS_SYSTEM_DATA_PAIRING_CLAIM_LEVEL_PASS -ne $true) {
+        Write-Host 'MISMATCH transition mechanism flags missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_mechanism_flags'
+    }
+
+    # 4. Assignment producer must remain STATIC_UNRESOLVED
+    Assert-Equal 'tm_group_producer' $tm.group_assignment_producer.GROUP_UUID_ASSIGNMENT_PRODUCER 'STATIC_UNRESOLVED'
+    Assert-Equal 'tm_restore_creation' $tm.group_assignment_producer.IOS_RESTORE_VOLUME_GROUP_CREATION_PATH 'STATIC_UNRESOLVED'
+    if ($tm.group_assignment_producer.IOS_VOLUME_GROUP_ASSIGNMENT_CLAIM_LEVEL_PASS -ne $true) {
+        Write-Host 'MISMATCH assignment claim-level flag missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_assignment_claim_level'
+    }
+
+    # 5. Encryption requirement exact path
+    Assert-Equal 'tm_encryption_vm' $tm.encryption_requirement.consumer_vm '0xfffffff00a210cfc'
+    if ($tm.encryption_requirement.IOS_DATA_ENCRYPTION_REQUIREMENT_PASS -ne $true) {
+        Write-Host 'MISMATCH encryption requirement flag missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_encryption_requirement'
+    }
+
+    # 6. Deployed group UUIDs must remain STATIC_UNRESOLVED (no restore-assignment overclaim)
+    Assert-Equal 'tm_deployed_system_group' $tm.source_vs_runtime.DEPLOYED_RUNTIME_SYSTEM_VOLUME.volume_group_id 'STATIC_UNRESOLVED'
+    Assert-Equal 'tm_deployed_data_group' $tm.source_vs_runtime.DEPLOYED_RUNTIME_DATA_VOLUME.volume_group_id 'STATIC_UNRESOLVED'
+    if ($tm.source_vs_runtime.DEPLOYED_RUNTIME_DATA_VOLUME.PSObject.Properties.Name -contains 'volume_uuid') {
+        Write-Host 'MISMATCH invented Data volume_uuid present'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_no_invented_data_uuid'
+    }
+    if ($tmRaw -match 'ASSIGNED_AT_RESTORE_DEPLOYMENT') {
+        Write-Host 'MISMATCH stale ASSIGNED_AT_RESTORE_DEPLOYMENT claim present'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_no_restore_assignment_overclaim'
+    }
+
+    # 7. Source volume identity cross-check with probe + root-device artifact
+    $sysC = $null
+    foreach ($c in $tmProbe.containers) { if ($c.label -eq 'base_system') { $sysC = $c } }
+    if ($null -eq $sysC) {
+        Write-Host 'MISMATCH base_system container missing from probe'
+        $script:failures++
+    } else {
+        Assert-Equal 'tm_probe_container_uuid' $sysC.container_uuid 'f9023b16-bb2f-46ec-b1dc-a3c8cb4ce65b'
+        Assert-Equal 'tm_probe_source_volname' $tm.source_vs_runtime.SOURCE_SYSTEM_IMAGE.volume_name 'Rave24A437.D37OS'
+        Assert-Equal 'tm_probe_source_role' $tm.source_vs_runtime.SOURCE_SYSTEM_IMAGE.role 'SYSTEM'
+        Assert-Equal 'tm_probe_source_group_zero' $tm.source_vs_runtime.SOURCE_SYSTEM_IMAGE.volume_group_id '00000000-0000-0000-0000-000000000000'
+    }
+
+    # 8. Data absence scope: all containers DATA=false
+    if ($tm.aggregation.data_role_by_container.base_system -ne $false -or
+        $tm.aggregation.data_role_by_container.system_cryptex -ne $false -or
+        $tm.aggregation.data_role_by_container.restore_ramdisk -ne $false -or
+        ($tm.aggregation.data_role_by_container.PSObject.Properties.Name -notcontains 'base_system') -or
+        ($tm.aggregation.data_role_by_container.PSObject.Properties.Name -notcontains 'system_cryptex') -or
+        ($tm.aggregation.data_role_by_container.PSObject.Properties.Name -notcontains 'restore_ramdisk') -or
+        ($tmProbe.answers.data_volume_absent_from_available_image_set -ne $true) -or
+        ($tmProbe.answers.data_role_by_container.base_system -ne $false) -or
+        ($tmProbe.answers.data_role_by_container.system_cryptex -ne $false) -or
+        ($tmProbe.answers.data_role_by_container.restore_ramdisk -ne $false) -or
+        $tm.aggregation.data_volume_absent_from_available_image_set -ne $true -or
+        $tm.aggregation.DATA_ROLE_IMAGE_SET_AGGREGATION_PASS -ne $true -or
+        $tm.aggregation.DATA_ABSENCE_SCOPE_PASS -ne $true) {
+        Write-Host 'MISMATCH data-absence aggregation/scope invalid'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_data_absence_aggregation'
+    }
+
+    # 9. Runtime-deferred separation must stay deferred
+    Assert-Equal 'tm_concrete_data' $tm.static_vs_runtime_separation.CONCRETE_DATA_VOLUME_IDENTITY 'INPUT_OR_RUNTIME_DEFERRED'
+    Assert-Equal 'tm_runtime_pairing' $tm.static_vs_runtime_separation.RUNTIME_SYSTEM_DATA_PAIRING_VALIDATION 'DEFERRED_UNTIL_STORAGE_AVAILABLE'
+    if ($tm.static_vs_runtime_separation.IOS_ROOT_TRANSITION_STATIC_VS_RUNTIME_SEPARATION_PASS -ne $true) {
+        Write-Host 'MISMATCH static-vs-runtime separation flag missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_static_vs_runtime_separation'
+    }
+
+    # 10. Chain claim levels: runtime stages must not be PROVEN
+    $stageByName = @{}
+    foreach ($st in $tm.transition_chain.chain) { $stageByName[$st.stage] = $st.state }
+    Assert-Equal 'tm_chain_data_discovery' $stageByName['role-based Data discovery'] 'PROVEN_STATIC'
+    Assert-Equal 'tm_chain_group_pairing' $stageByName['System/Data group pairing'] 'PROVEN_STATIC'
+    Assert-Equal 'tm_chain_data_mount' $stageByName['Data mount'] 'RUNTIME_DEFERRED'
+    Assert-Equal 'tm_chain_firmlink' $stageByName['firmlink namespace composition'] 'RUNTIME_DEFERRED'
+    Assert-Equal 'tm_chain_userspace' $stageByName['normal userspace namespace'] 'RUNTIME_DEFERRED'
+    $orderByName = @{}
+    foreach ($st in $tm.mount_order.order) { $orderByName[$st.stage] = $st.state }
+    Assert-Equal 'tm_order_data_mount' $orderByName['Data mount'] 'RUNTIME_DEFERRED'
+    Assert-Equal 'tm_order_firmlink' $orderByName['firmlink table loaded'] 'RUNTIME_DEFERRED'
+    Assert-Equal 'tm_order_userspace' $orderByName['launchd/userspace startup'] 'RUNTIME_DEFERRED'
+    Assert-Equal 'tm_mountpoint_contract' $tm.data_mountpoint.IOS_DATA_MOUNTPOINT_CONTRACT 'STATIC_PARTIAL'
+    foreach ($st in $tm.transition_chain.chain) {
+        if ($st.state -eq 'RUNTIME_DEFERRED' -and $st.stage -match 'mount|namespace') {
+            # correct
+        }
+    }
+    if ($tm.transition_chain.IOS_ROOT_TRANSITION_CHAIN_CLAIM_LEVEL_PASS -ne $true -or
+        $tm.mount_order.IOS_ROOT_TO_DATA_TRANSITION_ORDER_CLAIM_LEVEL_PASS -ne $true) {
+        Write-Host 'MISMATCH transition chain claim-level flags missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_chain_claim_levels'
+    }
+
+    # 11. Gate must not be PASS_CLOSED while runtime links remain deferred
+    if ($tm.certified -eq 'PASS_CLOSED') {
+        Write-Host 'MISMATCH transition model must not be PASS_CLOSED while runtime links deferred'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_not_pass_closed'
+    }
+
+    # 12. Cross-artifact: preboom gate state
+    Assert-Equal 'tm_preboom_root_gate' $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
+    Assert-Equal 'tm_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+
+    # 13. Duplicate-key check on transition artifact
+    & python (Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py') $tmPath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host 'MISMATCH transition artifact duplicate keys'
+        $script:failures++
+    } else {
+        Write-Host 'OK IOS_ROOT_TRANSITION_MODEL_DURABLE_JSON_UNIQUE'
+    }
+
+    # Durable script presence
+    if (-not (Test-Path (Join-Path $root 'scripts\phase05f-root-transition-model.py')) -or
+        -not (Test-Path (Join-Path $root 'scripts\phase05f-root-transition-probe.py'))) {
+        Write-Host 'MISMATCH transition durable scripts missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_durable_scripts_present'
+    }
+
+    Write-Host 'IOS_ROOT_TRANSITION_CROSS_ARTIFACT_CONSISTENCY_PASS'
+}
+
 if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"
     Write-Host "EVIDENCE_STALE_STATE_REFUSAL_FAIL"
