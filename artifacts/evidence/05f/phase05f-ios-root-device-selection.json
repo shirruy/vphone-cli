@@ -1,8 +1,8 @@
 {
   "gate": "IOS_ROOT_DEVICE_SELECTION",
-  "iteration": "57ZP",
+  "iteration": "57ZQ",
   "date": "2026-10-01",
-  "certified": "PARTIAL_PASS_REPAIR_REQUIRED",
+  "certified": "PASS_CLOSED_STATIC_MODEL_RUNTIME_DEFERRED",
   "input_identity": {
     "bootkc_sha256": "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
     "dtree_raw_sha256": "7560aa1e4ac07c0d9b57e73a81668decb5969fe012208a199b58ccada2cf5e7b",
@@ -204,7 +204,7 @@
     "ans_nvme_implementation": "NOT_STARTED_ITERATION_58_BLOCKED"
   },
   "next_gate": "IOS_ROOT_TRANSITION_MODEL (static investigation MAY proceed; runtime root-device certification deferred)",
-  "supersedes": "57ZN (reviewer verdict: PARTIAL_PASS_REPAIR_REQUIRED; final certification cleanup)",
+  "supersedes": "57ZP (reviewer verdict: PARTIAL_PASS_FINAL_SYNC_REQUIRED; state sealing only)",
   "mountroot_mechanism": {
     "IOS_MOUNTROOT_SELECTION_MECHANISM_PASS": true,
     "status": "PASS_STATIC",
@@ -666,27 +666,40 @@
   "IOS_ROOT_DEVICE_SELECTION_STATIC_MODEL_PASS": true,
   "negative_controls": {
     "ROOT_SELECTION_NEGATIVE_CONTROLS_PASS": true,
-    "TOTAL_NEGATIVE_CONTROLS": 40,
+    "TOTAL_NEGATIVE_CONTROLS": 43,
     "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
     "RESTORED_BASELINE_EXIT": 0,
     "harness": "scripts/phase05f-root-selection-negative-controls.py",
     "parser": "scripts/phase05f-nxsb-reparse.py",
-    "note": "34 mutations, each individually restored; all EXIT=1; restored baseline EXIT=0",
-    "verified_run": {
-      "date": "2026-10-01",
-      "TOTAL_NEGATIVE_CONTROLS": 34,
+    "current_verified_run": {
+      "TOTAL_NEGATIVE_CONTROLS": 43,
       "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
       "RESTORED_BASELINE_EXIT": 0,
-      "ALL_NEGATIVE_CONTROLS_PASS": true
+      "ALL_NEGATIVE_CONTROLS_PASS": true,
+      "date": "2026-10-01"
     },
-    "verified_run_57zp": {
-      "TOTAL_NEGATIVE_CONTROLS": 40,
+    "note": "43 negative controls; every mutation EXIT=1; restored baseline EXIT=0",
+    "historical_verified_runs": {
+      "57ZO": {
+        "TOTAL_NEGATIVE_CONTROLS": 34,
+        "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
+        "RESTORED_BASELINE_EXIT": 0,
+        "historical": true,
+        "non_canonical": true
+      }
+    },
+    "verified_run_57zq": {
+      "TOTAL_NEGATIVE_CONTROLS": 43,
       "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
       "RESTORED_BASELINE_EXIT": 0,
-      "ALL_NEGATIVE_CONTROLS_PASS": true
+      "ALL_NEGATIVE_CONTROLS_PASS": true,
+      "date": "2026-10-01"
     }
   },
   "RESTORE_MODE_NXSB_CROSS_SECTION_CONSISTENCY_PASS": true,
   "RESTORE_MODE_APFS_FIELD_REFUSAL_PASS": true,
-  "RESTORE_MODE_NXSB_SINGLE_STATE_PASS": true
+  "RESTORE_MODE_NXSB_SINGLE_STATE_PASS": true,
+  "ROOT_SELECTION_NEGATIVE_CONTROL_SINGLE_STATE_PASS": true,
+  "ROOT_SELECTION_NEGATIVE_CONTROL_COUNT_CONSISTENCY_PASS": true,
+  "ROOT_SELECTION_REPARSE_RESULT_DURABILITY_PASS": true
 }

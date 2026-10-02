@@ -42,6 +42,11 @@ def restore(path):
 
 
 CONTROLS = [
+    # 57ZQ state-seal controls
+    ('current_count_43_verified_count_34', [
+        (['negative_controls', 'current_verified_run', 'TOTAL_NEGATIVE_CONTROLS'], 34)]),
+    ('current_note_mentions_34', [(['negative_controls', 'note'], '34 mutations')]),
+    ('root_device_PASS_CLOSED', [(['certified'], 'PASS_CLOSED')]),
     # 57ZP restore-mode single-state controls
     ('restore_mode_xid_59392', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'xid'], 59392)]),
     ('restore_mode_xid_changed', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'nx_object_xid'], 8)]),
@@ -124,6 +129,8 @@ def main():
     shutil.copy(PRE, PRE + '.bak')
     data = json.load(open(PRE, encoding='utf-8'))
     data['certified']['IOS_ROOT_DEVICE_SELECTION'] = 'PASS_CLOSED'
+    data['PREBOOM_ROOT_SELECTION_DEPENDENCY_SINGLE_STATE_PASS'] = False
+    data['storage_gates_open']['IOS_ROOT_TRANSITION_MODEL'] = 'BLOCKED_PENDING_57ZQ'
     open(PRE, 'w', encoding='utf-8', newline='\n').write(json.dumps(data, indent=2) + '\n')
     code = run_checker()
     ran += 1
