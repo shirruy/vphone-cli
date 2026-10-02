@@ -134,5 +134,146 @@
   "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_PASS": false,
   "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": true,
   "DYLD_CHAINED_POINTER_FORMAT_IDENTIFICATION_PASS": true,
-  "DYLD_CHAINED_POINTER_CHAIN_WALK_PASS": false
+  "DYLD_CHAINED_POINTER_CHAIN_WALK_PASS": false,
+  "x1_backward_trace": {
+    "method": "bounded backward slicing through mov/add/ldr/adrp/BL return",
+    "callers": [
+      {
+        "callsite_vm": "0x100024428",
+        "function_start_heuristic": "0x1000243b8",
+        "x1_chain": [
+          {
+            "vm": "0x100024408",
+            "insn": "mov x1, sp",
+            "defines": "x1",
+            "type": "STACK_POINTER",
+            "source": "sp"
+          },
+          {
+            "vm": "0x100024408",
+            "insn": "mov x1, sp",
+            "defines": "x1",
+            "type": "STACK_POINTER",
+            "source": "sp"
+          }
+        ],
+        "x1_final_source": "STACK_POINTER",
+        "x1_local_definition_pass": true
+      },
+      {
+        "callsite_vm": "0x10003f970",
+        "function_start_heuristic": "0x10003f880",
+        "x1_chain": [
+          {
+            "vm": "0x10003f954",
+            "insn": "add x1, x1, #0xd60",
+            "defines": "x1",
+            "type": "REGISTER_PLUS_IMMEDIATE",
+            "source": "x1",
+            "immediate": "#0xd60"
+          },
+          {
+            "vm": "0x10003f950",
+            "insn": "adrp x1, #0x1002da000",
+            "defines": "x1",
+            "type": "PAGE_ADDRESS"
+          }
+        ],
+        "x1_final_source": "PAGE_ADDRESS",
+        "x1_local_definition_pass": true
+      },
+      {
+        "callsite_vm": "0x100053458",
+        "function_start_heuristic": "0x100053278",
+        "x1_chain": [
+          {
+            "vm": "0x10005343c",
+            "insn": "mov x1, x21",
+            "defines": "x1",
+            "type": "REGISTER_TRANSFER",
+            "source": "x21"
+          },
+          {
+            "vm": "0x100053408",
+            "insn": "mov x21, x0",
+            "defines": "x21",
+            "type": "REGISTER_TRANSFER",
+            "source": "x0"
+          },
+          {
+            "vm": "0x1000533f4",
+            "insn": "mov x0, x23",
+            "defines": "x0",
+            "type": "REGISTER_TRANSFER",
+            "source": "x23"
+          },
+          {
+            "vm": "0x1000532a0",
+            "insn": "mov x23, x0",
+            "defines": "x23",
+            "type": "REGISTER_TRANSFER",
+            "source": "x0"
+          }
+        ],
+        "x1_final_source": "REGISTER_TRANSFER",
+        "x1_local_definition_pass": true
+      },
+      {
+        "callsite_vm": "0x10007c1ac",
+        "function_start_heuristic": "0x10007c138",
+        "x1_chain": [],
+        "x1_final_source": "NOT_TRACED",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007c1c4",
+        "function_start_heuristic": "0x10007c138",
+        "x1_chain": [],
+        "x1_final_source": "NOT_TRACED",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007e874",
+        "function_start_heuristic": "0x10007e4dc",
+        "x1_chain": [
+          {
+            "vm": "0x10007e7ec",
+            "insn": "add x1, x1, #0x500",
+            "defines": "x1",
+            "type": "REGISTER_PLUS_IMMEDIATE",
+            "source": "x1",
+            "immediate": "#0x500"
+          },
+          {
+            "vm": "0x10007e7e8",
+            "insn": "adrp x1, #0x1002e2000",
+            "defines": "x1",
+            "type": "PAGE_ADDRESS"
+          }
+        ],
+        "x1_final_source": "PAGE_ADDRESS",
+        "x1_local_definition_pass": true
+      },
+      {
+        "callsite_vm": "0x1001a2320",
+        "function_start_heuristic": "0x1001a1db8",
+        "x1_chain": [
+          {
+            "vm": "0x1001a2230",
+            "insn": "add x1, sp, #0x18",
+            "defines": "x1",
+            "type": "REGISTER_PLUS_IMMEDIATE",
+            "source": "sp",
+            "immediate": "#0x18"
+          }
+        ],
+        "x1_final_source": "REGISTER_PLUS_IMMEDIATE",
+        "x1_local_definition_pass": true
+      }
+    ],
+    "all_7_traced": false,
+    "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
+    "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL"
+  },
+  "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_PASS": true
 }
