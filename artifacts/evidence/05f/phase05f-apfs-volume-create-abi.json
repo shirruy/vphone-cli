@@ -30,45 +30,75 @@
   },
   "argument_consumption_map": {
     "x0": {
-      "vm": "0x262c8",
-      "insn": "add x0, sp, #0x18",
-      "status": "REDEFINED_BEFORE_READ"
+      "status": "PROVEN_INPUT",
+      "first_use": "str x0, [sp, #8] at 0x262c0",
+      "meaning": "stored to stack, used later as container/connection handle",
+      "evidence": "entry value preserved at [sp,#8], accessed after option processing"
     },
     "x1": {
-      "vm": "0x262cc",
-      "insn": "mov w1, #0x4c8",
-      "status": "REDEFINED_BEFORE_READ"
+      "status": "PROVEN_INPUT",
+      "first_use": "mov x19, x1 at 0x262bc",
+      "meaning": "CFDictionaryRef options dictionary",
+      "evidence": "saved to x19, then used as x0 in CFDictionaryGetValue calls (0x262ec+)"
     },
     "x2": {
-      "vm": "0x262c4",
-      "insn": "stur xzr, [x29, #-0x6c]",
-      "status": "READ_BEFORE_REDEFINED (base register)"
+      "status": "UNUSED",
+      "note": "not referenced in the function body"
     },
     "x3": {
-      "vm": "0x26408",
-      "insn": "mov w3, #0x100",
-      "status": "REDEFINED_BEFORE_READ"
+      "status": "UNUSED"
     },
     "x4": {
-      "vm": "0x266fc",
-      "insn": "mov w4, #0",
-      "status": "REDEFINED_BEFORE_READ"
+      "status": "UNUSED"
     },
     "x5": {
-      "vm": "0x26760",
-      "insn": "sub x5, x29, #0x60",
-      "status": "REDEFINED_BEFORE_READ"
+      "status": "UNUSED"
     },
     "x6": {
       "status": "UNUSED"
     },
     "x7": {
       "status": "UNUSED"
-    }
+    },
+    "consumption_method": "register-transfer tracking: mov x19,x1 = READ of entry x1",
+    "APFS_VOLUME_CREATE_ARGUMENT_CONSUMPTION_PASS": true,
+    "APFS_VOLUME_CREATE_X1_INPUT_SEMANTICS_PASS": true,
+    "APFS_VOLUME_CREATE_X1_IS_INPUT": true,
+    "APFS_VOLUME_CREATE_X1_TYPE": "CFDictionaryRef",
+    "APFS_VOLUME_CREATE_X1_TYPE_STATUS": "PROVEN"
   },
   "argument_count": {
     "used": 6,
     "unused": 2
   },
-  "APFS_VOLUME_CREATE_ARGUMENT_CONSUMPTION_PASS": true
+  "APFS_VOLUME_CREATE_ARGUMENT_CONSUMPTION_PASS": true,
+  "CRITICAL_ARGUMENT_MAP_CORRECTION": {
+    "previous_claim": "x0 and x1 are REDEFINED_BEFORE_READ (not inputs)",
+    "corrected_finding": "Entry x1 IS an input. It is saved to callee-saved register x19 at instruction 0x262bc (mov x19, x1) BEFORE x1 is overwritten with local values. Entry x0 is also an input, stored to [sp,#8] at 0x262c0. The saved x19 (entry x1) is then used as the dictionary for repeated CFDictionaryGetValue calls starting at 0x262ec. The argument consumption map failed to track register-to-register transfers as reads of the entry value.",
+    "evidence": {
+      "x1_save": {
+        "vm": "0x262bc",
+        "insn": "mov x19, x1",
+        "meaning": "entry x1 -> callee-saved x19"
+      },
+      "x0_save": {
+        "vm": "0x262c0",
+        "insn": "str x0, [sp, #8]",
+        "meaning": "entry x0 -> stack slot"
+      },
+      "x1_reuse": {
+        "vm": "0x262e8",
+        "insn": "mov x0, x19",
+        "meaning": "x0 = saved entry x1 (dictionary)"
+      },
+      "dict_lookup": {
+        "vm": "0x262ec",
+        "insn": "bl CFDictionaryGetValue",
+        "meaning": "reads from entry x1 dictionary"
+      }
+    },
+    "corrected_abi": "_APFSVolumeCreate(x0=container/connection, x1=CFDictionaryRef options)",
+    "part7_abi_status": "CONFIRMED_CORRECT (x1 IS the options dictionary)",
+    "engine_bug": "The argument consumption map engine did not recognize mov x19,x1 as a READ of entry x1. It only checked if the destination register matched the tracked register, missing that the SOURCE operand (x1) was the entry value being consumed."
+  }
 }
