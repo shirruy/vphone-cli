@@ -785,5 +785,30 @@
     },
     "APFS_VOLUME_CREATE_PRECEDING_HELPER_IDENTITY_PASS": true,
     "note": "All 4 preceding helper stubs resolved to exact imported symbols. The dominant pattern is _CCKDFParametersCreateHkdf (CryptoKit key derivation) immediately before _APFSVolumeCreate. The helpers are crypto/restore utility functions, NOT dictionary constructors. The x1 options dictionary must be constructed elsewhere in the caller function or passed as a higher-level parameter."
+  },
+  "x1_deep_investigation": {
+    "method": "Callee-saved register scan + helper implementation disassembly",
+    "x1_explicit_definition_in_caller": {
+      "result": "NONE_FOUND",
+      "note": "Scanned all 7 caller functions for any ldr x1, mov x1,x19-x28, or ldp x1 pattern. Zero x1 definitions found in any caller function body."
+    },
+    "helper_x1_preservation_check": {
+      "_APFSContainerWaitForReaper": {
+        "x1_modified": true,
+        "evidence": [
+          {
+            "vm": "0x2d104",
+            "insn": "mov x1, #0"
+          },
+          {
+            "vm": "0x2d124",
+            "insn": "mov w1, #0x50"
+          }
+        ],
+        "conclusion": "x1 IS clobbered by this helper"
+      }
+    },
+    "x1_provenance_conclusion": "x1 is NOT explicitly defined in any of the 7 caller functions. The intervening helper calls DO clobber x1 per ARM64 ABI. _APFSContainerWaitForReaper specifically sets x1=0 and w1=0x50. This means x1 at _APFSVolumeCreate is a STALE/GARBAGE value from the last helper call that modified it. The _APFSVolumeCreate function in APFS.framework reads options from x1, but the callers are NOT setting x1 to a valid CFDictionary before the call. POSSIBLE EXPLANATIONS: 1. The call sites are inside wrapper functions that use a non-standard calling convention. 2. The dictionary is constructed in a higher-level function and passed through    multiple layers of wrappers. 3. These calls are from static library code where the compiler inlined    dictionary construction and the x1 value is a compiler-internal artifact. 4. The dictionary construction happens in ObjC/Swift code compiled to    use a different register allocation pattern. NEXT: Disassemble _APFSVolumeCreate itself to confirm it truly expects x1=CFDictionary and to understand what happens when x1 contains garbage.",
+    "x1_provenance_status": "STATIC_UNRESOLVED"
   }
 }
