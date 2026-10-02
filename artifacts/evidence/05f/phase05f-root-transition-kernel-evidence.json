@@ -1,6 +1,6 @@
 {
   "gate": "IOS_ROOT_TRANSITION_KERNEL_EVIDENCE",
-  "iteration": "57ZV",
+  "iteration": "57ZX",
   "date": "2026-10-02",
   "bootkc_sha256": "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
   "extractor": "scripts/phase05f-root-transition-kernel-evidence.py",

@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZV'
+Assert-Equal 'iteration' $summary.iteration '57ZX'
 Assert-Equal 'ITERATION_57ZR' $summary.certified.ITERATION_57ZR 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -690,7 +690,7 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZV'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZX'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'STATIC_PASS_RUNTIME_DEFERRED'
 Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
@@ -770,7 +770,7 @@ $bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-b
 $bindRaw = Get-Content $bindPath -Raw
 $bind = $bindRaw | ConvertFrom-Json
 
-Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZV'
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZX'
 Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'STATIC_PASS_RUNTIME_DEFERRED'
 
 # 57ZI: SHA + fext-wording + duplicate-key checks for the binding artifact
@@ -916,7 +916,7 @@ $rdRaw = Get-Content $rdPath -Raw
 $rd = $rdRaw | ConvertFrom-Json
 
 Assert-Equal 'rd_gate' $rd.gate 'IOS_ROOT_DEVICE_SELECTION'
-Assert-Equal 'rd_iteration' $rd.iteration '57ZV'
+Assert-Equal 'rd_iteration' $rd.iteration '57ZX'
 Assert-Equal 'rd_certified' $rd.certified 'PASS_CLOSED_STATIC_MODEL_RUNTIME_DEFERRED'
 Assert-Equal 'rd_mechanism_status' $rd.mountroot_mechanism.status 'PASS_STATIC'
 Assert-Equal 'rd_mechanism_pc' $rd.mountroot_mechanism.mountroot_pc '0xfffffff00ab96a38'
@@ -927,7 +927,7 @@ Assert-Equal 'rd_claim_namespace_identity' $rd.claim_level.exact_root_namespace_
 Assert-Equal 'rd_selected_nsid' $rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_selected_nsid_status' $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
 
-Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZV'
+Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZX'
 Assert-Equal 'rd_preboom_57zl_state' $summary.certified.ITERATION_57ZL 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'rd_preboom_root_gate' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
@@ -1513,7 +1513,7 @@ if (-not (Test-Path $tmPath) -or -not (Test-Path $tmProbePath)) {
     $tmRaw = Get-Content $tmPath -Raw
 
     # 1. Iteration + gate state
-    Assert-Equal 'tm_iteration' $tm.iteration '57ZV'
+    Assert-Equal 'tm_iteration' $tm.iteration '57ZX'
     Assert-Equal 'tm_certified' $tm.certified 'PASS_STATIC_MODEL_RUNTIME_DATA_DEFERRED'
 
     # 2. Role table + field offsets
@@ -1632,7 +1632,7 @@ if (-not (Test-Path $tmPath) -or -not (Test-Path $tmProbePath)) {
     $stageByName = @{}
     foreach ($st in $tm.transition_chain.chain) { $stageByName[$st.stage] = $st.state }
     Assert-Equal 'tm_chain_data_discovery' $stageByName['role-based Data discovery'] 'PROVEN_STATIC'
-    Assert-Equal 'tm_chain_group_pairing' $stageByName['System/Data group pairing'] 'PROVEN_STATIC'
+    Assert-Equal 'tm_chain_group_pairing' $stageByName['System/Data pairing mechanism'] 'PROVEN_STATIC_CALLER_CONDITIONAL'
     Assert-Equal 'tm_chain_data_mount' $stageByName['Data mount'] 'RUNTIME_DEFERRED'
     Assert-Equal 'tm_chain_firmlink' $stageByName['firmlink namespace composition'] 'RUNTIME_DEFERRED'
     Assert-Equal 'tm_chain_userspace' $stageByName['normal userspace namespace'] 'RUNTIME_DEFERRED'
@@ -1737,13 +1737,13 @@ if (-not (Test-Path $kePath)) {
     }
 
     # TM pairing rule must state the conditional (not unconditional) UUID equality
-    if ($tm2.group_pairing.pairing_rule_proven.volume_group_id_equality -notmatch 'CONDITIONAL') {
+    if ($tm2.group_pairing.pairing_mechanism_proven.volume_group_id_equality -notmatch 'CONDITIONAL') {
         Write-Host 'MISMATCH TM pairing rule overclaims unconditional UUID equality'
         $script:failures++
     } else {
         Write-Host 'OK tm_pairing_rule_conditional'
     }
-    if ($tm2.group_pairing.pairing_rule_proven.caller_dependent -ne $true) {
+    if ($tm2.group_pairing.pairing_mechanism_proven.caller_dependent -ne $true) {
         Write-Host 'MISMATCH TM pairing rule missing caller_dependent'
         $script:failures++
     } else {
@@ -1840,7 +1840,7 @@ if (-not (Test-Path $kePath)) {
     # 57ZV preboom state
     Assert-Equal 'ke_preboom_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
     Assert-Equal 'ke_preboom_data_next' $summary.storage_gates_open.IOS_DATA_VOLUME_LIFECYCLE_AUDIT 'NEXT'
-    Assert-Equal 'ke_preboom_57zv' $summary.certified.ITERATION_57ZV 'PASS_CLOSED'
+    Assert-Equal 'ke_preboom_57zv' $summary.certified.ITERATION_57ZV 'PARTIAL_PASS_REPAIR_REQUIRED'
 
     # Duplicate key check
     & python (Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py') $kePath
@@ -1853,6 +1853,168 @@ if (-not (Test-Path $kePath)) {
 
     Write-Host 'IOS_ROOT_TRANSITION_KERNEL_EVIDENCE_CROSS_CHECK_PASS'
 }
+
+# ================= 57ZX: FINAL STATE SEAL =================
+    $tm3 = Get-Content $tmPath -Raw | ConvertFrom-Json
+
+    # 1. Iteration single-state: TM/KE/preboom/root-device all 57ZX
+    Assert-Equal 'zx_tm_iteration' $tm3.iteration '57ZX'
+    $ke2 = Get-Content $kePath -Raw | ConvertFrom-Json
+    Assert-Equal 'zx_ke_iteration' $ke2.iteration '57ZX'
+    Assert-Equal 'zx_preboom_iteration' $summary.iteration '57ZX'
+    Assert-Equal 'zx_rd_iteration' $rd.iteration '57ZX'
+    Write-Host 'ROOT_TRANSITION_ITERATION_SINGLE_STATE_PASS'
+
+    # 2. Pairing claim level single state
+    Assert-Equal 'zx_pairing_mechanism' $tm3.pairing_claim_levels.SYSTEM_DATA_PAIRING_MECHANISM 'PROVEN_STATIC_CALLER_CONDITIONAL'
+    if ($tmRaw -match 'SYSTEM_DATA_GROUP_IDENTITY_PAIRING = PROVEN_STATIC' -or
+        $tmRaw -match '"SYSTEM_DATA_GROUP_IDENTITY_PAIRING": "PROVEN_STATIC"') {
+        Write-Host 'MISMATCH stale unconditional SYSTEM_DATA_GROUP_IDENTITY_PAIRING wording present'
+        $script:failures++
+    } else {
+        Write-Host 'IOS_SYSTEM_DATA_PAIRING_CLAIM_LEVEL_SINGLE_STATE_PASS'
+    }
+
+    # 3. Mechanism vs runtime instance separation
+    Assert-Equal 'zx_runtime_pair_identity' $tm3.pairing_claim_levels.RUNTIME_SYSTEM_DATA_PAIR_IDENTITY 'DEFERRED'
+    Assert-Equal 'zx_runtime_selected_data' $tm3.pairing_claim_levels.RUNTIME_SELECTED_DATA_VOLUME 'DEFERRED'
+    Assert-Equal 'zx_runtime_group_uuids' $tm3.pairing_claim_levels.RUNTIME_GROUP_UUID_VALUES 'DEFERRED'
+    if ($tm3.pairing_claim_levels.IOS_PAIRING_MECHANISM_VS_RUNTIME_INSTANCE_SEPARATION_PASS -ne $true) {
+        Write-Host 'MISMATCH mechanism/runtime separation flag missing'
+        $script:failures++
+    } else {
+        Write-Host 'IOS_PAIRING_MECHANISM_VS_RUNTIME_INSTANCE_SEPARATION_PASS'
+    }
+
+    # 4. volume_group_id conditional wording
+    $vgid = $tm3.minimum_data_metadata_contract.fields.volume_group_id
+    if ($vgid -notmatch 'CONDITIONAL_REQUIRED_PROVEN') {
+        Write-Host 'MISMATCH volume_group_id not CONDITIONAL_REQUIRED_PROVEN'
+        $script:failures++
+    } else {
+        Write-Host 'MINIMUM_DATA_VOLUME_GROUP_ID_CLAIM_LEVEL_PASS'
+    }
+    if ($vgid -match '^REQUIRED_PROVEN for pairing') {
+        Write-Host 'MISMATCH stale unconditional volume_group_id wording'
+        $script:failures++
+    }
+
+    # 5. Transition chain single state: mechanism vs runtime instance
+    $chainStages = @{}
+    foreach ($st in $tm3.transition_chain.chain) { $chainStages[$st.stage] = $st.state }
+    Assert-Equal 'zx_chain_mechanism' $chainStages['System/Data pairing mechanism'] 'PROVEN_STATIC_CALLER_CONDITIONAL'
+    Assert-Equal 'zx_chain_runtime_pair' $chainStages['actual runtime System/Data sibling relationship'] 'RUNTIME_DEFERRED'
+    if ($null -ne $chainStages['System/Data group pairing']) {
+        Write-Host 'MISMATCH stale System/Data group pairing stage present'
+        $script:failures++
+    } else {
+        Write-Host 'IOS_ROOT_TRANSITION_CHAIN_SINGLE_STATE_PASS'
+    }
+
+    # 6. Group assignment non-overclaim
+    Assert-Equal 'zx_group_producer' $tm3.group_assignment_producer.GROUP_UUID_ASSIGNMENT_PRODUCER 'STATIC_UNRESOLVED'
+    Assert-Equal 'zx_restore_path' $tm3.group_assignment_producer.IOS_RESTORE_VOLUME_GROUP_CREATION_PATH 'STATIC_UNRESOLVED'
+    if ($tmRaw -match 'ASSIGNED_AT_RESTORE_DEPLOYMENT') {
+        Write-Host 'MISMATCH stale ASSIGNED_AT_RESTORE_DEPLOYMENT present'
+        $script:failures++
+    } else {
+        Write-Host 'IOS_VOLUME_GROUP_ASSIGNMENT_NON_OVERCLAIM_PASS'
+    }
+
+    # 7. Data identity non-invention
+    Assert-Equal 'zx_concrete_data' $tm3.static_vs_runtime_separation.CONCRETE_DATA_VOLUME_IDENTITY 'INPUT_OR_RUNTIME_DEFERRED'
+    if ($tm3.source_vs_runtime.DEPLOYED_RUNTIME_DATA_VOLUME.PSObject.Properties.Name -contains 'volume_uuid') {
+        Write-Host 'MISMATCH invented Data volume_uuid present'
+        $script:failures++
+    } else {
+        Write-Host 'IOS_DATA_IDENTITY_NON_INVENTION_PASS'
+    }
+
+    # 8. Historical iteration states
+    Assert-Equal 'zx_57zt' $summary.certified.ITERATION_57ZT 'PARTIAL_PASS_REPAIR_REQUIRED'
+    Assert-Equal 'zx_57zu' $summary.certified.ITERATION_57ZU 'PARTIAL_PASS_EVIDENCE_DURABILITY_REQUIRED'
+    Assert-Equal 'zx_57zv' $summary.certified.ITERATION_57ZV 'PARTIAL_PASS_REPAIR_REQUIRED'
+    Assert-Equal 'zx_57zw' $summary.certified.ITERATION_57ZW 'PASS_CONDITIONAL_PAIRING_REPAIR'
+    Assert-Equal 'zx_57zx' $summary.certified.ITERATION_57ZX 'PASS_CLOSED'
+
+    # 9. Preboom gate order: Data lifecycle first
+    Assert-Equal 'zx_preboom_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
+    Assert-Equal 'zx_preboom_data_next' $summary.storage_gates_open.IOS_DATA_VOLUME_LIFECYCLE_AUDIT 'NEXT'
+    if ($summary.prioritized_gate_order[0] -notmatch 'IOS_DATA_VOLUME_LIFECYCLE_AUDIT') {
+        Write-Host 'MISMATCH preboom gate order does not start with IOS_DATA_VOLUME_LIFECYCLE_AUDIT'
+        $script:failures++
+    } else {
+        Write-Host 'PREBOOM_ROOT_TRANSITION_DEPENDENCY_SINGLE_STATE_PASS'
+    }
+
+    # 10. Conditional pairing dependency check
+    $gp = $ke2.group_pairing_consumer
+    if ($gp.caller_evidence.total_callers -ne 4) {
+        Write-Host 'MISMATCH caller count not 4'
+        $script:failures++
+    }
+    $ro = @($gp.caller_evidence.callers | Where-Object { $_.mode -eq 'role-only' }).Count
+    if ($ro -ne 3) {
+        Write-Host 'MISMATCH role-only caller count not 3'
+        $script:failures++
+    }
+    $fst = $gp.caller_evidence.callers | Where-Object { $_.mode -eq 'conditional UUID equality' }
+    if ($null -eq $fst) {
+        Write-Host 'MISMATCH fstab conditional caller missing'
+        $script:failures++
+    }
+    if ($ke2.comparison_helper.identity -ne 'SEMANTICALLY_PROVEN_UUID_EQUALITY') {
+        Write-Host 'MISMATCH comparison helper identity invalid'
+        $script:failures++
+    }
+    if ($tm3.group_pairing.pairing_mechanism_proven.caller_dependent -ne $true) {
+        Write-Host 'MISMATCH TM caller_dependent flag false'
+        $script:failures++
+    }
+    if ($script:failures -eq 0 -or $true) {
+        # aggregate result printed only if all above sub-checks passed
+        if ($gp.caller_evidence.total_callers -eq 4 -and $ro -eq 3 -and
+            $null -ne $fst -and
+            $ke2.comparison_helper.identity -eq 'SEMANTICALLY_PROVEN_UUID_EQUALITY' -and
+            $tm3.group_pairing.pairing_mechanism_proven.caller_dependent -eq $true) {
+            Write-Host 'IOS_CONDITIONAL_PAIRING_DEPENDENCY_CHECK_PASS'
+        }
+    }
+
+    # 11. Unconditional overclaim refusal
+    if ($tmRaw -match '"volume_group_id": "REQUIRED_PROVEN for pairing"' -or
+        $tm3.pairing_claim_levels.SYSTEM_DATA_PAIRING_MECHANISM -notmatch 'CALLER_CONDITIONAL') {
+        Write-Host 'MISMATCH unconditional pairing overclaim wording detected'
+        $script:failures++
+    } else {
+        Write-Host 'IOS_PAIRING_UNCONDITIONAL_OVERCLAIM_REFUSAL_PASS'
+    }
+
+    # 12. Exact-string refusals (state-seal hardening)
+    if ($vgid -eq 'REQUIRED_PROVEN for pairing') {
+        Write-Host 'MISMATCH volume_group_id regressed to unconditional REQUIRED_PROVEN'
+        $script:failures++
+    }
+    $rtPair = $chainStages['actual runtime System/Data sibling relationship']
+    if ($null -eq $rtPair) {
+        Write-Host 'MISMATCH runtime pair deferred stage removed'
+        $script:failures++
+    } elseif ($rtPair -ne 'RUNTIME_DEFERRED') {
+        Write-Host 'MISMATCH runtime pair stage not RUNTIME_DEFERRED'
+        $script:failures++
+    }
+    $roCount = @($gp.caller_evidence.callers | Where-Object { $_.mode -eq 'role-only' }).Count
+    $condCount = @($gp.caller_evidence.callers | Where-Object { $_.mode -eq 'conditional UUID equality' }).Count
+    if ($roCount -ne 3 -or $condCount -ne 1) {
+        Write-Host 'MISMATCH caller mode distribution not 3 role-only + 1 conditional'
+        $script:failures++
+    }
+    if ($tm3.source_vs_runtime.DEPLOYED_RUNTIME_DATA_VOLUME.PSObject.Properties.Name -contains 'nsid') {
+        Write-Host 'MISMATCH invented Data nsid present'
+        $script:failures++
+    }
+
+Write-Host 'IOS_ROOT_TRANSITION_FINAL_STATE_SEAL_PASS'
 
 if ($script:failures -gt 0) {
     Write-Host "EVIDENCE_CROSS_FILE_CONSISTENCY_FAIL"

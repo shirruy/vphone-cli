@@ -106,8 +106,22 @@ run('ke_bypass_universal_overclaim', KE, lambda d: d['group_pairing_consumer']._
 run('ke_bypass_unknown_regression', KE, lambda d: d['group_pairing_consumer'].__setitem__('bypass_flag_classification', 'UNKNOWN'))
 run('ke_caller_count_changed', KE, lambda d: d['group_pairing_consumer']['caller_evidence'].__setitem__('total_callers', 3))
 run('ke_fstab_caller_mode_changed', KE, lambda d: d['group_pairing_consumer']['caller_evidence']['callers'][2].__setitem__('mode', 'role-only'))
-run('ke_pairing_unconditional_overclaim', TM, lambda d: d['group_pairing']['pairing_rule_proven'].__setitem__('volume_group_id_equality', 'REQUIRED always'))
+run('ke_pairing_unconditional_overclaim', TM, lambda d: d['group_pairing']['pairing_mechanism_proven'].__setitem__('volume_group_id_equality', 'REQUIRED always'))
 run('ke_bootkc_sha_changed', KE, lambda d: d.__setitem__('bootkc_sha256', 'deadbeef' * 8))
+
+# 57ZX state-seal negative controls
+run('pairing_claim_changed_to_unconditional_proven', TM, lambda d: d['pairing_claim_levels'].__setitem__('SYSTEM_DATA_PAIRING_MECHANISM', 'PROVEN_STATIC'))
+run('minimum_contract_group_uuid_changed_to_always_required', TM, lambda d: d['minimum_data_metadata_contract']['fields'].__setitem__('volume_group_id', 'REQUIRED_PROVEN for pairing'))
+run('transition_chain_runtime_pair_marked_proven', TM, lambda d: [s.__setitem__('state', 'PROVEN_STATIC') for s in d['transition_chain']['chain'] if s['stage'] == 'actual runtime System/Data sibling relationship'])
+run('remove_runtime_pair_deferred_stage', TM, lambda d: d['transition_chain'].__setitem__('chain', [s for s in d['transition_chain']['chain'] if s['stage'] != 'actual runtime System/Data sibling relationship']))
+run('caller_dependent_false', TM, lambda d: d['group_pairing']['pairing_mechanism_proven'].__setitem__('caller_dependent', False))
+run('fstab_zero_uuid_changed_to_equality_required', KE, lambda d: d['group_pairing_consumer']['caller_evidence'].__setitem__('conclusion', 'group-UUID equality is always required regardless of source UUID state'))
+run('fstab_nonzero_uuid_changed_to_role_only', KE, lambda d: d['group_pairing_consumer']['caller_evidence']['callers'][2].__setitem__('mode', 'role-only'))
+run('three_role_only_callers_changed_to_uuid_required', KE, lambda d: [c.__setitem__('mode', 'conditional UUID equality') for c in d['group_pairing_consumer']['caller_evidence']['callers'] if c['vm'] != '0xfffffff00a223de8'])
+run('group_assignment_producer_marked_proven', TM, lambda d: d['group_assignment_producer'].__setitem__('GROUP_UUID_ASSIGNMENT_PRODUCER', 'PROVEN_RESTORE_ASSIGNED'))
+run('invent_data_uuid', TM, lambda d: d['source_vs_runtime']['DEPLOYED_RUNTIME_DATA_VOLUME'].__setitem__('volume_uuid', 'deadbeef-0000-0000-0000-000000000000'))
+run('invent_data_group_uuid', TM, lambda d: d['source_vs_runtime']['DEPLOYED_RUNTIME_DATA_VOLUME'].__setitem__('volume_group_id', 'deadbeef-0000-0000-0000-000000000000'))
+run('invent_data_nsid', TM, lambda d: d['source_vs_runtime']['DEPLOYED_RUNTIME_DATA_VOLUME'].__setitem__('nsid', 7))
 
 # Duplicate JSON key
 shutil.copy(TM, TM + '.bak')

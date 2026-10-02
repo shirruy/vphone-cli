@@ -1,6 +1,6 @@
 {
   "gate": "preboom-mapping-and-minimum-ios-storage-contract",
-  "iteration": "57ZV",
+  "iteration": "57ZX",
   "date": "2026-09-30",
   "certified": {
     "ITERATION_57T_CERTIFIED_CLOSED": "YES",
@@ -34,7 +34,11 @@
     "ITERATION_57ZP": "PASS_CLOSED",
     "ITERATION_57ZQ": "PASS_CLOSED",
     "ITERATION_57ZR": "PASS_CLOSED",
-    "ITERATION_57ZV": "PASS_CLOSED"
+    "ITERATION_57ZV": "PARTIAL_PASS_REPAIR_REQUIRED",
+    "ITERATION_57ZT": "PARTIAL_PASS_REPAIR_REQUIRED",
+    "ITERATION_57ZU": "PARTIAL_PASS_EVIDENCE_DURABILITY_REQUIRED",
+    "ITERATION_57ZW": "PASS_CONDITIONAL_PAIRING_REPAIR",
+    "ITERATION_57ZX": "PASS_CLOSED"
   },
   "decmpfs_reconstruction": {
     "DECMPFS_ALGORITHM_TABLE_AUDIT_PASS": true,
@@ -377,12 +381,11 @@
     "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_CLOSED"
   },
   "prioritized_gate_order": [
-    "1. IOS_ROOT_TRANSITION_MODEL",
-    "2. IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
-    "3. MINIMUM_ANS_PROTOCOL_CONTRACT",
-    "4. MINIMUM_IOS_STORAGE_EMULATION_CONTRACT",
-    "5. Iteration 58 implementation",
-    "6. Runtime root-device + Cryptex validation"
+    "1. IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+    "2. MINIMUM_ANS_PROTOCOL_CONTRACT",
+    "3. MINIMUM_IOS_STORAGE_EMULATION_CONTRACT",
+    "4. Iteration 58 implementation",
+    "5. Runtime root-device + Data + Cryptex validation"
   ],
   "iteration_58_status": "BLOCKED_BY_REMAINING_STORAGE_ROOT_PROTOCOL_GATES",
   "not_implemented": "No ANS/NVMe device code written",
