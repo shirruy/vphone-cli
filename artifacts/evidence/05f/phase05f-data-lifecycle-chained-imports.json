@@ -137,8 +137,8 @@
   "note": "quota_size key not yet located in this scan; full scan of all ordinals needed",
   "next_step": "ADRP+LDR xrefs from __text code to these bind VMs -> dictionary construction sites",
   "bind_location_analysis": {
-    "discovery": "kAPFSVolume bind pointers are inline in __TEXT (in __const data sections), not in __got/__auth_got",
-    "interpretation": "The bind pointers are chained-fixup values embedded within constant data in the __TEXT segment. They are CFString object references (APFS.framework exports) referenced from ObjC/Swift metadata or CF data structures. They are NOT directly loaded by ADRP+LDR from executable code \u2014 the access path goes through higher-level data structures.",
+    "discovery": "SUPERSEDED: __TEXT does NOT participate in chained fixups",
+    "interpretation": "SUPERSEDED: see historical_superseded_findings",
     "role_key_bind": {
       "file": "0x138070",
       "vm": "0x100138070",
@@ -157,5 +157,32 @@
     "reason": "__TEXT has seg_info_offset=0 in dyld_chained_starts_in_image, so __TEXT does NOT participate in the chained-pointer walk. A full-binary bit63==1 + ordinal match scan is insufficient proof of a chained bind location. The candidate offsets are bit-pattern coincidences until proven through an authoritative relocation/fixup structure.",
     "DATA_LIFECYCLE_BIND_LOCATION_CLAIM_LEVEL_PASS": true
   },
-  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false
+  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false,
+  "historical_superseded_findings": [
+    {
+      "claim": "kAPFSVolume bind pointers are inline in __TEXT segment",
+      "status": "REJECTED",
+      "reason": "__TEXT does not participate in chained starts (seg_info_offset=0)"
+    },
+    {
+      "claim": "The bind pointers are chained-fixup values embedded in __TEXT",
+      "status": "REJECTED",
+      "reason": "__TEXT seg_info_offset=0; bit-pattern matches are not authoritative bind locations"
+    }
+  ],
+  "DATA_LIFECYCLE_BIND_LOCATION_SINGLE_STATE_PASS": true,
+  "DYLD_CHAINED_FIXUPS_HEADER": {
+    "fixups_version": 0,
+    "starts_offset": 32,
+    "imports_offset": 132,
+    "symbols_offset": 12140,
+    "imports_count": 1501,
+    "imports_format": 2,
+    "symbols_format": 0,
+    "note": "starts_offset=32 is the observed value from the parsed header, not a hardcoded assumption",
+    "DYLD_CHAINED_FIXUPS_HEADER_PASS": true
+  },
+  "DYLD_CHAINED_POINTER_FORMAT_IDENTIFICATION_PASS": true,
+  "DYLD_CHAINED_POINTER_CHAIN_WALK_PASS": false,
+  "DYLD_CHAINED_POINTER_FORMAT_CLAIM_LEVEL_PASS": true
 }
