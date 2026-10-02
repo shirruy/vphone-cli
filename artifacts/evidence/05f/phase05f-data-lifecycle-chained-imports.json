@@ -151,8 +151,11 @@
     },
     "xref_result": "no direct ADRP+LDR xrefs found from executable code to these bind VMs",
     "next_approach": "The dictionary construction likely uses ObjC literal syntax or CF API calls that reference these keys through __cfstring or __objc_dictobj sections. Need to trace from the _APFSVolumeCreate callers backward through their x1 (dictionary) provenance chain to find who constructed it.",
-    "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": true,
-    "DATA_LIFECYCLE_APFS_KEY_XREF_STATUS": "INDIRECT_THROUGH_DATA_STRUCTURES"
+    "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false,
+    "DATA_LIFECYCLE_APFS_KEY_XREF_STATUS": "INDIRECT_THROUGH_DATA_STRUCTURES",
+    "status": "UNVERIFIED_CANDIDATE_BIT_PATTERNS",
+    "reason": "__TEXT has seg_info_offset=0 in dyld_chained_starts_in_image, so __TEXT does NOT participate in the chained-pointer walk. A full-binary bit63==1 + ordinal match scan is insufficient proof of a chained bind location. The candidate offsets are bit-pattern coincidences until proven through an authoritative relocation/fixup structure.",
+    "DATA_LIFECYCLE_BIND_LOCATION_CLAIM_LEVEL_PASS": true
   },
-  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": true
+  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false
 }
