@@ -1,0 +1,1483 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART3",
+  "date": "2026-10-02",
+  "DATA_ADD_VOLUME_CALLSITE_INVENTORY_PASS": true,
+  "binaries": {
+    "restored_external": {
+      "binary": "restored_external",
+      "size": 3356976,
+      "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+      "text_vm": "0x1000020c0",
+      "text_size": 1808512,
+      "target_symbols": [
+        "_APFSVolumeCreate",
+        "_APFSVolumeCreateForMSU",
+        "_APFSVolumeDelete",
+        "_APFSVolumeEnableUserProtectionWithOptions",
+        "_APFSVolumeGetVEKState",
+        "_APFSVolumeNeedsCryptoMigration",
+        "_APFSVolumePerformOfflinePurge",
+        "_APFSVolumeRole",
+        "_APFSVolumeUpdateBounds",
+        "_kAPFSVolumeCaseSensitiveKey",
+        "_kAPFSVolumeFSIndexKey",
+        "_kAPFSVolumeGroupSiblingFSIndexKey",
+        "_kAPFSVolumeNameKey",
+        "_kAPFSVolumeNoAutomountAtCreateKey",
+        "_kAPFSVolumeQuotaSizeKey",
+        "_kAPFSVolumeReserveSizeKey",
+        "_kAPFSVolumeRoleKey"
+      ],
+      "got_entries": {
+        "0x1002ecec8": "_APFSVolumeCreate",
+        "0x1002eced0": "_APFSVolumeCreateForMSU",
+        "0x1002eced8": "_APFSVolumeDelete",
+        "0x1002ecee0": "_APFSVolumeEnableUserProtectionWithOptions",
+        "0x1002ecee8": "_APFSVolumeGetVEKState",
+        "0x1002ecef0": "_APFSVolumeNeedsCryptoMigration",
+        "0x1002ecef8": "_APFSVolumePerformOfflinePurge",
+        "0x1002ecf00": "_APFSVolumeRole",
+        "0x1002ecf08": "_APFSVolumeUpdateBounds"
+      },
+      "stubs": {
+        "0x1001bc990": {
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        "0x1001bc9a0": {
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        "0x1001bc9b0": {
+          "got": "0x1002eced8",
+          "symbol": "_APFSVolumeDelete"
+        },
+        "0x1001bc9c0": {
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        "0x1001bc9d0": {
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        "0x1001bc9e0": {
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        "0x1001bc9f0": {
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        "0x1001bca00": {
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        "0x1001bca10": {
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        "0x1001be950": {
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        "0x1001be960": {
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        "0x1001be970": {
+          "got": "0x1002eced8",
+          "symbol": "_APFSVolumeDelete"
+        },
+        "0x1001be980": {
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        "0x1001be990": {
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        "0x1001be9a0": {
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        "0x1001be9b0": {
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        "0x1001be9e0": {
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        "0x1001be9f0": {
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        }
+      },
+      "callers": [
+        {
+          "vm": "0x1000024f0",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10000278c",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10000283c",
+          "stub": "0x1001bc9e0",
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        {
+          "vm": "0x100003364",
+          "stub": "0x1001be9e0",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100006f30",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100006f40",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100009900",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100009ee8",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10000c964",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10000d304",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10000df48",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10001c51c",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x10001c550",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x10001cf88",
+          "stub": "0x1001bc9e0",
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        {
+          "vm": "0x10001d6a4",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100020404",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10002044c",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10002045c",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100021f18",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100022c8c",
+          "stub": "0x1001be9b0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100023034",
+          "stub": "0x1001bc9e0",
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        {
+          "vm": "0x1000231a0",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x1000231b0",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100024214",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100024428",
+          "stub": "0x1001bc990",
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x100024464",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x1000244a8",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x1000250a0",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100025204",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10002a8a8",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10002a8f8",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10002ad6c",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10002ade0",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10002ae30",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10002aecc",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10002c470",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10002d220",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10002d23c",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100031ab4",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100036c18",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100036ec4",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x100037618",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x1000376f0",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x100037710",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100037754",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x100037774",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x1000377c4",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100037cd4",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100037d68",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x1000384ac",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x1000384bc",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100039664",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10003aad4",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10003aae4",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10003cd94",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10003e038",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10003e048",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10003e474",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10003f970",
+          "stub": "0x1001bc990",
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10003f9a8",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10003fca8",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100041d14",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100041d30",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100042730",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100044bf0",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100046644",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100046654",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100047100",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100047a84",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100047a94",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100048898",
+          "stub": "0x1001be9a0",
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        {
+          "vm": "0x100048fb8",
+          "stub": "0x1001be9b0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100049524",
+          "stub": "0x1001be9b0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100049960",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10004b984",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10004c1bc",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10004c2cc",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10004d278",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004d288",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004d2d0",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004d2e0",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004d328",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004d338",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004d3c0",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004d3d0",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004d4b0",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004d4c0",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004d508",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004d518",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004d560",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004d570",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004d948",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10004e568",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10004e688",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004eac8",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10004eec0",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10004f05c",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10004f330",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004f340",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004f374",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10004f384",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10004fb3c",
+          "stub": "0x1001bc9e0",
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        {
+          "vm": "0x100051044",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100051d80",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100053458",
+          "stub": "0x1001bc990",
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10005347c",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100054820",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100055038",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100055688",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100055b48",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100055b6c",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100055c98",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100058a10",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100058a20",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100058a50",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100058a60",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100058ae0",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100058af0",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100059504",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100059514",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100059d48",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100059d70",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10005c148",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10005c158",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10005c6b4",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10005c6cc",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10005cf40",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10005cf50",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10005cf80",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10005cf90",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10005e068",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10005ee90",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10006012c",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x1000602b8",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x1000602c8",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x1000602fc",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x10006032c",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100060374",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100063290",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100063970",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x1000639b4",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100063a00",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x100063c28",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100067330",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100067340",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10006736c",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10006737c",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100067410",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100067420",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100067440",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100067450",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100067470",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100067480",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100069c08",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100069ea0",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10006a0dc",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10006aa50",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x10006aa6c",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x10006aa88",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x10006b200",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10006b210",
+          "stub": "0x1001bc9b0",
+          "got": "0x1002eced8",
+          "symbol": "_APFSVolumeDelete"
+        },
+        {
+          "vm": "0x100073f68",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100074060",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100074e8c",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100076cb8",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10007801c",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x1000782d8",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x100078450",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x1000785bc",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10007b9e4",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10007c1ac",
+          "stub": "0x1001bc990",
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007c1c4",
+          "stub": "0x1001bc990",
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007c244",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10007c4c0",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10007c6e4",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10007c988",
+          "stub": "0x1001bc9e0",
+          "got": "0x1002ecef0",
+          "symbol": "_APFSVolumeNeedsCryptoMigration"
+        },
+        {
+          "vm": "0x10007d744",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007d984",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10007da04",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10007db04",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        },
+        {
+          "vm": "0x10007dc44",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10007dc60",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e054",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e408",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e5cc",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e61c",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e6bc",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10007e874",
+          "stub": "0x1001bc990",
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007e8bc",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10007e8d8",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e9c4",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007f008",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x100080874",
+          "stub": "0x1001be990",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x100084c8c",
+          "stub": "0x1001be9b0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x10008b46c",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10008b47c",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10008bb2c",
+          "stub": "0x1001be9b0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x10008e428",
+          "stub": "0x1001be960",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100095c04",
+          "stub": "0x1001be970",
+          "got": "0x1002eced8",
+          "symbol": "_APFSVolumeDelete"
+        },
+        {
+          "vm": "0x10009c7d0",
+          "stub": "0x1001be9f0",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x1000a0404",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10012164c",
+          "stub": "0x1001bc9a0",
+          "got": "0x1002eced0",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10012d638",
+          "stub": "0x1001be980",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x1001752f4",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x1001a2320",
+          "stub": "0x1001be950",
+          "got": "0x1002ecec8",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x1001b2118",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x1001b212c",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x1001b2df4",
+          "stub": "0x1001bca10",
+          "got": "0x1002ecf08",
+          "symbol": "_APFSVolumeUpdateBounds"
+        },
+        {
+          "vm": "0x1001b2f3c",
+          "stub": "0x1001bc9f0",
+          "got": "0x1002ecef8",
+          "symbol": "_APFSVolumePerformOfflinePurge"
+        },
+        {
+          "vm": "0x1001b39b4",
+          "stub": "0x1001bc9c0",
+          "got": "0x1002ecee0",
+          "symbol": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x1001b39d0",
+          "stub": "0x1001bc9d0",
+          "got": "0x1002ecee8",
+          "symbol": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x1001b55b4",
+          "stub": "0x1001bca00",
+          "got": "0x1002ecf00",
+          "symbol": "_APFSVolumeRole"
+        }
+      ],
+      "caller_count": 212
+    },
+    "asr": {
+      "binary": "asr",
+      "size": 380192,
+      "sha256": "f6ddf41f1ed687f3ca8eaffb824c1a6a03ee424ea1a220b0d9b9f396851a425a",
+      "text_vm": "0x100000a98",
+      "text_size": 218472,
+      "target_symbols": [
+        "_APFSVolumeCreate",
+        "_APFSVolumeCreateForMSU",
+        "_APFSVolumeDelete",
+        "_APFSVolumeRole",
+        "_APFSVolumeRoleFind",
+        "_kAPFSVolumeCaseSensitiveKey",
+        "_kAPFSVolumeFSIndexKey",
+        "_kAPFSVolumeGroupSiblingFSIndexKey",
+        "_kAPFSVolumeNameKey",
+        "_kAPFSVolumeQuotaSizeKey",
+        "_kAPFSVolumeReserveSizeKey",
+        "_kAPFSVolumeRoleKey"
+      ],
+      "got_entries": {
+        "0x1000489f0": "_APFSVolumeCreate",
+        "0x1000489f8": "_APFSVolumeCreateForMSU",
+        "0x100048a00": "_APFSVolumeDelete",
+        "0x100048a08": "_APFSVolumeRole",
+        "0x100048a10": "_APFSVolumeRoleFind"
+      },
+      "stubs": {
+        "0x100036080": {
+          "got": "0x1000489f0",
+          "symbol": "_APFSVolumeCreate"
+        },
+        "0x100036090": {
+          "got": "0x1000489f8",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        "0x1000360a0": {
+          "got": "0x100048a00",
+          "symbol": "_APFSVolumeDelete"
+        },
+        "0x1000360b0": {
+          "got": "0x100048a08",
+          "symbol": "_APFSVolumeRole"
+        },
+        "0x1000360c0": {
+          "got": "0x100048a10",
+          "symbol": "_APFSVolumeRoleFind"
+        }
+      },
+      "callers": [
+        {
+          "vm": "0x1000213e0",
+          "stub": "0x100036080",
+          "got": "0x1000489f0",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10002155c",
+          "stub": "0x100036090",
+          "got": "0x1000489f8",
+          "symbol": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x1000216a0",
+          "stub": "0x1000360a0",
+          "got": "0x100048a00",
+          "symbol": "_APFSVolumeDelete"
+        },
+        {
+          "vm": "0x100021738",
+          "stub": "0x100036080",
+          "got": "0x1000489f0",
+          "symbol": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x1000218b8",
+          "stub": "0x1000360c0",
+          "got": "0x100048a10",
+          "symbol": "_APFSVolumeRoleFind"
+        },
+        {
+          "vm": "0x10002192c",
+          "stub": "0x1000360b0",
+          "got": "0x100048a08",
+          "symbol": "_APFSVolumeRole"
+        }
+      ],
+      "caller_count": 6
+    }
+  }
+}
