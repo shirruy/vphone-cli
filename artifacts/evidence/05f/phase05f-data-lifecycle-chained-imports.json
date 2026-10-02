@@ -2,7 +2,7 @@
   "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
   "iteration": "57ZZ_PART8B",
   "date": "2026-10-02",
-  "discovery": "kAPFSVolume bind pointers are INLINE in __TEXT segment, not in __got/__auth_got",
+  "discovery": "SUPERSEDED \u2014 see historical_superseded_findings",
   "bind_locations": {
     "_kAPFSVolumeCaseSensitiveKey": [
       {
@@ -184,5 +184,7 @@
   },
   "DYLD_CHAINED_POINTER_FORMAT_IDENTIFICATION_PASS": true,
   "DYLD_CHAINED_POINTER_CHAIN_WALK_PASS": false,
-  "DYLD_CHAINED_POINTER_FORMAT_CLAIM_LEVEL_PASS": true
+  "DYLD_CHAINED_POINTER_FORMAT_CLAIM_LEVEL_PASS": true,
+  "DYLD_CHAINED_POINTER_CLAIM_LEVEL_PASS": true,
+  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_STATUS": "UNVERIFIED"
 }

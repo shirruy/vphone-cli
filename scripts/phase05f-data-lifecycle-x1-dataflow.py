@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
-"""57ZZ Part 10: Register dataflow engine + x1 backward provenance.
+"""57ZZ Part 11: Register dataflow engine + x1 backward provenance.
 
 Implements bounded backward slicing through ARM64 registers for x1 at
-each _APFSVolumeCreate callsite. Tracks mov, add, ldr, str spill/reload,
-and callee-saved register chains.
+each _APFSVolumeCreate callsite. Current capabilities:
+- mov register transfers (including sp)
+- add register+immediate
+- ldr memory loads (stack reload detection)
+- adrp page addresses (terminal)
+- movz/movk constants (terminal)
+- BL function returns (terminal)
+
+NOT yet implemented (future capability):
+- str producer matching for stack spill/reload pairing
+- interprocedural callee-saved register propagation
+- CFG-aware multi-block slicing
 """
 import hashlib
 import json
@@ -81,8 +91,7 @@ def trace_register_backward(insns, target_reg, call_idx):
                 current_reg = src
             elif src == 'sp':
                 entry['type'] = 'STACK_POINTER'
-                chain.append(entry)
-                break
+                break  # single append: entry already appended above
             else:
                 break
 
