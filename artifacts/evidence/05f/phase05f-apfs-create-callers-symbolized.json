@@ -1,0 +1,996 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14H_SYMBOLIZED_CALLERS",
+  "binary": {
+    "path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\57zz-binaries\\restored_external.bin",
+    "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770"
+  },
+  "full_text_bl_scan": {
+    "target_stub": "0x1001bc990",
+    "resolved_symbol": "_APFSVolumeCreate",
+    "callsite_count": 6,
+    "callsites": [
+      "0x100024428",
+      "0x10003f970",
+      "0x100053458",
+      "0x10007c1ac",
+      "0x10007c1c4",
+      "0x10007e874"
+    ],
+    "excluded_false_caller": {
+      "vm": "0x1001a2320",
+      "stub": "0x1001be950",
+      "actual_symbol": "_dispatch_queue_set_specific"
+    }
+  },
+  "stub_map_validation": {
+    "0x1001bc990": "_APFSVolumeCreate",
+    "resolver": "indirect_symbol_table_via_auth_got"
+  },
+  "callers": [
+    {
+      "callsite_vm": "0x100024428",
+      "window": [
+        "0x1000243b8",
+        "0x1000244f4"
+      ],
+      "x1_provenance": {
+        "last_x1_write": {
+          "vm": "0x100024408",
+          "insn": "mov x1, sp"
+        },
+        "intervening_bl_after_write": true,
+        "classification": "ABI_CLOBBERED"
+      },
+      "bl_sequence": [
+        {
+          "vm": "0x100024410",
+          "target": "_APFSContainerWaitForReaper"
+        },
+        {
+          "vm": "0x100024420",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x100024428",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x100024438",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x100024450",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x100024464",
+          "target": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100024478",
+          "target": "_APFSShouldSealSystemVolume"
+        },
+        {
+          "vm": "0x10002448c",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x1000244a8",
+          "target": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x1000244ac",
+          "target": "_CC_SHA384_Init"
+        },
+        {
+          "vm": "0x1000244b8",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x1000244f0",
+          "target": "_MobileGestalt_get_shouldHactivate"
+        }
+      ]
+    },
+    {
+      "callsite_vm": "0x10003f970",
+      "window": [
+        "0x10003f880",
+        "0x10003fb04"
+      ],
+      "x1_provenance": {
+        "last_x1_write": {
+          "vm": "0x10003f954",
+          "insn": "add x1, x1, #0xd60"
+        },
+        "intervening_bl_after_write": true,
+        "classification": "ABI_CLOBBERED"
+      },
+      "bl_sequence": [
+        {
+          "vm": "0x10003f8f0",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10003f910",
+          "target": "_CC_SHA384_Init"
+        },
+        {
+          "vm": "0x10003f940",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003f95c",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10003f968",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10003f970",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10003f980",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10003f9a8",
+          "target": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10003f9c0",
+          "target": "_CFNumberGetTypeID"
+        },
+        {
+          "vm": "0x10003f9d4",
+          "target": "_CFNumberGetTypeID"
+        },
+        {
+          "vm": "0x10003f9e8",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10003f9f4",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10003fa04",
+          "target": "_AMSupportFileURLExists"
+        },
+        {
+          "vm": "0x10003fa10",
+          "target": "_AMSupportDigestSha256"
+        },
+        {
+          "vm": "0x10003fa18",
+          "target": "_AMSupportDigestSha256"
+        },
+        {
+          "vm": "0x10003fa40",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003fa4c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003fa58",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003fa64",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003fa70",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003fa84",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003fa94",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003facc",
+          "target": "_AMFDRSealingMapVerifyAndCommitSealedData"
+        },
+        {
+          "vm": "0x10003fae0",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003faec",
+          "target": "local"
+        },
+        {
+          "vm": "0x10003faf8",
+          "target": "local"
+        }
+      ]
+    },
+    {
+      "callsite_vm": "0x100053458",
+      "window": [
+        "0x100053278",
+        "0x100053574"
+      ],
+      "x1_provenance": {
+        "last_x1_write": {
+          "vm": "0x10005343c",
+          "insn": "mov x1, x21"
+        },
+        "intervening_bl_after_write": true,
+        "classification": "ABI_CLOBBERED"
+      },
+      "bl_sequence": [
+        {
+          "vm": "0x1000532bc",
+          "target": "_BOMCopierSetFatalErrorHandler"
+        },
+        {
+          "vm": "0x1000532cc",
+          "target": "local"
+        },
+        {
+          "vm": "0x1000532ec",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x100053314",
+          "target": "_BMCMCUUpdaterGetDeviceInfo"
+        },
+        {
+          "vm": "0x100053330",
+          "target": "_BMCMCUUpdaterGetDeviceInfo"
+        },
+        {
+          "vm": "0x100053344",
+          "target": "_BMCMCUUpdaterGetDeviceInfo"
+        },
+        {
+          "vm": "0x100053354",
+          "target": "_BOMCopierCopyWithOptions"
+        },
+        {
+          "vm": "0x10005337c",
+          "target": "local"
+        },
+        {
+          "vm": "0x1000533a4",
+          "target": "_CFCopyDescription"
+        },
+        {
+          "vm": "0x1000533b8",
+          "target": "_AMFDRSetMemoryStore"
+        },
+        {
+          "vm": "0x1000533d4",
+          "target": "_BMCMCUUpdaterGetDeviceInfo"
+        },
+        {
+          "vm": "0x1000533e4",
+          "target": "_BOMCopierCopyWithOptions"
+        },
+        {
+          "vm": "0x100053404",
+          "target": "_$s9CryptoKit4HPKEO9RecipientV4openy10Foundation4DataVxKAG0G8ProtocolRzlF"
+        },
+        {
+          "vm": "0x100053414",
+          "target": "local"
+        },
+        {
+          "vm": "0x100053430",
+          "target": "_BMCMCUUpdaterGetDeviceInfo"
+        },
+        {
+          "vm": "0x100053440",
+          "target": "_$s9CryptoKit4HPKEO9RecipientVMa"
+        },
+        {
+          "vm": "0x100053450",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x100053458",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x100053468",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10005347c",
+          "target": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x100053490",
+          "target": "_$s9CryptoKit4HPKEO9RecipientV4openy10Foundation4DataVxKAG0G8ProtocolRzlF"
+        },
+        {
+          "vm": "0x1000534c8",
+          "target": "local"
+        },
+        {
+          "vm": "0x1000534d4",
+          "target": "_AMSupportDigestSha256"
+        },
+        {
+          "vm": "0x1000534dc",
+          "target": "_AMSupportDigestSha256"
+        },
+        {
+          "vm": "0x1000534e4",
+          "target": "_AMSupportDigestSha256"
+        },
+        {
+          "vm": "0x1000534ec",
+          "target": "_AMSupportDigestSha256"
+        },
+        {
+          "vm": "0x1000534f4",
+          "target": "_AMSupportDigestSha256"
+        },
+        {
+          "vm": "0x10005351c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10005352c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10005353c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10005354c",
+          "target": "local"
+        },
+        {
+          "vm": "0x100053560",
+          "target": "local"
+        },
+        {
+          "vm": "0x10005356c",
+          "target": "local"
+        }
+      ]
+    },
+    {
+      "callsite_vm": "0x10007c1ac",
+      "window": [
+        "0x10007c138",
+        "0x10007c540"
+      ],
+      "x1_provenance": {
+        "last_x1_write": null,
+        "intervening_bl_after_write": false,
+        "classification": "NONE_FOUND"
+      },
+      "bl_sequence": [
+        {
+          "vm": "0x10007c158",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c160",
+          "target": "_BOMCopierSetUserData"
+        },
+        {
+          "vm": "0x10007c1ac",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007c1bc",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c1c4",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007c1f4",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10007c204",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10007c218",
+          "target": "_APFSExtendedSpaceInfo"
+        },
+        {
+          "vm": "0x10007c228",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10007c244",
+          "target": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10007c248",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007c25c",
+          "target": "_APFSContainerGetSpaceInfo"
+        },
+        {
+          "vm": "0x10007c264",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c288",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c29c",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c2a4",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c2ac",
+          "target": "_CFDateGetTypeID"
+        },
+        {
+          "vm": "0x10007c2bc",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c2c4",
+          "target": "_CFDateGetTypeID"
+        },
+        {
+          "vm": "0x10007c2f0",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10007c310",
+          "target": "_CC_SHA1_Update"
+        },
+        {
+          "vm": "0x10007c320",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c328",
+          "target": "_CC_SHA1_Update"
+        },
+        {
+          "vm": "0x10007c354",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10007c374",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c388",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c3dc",
+          "target": "_BBUpdaterExtremeCreateWithError"
+        },
+        {
+          "vm": "0x10007c410",
+          "target": "_BMCMCUUpdaterCleanupDeviceInfo"
+        },
+        {
+          "vm": "0x10007c460",
+          "target": "_CCHmacUpdate"
+        },
+        {
+          "vm": "0x10007c4b0",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c4b8",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c4c0",
+          "target": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10007c4f4",
+          "target": "_CFDictionaryRemoveValue"
+        }
+      ]
+    },
+    {
+      "callsite_vm": "0x10007c1c4",
+      "window": [
+        "0x10007c138",
+        "0x10007c540"
+      ],
+      "x1_provenance": {
+        "last_x1_write": null,
+        "intervening_bl_after_write": false,
+        "classification": "NONE_FOUND"
+      },
+      "bl_sequence": [
+        {
+          "vm": "0x10007c158",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c160",
+          "target": "_BOMCopierSetUserData"
+        },
+        {
+          "vm": "0x10007c1ac",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007c1bc",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c1c4",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007c1f4",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10007c204",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10007c218",
+          "target": "_APFSExtendedSpaceInfo"
+        },
+        {
+          "vm": "0x10007c228",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10007c244",
+          "target": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10007c248",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007c25c",
+          "target": "_APFSContainerGetSpaceInfo"
+        },
+        {
+          "vm": "0x10007c264",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c288",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c29c",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c2a4",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c2ac",
+          "target": "_CFDateGetTypeID"
+        },
+        {
+          "vm": "0x10007c2bc",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c2c4",
+          "target": "_CFDateGetTypeID"
+        },
+        {
+          "vm": "0x10007c2f0",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10007c310",
+          "target": "_CC_SHA1_Update"
+        },
+        {
+          "vm": "0x10007c320",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007c328",
+          "target": "_CC_SHA1_Update"
+        },
+        {
+          "vm": "0x10007c354",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10007c374",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c388",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007c3dc",
+          "target": "_BBUpdaterExtremeCreateWithError"
+        },
+        {
+          "vm": "0x10007c410",
+          "target": "_BMCMCUUpdaterCleanupDeviceInfo"
+        },
+        {
+          "vm": "0x10007c460",
+          "target": "_CCHmacUpdate"
+        },
+        {
+          "vm": "0x10007c4b0",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c4b8",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007c4c0",
+          "target": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10007c4f4",
+          "target": "_CFDictionaryRemoveValue"
+        }
+      ]
+    },
+    {
+      "callsite_vm": "0x10007e874",
+      "window": [
+        "0x10007e4dc",
+        "0x10007ec90"
+      ],
+      "x1_provenance": {
+        "last_x1_write": {
+          "vm": "0x10007e7ec",
+          "insn": "add x1, x1, #0x500"
+        },
+        "intervening_bl_after_write": true,
+        "classification": "ABI_CLOBBERED"
+      },
+      "bl_sequence": [
+        {
+          "vm": "0x10007e528",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e568",
+          "target": "_$s9CryptoKit4HPKEO6SenderV12recipientKey11ciphersuite4infoAEx_AC11CiphersuiteV10Foundation4DataVtKcAA023HPKEDiffieHellmanPublicF0RzlufC"
+        },
+        {
+          "vm": "0x10007e56c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e57c",
+          "target": "_AppleTypeCRetimerUpdaterReset"
+        },
+        {
+          "vm": "0x10007e59c",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e5ac",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e5bc",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10007e5cc",
+          "target": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e5dc",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e600",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10007e614",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10007e61c",
+          "target": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e624",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V06publicD0AE06PublicD0Vvg"
+        },
+        {
+          "vm": "0x10007e644",
+          "target": "_APFSExtendedSpaceInfo"
+        },
+        {
+          "vm": "0x10007e658",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10007e6bc",
+          "target": "_APFSVolumeCreateForMSU"
+        },
+        {
+          "vm": "0x10007e6c8",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10007e6dc",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa"
+        },
+        {
+          "vm": "0x10007e6f0",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa"
+        },
+        {
+          "vm": "0x10007e704",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa"
+        },
+        {
+          "vm": "0x10007e71c",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa"
+        },
+        {
+          "vm": "0x10007e72c",
+          "target": "_APFSContainerGetSpaceInfo"
+        },
+        {
+          "vm": "0x10007e738",
+          "target": "_APFSOverProvModel"
+        },
+        {
+          "vm": "0x10007e78c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e79c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e7b8",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e7d0",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e7f4",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e804",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007e810",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007e820",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007e82c",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007e838",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007e844",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007e874",
+          "target": "_APFSVolumeCreate"
+        },
+        {
+          "vm": "0x10007e880",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007e88c",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V17pemRepresentationAGSS_tKcfC"
+        },
+        {
+          "vm": "0x10007e8a0",
+          "target": "_$s14CoreFoundation9_CFObjectPAAE2eeoiySbx_xtFZ"
+        },
+        {
+          "vm": "0x10007e8b0",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10007e8bc",
+          "target": "_APFSVolumeEnableUserProtectionWithOptions"
+        },
+        {
+          "vm": "0x10007e8c8",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007e8d8",
+          "target": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e8f8",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e900",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e924",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e938",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e94c",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e970",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e984",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007e9a8",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e9c4",
+          "target": "_APFSVolumeGetVEKState"
+        },
+        {
+          "vm": "0x10007e9dc",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V18x963Representation10Foundation4DataVvg"
+        },
+        {
+          "vm": "0x10007e9f4",
+          "target": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+        },
+        {
+          "vm": "0x10007e9fc",
+          "target": "_$s9CryptoKit13SecureEnclaveO4P256O12KeyAgreementO07PrivateF0V18dataRepresentation21authenticationContextAI10Foundation4DataV_So9LAContextCSgtKcfC"
+        },
+        {
+          "vm": "0x10007ea38",
+          "target": "_BOMCopierSetCopyFileFinishedHandler"
+        },
+        {
+          "vm": "0x10007ea50",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007ea68",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007eaa0",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007eabc",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007ead0",
+          "target": "_CCHmacUpdate"
+        },
+        {
+          "vm": "0x10007eadc",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007eaec",
+          "target": "_CCCryptorUpdate"
+        },
+        {
+          "vm": "0x10007eaf8",
+          "target": "_BOMCopierSetUserData"
+        },
+        {
+          "vm": "0x10007eb04",
+          "target": "_CCKDFParametersCreateHkdf"
+        },
+        {
+          "vm": "0x10007eb1c",
+          "target": "_BOMCopierSetFatalErrorHandler"
+        },
+        {
+          "vm": "0x10007eb38",
+          "target": "_BZ2_bzDecompressInit"
+        },
+        {
+          "vm": "0x10007eb4c",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10007eb64",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007eb74",
+          "target": "_BOMCopierUserData"
+        },
+        {
+          "vm": "0x10007eb8c",
+          "target": "_CCCryptorFinal"
+        },
+        {
+          "vm": "0x10007eb94",
+          "target": "_CC_SHA384_Final"
+        },
+        {
+          "vm": "0x10007eb9c",
+          "target": "_CC_SHA384_Init"
+        },
+        {
+          "vm": "0x10007ebac",
+          "target": "_CCHmacFinal"
+        },
+        {
+          "vm": "0x10007ebd4",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007ebdc",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007ec28",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007ec44",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007ec58",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007ec74",
+          "target": "local"
+        },
+        {
+          "vm": "0x10007ec88",
+          "target": "local"
+        }
+      ]
+    }
+  ]
+}
