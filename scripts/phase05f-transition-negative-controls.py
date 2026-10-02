@@ -14,6 +14,7 @@ import subprocess
 TM = 'artifacts/evidence/05f/phase05f-ios-root-transition-model.json'
 PROBE = 'artifacts/evidence/05f/phase05f-root-transition-probe-result.json'
 PRE = 'artifacts/evidence/05f/phase05f-preboom-storage-contract.json'
+KE = 'artifacts/evidence/05f/phase05f-root-transition-kernel-evidence.json'
 CHECKER = 'scripts/phase05f-evidence-consistency-check.ps1'
 
 
@@ -84,6 +85,25 @@ run('transition_pass_closed', TM, lambda d: d.__setitem__('certified', 'PASS_CLO
 
 # Preboom transition-state mismatch
 run('preboom_transition_state_mismatch', PRE, lambda d: d['storage_gates_open'].__setitem__('IOS_ROOT_TRANSITION_MODEL', 'BLOCKED'))
+
+# 57ZV kernel-evidence instruction-level mutations
+run('ke_consumer_vm_changed', KE, lambda d: d['group_pairing_consumer'].__setitem__('function_vm', '0xfffffff00a265549'))
+run('ke_nx_array_offset_changed', KE, lambda d: d['group_pairing_consumer']['nx_fs_oid'].__setitem__('nx_fs_oid_array_container_offset', '0xBC'))
+run('ke_nx_count_offset_changed', KE, lambda d: d['group_pairing_consumer']['nx_fs_oid'].__setitem__('nx_max_file_systems_container_offset', '0xB0'))
+run('ke_role_field_changed', KE, lambda d: d['group_pairing_consumer'].__setitem__('role_field', 'APSB+0x3C8'))
+run('ke_group_field_changed', KE, lambda d: d['group_pairing_consumer'].__setitem__('group_id_field', 'APSB+0x3E0'))
+run('ke_compare_call_site_changed', KE, lambda d: d['group_pairing_consumer']['key_sites'].__setitem__('compare_call', '0xfffffff00a265614'))
+run('ke_equal_cbz_changed', KE, lambda d: d['group_pairing_consumer']['key_sites'].__setitem__('equal_result_cbz', '0xfffffff00a265618'))
+run('ke_sibling_mov_changed', KE, lambda d: d['group_pairing_consumer']['key_sites'].__setitem__('sibling_selected_mov', '0xfffffff00a26567c'))
+run('ke_helper_identity_changed', KE, lambda d: d['comparison_helper'].__setitem__('identity', 'uuid_compare_symbol_resolved'))
+run('ke_helper_impl_changed', KE, lambda d: d['comparison_helper'].__setitem__('impl_vm', '0xfffffff00a50f5c4'))
+run('ke_enc_region_changed', KE, lambda d: d['encryption_refusal'].__setitem__('region_vm', '0xfffffff00a210cf0'))
+run('ke_enc_flags_offset_changed', KE, lambda d: d['encryption_refusal'].__setitem__('fs_flags_field', 'APSB+0x10C'))
+run('ke_enc_bit_changed', KE, lambda d: d['encryption_refusal'].__setitem__('bit', 1))
+run('ke_enc_chain_flag_false', KE, lambda d: d['certified'].__setitem__('IOS_DATA_ENCRYPTION_INSTRUCTION_CHAIN_PASS', False))
+run('ke_pairing_chain_flag_false', KE, lambda d: d['certified'].__setitem__('IOS_GROUP_PAIRING_INSTRUCTION_CHAIN_PASS', False))
+run('ke_bypass_universal_overclaim', KE, lambda d: d['group_pairing_consumer'].__setitem__('bypass_flag_classification', 'PROVEN normal path'))
+run('ke_bootkc_sha_changed', KE, lambda d: d.__setitem__('bootkc_sha256', 'deadbeef' * 8))
 
 # Duplicate JSON key
 shutil.copy(TM, TM + '.bak')

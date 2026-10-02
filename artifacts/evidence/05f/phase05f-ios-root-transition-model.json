@@ -1,6 +1,6 @@
 {
   "gate": "IOS_ROOT_TRANSITION_MODEL",
-  "iteration": "57ZU",
+  "iteration": "57ZV",
   "date": "2026-10-02",
   "input_identity": {
     "fixture": "iPhone15,4 / iOS 27.0 / 24A437 / d37ap / t8120",
@@ -87,7 +87,6 @@
     "IOS_SYSTEM_DATA_GROUP_PAIRING_PASS": true,
     "IOS_SYSTEM_DATA_GROUP_PAIRING_CONSUMER_PASS": true,
     "consumer_vm": "0xfffffff00a265548",
-    "consumer_disasm_file": "group_pairing_consumer_disasm.txt",
     "mechanism": [
       "input: a mounted volume + a requested role (w1)",
       "ldrh w8,[x8,#0x3c4] reads input volume apfs_role; cmp w8,w1 early-returns if roles already match",
@@ -104,7 +103,20 @@
       "volume_group_id_must_be_uuid_equal": true,
       "bit0_of_arg2_controls_group_test": "tbnz w20,#0 @0xfffffff00a265600 skips the UUID compare when set; clear (normal path) requires equality"
     },
-    "failure": "no sibling match returns 0 after exhausting the nx_fs_oid[] list"
+    "failure": "no sibling match returns 0 after exhausting the nx_fs_oid[] list",
+    "consumer_disasm_durable": "artifacts/evidence/05f/phase05f-group-pairing-consumer-disasm.txt",
+    "kernel_evidence": "artifacts/evidence/05f/phase05f-root-transition-kernel-evidence.json",
+    "comparison_helper": {
+      "identity": "SEMANTICALLY_PROVEN_UUID_EQUALITY",
+      "got_stub_vm": "0xfffffff00a2be274",
+      "resolved_stub_vm": "0xfffffff00aa980c0",
+      "impl_vm": "0xfffffff00a50f5c0",
+      "length": "w2=0x10 (16 bytes)",
+      "semantics": "byte-wise compare, returns 0 iff equal",
+      "IOS_GROUP_PAIRING_UUID_COMPARE_SYMBOL_PASS": false,
+      "IOS_GROUP_PAIRING_UUID_EQUALITY_SEMANTICS_PASS": true
+    },
+    "bypass_flag_classification": "UNKNOWN: tbnz w20,#0 @0xfffffff00a265600 skips the UUID compare when set; semantic meaning of arg2 bit0 not statically named"
   },
   "pairing_claim_levels": {
     "IOS_SYSTEM_DATA_PAIRING_CLAIM_LEVEL_PASS": true,
@@ -301,5 +313,20 @@
     "IOS_DATA_MOUNTPOINT_CONTRACT: STATIC_PARTIAL",
     "runtime Data volume identity: INPUT_OR_RUNTIME_DEFERRED",
     "runtime firmlink composition: RUNTIME_DEFERRED"
-  ]
+  ],
+  "kernel_evidence_certified": {
+    "ROOT_TRANSITION_KERNEL_EVIDENCE_EXTRACTOR_PASS": true,
+    "ROOT_TRANSITION_KERNEL_EVIDENCE_DURABLE_PASS": true,
+    "IOS_GROUP_PAIRING_INSTRUCTION_CHAIN_PASS": true,
+    "IOS_GROUP_PAIRING_NX_FS_OID_ITERATION_PASS": true,
+    "IOS_GROUP_PAIRING_ROLE_MATCH_PASS": true,
+    "IOS_GROUP_PAIRING_GROUP_POINTER_PASS": true,
+    "IOS_GROUP_PAIRING_UUID_EQUALITY_SEMANTICS_PASS": true,
+    "IOS_GROUP_PAIRING_EQUAL_RESULT_SELECTION_PASS": true,
+    "IOS_GROUP_PAIRING_BYPASS_FLAG_CLAIM_LEVEL_PASS": true,
+    "IOS_GROUP_PAIRING_DISASSEMBLY_DURABILITY_PASS": true,
+    "IOS_DATA_ENCRYPTION_INSTRUCTION_CHAIN_PASS": true,
+    "IOS_DATA_UNENCRYPTED_BIT_SEMANTICS_PASS": true
+  },
+  "kernel_evidence_path": "artifacts/evidence/05f/phase05f-root-transition-kernel-evidence.json"
 }

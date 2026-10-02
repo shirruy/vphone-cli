@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZR'
+Assert-Equal 'iteration' $summary.iteration '57ZV'
 Assert-Equal 'ITERATION_57ZR' $summary.certified.ITERATION_57ZR 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -690,10 +690,10 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZR'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZV'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'STATIC_PASS_RUNTIME_DEFERRED'
 Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
-Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
 
 # 2. All 11 required exit flags must be true
 $attachRequired = @(
@@ -770,7 +770,7 @@ $bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-b
 $bindRaw = Get-Content $bindPath -Raw
 $bind = $bindRaw | ConvertFrom-Json
 
-Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZR'
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZV'
 Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'STATIC_PASS_RUNTIME_DEFERRED'
 
 # 57ZI: SHA + fext-wording + duplicate-key checks for the binding artifact
@@ -916,7 +916,7 @@ $rdRaw = Get-Content $rdPath -Raw
 $rd = $rdRaw | ConvertFrom-Json
 
 Assert-Equal 'rd_gate' $rd.gate 'IOS_ROOT_DEVICE_SELECTION'
-Assert-Equal 'rd_iteration' $rd.iteration '57ZR'
+Assert-Equal 'rd_iteration' $rd.iteration '57ZV'
 Assert-Equal 'rd_certified' $rd.certified 'PASS_CLOSED_STATIC_MODEL_RUNTIME_DEFERRED'
 Assert-Equal 'rd_mechanism_status' $rd.mountroot_mechanism.status 'PASS_STATIC'
 Assert-Equal 'rd_mechanism_pc' $rd.mountroot_mechanism.mountroot_pc '0xfffffff00ab96a38'
@@ -927,11 +927,11 @@ Assert-Equal 'rd_claim_namespace_identity' $rd.claim_level.exact_root_namespace_
 Assert-Equal 'rd_selected_nsid' $rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_selected_nsid_status' $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
 
-Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZR'
+Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZV'
 Assert-Equal 'rd_preboom_57zl_state' $summary.certified.ITERATION_57ZL 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'rd_preboom_root_gate' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
-Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
 Assert-Equal 'rd_preboom_gate_state' $summary.ios_root_device_selection.GATE_PROPOSED_STATE 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'rd_preboom_nsid' $summary.ios_root_device_selection.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_preboom_nsid_status' $summary.ios_root_device_selection.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
@@ -939,7 +939,7 @@ Assert-Equal 'rd_preboom_media_identity' $summary.ios_root_device_selection.EXAC
 Assert-Equal 'rd_preboom_namespace_identity' $summary.ios_root_device_selection.EXACT_ROOT_NAMESPACE_IDENTITY 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_preboom_restore_container' $summary.ios_root_device_selection.RESTORE_FIXTURE_CONTAINER_UUID '4ada299f-6451-4a1f-a5fe-df42ab77e45d'
 Assert-Equal 'rd_preboom_boot_manifest_role' $summary.ios_root_device_selection.BOOT_MANIFEST_ROLE 'BOOT_ASSET_SELECTION_ONLY'
-Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate 'IOS_ROOT_TRANSITION_MODEL (static investigation now OPEN)'
+Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate 'IOS_DATA_VOLUME_LIFECYCLE_AUDIT (next static audit)'
 Assert-Equal 'rd_preboom_durable' $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION_DURABLE_PASS $true
 Assert-Equal 'rd_preboom_mechanism' $summary.ios_root_device_selection.IOS_MOUNTROOT_SELECTION_MECHANISM_PASS $true
 Assert-Equal 'rd_preboom_mountroot_pc' $summary.ios_root_device_selection.MOUNTROOT_PC '0xfffffff00ab96a38'
@@ -1209,7 +1209,7 @@ Assert-Equal 'rd_57zp_closed' $summary.certified.ITERATION_57ZP 'PASS_CLOSED'
 Assert-Equal 'rd_57zq_closed' $summary.certified.ITERATION_57ZQ 'PASS_CLOSED'
 Assert-Equal 'rd_57zr_closed' $summary.certified.ITERATION_57ZR 'PASS_CLOSED'
 Assert-Equal 'rd_root_gate_frozen' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
-Assert-Equal 'rd_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+Assert-Equal 'rd_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
 if ($summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION -eq 'PASS_CLOSED') {
     Write-Host 'MISMATCH root-device gate must not be PASS_CLOSED (runtime identity deferred)'
     $script:failures++
@@ -1513,7 +1513,7 @@ if (-not (Test-Path $tmPath) -or -not (Test-Path $tmProbePath)) {
     $tmRaw = Get-Content $tmPath -Raw
 
     # 1. Iteration + gate state
-    Assert-Equal 'tm_iteration' $tm.iteration '57ZU'
+    Assert-Equal 'tm_iteration' $tm.iteration '57ZV'
     Assert-Equal 'tm_certified' $tm.certified 'PASS_STATIC_MODEL_RUNTIME_DATA_DEFERRED'
 
     # 2. Role table + field offsets
@@ -1665,7 +1665,7 @@ if (-not (Test-Path $tmPath) -or -not (Test-Path $tmProbePath)) {
 
     # 12. Cross-artifact: preboom gate state
     Assert-Equal 'tm_preboom_root_gate' $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
-    Assert-Equal 'tm_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
+    Assert-Equal 'tm_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
 
     # 13. Duplicate-key check on transition artifact
     & python (Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py') $tmPath
@@ -1686,6 +1686,142 @@ if (-not (Test-Path $tmPath) -or -not (Test-Path $tmProbePath)) {
     }
 
     Write-Host 'IOS_ROOT_TRANSITION_CROSS_ARTIFACT_CONSISTENCY_PASS'
+}
+
+# ================= 57ZV: KERNEL EVIDENCE CROSS-CHECK =================
+$kePath = Join-Path $root 'artifacts\evidence\05f\phase05f-root-transition-kernel-evidence.json'
+if (-not (Test-Path $kePath)) {
+    Write-Host 'MISMATCH kernel-evidence artifact missing'
+    $script:failures++
+} else {
+    $ke = Get-Content $kePath -Raw | ConvertFrom-Json
+
+    # Extractor + durable flags
+    foreach ($f in @(
+        'ROOT_TRANSITION_KERNEL_EVIDENCE_EXTRACTOR_PASS',
+        'ROOT_TRANSITION_KERNEL_EVIDENCE_DURABLE_PASS',
+        'IOS_GROUP_PAIRING_INSTRUCTION_CHAIN_PASS',
+        'IOS_GROUP_PAIRING_NX_FS_OID_ITERATION_PASS',
+        'IOS_GROUP_PAIRING_ROLE_MATCH_PASS',
+        'IOS_GROUP_PAIRING_GROUP_POINTER_PASS',
+        'IOS_GROUP_PAIRING_UUID_EQUALITY_SEMANTICS_PASS',
+        'IOS_GROUP_PAIRING_EQUAL_RESULT_SELECTION_PASS',
+        'IOS_GROUP_PAIRING_BYPASS_FLAG_CLAIM_LEVEL_PASS',
+        'IOS_GROUP_PAIRING_DISASSEMBLY_DURABILITY_PASS',
+        'IOS_DATA_ENCRYPTION_INSTRUCTION_CHAIN_PASS',
+        'IOS_DATA_UNENCRYPTED_BIT_SEMANTICS_PASS'
+    )) {
+        if ($ke.certified.$f -ne $true) {
+            Write-Host "MISMATCH kernel-evidence flag missing: $f"
+            $script:failures++
+        } else {
+            Write-Host "OK ke_$f"
+        }
+    }
+
+    # BootKC SHA must match root-device artifact input identity
+    Assert-Equal 'ke_bootkc_sha' $ke.bootkc_sha256 'c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800'
+
+    # Instruction-level sites must match the transition artifact claims
+    $tm2 = Get-Content $tmPath -Raw | ConvertFrom-Json
+    Assert-Equal 'ke_pairing_vm' $ke.group_pairing_consumer.function_vm '0xfffffff00a265548'
+    Assert-Equal 'ke_bypass_classification' $ke.group_pairing_consumer.bypass_flag_classification 'UNKNOWN: tbnz w20,#0 @600 skips the UUID compare when set; the semantic meaning of arg2 bit0 is not statically named in this build'
+    Assert-Equal 'ke_nx_count_off' $ke.group_pairing_consumer.nx_fs_oid.nx_max_file_systems_container_offset '0xB4'
+    Assert-Equal 'ke_nx_array_off' $ke.group_pairing_consumer.nx_fs_oid.nx_fs_oid_array_container_offset '0xB8'
+    Assert-Equal 'ke_role_field' $ke.group_pairing_consumer.role_field 'APSB+0x3C4'
+    Assert-Equal 'ke_group_field' $ke.group_pairing_consumer.group_id_field 'APSB+0x3F0'
+    Assert-Equal 'ke_input_role_load' $ke.group_pairing_consumer.key_sites.input_role_load '0xfffffff00a265574'
+    Assert-Equal 'ke_input_role_cmp' $ke.group_pairing_consumer.key_sites.input_role_compare '0xfffffff00a265578'
+    Assert-Equal 'ke_cand_role_load' $ke.group_pairing_consumer.key_sites.candidate_role_load '0xfffffff00a2655f4'
+    Assert-Equal 'ke_cand_role_cmp' $ke.group_pairing_consumer.key_sites.candidate_role_compare '0xfffffff00a2655f8'
+    Assert-Equal 'ke_cand_group_arg0' $ke.group_pairing_consumer.key_sites.candidate_group_ptr_arg0 '0xfffffff00a265608'
+    Assert-Equal 'ke_src_group_arg1' $ke.group_pairing_consumer.key_sites.source_group_ptr_arg1 '0xfffffff00a26560c'
+    Assert-Equal 'ke_compare_call' $ke.group_pairing_consumer.key_sites.compare_call '0xfffffff00a265610'
+    Assert-Equal 'ke_equal_cbz' $ke.group_pairing_consumer.key_sites.equal_result_cbz '0xfffffff00a265614'
+    Assert-Equal 'ke_sibling_mov' $ke.group_pairing_consumer.key_sites.sibling_selected_mov '0xfffffff00a265678'
+
+    # Cross: TM pairing consumer must equal KE function vm
+    Assert-Equal 'ke_tm_pairing_match' $tm2.group_pairing.consumer_vm $ke.group_pairing_consumer.function_vm
+
+    # Helper semantics
+    Assert-Equal 'ke_helper_identity' $ke.comparison_helper.identity 'SEMANTICALLY_PROVEN_UUID_EQUALITY'
+    Assert-Equal 'ke_helper_impl' $ke.comparison_helper.impl_vm '0xfffffff00a50f5c0'
+    Assert-Equal 'ke_helper_length' $ke.comparison_helper.stub_sets_length 'w2 = 0x10 (16 bytes)'
+    if ($ke.comparison_helper.IOS_GROUP_PAIRING_UUID_COMPARE_SYMBOL_PASS -ne $false) {
+        Write-Host 'MISMATCH symbol-name overclaim: UUID compare symbol not actually resolved'
+        $script:failures++
+    } else {
+        Write-Host 'OK ke_no_symbol_overclaim'
+    }
+
+    # Encryption chain
+    Assert-Equal 'ke_enc_region' $ke.encryption_refusal.region_vm '0xfffffff00a210cfc'
+    Assert-Equal 'ke_enc_role_load' $ke.encryption_refusal.key_sites.role_load '0xfffffff00a210d00'
+    Assert-Equal 'ke_enc_role_cmp' $ke.encryption_refusal.key_sites.role_compare_0x40 '0xfffffff00a210d04'
+    Assert-Equal 'ke_enc_flags_load' $ke.encryption_refusal.key_sites.fs_flags_load '0xfffffff00a210d0c'
+    Assert-equal 'ke_enc_bit' $ke.encryption_refusal.key_sites.unencrypted_bit_test '0xfffffff00a210d10'
+    Assert-Equal 'ke_enc_fs_field' $ke.encryption_refusal.fs_flags_field 'APSB+0x108'
+    Assert-Equal 'ke_enc_bit_num' $ke.encryption_refusal.bit 0
+
+    # Instruction semantics pinning: raw chain must contain the expected insns
+    $chain = $ke.group_pairing_consumer.instruction_chain
+    $byVm = @{}
+    foreach ($i in $chain) { $byVm[$i.vm] = $i }
+    if ($byVm['0xfffffff00a265574'].mnemonic -ne 'ldrh' -or
+        $byVm['0xfffffff00a265574'].operands -notmatch '0x3c4') {
+        Write-Host 'MISMATCH ke input role insn semantics'
+        $script:failures++
+    } else { Write-Host 'OK ke_insn_input_role' }
+    if ($byVm['0xfffffff00a2655b8'].mnemonic -ne 'add' -or
+        $byVm['0xfffffff00a2655b8'].operands -notmatch '0xb8') {
+        Write-Host 'MISMATCH ke nx array base insn semantics'
+        $script:failures++
+    } else { Write-Host 'OK ke_insn_nx_array' }
+    if ($byVm['0xfffffff00a265598'].mnemonic -ne 'ldr' -or
+        $byVm['0xfffffff00a265598'].operands -notmatch '0xb4') {
+        Write-Host 'MISMATCH ke nx count insn semantics'
+        $script:failures++
+    } else { Write-Host 'OK ke_insn_nx_count' }
+    if ($byVm['0xfffffff00a265610'].mnemonic -ne 'bl') {
+        Write-Host 'MISMATCH ke compare call insn'
+        $script:failures++
+    } else { Write-Host 'OK ke_insn_compare_call' }
+    if ($byVm['0xfffffff00a265614'].mnemonic -ne 'cbz') {
+        Write-Host 'MISMATCH ke equal cbz insn'
+        $script:failures++
+    } else { Write-Host 'OK ke_insn_equal_cbz' }
+
+    # Durable disasm file must exist (no dangling reference)
+    $disasmPath = Join-Path $root 'artifacts\evidence\05f\phase05f-group-pairing-consumer-disasm.txt'
+    if (-not (Test-Path $disasmPath)) {
+        Write-Host 'MISMATCH durable disasm artifact missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK ke_disasm_durable'
+    }
+    # Extractor script must exist
+    if (-not (Test-Path (Join-Path $root 'scripts\phase05f-root-transition-kernel-evidence.py'))) {
+        Write-Host 'MISMATCH kernel-evidence extractor missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK ke_extractor_present'
+    }
+
+    # 57ZV preboom state
+    Assert-Equal 'ke_preboom_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'STATIC_PASS_RUNTIME_DATA_DEFERRED'
+    Assert-Equal 'ke_preboom_data_next' $summary.storage_gates_open.IOS_DATA_VOLUME_LIFECYCLE_AUDIT 'NEXT'
+    Assert-Equal 'ke_preboom_57zv' $summary.certified.ITERATION_57ZV 'PASS_CLOSED'
+
+    # Duplicate key check
+    & python (Join-Path $PSScriptRoot 'phase05f-json-duplicate-key-check.py') $kePath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host 'MISMATCH kernel-evidence duplicate keys'
+        $script:failures++
+    } else {
+        Write-Host 'OK KERNEL_EVIDENCE_JSON_UNIQUE'
+    }
+
+    Write-Host 'IOS_ROOT_TRANSITION_KERNEL_EVIDENCE_CROSS_CHECK_PASS'
 }
 
 if ($script:failures -gt 0) {
