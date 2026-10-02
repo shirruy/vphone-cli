@@ -1,86 +1,139 @@
 {
   "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
-  "iteration": "57ZZ_PART8",
+  "iteration": "57ZZ_PART8B",
   "date": "2026-10-02",
-  "binary": "restored_external",
-  "binary_sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
-  "DYLD_CHAINED_IMPORT_FORMAT_PASS": true,
-  "DYLD_CHAINED_IMPORT_ADDEND_LAYOUT_PASS": true,
-  "imports_format": {
-    "value": 2,
-    "name": "DYLD_CHAINED_IMPORT_ADDEND",
-    "entry_size": 8,
-    "note": "format 2 = DYLD_CHAINED_IMPORT_ADDEND, NOT DYLD_CHAINED_IMPORT"
+  "discovery": "kAPFSVolume bind pointers are INLINE in __TEXT segment, not in __got/__auth_got",
+  "bind_locations": {
+    "_kAPFSVolumeCaseSensitiveKey": [
+      {
+        "file": "0x1c828",
+        "vm": "0x10001c828",
+        "ordinal": 1191
+      }
+    ],
+    "_kAPFSVolumeFSIndexKey": [
+      {
+        "file": "0x38d0",
+        "vm": "0x1000038d0",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x98b8",
+        "vm": "0x1000098b8",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb20a0",
+        "vm": "0x1000b20a0",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb2400",
+        "vm": "0x1000b2400",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb4698",
+        "vm": "0x1000b4698",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb49f8",
+        "vm": "0x1000b49f8",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xe0e58",
+        "vm": "0x1000e0e58",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xee850",
+        "vm": "0x1000ee850",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x125620",
+        "vm": "0x100125620",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x145380",
+        "vm": "0x100145380",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x14cf70",
+        "vm": "0x10014cf70",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x168538",
+        "vm": "0x100168538",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x17e678",
+        "vm": "0x10017e678",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x18b520",
+        "vm": "0x10018b520",
+        "ordinal": 1192
+      }
+    ],
+    "_kAPFSVolumeGroupSiblingFSIndexKey": [
+      {
+        "file": "0x192478",
+        "vm": "0x100192478",
+        "ordinal": 1193
+      }
+    ],
+    "_kAPFSVolumeNameKey": [
+      {
+        "file": "0xc4c10",
+        "vm": "0x1000c4c10",
+        "ordinal": 1194
+      },
+      {
+        "file": "0xc4c98",
+        "vm": "0x1000c4c98",
+        "ordinal": 1194
+      },
+      {
+        "file": "0x14f0f0",
+        "vm": "0x10014f0f0",
+        "ordinal": 1194
+      },
+      {
+        "file": "0x191428",
+        "vm": "0x100191428",
+        "ordinal": 1194
+      }
+    ],
+    "_kAPFSVolumeNoAutomountAtCreateKey": [
+      {
+        "file": "0x6cb28",
+        "vm": "0x10006cb28",
+        "ordinal": 1195
+      }
+    ],
+    "_kAPFSVolumeReserveSizeKey": [
+      {
+        "file": "0xda258",
+        "vm": "0x1000da258",
+        "ordinal": 1197
+      }
+    ],
+    "_kAPFSVolumeRoleKey": [
+      {
+        "file": "0x138070",
+        "vm": "0x100138070",
+        "ordinal": 1198
+      }
+    ]
   },
-  "kAPFSVolume_imports": {
-    "_kAPFSVolumeCaseSensitiveKey": {
-      "index": 1191,
-      "lib_ordinal": 18,
-      "weak_import": 0,
-      "name_offset": 29006,
-      "addend": 0,
-      "name": "_kAPFSVolumeCaseSensitiveKey"
-    },
-    "_kAPFSVolumeFSIndexKey": {
-      "index": 1192,
-      "lib_ordinal": 18,
-      "weak_import": 0,
-      "name_offset": 29035,
-      "addend": 0,
-      "name": "_kAPFSVolumeFSIndexKey"
-    },
-    "_kAPFSVolumeGroupSiblingFSIndexKey": {
-      "index": 1193,
-      "lib_ordinal": 18,
-      "weak_import": 1,
-      "name_offset": 29058,
-      "addend": 0,
-      "name": "_kAPFSVolumeGroupSiblingFSIndexKey"
-    },
-    "_kAPFSVolumeNameKey": {
-      "index": 1194,
-      "lib_ordinal": 18,
-      "weak_import": 0,
-      "name_offset": 29093,
-      "addend": 0,
-      "name": "_kAPFSVolumeNameKey"
-    },
-    "_kAPFSVolumeNoAutomountAtCreateKey": {
-      "index": 1195,
-      "lib_ordinal": 18,
-      "weak_import": 1,
-      "name_offset": 29113,
-      "addend": 0,
-      "name": "_kAPFSVolumeNoAutomountAtCreateKey"
-    },
-    "_kAPFSVolumeQuotaSizeKey": {
-      "index": 1196,
-      "lib_ordinal": 18,
-      "weak_import": 0,
-      "name_offset": 29148,
-      "addend": 0,
-      "name": "_kAPFSVolumeQuotaSizeKey"
-    },
-    "_kAPFSVolumeReserveSizeKey": {
-      "index": 1197,
-      "lib_ordinal": 18,
-      "weak_import": 0,
-      "name_offset": 29173,
-      "addend": 0,
-      "name": "_kAPFSVolumeReserveSizeKey"
-    },
-    "_kAPFSVolumeRoleKey": {
-      "index": 1198,
-      "lib_ordinal": 18,
-      "weak_import": 0,
-      "name_offset": 29200,
-      "addend": 0,
-      "name": "_kAPFSVolumeRoleKey"
-    }
-  },
-  "kAPFSVolume_bind_locations": {},
-  "DATA_LIFECYCLE_CHAINED_IMPORT_EXTRACTOR_PASS": true,
-  "DATA_LIFECYCLE_APFS_KEY_IMPORT_TABLE_PASS": true,
-  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false,
-  "bind_location_status": "chained-pointer walk pending: dyld_chained_starts_in_segment header has mixed uint16/uint64 fields that need correct parsing"
+  "note": "quota_size key not yet located in this scan; full scan of all ordinals needed",
+  "next_step": "ADRP+LDR xrefs from __text code to these bind VMs -> dictionary construction sites"
 }
