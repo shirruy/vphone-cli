@@ -263,17 +263,30 @@
     ],
     "all_7_traced": false,
     "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
-    "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL"
+    "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
+    "CORRECTION": "The previous x1 backward traces are INCORRECT. The engine did not account for BL instructions clobbering volatile registers (x0-x18). Example: caller 1 has \"mov x1,sp\" at 0x100024408 for an EARLIER call at 0x100024410, then two BL calls follow before _APFSVolumeCreate at 0x100024428. The x1 value at _APFSVolumeCreate is whatever the immediately preceding BL (0x1001bcc50 = _CCKDFParametersCreateHkdf) left it as, NOT sp. All 5 \"traced\" x1 values are similarly invalidated.",
+    "previous_results_valid": false,
+    "engine_limitation_identified": "BL instructions clobber x0-x18 volatile registers. The backward slicer must stop at any BL and classify the register as HELPER_DEPENDENT rather than continuing to trace through the call.",
+    "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
+    "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false
   },
   "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_PASS": true,
   "DYLD_CHAINED_POINTER_CLAIM_LEVEL_PASS": true,
   "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_CLAIM_LEVEL_PASS": true,
   "APFS_VOLUME_CREATE_DIRECT_CALLSITE_CONTEXT_PASS": true,
-  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 5,
+  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
   "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_TOTAL": 7,
-  "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": true,
+  "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false,
   "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
   "APFS_VOLUME_CREATE_X1_PROVENANCE_PASS": false,
   "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
-  "APFS_VOLUME_CREATE_X1_SINGLE_STATE_PASS": true
+  "APFS_VOLUME_CREATE_X1_SINGLE_STATE_PASS": true,
+  "caller_call_pattern_analysis": {
+    "discovery": "Most _APFSVolumeCreate calls are IMMEDIATELY preceded by BL to a helper. The helper return (x0) is used as _APFSVolumeCreate x0, while x1 is whatever the helper left it as OR was set before the helper was called (if the helper preserves x1 as a non-standard return convention).",
+    "caller_1_pattern": "mov x0,x20; bl CCKDF; mov x21,x0; bl APFSVolumeCreate",
+    "caller_5_pattern": "mov x0,x19; bl CCKDF; mov x20,x0; bl APFSVolumeCreate",
+    "caller_4_pattern": "branch to code path; bl APFSVolumeCreate (no visible x1 setup)",
+    "caller_7_pattern": "bl helper; str x0,[x19,#0x1bc]; bl APFSVolumeCreate",
+    "significance": "The helpers called before _APFSVolumeCreate likely set up BOTH x0 and x1. x0 = helper return value (connection/context object). x1 = may be set by the helper or preserved from earlier if the helper happens not to modify it. Need to disassemble the helper functions."
+  }
 }
