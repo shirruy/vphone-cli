@@ -571,7 +571,34 @@
     },
     "role_field": "APSB+0x3C4",
     "group_id_field": "APSB+0x3F0",
-    "bypass_flag_classification": "UNKNOWN: tbnz w20,#0 @600 skips the UUID compare when set; the semantic meaning of arg2 bit0 is not statically named in this build"
+    "bypass_flag_classification": "PROVEN: arg2 (w2) is the bypass control; w2=1 skips uuid_compare (role-only sibling search), w2=0 requires uuid_compare(candidate+0x3F0, source+0x3F0)==0. fstab caller 0xfffffff00a223de8 sets w2 dynamically: source group UUID null (uuid_is_null @0xfffffff00a2be2a4 returns 0) -> w2=1 role-only; nonzero -> w2=0 UUID-equality required.",
+    "bypass_flag_claim_level": "PROVEN_CALLER_DEPENDENT",
+    "caller_evidence": {
+      "total_callers": 4,
+      "callers": [
+        {
+          "vm": "0xfffffff00a1a13c4",
+          "arg2": "1 (mov w2,#1)",
+          "mode": "role-only"
+        },
+        {
+          "vm": "0xfffffff00a21a460",
+          "arg2": "1 (mov w2,#1)",
+          "mode": "role-only"
+        },
+        {
+          "vm": "0xfffffff00a223de8",
+          "arg2": "dynamic: uuid_is_null(source+0x3F0) ? 1 : 0",
+          "mode": "conditional UUID equality"
+        },
+        {
+          "vm": "0xfffffff00a27e00c",
+          "arg2": "1 (mov w2,#1)",
+          "mode": "role-only"
+        }
+      ],
+      "conclusion": "group-UUID equality is required exactly when the source volume has a NONZERO group UUID (fstab path). A zero source UUID selects role-only pairing. The rule is caller- and source-state dependent, not unconditional."
+    }
   },
   "comparison_helper": {
     "call_site_vm": "0xfffffff00a265610",

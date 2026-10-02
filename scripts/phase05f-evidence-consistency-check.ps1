@@ -1725,7 +1725,37 @@ if (-not (Test-Path $kePath)) {
     # Instruction-level sites must match the transition artifact claims
     $tm2 = Get-Content $tmPath -Raw | ConvertFrom-Json
     Assert-Equal 'ke_pairing_vm' $ke.group_pairing_consumer.function_vm '0xfffffff00a265548'
-    Assert-Equal 'ke_bypass_classification' $ke.group_pairing_consumer.bypass_flag_classification 'UNKNOWN: tbnz w20,#0 @600 skips the UUID compare when set; the semantic meaning of arg2 bit0 is not statically named in this build'
+    Assert-Equal 'ke_bypass_classification' $ke.group_pairing_consumer.bypass_flag_classification 'PROVEN: arg2 (w2) is the bypass control; w2=1 skips uuid_compare (role-only sibling search), w2=0 requires uuid_compare(candidate+0x3F0, source+0x3F0)==0. fstab caller 0xfffffff00a223de8 sets w2 dynamically: source group UUID null (uuid_is_null @0xfffffff00a2be2a4 returns 0) -> w2=1 role-only; nonzero -> w2=0 UUID-equality required.'
+    Assert-Equal 'ke_bypass_claim_level' $ke.group_pairing_consumer.bypass_flag_claim_level 'PROVEN_CALLER_DEPENDENT'
+    Assert-Equal 'ke_caller_count' $ke.group_pairing_consumer.caller_evidence.total_callers 4
+    Assert-Equal 'ke_fstab_caller_mode' $ke.group_pairing_consumer.caller_evidence.callers[2].mode 'conditional UUID equality'
+    if ($ke.group_pairing_consumer.caller_evidence.conclusion -notmatch 'caller- and source-state dependent') {
+        Write-Host 'MISMATCH ke caller conclusion must state caller- and source-state dependency'
+        $script:failures++
+    } else {
+        Write-Host 'OK ke_caller_conclusion_conditional'
+    }
+
+    # TM pairing rule must state the conditional (not unconditional) UUID equality
+    if ($tm2.group_pairing.pairing_rule_proven.volume_group_id_equality -notmatch 'CONDITIONAL') {
+        Write-Host 'MISMATCH TM pairing rule overclaims unconditional UUID equality'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_pairing_rule_conditional'
+    }
+    if ($tm2.group_pairing.pairing_rule_proven.caller_dependent -ne $true) {
+        Write-Host 'MISMATCH TM pairing rule missing caller_dependent'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_pairing_caller_dependent'
+    }
+    if ($tm2.kernel_evidence_certified.IOS_GROUP_PAIRING_CALLER_ANALYSIS_PASS -ne $true -or
+        $tm2.kernel_evidence_certified.IOS_GROUP_PAIRING_CONDITIONAL_RULE_PASS -ne $true) {
+        Write-Host 'MISMATCH TM caller-analysis flags missing'
+        $script:failures++
+    } else {
+        Write-Host 'OK tm_caller_analysis_flags'
+    }
     Assert-Equal 'ke_nx_count_off' $ke.group_pairing_consumer.nx_fs_oid.nx_max_file_systems_container_offset '0xB4'
     Assert-Equal 'ke_nx_array_off' $ke.group_pairing_consumer.nx_fs_oid.nx_fs_oid_array_container_offset '0xB8'
     Assert-Equal 'ke_role_field' $ke.group_pairing_consumer.role_field 'APSB+0x3C4'

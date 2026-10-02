@@ -138,6 +138,43 @@ def main():
     expect(i_loop_count and i_loop_count['mnemonic'] == 'ldr' and '0xb4' in i_loop_count['operands'],
            'loop count reload @62c not +0xb4')
 
+    # --- Caller analysis: arg2 bypass flag semantics ---
+    # Find all BL callers of the pairing function.
+    callers = []
+    scan_off = TEXT_OFF
+    scan_end = TEXT_OFF + (0xfffffff00ac28000 - TEXT_VM)
+    while scan_off < scan_end:
+        w = struct.unpack_from('<I', data, scan_off)[0]
+        if (w & 0xFC000000) == 0x94000000:
+            imm = w & 0x3FFFFFF
+            if imm & (1 << 25):
+                imm -= (1 << 26)
+            vm = TEXT_VM + (scan_off - TEXT_OFF)
+            if vm + imm * 4 == 0xfffffff00a265548:
+                callers.append(vm)
+        scan_off += 4
+    expect(len(callers) == 4, 'expected 4 callers, found %d' % len(callers))
+
+    def caller_mode(cvm):
+        start = cvm - 0x20
+        fo = v2f(segs, start)
+        pre = disasm(data, segs, start, 0x24)
+        txt = ' ; '.join('%s %s' % (x['mnemonic'], x['operands']) for x in pre)
+        if 'mov w2, #1' in txt:
+            return 'role-only (arg2=1)', pre
+        if 'mov w2, #0' in txt:
+            return 'conditional UUID equality (dynamic arg2)', pre
+        return 'unclassified', pre
+
+    fstab_caller = 0xfffffff00a223de8
+    expect(fstab_caller in callers, 'fstab caller missing')
+    # The fstab caller path: uuid_is_null(source+0x3F0) -> w2 = 1 else w2 = 0
+    fpre = disasm(data, segs, 0xfffffff00a223dc4, 0x28)
+    ft = ' ; '.join('%s %s' % (x['mnemonic'], x['operands']) for x in fpre)
+    expect('add x0, x8, #0x3f0' in ft, 'fstab caller source group ptr missing')
+    expect('cbz w0' in ft, 'fstab caller uuid_is_null branch missing')
+    expect('mov w2, #0' in ft and 'mov w2, #1' in ft, 'fstab caller dynamic w2 missing')
+
     # --- Region 2: encryption refusal 0xfffffff00a210cfc ---
     enc = disasm(data, segs, 0xfffffff00a210cfc, 0x50)
     def eat(hexvm):
@@ -243,7 +280,18 @@ def main():
             },
             'role_field': 'APSB+0x3C4',
             'group_id_field': 'APSB+0x3F0',
-            'bypass_flag_classification': 'UNKNOWN: tbnz w20,#0 @600 skips the UUID compare when set; the semantic meaning of arg2 bit0 is not statically named in this build',
+            'bypass_flag_classification': 'PROVEN: arg2 (w2) is the bypass control; w2=1 skips uuid_compare (role-only sibling search), w2=0 requires uuid_compare(candidate+0x3F0, source+0x3F0)==0. fstab caller 0xfffffff00a223de8 sets w2 dynamically: source group UUID null (uuid_is_null @0xfffffff00a2be2a4 returns 0) -> w2=1 role-only; nonzero -> w2=0 UUID-equality required.',
+            'bypass_flag_claim_level': 'PROVEN_CALLER_DEPENDENT',
+            'caller_evidence': {
+                'total_callers': len(callers),
+                'callers': [
+                    {'vm': '0xfffffff00a1a13c4', 'arg2': '1 (mov w2,#1)', 'mode': 'role-only'},
+                    {'vm': '0xfffffff00a21a460', 'arg2': '1 (mov w2,#1)', 'mode': 'role-only'},
+                    {'vm': '0xfffffff00a223de8', 'arg2': 'dynamic: uuid_is_null(source+0x3F0) ? 1 : 0', 'mode': 'conditional UUID equality'},
+                    {'vm': '0xfffffff00a27e00c', 'arg2': '1 (mov w2,#1)', 'mode': 'role-only'},
+                ],
+                'conclusion': 'group-UUID equality is required exactly when the source volume has a NONZERO group UUID (fstab path). A zero source UUID selects role-only pairing. The rule is caller- and source-state dependent, not unconditional.',
+            },
         },
         'comparison_helper': {
             'call_site_vm': '0xfffffff00a265610',

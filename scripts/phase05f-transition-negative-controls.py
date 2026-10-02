@@ -103,6 +103,10 @@ run('ke_enc_bit_changed', KE, lambda d: d['encryption_refusal'].__setitem__('bit
 run('ke_enc_chain_flag_false', KE, lambda d: d['certified'].__setitem__('IOS_DATA_ENCRYPTION_INSTRUCTION_CHAIN_PASS', False))
 run('ke_pairing_chain_flag_false', KE, lambda d: d['certified'].__setitem__('IOS_GROUP_PAIRING_INSTRUCTION_CHAIN_PASS', False))
 run('ke_bypass_universal_overclaim', KE, lambda d: d['group_pairing_consumer'].__setitem__('bypass_flag_classification', 'PROVEN normal path'))
+run('ke_bypass_unknown_regression', KE, lambda d: d['group_pairing_consumer'].__setitem__('bypass_flag_classification', 'UNKNOWN'))
+run('ke_caller_count_changed', KE, lambda d: d['group_pairing_consumer']['caller_evidence'].__setitem__('total_callers', 3))
+run('ke_fstab_caller_mode_changed', KE, lambda d: d['group_pairing_consumer']['caller_evidence']['callers'][2].__setitem__('mode', 'role-only'))
+run('ke_pairing_unconditional_overclaim', TM, lambda d: d['group_pairing']['pairing_rule_proven'].__setitem__('volume_group_id_equality', 'REQUIRED always'))
 run('ke_bootkc_sha_changed', KE, lambda d: d.__setitem__('bootkc_sha256', 'deadbeef' * 8))
 
 # Duplicate JSON key
