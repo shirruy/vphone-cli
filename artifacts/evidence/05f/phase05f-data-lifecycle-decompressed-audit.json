@@ -1,0 +1,881 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ",
+  "date": "2026-10-02",
+  "DATA_PRODUCER_DECOMPRESSED_STRING_AUDIT_PASS": true,
+  "DATA_PRODUCER_IMPORT_GRAPH_PASS": true,
+  "binaries": {
+    "restored_external": {
+      "path": "/usr/local/bin/restored_external",
+      "size_bytes": 3356976,
+      "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+      "findings": {
+        "APFSVolumeRole": {
+          "count": 4,
+          "first_context": "SVolumeNeedsCryptoMigration._APFSVolumePerformOfflinePurge._APFSVolumeRole._APFSVolumeUpdateBounds._$s10Foundation11JSONDecoderC6decode_4fromxxm_AA4DataVtKSeRzlFTj._$s10Found"
+        },
+        "volumeGroupUUID": {
+          "count": 1,
+          "first_context": "V_reportErrorsOutOfBand.uid.TB,V_systemTimeSet.updater.TI,N.volumeGroupUUID.TI,N,V_headerSignature.TI,R.TI,R,V_matchedService.TI,V_headerGeneration.TI,V_headerVersion.TI,V_ima"
+        },
+        "volumeGroup": {
+          "count": 1,
+          "first_context": "V_reportErrorsOutOfBand.uid.TB,V_systemTimeSet.updater.TI,N.volumeGroupUUID.TI,N,V_headerSignature.TI,R.TI,R,V_matchedService.TI,V_headerGeneration.TI,V_headerVersion.TI,V"
+        },
+        "volume_group": {
+          "count": 1,
+          "first_context": "ock to block 0: %d..nx-omap-lock.nx-resize-spaceman-lock.nx-volume_group-lock.nx-global-extent-manipulation-lock.nx-txn-blocks-lock.nx-tree-node-compact-lock.FIXUP.<UNKNOWN"
+        },
+        "addVolumeWithName": {
+          "count": 2,
+          "first_context": "forKey:.addPersistentAttributes:.addService:port:name:text:.addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:.allAPFSContainers.allHTTPHeaderFields."
+        },
+        "addVolume": {
+          "count": 2,
+          "first_context": "forKey:.addPersistentAttributes:.addService:port:name:text:.addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:.allAPFSContainers.allHTTPHeade"
+        },
+        "_APFSVolumeCreate": {
+          "count": 4,
+          "first_context": "dedSpaceInfo._APFSOverProvModel._APFSShouldSealSystemVolume._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeEnableUserProtectionWithOptions._APFSVolumeGet"
+        },
+        "_APFSVolumeCreateForMSU": {
+          "count": 2,
+          "first_context": "OverProvModel._APFSShouldSealSystemVolume._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeEnableUserProtectionWithOptions._APFSVolumeGetVEKState._APFSVolumeN"
+        },
+        "_APFSVolumeDelete": {
+          "count": 2,
+          "first_context": "dSealSystemVolume._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeEnableUserProtectionWithOptions._APFSVolumeGetVEKState._APFSVolumeNeedsCryptoMigration._"
+        },
+        "_APFSVolumeRole": {
+          "count": 2,
+          "first_context": "FSVolumeNeedsCryptoMigration._APFSVolumePerformOfflinePurge._APFSVolumeRole._APFSVolumeUpdateBounds._$s10Foundation11JSONDecoderC6decode_4fromxxm_AA4DataVtKSeRzlFTj._$s10Found"
+        },
+        "pairedVolume": {
+          "count": 4,
+          "first_context": ".addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:.allAPFSContainers.allHTTPHeaderFields.allMedia.allValues.allocHostMessage:error:.allocWithZo"
+        },
+        "paired": {
+          "count": 4,
+          "first_context": ".addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:.allAPFSContainers.allHTTPHeaderFields.allMedia.allValues.allocHostMessage:error:.alloc"
+        },
+        "/private/var": {
+          "count": 18,
+          "first_context": "ystem_snapshot.%s: rootSnapshot is required./usr/sbin/nvram./private/var/tmp/livefs.allow-root-hash-mismatch=1.%s: unable to set allow-root-hash-mismatch.root from snapshot"
+        },
+        "/sbin/newfs_apfs": {
+          "count": 1,
+          "first_context": "RIM_ACTIVE_FILE failed with: %d ..failed to unlink %s: %d ../sbin/newfs_apfs.-s.%lld.System.Data.User.Preboot.Baseband Data.xART.Scratch.Update.Recovery.-o.role=%c.-A.-v.-P.%s "
+        },
+        "encrypted": {
+          "count": 19,
+          "first_context": "y failed: %d..FormatCaseSensitive.creating %s %s partition..encrypted.unencrypted./System/Library/Filesystems/apfs.fs/newfs_apfs.-D.-q.%dm.-r.%s returned %d..unable to o"
+        },
+        "unencrypted": {
+          "count": 6,
+          "first_context": "%d..FormatCaseSensitive.creating %s %s partition..encrypted.unencrypted./System/Library/Filesystems/apfs.fs/newfs_apfs.-D.-q.%dm.-r.%s returned %d..unable to open %s to ge"
+        },
+        "keybag": {
+          "count": 3,
+          "first_context": "ce volume, err = %d..%s:%u Err: Failed to attach the volume keybag: %u..%s:%u Err: unable to remount NX container @ %s..%s:%u Err: apfs_crypto_io_enable failed with %"
+        },
+        "AppleKeyStore": {
+          "count": 4,
+          "first_context": "......`.................../System/Library/PrivateFrameworks/AppleKeyStore.framework/AppleKeyStore.....p.................../System/Library/PrivateFrameworks/IOMobileFramebuff"
+        },
+        "DKIOCFORMAT": {
+          "count": 1,
+          "first_context": "%s: Device node was an empty string?..NAND format complete..DKIOCFORMAT ioctl failed: %s..AppleANS2NVMeController.unable to get matching dict..Format Error Detail.Disk for"
+        },
+        "APFS_FSCTL": {
+          "count": 11,
+          "first_context": "IBLE..gigalocker: ONLINE..gigalocker: SYSTEM FAULT..Calling APFS_FSCTL_UNMOUNT_CRYPTO_HINT, but will ignore failures because data encryption type is none..Calling APFS_FS"
+        },
+        "ioctl": {
+          "count": 6,
+          "first_context": "ode was an empty string?..NAND format complete..DKIOCFORMAT ioctl failed: %s..AppleANS2NVMeController.unable to get matching dict..Format Error Detail.Disk format fa"
+        },
+        "fcntl": {
+          "count": 4,
+          "first_context": "ile_size = %llu (%lld GB)..Could not open %s with error %d..fcntl(2) failed trying to allocate contiguous space with error: %d.fcntl(2) failed trying to allocate con"
+        },
+        "sysctl": {
+          "count": 10,
+          "first_context": "er.unable to find IOPlatformExpertDevice service..hw.target.sysctlybyname for hw.target failed: %s..IODeviceTree:/chosen.chip-id.could not create CFNumber for chip-id"
+        },
+        "uuid_generate": {
+          "count": 4,
+          "first_context": "mount._usleep._utimes._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_generate_random._uuid_is_null._uuid_parse._uuid_unparse._uuid_unparse_upper._valloc._vasprint"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "nlinkat._unmount._usleep._utimes._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_generate_random._uuid_is_null._uuid_parse._uuid_unparse._uuid_unparse_upper._v"
+        },
+        "uuid_compare": {
+          "count": 2,
+          "first_context": "ask._unlink._unlinkat._unmount._usleep._utimes._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_generate_random._uuid_is_null._uuid_parse._uuid_unparse._uuid_unpar"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/System/Library/PrivateFrameworks/AppleDeviceQuerySupport.framework/AppleDeviceQuerySupport",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libbz2.1.0.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/liblzma.5.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/AppleFSCompression.framework/AppleFSCompression",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libBBUpdaterDynamic.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libFDR.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/AppleKeyStore.framework/AppleKeyStore",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/IOMobileFramebuffer.framework/IOMobileFramebuffer",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/UserManagementLayout.framework/UserManagementLayout",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/DiskImages2.framework/DiskImages2",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libimage4.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libMobileGestalt.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libpartition2_dynamic.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/Foundation.framework/Foundation",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libamsupport.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/SystemConfiguration.framework/SystemConfiguration",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libauthinstall.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/MediaKit.framework/MediaKit",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/Bom.framework/Bom",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/MobileKeyBag.framework/MobileKeyBag",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libz.1.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CFNetwork.framework/CFNetwork",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libReverseProxyDevice.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/Security.framework/Security",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libc++.1.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CryptoKit.framework/CryptoKit",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/RemoteServiceDiscovery.framework/RemoteServiceDiscovery",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/SoftLinking.framework/SoftLinking",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libobjc.A.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/swift/libswiftCore.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/swift/libswiftCoreFoundation.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/swift/libswiftDispatch.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "asr": {
+      "path": "/usr/sbin/asr",
+      "size_bytes": 380192,
+      "sha256": "f6ddf41f1ed687f3ca8eaffb824c1a6a03ee424ea1a220b0d9b9f396851a425a",
+      "findings": {
+        "APFSVolumeRole": {
+          "count": 6,
+          "first_context": "APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeRole._APFSVolumeRoleFind._BOMCopierCancelCopy._BOMCopierCopy._BOMCopierCopyWithOptions._BOMCopierFree._B"
+        },
+        "_APFSVolumeCreate": {
+          "count": 4,
+          "first_context": "oreFinish._APFSStreamRestorePrepare._APFSStreamRestoreWrite._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeRole._APFSVolumeRoleFind._BOMCopierCancelCopy."
+        },
+        "_APFSVolumeCreateForMSU": {
+          "count": 2,
+          "first_context": "eamRestorePrepare._APFSStreamRestoreWrite._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeRole._APFSVolumeRoleFind._BOMCopierCancelCopy._BOMCopierCopy._BOMCo"
+        },
+        "_APFSVolumeDelete": {
+          "count": 2,
+          "first_context": "treamRestoreWrite._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeRole._APFSVolumeRoleFind._BOMCopierCancelCopy._BOMCopierCopy._BOMCopierCopyWithOptions._"
+        },
+        "_APFSVolumeRole": {
+          "count": 4,
+          "first_context": "_APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeRole._APFSVolumeRoleFind._BOMCopierCancelCopy._BOMCopierCopy._BOMCopierCopyWithOptions._BOMCopierFree._B"
+        },
+        "_APFSVolumeRoleFind": {
+          "count": 2,
+          "first_context": "e._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeRole._APFSVolumeRoleFind._BOMCopierCancelCopy._BOMCopierCopy._BOMCopierCopyWithOptions._BOMCopierFree._BOMCopierNew._BOMCopi"
+        },
+        "/private/var": {
+          "count": 6,
+          "first_context": "./sbin/newfs_hfs.-J.-s./dev/r./sbin/newfs_msdos../Volumes/../private/var/vm/../private/tmp/../.journal../.journal_info_block../.hotfiles.btree../.Spotlight-V100/../private/"
+        },
+        "encrypted": {
+          "count": 2,
+          "first_context": "ot.plist.Kernel Cache.Kernel Flags.Forcing a volume to be unencrypted requires a sibling volume to be present.%ss%i.newfs_apfs.-F.-A.-R.-e.-q.%lld.-r.-o.fsindex=%d.-C.ap"
+        },
+        "unencrypted": {
+          "count": 1,
+          "first_context": "Boot.plist.Kernel Cache.Kernel Flags.Forcing a volume to be unencrypted requires a sibling volume to be present.%ss%i.newfs_apfs.-F.-A.-R.-e.-q.%lld.-r.-o.fsindex=%d.-C.ap"
+        },
+        "ioctl": {
+          "count": 3,
+          "first_context": "Volumes/%s./sbin/mount.-t.ro./sbin/umount./dev/r%s.open(%s).ioctl(%s, DKIOCEJECT).close(%s).shadow-url.image-options.main-url.suppress-uiagent.system-image.read-only"
+        },
+        "fcntl": {
+          "count": 2,
+          "first_context": "edir._connect._ctime._dup2._err._errx._execv._exit._fclose._fcntl._fdopen._fflush._fgets._fileno._flockfile._fopen._fork._fprintf._fputc._fputs._fread._free._freeadd"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "d_policy_set._time._truncate._unlink._usleep._uuid_compare._uuid_copy._uuid_is_null._uuid_parse._uuid_unparse._uuid_unparse_upper._vfprintf._vprintf._wait4._waitpid._war"
+        },
+        "uuid_compare": {
+          "count": 2,
+          "first_context": "_syslog._thread_policy_set._time._truncate._unlink._usleep._uuid_compare._uuid_copy._uuid_is_null._uuid_parse._uuid_unparse._uuid_unparse_upper._vfprintf._vprintf._wait4._w"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/System/Library/Frameworks/Security.framework/Security",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/Bom.framework/Bom",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/MediaKit.framework/MediaKit",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/PrivateFrameworks/DiskImages.framework/DiskImages",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libz.1.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "newfs_apfs": {
+      "path": "/System/Library/Filesystems/apfs.fs/newfs_apfs",
+      "size_bytes": 508496,
+      "sha256": "a546ead8bb7af3577d3a015999b4ef436cbcd61bdc823af798bfd18a0d9b5440",
+      "findings": {
+        "volume_group": {
+          "count": 1,
+          "first_context": "ock to block 0: %d..nx-omap-lock.nx-resize-spaceman-lock.nx-volume_group-lock.nx-global-extent-manipulation-lock.nx-txn-blocks-lock.nx-tree-node-compact-lock.START.FIXUP.<U"
+        },
+        "encrypted": {
+          "count": 5,
+          "first_context": "=%s.fsreserve=%s.fssize=%s.volname=%s.gid=%s.empty_password.encrypted.role=%s.password=%s.uid=%s.unknown option '-%c'.missing operand for '-%c'.Can't create an encrypted"
+        },
+        "unencrypted": {
+          "count": 1,
+          "first_context": "_role_allowed.%s:%d: Volume role 0x%x is not allowed for an unencrypted volume..%s:%d: cannot change role of xART volume..%s:%d: cannot change role of Backup volume..%s:%d"
+        },
+        "ioctl": {
+          "count": 2,
+          "first_context": "statfs._fsync._getgid._getmntinfo._getopt._getppid._getuid._ioctl._malloc_type_calloc._malloc_type_malloc._malloc_type_realloc._memcmp._memcpy._memmove._memset._mems"
+        },
+        "fcntl": {
+          "count": 2,
+          "first_context": "clock_gettime._close._csops._err._err_set_exit._errc._errx._fcntl._fprintf._free._fstat._fstatfs._fsync._getgid._getmntinfo._getopt._getppid._getuid._ioctl._malloc_t"
+        },
+        "uuid_generate": {
+          "count": 2,
+          "first_context": "_r._strtoul._strtoull._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_is_null._uuid_parse._uuid_unparse._vfprintf._warnc._warnx._kCFAllocatorDefault._kCFBooleanTru"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "chr._strtok_r._strtoul._strtoull._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_is_null._uuid_parse._uuid_unparse._vfprintf._warnc._warnx._kCFAllocatorDefault"
+        },
+        "uuid_compare": {
+          "count": 2,
+          "first_context": "_strnlen._strrchr._strtok_r._strtoul._strtoull._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_is_null._uuid_parse._uuid_unparse._vfprintf._warnc._warnx._kCFAlloc"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "APFS_framework": {
+      "path": "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+      "size_bytes": 638000,
+      "sha256": "4d0b7b4444d62bdd7b985770748bf6fa91f78f68d44c9d935f6e2abb10ef764b",
+      "findings": {
+        "APFSVolumeRole": {
+          "count": 3,
+          "first_context": "VolumeResetUnlockRecordWithOptions._APFSVolumeResumeCrypto._APFSVolumeRole._APFSVolumeRoleFind._APFSVolumeSetDefrag._APFSVolumeSetHint._APFSVolumeSetOtiLockerData._APFSVolume"
+        },
+        "volume_group": {
+          "count": 1,
+          "first_context": "led with error: %d..nx-omap-lock.nx-resize-spaceman-lock.nx-volume_group-lock.nx-global-extent-manipulation-lock.nx-txn-blocks-lock.nx-tree-node-compact-lock.START.FIXUP.<U"
+        },
+        "_APFSVolumeCreate": {
+          "count": 2,
+          "first_context": "APFSVolumeCancelOfflinePurge._APFSVolumeConvertToUserCrypto._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeDeleteOtiLockerData._APFSVolumeDisableFileVaul"
+        },
+        "_APFSVolumeCreateForMSU": {
+          "count": 1,
+          "first_context": "flinePurge._APFSVolumeConvertToUserCrypto._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeDeleteOtiLockerData._APFSVolumeDisableFileVault._APFSVolumeDisableF"
+        },
+        "_APFSVolumeDelete": {
+          "count": 2,
+          "first_context": "nvertToUserCrypto._APFSVolumeCreate._APFSVolumeCreateForMSU._APFSVolumeDelete._APFSVolumeDeleteOtiLockerData._APFSVolumeDisableFileVault._APFSVolumeDisableFileVaultWithOptions._"
+        },
+        "_APFSVolumeRole": {
+          "count": 2,
+          "first_context": "SVolumeResetUnlockRecordWithOptions._APFSVolumeResumeCrypto._APFSVolumeRole._APFSVolumeRoleFind._APFSVolumeSetDefrag._APFSVolumeSetHint._APFSVolumeSetOtiLockerData._APFSVolume"
+        },
+        "_APFSVolumeRoleFind": {
+          "count": 1,
+          "first_context": "ckRecordWithOptions._APFSVolumeResumeCrypto._APFSVolumeRole._APFSVolumeRoleFind._APFSVolumeSetDefrag._APFSVolumeSetHint._APFSVolumeSetOtiLockerData._APFSVolumeSetUnlockRecord._APF"
+        },
+        "encrypted": {
+          "count": 5,
+          "first_context": ".volname=.fssize=.fsreserve=.fsquota=.fsindex=.fstree=btree.encrypted.role=.case=insensitive.case=sensitive.uid=.gid=.sealed=yes.conformance.hash=.unwritten.unwritten=no"
+        },
+        "unencrypted": {
+          "count": 1,
+          "first_context": "ict_mapping_key_compare._apfs_free_data_blocks._fs_is_fully_unencrypted._xf_init._xf_init_with_blob._xf_get_from_blob._xf_release._new_lock._free_lock._new_rwlock._free_rw"
+        },
+        "ioctl": {
+          "count": 2,
+          "first_context": "e._fts_open._fts_read._fts_set._getgid._getmntinfo._getuid._ioctl._lstat._mach_error_string._malloc_type_calloc._malloc_type_malloc._malloc_type_realloc._malloc_type"
+        },
+        "fcntl": {
+          "count": 2,
+          "first_context": "ccsha512_256_di._ccsha512_di._clock_gettime._close._fclose._fcntl._ffsctl._fgetattrlist._fopen._fprintf._free._fsctl._fsgetpath._fstat._fstatfs._fsync._ftruncate._ft"
+        },
+        "sysctl": {
+          "count": 2,
+          "first_context": "nlen._strrchr._strstr._strtok_r._strtol._strtoul._strtoull._sysctlbyname._time._unlink._uuid_clear._uuid_copy._uuid_generate._uuid_is_null._uuid_parse._uuid_unparse._"
+        },
+        "uuid_generate": {
+          "count": 2,
+          "first_context": "trtoull._sysctlbyname._time._unlink._uuid_clear._uuid_copy._uuid_generate._uuid_is_null._uuid_parse._uuid_unparse._vfprintf._vm_deallocate.___chkstk_darwin........._........"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "_strtoul._strtoull._sysctlbyname._time._unlink._uuid_clear._uuid_copy._uuid_generate._uuid_is_null._uuid_parse._uuid_unparse._vfprintf._vm_deallocate.___chkstk_darwin..."
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libc++.1.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "apfs_vol_converter": {
+      "path": "/System/Library/Filesystems/apfs.fs/apfs_vol_converter",
+      "size_bytes": 539392,
+      "sha256": "4bb2f5ec196f9327104d78bd58afeaf60fd7f462236ad2843fb902222e792b5b",
+      "findings": {
+        "volume_group": {
+          "count": 1,
+          "first_context": "ock to block 0: %d..nx-omap-lock.nx-resize-spaceman-lock.nx-volume_group-lock.nx-global-extent-manipulation-lock.nx-txn-blocks-lock.nx-tree-node-compact-lock.START.FIXUP.<U"
+        },
+        "encrypted": {
+          "count": 7,
+          "first_context": "isk.%s:%u Warn: Warning: The volume path %s won't work with encrypted volumes, use rdisk instead..%s:%u Err: Bad volume index for [%s] : %i..%s:%u Err: unable to mount N"
+        },
+        "unencrypted": {
+          "count": 1,
+          "first_context": "ext.......................nsert_snapshot_metadata...s_fully_unencrypted...terate_dir.............................b_dirty...napshot_is_reserved_name....................._re"
+        },
+        "keybag": {
+          "count": 1,
+          "first_context": "s..readonly.writable.%s:%u Err: Failed to attach the volume keybag: %u..%s:%u Err: unable to remount NX container @ %s..%s:%u Err: apfs_crypto_io_enable failed with %"
+        },
+        "ioctl": {
+          "count": 2,
+          "first_context": "stat._fstatfs._fsync._fwrite._getopt._getpid._gettimeofday._ioctl._mach_absolute_time._malloc_type_calloc._malloc_type_malloc._malloc_type_realloc._memcmp._memcpy._m"
+        },
+        "fcntl": {
+          "count": 2,
+          "first_context": "ch_source_set_timer._dispatch_walltime._errx._exit._fclose._fcntl._feof._fflush._fgetpos._fopen._fprintf._fputc._fread._free._fstat._fstatfs._fsync._fwrite._getopt._"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "trndup._strrchr._strstr._strtok_r._strtoul._strtoull._time._uuid_copy._uuid_parse._uuid_unparse._vfprintf._warnx.__ZdlPv.__ZdlPvSt19__type_descriptor_t.__ZnwmSt19__type_"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/usr/lib/libc++.1.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "apfs_sealvolume": {
+      "path": "/System/Library/Filesystems/apfs.fs/apfs_sealvolume",
+      "size_bytes": 760112,
+      "sha256": "3d2aafacc4a49758d3155e505ea404d9595cd7c1e97901a29fea494454ad4f2e",
+      "findings": {
+        "volume_group": {
+          "count": 1,
+          "first_context": "ock to block 0: %d..nx-omap-lock.nx-resize-spaceman-lock.nx-volume_group-lock.nx-global-extent-manipulation-lock.nx-txn-blocks-lock.nx-tree-node-compact-lock.START.FIXUP.<U"
+        },
+        "encrypted": {
+          "count": 8,
+          "first_context": "FSVolume.%s:%d: %s is not an APFS volume..%s:%d: Sealing of encrypted volumes is not supported..IOService.%s:%d: Cannot get to the parent of %s..BSD Name./dev/r./dev/.%s"
+        },
+        "unencrypted": {
+          "count": 1,
+          "first_context": "....._ext..<..............nsert_snapshot_metadata..<s_fully_unencrypted..<terate_dir..<..............and_hash..=with_parent_id..=............_and_return_name..=........nam"
+        },
+        "ioctl": {
+          "count": 2,
+          "first_context": "printf._fputc._free._fstat._fstatfs._fsync._fwrite._getopt._ioctl._malloc_type_calloc._malloc_type_malloc._malloc_type_realloc._memcmp._memcpy._memmove._memset._mems"
+        },
+        "fcntl": {
+          "count": 2,
+          "first_context": "lock_gettime._close._dbopen._err._errc._errx._exit._fclose._fcntl._fflush._fopen._fprintf._fputc._free._fstat._fstatfs._fsync._fwrite._getopt._ioctl._malloc_type_cal"
+        },
+        "uuid_generate": {
+          "count": 2,
+          "first_context": "trrchr._strtok_r._strtol._strtoul._time._unlink._uuid_copy._uuid_generate._uuid_unparse._vfprintf._warnc._warnx._write._kCFAllocatorDefault._kCFBooleanTrue._kCFErrorDebugDes"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "strptime._strrchr._strtok_r._strtol._strtoul._time._unlink._uuid_copy._uuid_generate._uuid_unparse._vfprintf._warnc._warnx._write._kCFAllocatorDefault._kCFBooleanTrue._k"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/System/Library/PrivateFrameworks/AppleFSCompression.framework/AppleFSCompression",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "apfs_iosd": {
+      "path": "/System/Library/Filesystems/apfs.fs/apfs_iosd",
+      "size_bytes": 337264,
+      "sha256": "07b99d5687d5637913cd3518c83d9df2199f8cc6b6549fb1721f31a74dbe08d6",
+      "findings": {
+        "volume_group": {
+          "count": 1,
+          "first_context": "reap list head: %d..nx-omap-lock.nx-resize-spaceman-lock.nx-volume_group-lock.nx-global-extent-manipulation-lock.nx-txn-blocks-lock.nx-tree-node-compact-lock.nx_reaper_sani"
+        },
+        "/private/var": {
+          "count": 3,
+          "first_context": "failed to set xpc activity state to %d (current state: %d)../private/var./private/var/mobile.com.apple.filesystems.apfs_iosd.hash_validation.com.apple.filesystems.apfs_iosd"
+        },
+        "encrypted": {
+          "count": 1,
+          "first_context": "rblock...s.............................delete_...is_fully_unencrypted...lookup_snapshot_metadata_by_xid...obj_zfree_oc...sb_dirty..........._...index_parse.....ext_tree_"
+        },
+        "unencrypted": {
+          "count": 1,
+          "first_context": "perblock...s.............................delete_...is_fully_unencrypted...lookup_snapshot_metadata_by_xid...obj_zfree_oc...sb_dirty..........._...index_parse.....ext_tree_"
+        },
+        "keybag": {
+          "count": 1,
+          "first_context": "ts report (gen. %llu) to Splunk: unknown error...pfkt_stats.keybag_stashed_or_unlocked.scale_transcriber.starting_cursor.drain_time.transcribe_time.total_time.Unknown"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "trlen._strncmp._strrchr._strstr._strtoul._strtoull._unlink._uuid_copy._vfprintf._warnx._xpc_activity_get_state._xpc_activity_register._xpc_activity_set_state._xpc_activi"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/System/Library/PrivateFrameworks/AppleFSCompression.framework/AppleFSCompression",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libc++.1.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "slurpAPFSMeta": {
+      "path": "/System/Library/Filesystems/apfs.fs/slurpAPFSMeta",
+      "size_bytes": 342208,
+      "sha256": "164638c01053939a4971a5d99fe5497d17753c19199e229831b294b5b883f261",
+      "findings": {
+        "volume_group": {
+          "count": 1,
+          "first_context": "_metadata_range_add.nx-omap-lock.nx-resize-spaceman-lock.nx-volume_group-lock.nx-global-extent-manipulation-lock.nx-txn-blocks-lock.nx-tree-node-compact-lock.START.FIXUP.<U"
+        },
+        "encrypted": {
+          "count": 10,
+          "first_context": "ording to its encryption first)..%s:%d:   -p : password for encrypted volume (macOS-only option and valid only when one of -v, -t or -T is specified)..%s:%d:   -U : the "
+        },
+        "ioctl": {
+          "count": 2,
+          "first_context": "c_volume_np._fwrite._getline._getopt._getpid._gettimeofday._ioctl._lseek._malloc_type_calloc._malloc_type_malloc._memcmp._memcpy._memmove._memset._mkdir._nanosleep._"
+        },
+        "fcntl": {
+          "count": 2,
+          "first_context": "12_256_di._ccsha512_di._clock_gettime._close._exit._fclose._fcntl._fdopen._fopen._fprintf._free._fsctl._fstat._fstatfs._fsync._fsync_volume_np._fwrite._getline._geto"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "strlen._strncmp._strndup._strrchr._strstr._strtoul._unlink._uuid_copy._vfprintf._waitpid._write._kCFAllocatorDefault._kCFBooleanTrue._kIOMainPortDefault._kIOMasterPortDe"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "fsck_apfs": {
+      "path": "/System/Library/Filesystems/apfs.fs/fsck_apfs",
+      "size_bytes": 579248,
+      "sha256": "0bfd09c8fe0c02223f42b88cab13ab11a428ed6c24ed6be1f99d6c9c52222301",
+      "findings": {
+        "paired": {
+          "count": 9,
+          "first_context": "y rolling / doc-id / clone group tree corruptions are not repaired; they'll go away once the snapshot is deleted..unable to access the tree repairs structure: %s..una"
+        },
+        "encrypted": {
+          "count": 25,
+          "first_context": " Use \"-\" for stdout..       -F            force checking of encrypted volumes..       -M            skip checks which require encrypted volumes to be unlocked..       -g"
+        },
+        "unencrypted": {
+          "count": 7,
+          "first_context": " .%s (id %llu): invalid dstream.default_crypto_id (%llu) on unencrypted volume, given apfs_fs_flags (0x%llx)..%s (id %llu): dir-stats key xf does not exist, despite intern"
+        },
+        "keybag": {
+          "count": 18,
+          "first_context": "ted volume from provided file descriptor: %s..Failed to get keybag entry with tag %d for volume %s..Failed to unwrap encrypted volume keybag using the provided passwo"
+        },
+        "AppleKeyStore": {
+          "count": 3,
+          "first_context": "F6-4E73-A93A-BE93AF416C99/TemporaryDirectory.pFYnK7/Sources/AppleKeyStore_libs/platform/platform.c./Library/Caches/com.apple.xbs/874FD24C-7DF6-4E73-A93A-BE93AF416C99/Tempora"
+        },
+        "ioctl": {
+          "count": 2,
+          "first_context": "t._getopt_long._getpagesize._getprogname._getpwuid._getuid._ioctl._mach_continuous_time._mach_timebase_info._malloc_type_calloc._malloc_type_malloc._malloc_type_real"
+        },
+        "fcntl": {
+          "count": 2,
+          "first_context": "a512_di._clock_gettime._close._ctime._devname._dup._fclose._fcntl._fdopen._fflush._ffsctl._fgetln._fopen._fork._fprintf._fputc._fputs._free._fstat._fstatfs._fsync._f"
+        },
+        "sysctl": {
+          "count": 2,
+          "first_context": "trlen._strncmp._strndup._strnlen._strrchr._strtol._strtoul._sysctlbyname._time._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_is_null._uuid_unparse._vaspri"
+        },
+        "uuid_generate": {
+          "count": 2,
+          "first_context": "l._sysctlbyname._time._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_is_null._uuid_unparse._vasprintf._vfprintf._vsnprintf._CFBooleanGetValue._CFDictionaryGetType"
+        },
+        "uuid_copy": {
+          "count": 2,
+          "first_context": "tol._strtoul._sysctlbyname._time._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_is_null._uuid_unparse._vasprintf._vfprintf._vsnprintf._CFBooleanGetValue._CFDi"
+        },
+        "uuid_compare": {
+          "count": 2,
+          "first_context": "._strrchr._strtol._strtoul._sysctlbyname._time._uuid_clear._uuid_compare._uuid_copy._uuid_generate._uuid_is_null._uuid_unparse._vasprintf._vfprintf._vsnprintf._CFBooleanGet"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        }
+      ]
+    },
+    "mount_apfs": {
+      "path": "/System/Library/Filesystems/apfs.fs/mount_apfs",
+      "size_bytes": 72896,
+      "sha256": "3582abd338734bc2248c539ab2f06c9ed05e5ae5ab18940855e175bd68b5c6b3",
+      "findings": {
+        "APFSVolumeRole": {
+          "count": 2,
+          "first_context": ".....0...V...f...v.......___CFConstantStringClassReference._APFSVolumeRoleFind._CFArrayGetCount._CFArrayGetValueAtIndex._CFDataGetTypeID._CFDictionaryGetValue._CFGetTypeID._C"
+        },
+        "_APFSVolumeRole": {
+          "count": 2,
+          "first_context": "......0...V...f...v.......___CFConstantStringClassReference._APFSVolumeRoleFind._CFArrayGetCount._CFArrayGetValueAtIndex._CFDataGetTypeID._CFDictionaryGetValue._CFGetTypeID._C"
+        },
+        "_APFSVolumeRoleFind": {
+          "count": 2,
+          "first_context": "......0...V...f...v.......___CFConstantStringClassReference._APFSVolumeRoleFind._CFArrayGetCount._CFArrayGetValueAtIndex._CFDataGetTypeID._CFDictionaryGetValue._CFGetTypeID._CFRel"
+        }
+      },
+      "dylib_imports": [
+        {
+          "dylib": "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "weak": false
+        },
+        {
+          "dylib": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libutil.dylib",
+          "weak": false
+        },
+        {
+          "dylib": "/usr/lib/libSystem.B.dylib",
+          "weak": false
+        }
+      ]
+    }
+  },
+  "key_discoveries": {
+    "volume_creation_api": {
+      "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
+      "found_in": "restored_external",
+      "significance": "primary volume creation interface in restore daemon; includes role, case sensitivity, reserve/quota, and pairedVolume parameters"
+    },
+    "volume_group_uuid": {
+      "property": "volumeGroupUUID",
+      "found_in": "restored_external",
+      "significance": "restore daemon has volumeGroupUUID property/ivar, suggesting it tracks/manages the group UUID"
+    },
+    "newfs_apfs_invocation": {
+      "string": "/sbin/newfs_apfs -s %lld System.Data.User.Preboot.Baseband Data.xART.Scratch.Update.Recovery -o.role",
+      "found_in": "restored_external",
+      "significance": "restored_external spawns newfs_apfs with role support and standard iOS volume names"
+    },
+    "apfs_framework_volume_apis": {
+      "imports": [
+        "_APFSVolumeCreate",
+        "_APFSVolumeCreateForMSU",
+        "_APFSVolumeDelete",
+        "_APFSVolumeRole",
+        "_APFSVolumeRoleFind",
+        "_APFSVolumeUpdateBounds"
+      ],
+      "found_in": "restored_external + asr",
+      "significance": "APFS.framework exposes C-level volume create/delete/role functions consumed by restore tooling"
+    },
+    "paired_volume_parameter": {
+      "selector_part": "pairedVolume:error:",
+      "found_in": "restored_external addVolume selector",
+      "significance": "explicit pairedVolume parameter in the volume creation API, directly relevant to System/Data group pairing"
+    }
+  }
+}

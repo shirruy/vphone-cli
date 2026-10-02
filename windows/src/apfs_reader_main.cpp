@@ -48,12 +48,16 @@ int main(int argc, char** argv) {
     std::string dump_path;
     std::string resolve_path;
     std::string resolve_inode;
+    std::string dump_inode;
     if (argc == 4 && std::string(argv[1]) == "--dump-plist") {
         dump_path = argv[2];
     } else if (argc == 4 && std::string(argv[1]) == "--resolve-path") {
         resolve_path = argv[2];
     } else if (argc == 4 && std::string(argv[1]) == "--resolve-inode") {
         resolve_inode = argv[2];
+    } else if (argc == 5 && std::string(argv[1]) == "--dump-inode") {
+        dump_inode = argv[2];
+        dump_path = argv[3];
     } else if (argc != 2) {
         std::cerr
             << "usage: vphone-apfs-reader-win <raw-apfs-image>\n"
@@ -64,7 +68,40 @@ int main(int argc, char** argv) {
     }
 
     const char* image_path =
-        argc == 4 ? argv[3] : argv[1];
+        argc == 5 ? argv[4] : (argc == 4 ? argv[3] : argv[1]);
+
+    if (!dump_inode.empty()) {
+        vphone::ApfsInodeResolution res;
+        std::string error;
+        const std::uint64_t cnid =
+            static_cast<std::uint64_t>(
+                std::strtoull(dump_inode.c_str(), nullptr, 10));
+        if (!vphone::apfs_resolve_inode(
+                image_path, cnid, res, error)) {
+            std::cerr << "ERROR: " << error << "\n";
+            return 1;
+        }
+        std::cout << "{\n";
+        std::cout << "  \"cnid\": " << res.cnid << ",\n";
+        std::cout << "  \"status\": \"" << res.status << "\",\n";
+        std::cout << "  \"reconstructed_size_bytes\": "
+                  << res.bytes.size() << ",\n";
+        std::cout << "  \"sha256\": \"" << sha256_hex(res.bytes) << "\",\n";
+        std::cout << "  \"macho_valid\": "
+                  << (res.macho_structure_valid ? "true" : "false") << "\n";
+        std::cout << "}\n";
+        if (!res.bytes.empty()) {
+            FILE* out = nullptr;
+            if (fopen_s(&out, dump_path.c_str(), "wb") == 0 && out) {
+                fwrite(res.bytes.data(), 1, res.bytes.size(), out);
+                fclose(out);
+            } else {
+                std::cerr << "ERROR: cannot open output file\n";
+                return 1;
+            }
+        }
+        return 0;
+    }
 
     if (!resolve_path.empty()) {
         vphone::ApfsPathResolution resolution;

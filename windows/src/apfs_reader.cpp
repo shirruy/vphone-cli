@@ -3013,6 +3013,7 @@ bool apfs_resolve_inode(
                     }
                 }
                 result.bytes_reconstructed = true;
+                result.bytes = output;
                 result.file_size = dcs.logical_size;
                 result.sha256 = compute_sha256_hex(
                     output.data(), output.size());
@@ -3149,6 +3150,7 @@ bool apfs_resolve_inode(
                     return true;
                 }
                 result.bytes_reconstructed = true;
+                result.bytes = output;
                 result.file_size = dcs.logical_size;
                 result.sha256 = compute_sha256_hex(
                     output.data(), output.size());
@@ -3357,6 +3359,7 @@ bool apfs_resolve_inode(
                 return true;
             }
             result.bytes_reconstructed = true;
+            result.bytes = output;
             result.file_size = dcs.logical_size;
             result.sha256 = compute_sha256_hex(
                 output.data(), output.size());
@@ -3376,6 +3379,7 @@ bool apfs_resolve_inode(
             return true;
         }
         result.bytes_reconstructed = true;
+        result.bytes = dcs.xdata;
         result.file_size = dcs.logical_size;
         result.sha256 = compute_sha256_hex(
             dcs.xdata.data(), dcs.xdata.size());
@@ -3526,6 +3530,7 @@ bool apfs_resolve_inode(
     }
 
     result.bytes_reconstructed = true;
+    result.bytes = bytes;
     result.sha256 = compute_sha256_hex(
         bytes.data(), bytes.size());
     result.status = "READ_OK";

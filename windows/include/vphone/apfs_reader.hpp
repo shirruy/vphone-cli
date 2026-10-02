@@ -282,6 +282,8 @@ struct ApfsInodeResolution {
     std::uint32_t macho_sizeofcmds = 0;
     std::string sha256;
     std::string error;
+    // Reconstructed file bytes (populated by apfs_resolve_inode).
+    std::vector<std::uint8_t> bytes;
 };
 
 bool apfs_resolve_inode(
