@@ -137,6 +137,73 @@
     "callers": [
       {
         "callsite_vm": "0x100024428",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10003f970",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x100053458",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007c1ac",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007c1c4",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007e874",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x1001a2320",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      }
+    ],
+    "all_7_traced": false,
+    "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
+    "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
+    "CORRECTION": "The previous x1 backward traces are INCORRECT. The engine did not account for BL instructions clobbering volatile registers (x0-x18). Example: caller 1 has \"mov x1,sp\" at 0x100024408 for an EARLIER call at 0x100024410, then two BL calls follow before _APFSVolumeCreate at 0x100024428. The x1 value at _APFSVolumeCreate is whatever the immediately preceding BL (0x1001bcc50 = _CCKDFParametersCreateHkdf) left it as, NOT sp. All 5 \"traced\" x1 values are similarly invalidated.",
+    "previous_results_valid": false,
+    "engine_limitation_identified": "BL instructions clobber x0-x18 volatile registers. The backward slicer must stop at any BL and classify the register as HELPER_DEPENDENT rather than continuing to trace through the call.",
+    "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
+    "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false
+  },
+  "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_PASS": true,
+  "DYLD_CHAINED_POINTER_CLAIM_LEVEL_PASS": true,
+  "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_CLAIM_LEVEL_PASS": true,
+  "APFS_VOLUME_CREATE_DIRECT_CALLSITE_CONTEXT_PASS": true,
+  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
+  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_TOTAL": 7,
+  "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false,
+  "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
+  "APFS_VOLUME_CREATE_X1_PROVENANCE_PASS": false,
+  "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
+  "APFS_VOLUME_CREATE_X1_SINGLE_STATE_PASS": true,
+  "caller_call_pattern_analysis": {
+    "discovery": "Most _APFSVolumeCreate calls are IMMEDIATELY preceded by BL to a helper. The helper return (x0) is used as _APFSVolumeCreate x0, while x1 is whatever the helper left it as OR was set before the helper was called (if the helper preserves x1 as a non-standard return convention).",
+    "caller_1_pattern": "mov x0,x20; bl CCKDF; mov x21,x0; bl APFSVolumeCreate",
+    "caller_5_pattern": "mov x0,x19; bl CCKDF; mov x20,x0; bl APFSVolumeCreate",
+    "caller_4_pattern": "branch to code path; bl APFSVolumeCreate (no visible x1 setup)",
+    "caller_7_pattern": "bl helper; str x0,[x19,#0x1bc]; bl APFSVolumeCreate",
+    "significance": "An intervening BL invalidates ordinary caller-saved x1 provenance. Whether any helper intentionally communicates a secondary result in x1 is UNKNOWN until its implementation and all callsites prove such a non-standard convention.",
+    "HELPER_X1_RETURN_NON_OVERCLAIM_PASS": true
+  },
+  "historical_invalidated_x1_traces": [
+    {
+      "original": {
+        "callsite_vm": "0x100024428",
         "function_start_heuristic": "0x1000243b8",
         "x1_chain": [
           {
@@ -150,7 +217,11 @@
         "x1_final_source": "STACK_POINTER",
         "x1_local_definition_pass": true
       },
-      {
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
         "callsite_vm": "0x10003f970",
         "function_start_heuristic": "0x10003f880",
         "x1_chain": [
@@ -172,7 +243,11 @@
         "x1_final_source": "PAGE_ADDRESS",
         "x1_local_definition_pass": true
       },
-      {
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
         "callsite_vm": "0x100053458",
         "function_start_heuristic": "0x100053278",
         "x1_chain": [
@@ -208,21 +283,11 @@
         "x1_final_source": "REGISTER_TRANSFER",
         "x1_local_definition_pass": true
       },
-      {
-        "callsite_vm": "0x10007c1ac",
-        "function_start_heuristic": "0x10007c138",
-        "x1_chain": [],
-        "x1_final_source": "NOT_TRACED",
-        "x1_local_definition_pass": false
-      },
-      {
-        "callsite_vm": "0x10007c1c4",
-        "function_start_heuristic": "0x10007c138",
-        "x1_chain": [],
-        "x1_final_source": "NOT_TRACED",
-        "x1_local_definition_pass": false
-      },
-      {
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
         "callsite_vm": "0x10007e874",
         "function_start_heuristic": "0x10007e4dc",
         "x1_chain": [
@@ -244,7 +309,11 @@
         "x1_final_source": "PAGE_ADDRESS",
         "x1_local_definition_pass": true
       },
-      {
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
         "callsite_vm": "0x1001a2320",
         "function_start_heuristic": "0x1001a1db8",
         "x1_chain": [
@@ -259,34 +328,28 @@
         ],
         "x1_final_source": "REGISTER_PLUS_IMMEDIATE",
         "x1_local_definition_pass": true
-      }
+      },
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    }
+  ],
+  "HELPER_X1_RETURN_NON_OVERCLAIM_PASS": true,
+  "add_volume_method_investigation": {
+    "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
+    "selector_file_offset": "0x1cb0e1",
+    "selector_section": "__objc_methname",
+    "selref_vm": "0x1002f5860",
+    "selref_file_offset": "0x2f5860",
+    "method_implementation_found": false,
+    "search_performed": [
+      "__objc_methlist relative offsets (all 12KB scanned)",
+      "__objc_const chained fixup pointers",
+      "__DATA full section 8-byte scan",
+      "entire binary 4-byte relative offset scan",
+      "APFS.framework binary scan"
     ],
-    "all_7_traced": false,
-    "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
-    "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
-    "CORRECTION": "The previous x1 backward traces are INCORRECT. The engine did not account for BL instructions clobbering volatile registers (x0-x18). Example: caller 1 has \"mov x1,sp\" at 0x100024408 for an EARLIER call at 0x100024410, then two BL calls follow before _APFSVolumeCreate at 0x100024428. The x1 value at _APFSVolumeCreate is whatever the immediately preceding BL (0x1001bcc50 = _CCKDFParametersCreateHkdf) left it as, NOT sp. All 5 \"traced\" x1 values are similarly invalidated.",
-    "previous_results_valid": false,
-    "engine_limitation_identified": "BL instructions clobber x0-x18 volatile registers. The backward slicer must stop at any BL and classify the register as HELPER_DEPENDENT rather than continuing to trace through the call.",
-    "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
-    "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false
-  },
-  "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_PASS": true,
-  "DYLD_CHAINED_POINTER_CLAIM_LEVEL_PASS": true,
-  "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_CLAIM_LEVEL_PASS": true,
-  "APFS_VOLUME_CREATE_DIRECT_CALLSITE_CONTEXT_PASS": true,
-  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
-  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_TOTAL": 7,
-  "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false,
-  "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
-  "APFS_VOLUME_CREATE_X1_PROVENANCE_PASS": false,
-  "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
-  "APFS_VOLUME_CREATE_X1_SINGLE_STATE_PASS": true,
-  "caller_call_pattern_analysis": {
-    "discovery": "Most _APFSVolumeCreate calls are IMMEDIATELY preceded by BL to a helper. The helper return (x0) is used as _APFSVolumeCreate x0, while x1 is whatever the helper left it as OR was set before the helper was called (if the helper preserves x1 as a non-standard return convention).",
-    "caller_1_pattern": "mov x0,x20; bl CCKDF; mov x21,x0; bl APFSVolumeCreate",
-    "caller_5_pattern": "mov x0,x19; bl CCKDF; mov x20,x0; bl APFSVolumeCreate",
-    "caller_4_pattern": "branch to code path; bl APFSVolumeCreate (no visible x1 setup)",
-    "caller_7_pattern": "bl helper; str x0,[x19,#0x1bc]; bl APFSVolumeCreate",
-    "significance": "The helpers called before _APFSVolumeCreate likely set up BOTH x0 and x1. x0 = helper return value (connection/context object). x1 = may be set by the helper or preserved from earlier if the helper happens not to modify it. Need to disassemble the helper functions."
+    "conclusion": "The selector string exists in __objc_methname and its selref exists in __objc_selrefs, but NO method implementation is statically findable in restored_external or APFS.framework. This is a legitimate ObjC/Swift metadata analysis blocker. Possible causes: Swift class (different metadata format), runtime category loading, or dynamic method resolution.",
+    "RESTORED_ADD_VOLUME_METHOD_IDENTITY_PASS": false,
+    "classification": "SELECTOR_PRESENT_IMP_STATIC_UNRESOLVED"
   }
 }
