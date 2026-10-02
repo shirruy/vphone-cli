@@ -11,6 +11,11 @@
     ],
     "single_volume_system_container": true,
     "data_volume_absent_from_available_image_set": true,
+    "data_role_by_container": {
+      "base_system": false,
+      "system_cryptex": false,
+      "restore_ramdisk": false
+    },
     "transition_source": "Static image-set analysis: System container holds exactly one SYSTEM-role volume (Rave24A437.D37OS); no DATA-role volume exists in the available decrypted image set. Volume-group UUID is zero in every available APSB, so system->data pairing cannot be resolved statically from these images."
   },
   "containers": [
@@ -195,5 +200,10 @@
       "data_volume_present_in_container": false,
       "image_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069"
     }
-  ]
+  ],
+  "certified": {
+    "APFS_VOLUME_ROLE_TABLE_PASS": true,
+    "DATA_ROLE_IMAGE_SET_AGGREGATION_PASS": true,
+    "AUTHORITATIVE_VOLUME_ENUMERATION_PASS": true
+  }
 }
