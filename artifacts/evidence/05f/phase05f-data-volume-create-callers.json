@@ -1,6 +1,6 @@
 {
   "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
-  "iteration": "57ZZ_PART11",
+  "iteration": "57ZZ_PART14",
   "date": "2026-10-02",
   "binary_sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
   "chained_starts_table": {
@@ -46,11 +46,13 @@
       "symbol": "_APFSVolumeCreate",
       "function_start": "0x1000243b8",
       "function_size": 112,
-      "x1_last_definition": {
-        "vm": "0x100024408",
-        "insn": "mov x1, sp"
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "mov x1, sp",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
       },
-      "hkdf_preceding": null
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
     },
     {
       "callsite_vm": "0x10003f970",
@@ -58,11 +60,13 @@
       "symbol": "_APFSVolumeCreate",
       "function_start": "0x10003f880",
       "function_size": 240,
-      "x1_last_definition": {
-        "vm": "0x10003f954",
-        "insn": "add x1, x1, #0xd60"
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "add x1, x1, #0xd60",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
       },
-      "hkdf_preceding": null
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
     },
     {
       "callsite_vm": "0x100053458",
@@ -70,11 +74,13 @@
       "symbol": "_APFSVolumeCreate",
       "function_start": "0x100053278",
       "function_size": 480,
-      "x1_last_definition": {
-        "vm": "0x10005343c",
-        "insn": "mov x1, x21"
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "mov x1, x21",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
       },
-      "hkdf_preceding": null
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
     },
     {
       "callsite_vm": "0x10007c1ac",
@@ -82,8 +88,13 @@
       "symbol": "_APFSVolumeCreate",
       "function_start": "0x10007c138",
       "function_size": 116,
-      "x1_last_definition": null,
-      "hkdf_preceding": null
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
     },
     {
       "callsite_vm": "0x10007c1c4",
@@ -91,8 +102,13 @@
       "symbol": "_APFSVolumeCreate",
       "function_start": "0x10007c138",
       "function_size": 140,
-      "x1_last_definition": null,
-      "hkdf_preceding": null
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
     },
     {
       "callsite_vm": "0x10007e874",
@@ -100,8 +116,13 @@
       "symbol": "_APFSVolumeCreate",
       "function_start": "0x10007e4dc",
       "function_size": 920,
-      "x1_last_definition": null,
-      "hkdf_preceding": null
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
     },
     {
       "callsite_vm": "0x1001a2320",
@@ -109,8 +130,13 @@
       "symbol": "_APFSVolumeCreate",
       "function_start": "0x1001a1db8",
       "function_size": 1384,
-      "x1_last_definition": null,
-      "hkdf_preceding": null
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
     }
   ],
   "hkdf_analysis": {
@@ -180,7 +206,6 @@
     "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
     "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false
   },
-  "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_PASS": true,
   "DYLD_CHAINED_POINTER_CLAIM_LEVEL_PASS": true,
   "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_CLAIM_LEVEL_PASS": true,
   "APFS_VOLUME_CREATE_DIRECT_CALLSITE_CONTEXT_PASS": true,
@@ -193,12 +218,16 @@
   "APFS_VOLUME_CREATE_X1_SINGLE_STATE_PASS": true,
   "caller_call_pattern_analysis": {
     "discovery": "Most _APFSVolumeCreate calls are IMMEDIATELY preceded by BL to a helper. The helper return (x0) is used as _APFSVolumeCreate x0, while x1 is whatever the helper left it as OR was set before the helper was called (if the helper preserves x1 as a non-standard return convention).",
-    "caller_1_pattern": "mov x0,x20; bl CCKDF; mov x21,x0; bl APFSVolumeCreate",
-    "caller_5_pattern": "mov x0,x19; bl CCKDF; mov x20,x0; bl APFSVolumeCreate",
+    "caller_1_pattern": "mov x0,x20; bl PRECEDING_HELPER; mov x21,x0; bl APFSVolumeCreate",
+    "caller_5_pattern": "mov x0,x19; bl PRECEDING_HELPER; mov x20,x0; bl APFSVolumeCreate",
     "caller_4_pattern": "branch to code path; bl APFSVolumeCreate (no visible x1 setup)",
     "caller_7_pattern": "bl helper; str x0,[x19,#0x1bc]; bl APFSVolumeCreate",
     "significance": "An intervening BL invalidates ordinary caller-saved x1 provenance. Whether any helper intentionally communicates a secondary result in x1 is UNKNOWN until its implementation and all callsites prove such a non-standard convention.",
-    "HELPER_X1_RETURN_NON_OVERCLAIM_PASS": true
+    "HELPER_X1_RETURN_NON_OVERCLAIM_PASS": true,
+    "helper_identity": {
+      "classification": "PRECEDING_HELPER_STATIC_IDENTITY_UNRESOLVED",
+      "note": "Helper stub identity must be re-resolved from exact import/bind before CCKDF naming"
+    }
   },
   "historical_invalidated_x1_traces": [
     {
@@ -351,5 +380,8 @@
     "conclusion": "The selector string exists in __objc_methname and its selref exists in __objc_selrefs, but NO method implementation is statically findable in restored_external or APFS.framework. This is a legitimate ObjC/Swift metadata analysis blocker. Possible causes: Swift class (different metadata format), runtime category loading, or dynamic method resolution.",
     "RESTORED_ADD_VOLUME_METHOD_IDENTITY_PASS": false,
     "classification": "SELECTOR_PRESENT_IMP_STATIC_UNRESOLVED"
-  }
+  },
+  "DATA_VOLUME_CREATE_CALLERS_ITERATION_SINGLE_STATE_PASS": true,
+  "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_ABI_SAFE_PASS": false,
+  "APFS_VOLUME_CREATE_PRECEDING_HELPER_IDENTITY_PASS": false
 }
