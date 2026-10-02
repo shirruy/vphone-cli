@@ -128,5 +128,22 @@
     "APFS_VOLUME_CREATE_ROLE_ARGUMENT_PASS": true,
     "APFS_VOLUME_CREATE_NAME_ARGUMENT_PASS": true,
     "APFS_VOLUME_CREATE_OPERATION_PASS": true
+  },
+  "add_volume_selector_investigation": {
+    "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
+    "selector_string_file_offset": "0x1cb0e1",
+    "selector_string_vm": "0x1001cb0e1",
+    "selref_index": 808,
+    "selref_vm": "0x1002f5860",
+    "selref_file_offset": "0x2f5860",
+    "selref_raw_value": "0x80000001cb0e1",
+    "text_xrefs_found": 0,
+    "objc_stubs_xrefs_found": 0,
+    "methlist_relative_refs_found": 0,
+    "DATA_ADD_VOLUME_METHOD_IMP_PASS": false,
+    "RESTORED_ADD_VOLUME_METHOD_IDENTITY_PASS": false,
+    "status": "SELECTOR_PRESENT_BUT_NO_STATIC_XREF_FOUND",
+    "classification": "The selector string and its selref exist in restored_external, but no ADRP+ADD/LDR text xrefs, no objc_stubs references, and no methlist relative-offset entries were found. The method is likely either: (1) defined in another framework that restored_external depends on, (2) called through a dynamic dispatch mechanism not using a direct selref load pattern, or (3) called from a different binary. This is a legitimate blocker for method IMP resolution.",
+    "DATA_ADD_VOLUME_SELECTOR_XREF_PASS": false
   }
 }
