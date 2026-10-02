@@ -42,6 +42,13 @@ def restore(path):
 
 
 CONTROLS = [
+    # 57ZP restore-mode single-state controls
+    ('restore_mode_xid_59392', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'xid'], 59392)]),
+    ('restore_mode_xid_changed', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'nx_object_xid'], 8)]),
+    ('restore_mode_block_count_changed', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'nx_block_count'], 12345)]),
+    ('restore_mode_uuid_changed', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'nx_uuid'], 'deadbeef-0000-0000-0000-000000000000')]),
+    ('restore_mode_block_offset_0x20', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'nxsb_block_offset'], '0x20')]),
+    ('restore_mode_cross_section_mismatch', [(['restore_mode', 'CURRENT_RESTORE_FIXTURE_BEHAVIOR', 'nx_object_xid'], 8)]),
     # 57ZO single-state / governance
     ('volume_group_pass_unresolved', [(['volume_group', 'IOS_ROOT_VOLUME_GROUP_SELECTION_PASS'], True)]),
     ('preboot_pass_deferred', [(['preboot_metadata', 'IOS_PREBOOT_ROOT_SELECTION_METADATA_PASS'], True)]),

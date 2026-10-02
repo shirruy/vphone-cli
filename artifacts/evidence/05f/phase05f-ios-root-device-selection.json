@@ -1,6 +1,6 @@
 {
   "gate": "IOS_ROOT_DEVICE_SELECTION",
-  "iteration": "57ZO",
+  "iteration": "57ZP",
   "date": "2026-10-01",
   "certified": "PARTIAL_PASS_REPAIR_REQUIRED",
   "input_identity": {
@@ -273,9 +273,13 @@
     "IOS_RESTORE_MODE_ROOT_SELECTION_PASS": true,
     "CURRENT_RESTORE_FIXTURE_BEHAVIOR": {
       "ramdisk_container_uuid": "4ada299f-6451-4a1f-a5fe-df42ab77e45d",
-      "nxsb_offset": "0x20",
-      "block_size": 4096,
-      "xid": 59392,
+      "nxsb_block_offset": "0x0",
+      "nxsb_magic_offset_within_block": "0x20",
+      "nx_object_oid": 1,
+      "nx_object_xid": 9,
+      "nx_block_size": 4096,
+      "nx_block_count": 59392,
+      "nx_uuid": "4ada299f-6451-4a1f-a5fe-df42ab77e45d",
       "ramdisk_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069",
       "container_volumes": [
         {
@@ -291,7 +295,8 @@
           "nx_fs_oid_stale_candidate": null
         }
       ],
-      "conclusion": "restore fixture root media is its OWN ramdisk APFS container; the SystemOS container is not the booted root in this fixture"
+      "conclusion": "restore fixture root media is its OWN ramdisk APFS container; the SystemOS container is not the booted root in this fixture",
+      "RESTORE_MODE_NXSB_SINGLE_STATE_PASS": true
     },
     "NORMAL_BOOT_ROOT_SELECTION_CONTRACT": {
       "base_system_volume": {
@@ -661,7 +666,7 @@
   "IOS_ROOT_DEVICE_SELECTION_STATIC_MODEL_PASS": true,
   "negative_controls": {
     "ROOT_SELECTION_NEGATIVE_CONTROLS_PASS": true,
-    "TOTAL_NEGATIVE_CONTROLS": 34,
+    "TOTAL_NEGATIVE_CONTROLS": 40,
     "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
     "RESTORED_BASELINE_EXIT": 0,
     "harness": "scripts/phase05f-root-selection-negative-controls.py",
@@ -673,6 +678,15 @@
       "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
       "RESTORED_BASELINE_EXIT": 0,
       "ALL_NEGATIVE_CONTROLS_PASS": true
+    },
+    "verified_run_57zp": {
+      "TOTAL_NEGATIVE_CONTROLS": 40,
+      "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
+      "RESTORED_BASELINE_EXIT": 0,
+      "ALL_NEGATIVE_CONTROLS_PASS": true
     }
-  }
+  },
+  "RESTORE_MODE_NXSB_CROSS_SECTION_CONSISTENCY_PASS": true,
+  "RESTORE_MODE_APFS_FIELD_REFUSAL_PASS": true,
+  "RESTORE_MODE_NXSB_SINGLE_STATE_PASS": true
 }

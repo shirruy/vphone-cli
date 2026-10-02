@@ -63,7 +63,7 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZO'
+Assert-Equal 'iteration' $summary.iteration '57ZP'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -689,10 +689,10 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZO'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZP'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'STATIC_PASS_RUNTIME_DEFERRED'
 Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'OPEN'
-Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED_PENDING_57ZM'
+Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED_PENDING_57ZP_REVIEW'
 
 # 2. All 11 required exit flags must be true
 $attachRequired = @(
@@ -769,7 +769,7 @@ $bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-b
 $bindRaw = Get-Content $bindPath -Raw
 $bind = $bindRaw | ConvertFrom-Json
 
-Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZO'
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZP'
 Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'STATIC_PASS_RUNTIME_DEFERRED'
 
 # 57ZI: SHA + fext-wording + duplicate-key checks for the binding artifact
@@ -915,7 +915,7 @@ $rdRaw = Get-Content $rdPath -Raw
 $rd = $rdRaw | ConvertFrom-Json
 
 Assert-Equal 'rd_gate' $rd.gate 'IOS_ROOT_DEVICE_SELECTION'
-Assert-Equal 'rd_iteration' $rd.iteration '57ZO'
+Assert-Equal 'rd_iteration' $rd.iteration '57ZP'
 Assert-Equal 'rd_certified' $rd.certified 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'rd_mechanism_status' $rd.mountroot_mechanism.status 'PASS_STATIC'
 Assert-Equal 'rd_mechanism_pc' $rd.mountroot_mechanism.mountroot_pc '0xfffffff00ab96a38'
@@ -926,11 +926,11 @@ Assert-Equal 'rd_claim_namespace_identity' $rd.claim_level.exact_root_namespace_
 Assert-Equal 'rd_selected_nsid' $rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_selected_nsid_status' $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
 
-Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZO'
+Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZP'
 Assert-Equal 'rd_preboom_57zl_state' $summary.certified.ITERATION_57ZL 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'rd_preboom_root_gate' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'OPEN'
 Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'OPEN'
-Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED_PENDING_57ZM'
+Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'BLOCKED_PENDING_57ZP_REVIEW'
 Assert-Equal 'rd_preboom_gate_state' $summary.ios_root_device_selection.GATE_PROPOSED_STATE 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'rd_preboom_nsid' $summary.ios_root_device_selection.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_preboom_nsid_status' $summary.ios_root_device_selection.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
@@ -938,7 +938,7 @@ Assert-Equal 'rd_preboom_media_identity' $summary.ios_root_device_selection.EXAC
 Assert-Equal 'rd_preboom_namespace_identity' $summary.ios_root_device_selection.EXACT_ROOT_NAMESPACE_IDENTITY 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_preboom_restore_container' $summary.ios_root_device_selection.RESTORE_FIXTURE_CONTAINER_UUID '4ada299f-6451-4a1f-a5fe-df42ab77e45d'
 Assert-Equal 'rd_preboom_boot_manifest_role' $summary.ios_root_device_selection.BOOT_MANIFEST_ROLE 'BOOT_ASSET_SELECTION_ONLY'
-Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate '57ZO_REVIEW (final certification; transition BLOCKED_PENDING_57ZO acceptance)'
+Assert-Equal 'rd_preboom_next_gate' $summary.ios_root_device_selection.next_gate '57ZP_REVIEW (final single-state sync; transition BLOCKED_PENDING_57ZP acceptance)'
 Assert-Equal 'rd_preboom_durable' $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION_DURABLE_PASS $true
 Assert-Equal 'rd_preboom_mechanism' $summary.ios_root_device_selection.IOS_MOUNTROOT_SELECTION_MECHANISM_PASS $true
 Assert-Equal 'rd_preboom_mountroot_pc' $summary.ios_root_device_selection.MOUNTROOT_PC '0xfffffff00ab96a38'
@@ -1076,6 +1076,56 @@ Assert-Equal 'rd_restore_container_nx' $rd.container_identity.restore_ramdisk_co
 Assert-Equal 'rd_restore_container_xid' $rd.container_identity.restore_ramdisk_container.NX_OBJECT_XID 9
 Assert-Equal 'rd_restore_container_blocks' $rd.container_identity.restore_ramdisk_container.NX_BLOCK_COUNT 59392
 Assert-Equal 'rd_restore_container_checksum' $rd.container_identity.restore_ramdisk_container.checksum_valid $true
+
+# 57ZP: restore_mode section must match canonical NXSB (single-state)
+Assert-Equal 'rd_restore_mode_xid' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_object_xid 9
+Assert-Equal 'rd_restore_mode_block_count' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_block_count 59392
+Assert-Equal 'rd_restore_mode_oid' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_object_oid 1
+Assert-Equal 'rd_restore_mode_block_size' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_block_size 4096
+Assert-Equal 'rd_restore_mode_uuid' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_uuid '4ada299f-6451-4a1f-a5fe-df42ab77e45d'
+Assert-Equal 'rd_restore_mode_block_offset' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nxsb_block_offset '0x0'
+Assert-Equal 'rd_restore_mode_magic_offset' $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nxsb_magic_offset_within_block '0x20'
+
+# 57ZP: cross-section consistency between restore_mode and restore_nxsb
+if ($rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_object_xid -ne $rd.restore_nxsb.authoritative_nxsb.NX_OBJECT_XID -or
+    $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_block_count -ne $rd.restore_nxsb.authoritative_nxsb.NX_BLOCK_COUNT -or
+    $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_uuid -ne $rd.restore_nxsb.authoritative_nxsb.NX_UUID -or
+    $rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.nx_object_oid -ne $rd.restore_nxsb.authoritative_nxsb.NX_OBJECT_OID) {
+    Write-Host 'MISMATCH restore_mode vs restore_nxsb cross-section inconsistency'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_restore_mode_cross_section_consistency'
+}
+
+# 57ZP: stale generic xid field must not exist in restore_mode
+if ($rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.PSObject.Properties.Name -contains 'xid') {
+    Write-Host 'MISMATCH stale generic xid field still present in restore_mode'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_restore_mode_no_stale_xid'
+}
+if ($rd.restore_mode.CURRENT_RESTORE_FIXTURE_BEHAVIOR.PSObject.Properties.Name -contains 'nxsb_offset') {
+    Write-Host 'MISMATCH stale generic nxsb_offset field still present in restore_mode'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_restore_mode_no_stale_offset'
+}
+if ($rd.RESTORE_MODE_NXSB_SINGLE_STATE_PASS -ne $true -or
+    $rd.RESTORE_MODE_NXSB_CROSS_SECTION_CONSISTENCY_PASS -ne $true -or
+    $rd.RESTORE_MODE_APFS_FIELD_REFUSAL_PASS -ne $true) {
+    Write-Host 'MISMATCH 57ZP restore-mode single-state flags missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_restore_mode_single_state_flags'
+}
+
+# 57ZP: reparse result JSON must exist (durable evidence path)
+if (-not (Test-Path (Join-Path $root 'artifacts\evidence\05f\phase05f-nxsb-reparse-result.json'))) {
+    Write-Host 'MISMATCH reparse result JSON missing'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_reparse_result_json_present'
+}
 
 if ($rd.container_identity.CONTAINER_IDENTITY_SEPARATION_PASS -ne $true) {
     Write-Host 'MISMATCH container identity separation flag not true'
