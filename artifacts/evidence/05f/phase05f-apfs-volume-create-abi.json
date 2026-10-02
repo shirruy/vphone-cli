@@ -1,0 +1,74 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14G",
+  "date": "2026-10-02",
+  "binary_identity": {
+    "path": "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+    "sha256": "4d0b7b4444d62bdd7b985770748bf6fa91f78f68d44c9d935f6e2abb10ef764b",
+    "size": 638000,
+    "cputype": 16777228,
+    "cpusubtype": 2147483650,
+    "filetype": 6,
+    "ncmds": 23,
+    "APFS_FRAMEWORK_INPUT_IDENTITY_PASS": true
+  },
+  "symbol_identity": {
+    "symbol": "_APFSVolumeCreate",
+    "symtab_index": 906,
+    "n_type": "0x0f",
+    "n_sect": 1,
+    "vm": "0x26298",
+    "file_offset": "0x26298",
+    "entry_instruction": "pacibsp",
+    "entry_verified": true,
+    "boundary_source": "symbol table (_APFSVolumeDelete next)",
+    "function_end": "0x26870",
+    "function_size": 1496,
+    "instruction_count": 374,
+    "APFS_VOLUME_CREATE_IMPLEMENTATION_ENTRY_PASS": true,
+    "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_PASS": true
+  },
+  "argument_consumption_map": {
+    "x0": {
+      "vm": "0x262c8",
+      "insn": "add x0, sp, #0x18",
+      "status": "REDEFINED_BEFORE_READ"
+    },
+    "x1": {
+      "vm": "0x262cc",
+      "insn": "mov w1, #0x4c8",
+      "status": "REDEFINED_BEFORE_READ"
+    },
+    "x2": {
+      "vm": "0x262c4",
+      "insn": "stur xzr, [x29, #-0x6c]",
+      "status": "READ_BEFORE_REDEFINED (base register)"
+    },
+    "x3": {
+      "vm": "0x26408",
+      "insn": "mov w3, #0x100",
+      "status": "REDEFINED_BEFORE_READ"
+    },
+    "x4": {
+      "vm": "0x266fc",
+      "insn": "mov w4, #0",
+      "status": "REDEFINED_BEFORE_READ"
+    },
+    "x5": {
+      "vm": "0x26760",
+      "insn": "sub x5, x29, #0x60",
+      "status": "REDEFINED_BEFORE_READ"
+    },
+    "x6": {
+      "status": "UNUSED"
+    },
+    "x7": {
+      "status": "UNUSED"
+    }
+  },
+  "argument_count": {
+    "used": 6,
+    "unused": 2
+  },
+  "APFS_VOLUME_CREATE_ARGUMENT_CONSUMPTION_PASS": true
+}

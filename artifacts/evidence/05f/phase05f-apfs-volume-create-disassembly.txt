@@ -1,8 +1,8 @@
 # _APFSVolumeCreate complete disassembly
 # APFS.framework SHA-256: 4d0b7b4444d62bdd7b985770748bf6fa91f78f68d44c9d935f6e2abb10ef764b
-# VM: 0x26298 - 0x26870 (size=1496)
-# File offset: 0x26298 (dynamically computed from __text section)
-# First bytes: 7f2303d5fc6fbaa9fa6701a9f85f02a9f65703a9f44f04a9fd7b05a9fd430191
+# VM: 0x26298 - 0x26870 (size=1496, 374 instructions)
+# Entry: pacibsp (verified)
+# Boundary source: symbol table (_APFSVolumeDelete at next VM)
 
 26298  pacibsp  
 2629c  stp      x28, x27, [sp, #-0x60]!

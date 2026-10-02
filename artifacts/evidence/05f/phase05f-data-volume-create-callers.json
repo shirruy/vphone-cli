@@ -808,7 +808,10 @@
         "conclusion": "x1 IS clobbered by this helper"
       }
     },
-    "x1_provenance_conclusion": "x1 is NOT explicitly defined in any of the 7 caller functions. The intervening helper calls DO clobber x1 per ARM64 ABI. _APFSContainerWaitForReaper specifically sets x1=0 and w1=0x50. This means x1 at _APFSVolumeCreate is a STALE/GARBAGE value from the last helper call that modified it. The _APFSVolumeCreate function in APFS.framework reads options from x1, but the callers are NOT setting x1 to a valid CFDictionary before the call. POSSIBLE EXPLANATIONS: 1. The call sites are inside wrapper functions that use a non-standard calling convention. 2. The dictionary is constructed in a higher-level function and passed through    multiple layers of wrappers. 3. These calls are from static library code where the compiler inlined    dictionary construction and the x1 value is a compiler-internal artifact. 4. The dictionary construction happens in ObjC/Swift code compiled to    use a different register allocation pattern. NEXT: Disassemble _APFSVolumeCreate itself to confirm it truly expects x1=CFDictionary and to understand what happens when x1 contains garbage.",
-    "x1_provenance_status": "STATIC_UNRESOLVED"
+    "x1_provenance_conclusion": "x1 = CALL_CLOBBERED_UNKNOWN. AAPCS64 caller-saved semantics prove loss of provenance at intervening BL boundaries, NOT a particular post-call value. The actual x1 value at _APFSVolumeCreate depends on each helper implementation and is UNKNOWN without implementation-side analysis. The _APFSVolumeCreate ABI must be reconstructed from its own implementation to determine which argument registers are actually consumed and their semantics.",
+    "x1_provenance_status": "CALL_CLOBBERED_UNKNOWN",
+    "X1_IS_STALE_VALUE": false,
+    "X1_IS_CFDICTIONARY": "UNPROVEN",
+    "APFS_VOLUME_CREATE_X1_CLAIM_LEVEL_PASS": true
   }
 }
