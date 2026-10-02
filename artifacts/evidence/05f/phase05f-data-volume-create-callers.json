@@ -740,5 +740,50 @@
       "0x10007e874": "CALL_CLOBBERED_UNKNOWN",
       "0x1001a2320": "CALL_CLOBBERED_UNKNOWN"
     }
+  },
+  "helper_stub_resolution": {
+    "0x1001bcc50": {
+      "symbol": "_CCKDFParametersCreateHkdf",
+      "framework": "CryptoKit",
+      "got_addr": "0x1002ed028",
+      "symtab_index": 368,
+      "used_by_callers": [
+        "0x100024428",
+        "0x10003f970",
+        "0x100053458",
+        "0x10007c1c4"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "0x1001bcb60": {
+      "symbol": "_BOMCopierSetUserData",
+      "framework": "BOM",
+      "got_addr": "0x1002ece48",
+      "used_by_callers": [
+        "0x10007c1ac"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "0x1001bcd40": {
+      "symbol": "_CC_SHA384_Final",
+      "framework": "CommonCrypto/libcommonCrypto",
+      "got_addr": "0x1002ed080",
+      "symtab_index": 379,
+      "used_by_callers": [
+        "0x10007e874"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "0x1001bea80": {
+      "symbol": "_BBUpdaterRegisterLogSink",
+      "framework": "libBBUpdaterDynamic",
+      "got_addr": null,
+      "used_by_callers": [
+        "0x1001a2320"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "APFS_VOLUME_CREATE_PRECEDING_HELPER_IDENTITY_PASS": true,
+    "note": "All 4 preceding helper stubs resolved to exact imported symbols. The dominant pattern is _CCKDFParametersCreateHkdf (CryptoKit key derivation) immediately before _APFSVolumeCreate. The helpers are crypto/restore utility functions, NOT dictionary constructors. The x1 options dictionary must be constructed elsewhere in the caller function or passed as a higher-level parameter."
   }
 }
