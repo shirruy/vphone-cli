@@ -63,7 +63,8 @@ $contract = $contractRaw | ConvertFrom-Json
 $ansMatch = $ansMatchRaw | ConvertFrom-Json
 
 # --- iteration identity (57ZB) ---
-Assert-Equal 'iteration' $summary.iteration '57ZQ'
+Assert-Equal 'iteration' $summary.iteration '57ZR'
+Assert-Equal 'ITERATION_57ZR' $summary.certified.ITERATION_57ZR 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZB' $summary.certified.ITERATION_57ZB 'PASS_CLOSED'
 Assert-Equal 'ITERATION_57ZC' $summary.certified.ITERATION_57ZC 'PARTIAL_PASS_REPAIR_REQUIRED'
 Assert-Equal 'ITERATION_57ZD' $summary.certified.ITERATION_57ZD 'PARTIAL_PASS_REPAIR_REQUIRED'
@@ -689,7 +690,7 @@ $attachRaw = Get-Content $attachPath -Raw
 $attach = $attachRaw | ConvertFrom-Json
 
 # 1. Iteration + gate state
-Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZQ'
+Assert-Equal 'attach_preboom_iter' $summary.iteration '57ZR'
 Assert-Equal 'attach_preboom_certified' $summary.certified.CRYPTEX_ATTACHMENT_MODEL 'STATIC_PASS_RUNTIME_DEFERRED'
 Assert-Equal 'attach_preboom_next_root' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'attach_preboom_next_transition' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
@@ -769,7 +770,7 @@ $bindPath = Join-Path $root 'artifacts\evidence\05f\phase05f-cryptex-namespace-b
 $bindRaw = Get-Content $bindPath -Raw
 $bind = $bindRaw | ConvertFrom-Json
 
-Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZQ'
+Assert-Equal 'bind_preboom_iter' $summary.iteration '57ZR'
 Assert-Equal 'bind_preboom_certified' $summary.certified.CRYPTEX_NAMESPACE_BINDING 'STATIC_PASS_RUNTIME_DEFERRED'
 
 # 57ZI: SHA + fext-wording + duplicate-key checks for the binding artifact
@@ -915,7 +916,7 @@ $rdRaw = Get-Content $rdPath -Raw
 $rd = $rdRaw | ConvertFrom-Json
 
 Assert-Equal 'rd_gate' $rd.gate 'IOS_ROOT_DEVICE_SELECTION'
-Assert-Equal 'rd_iteration' $rd.iteration '57ZQ'
+Assert-Equal 'rd_iteration' $rd.iteration '57ZR'
 Assert-Equal 'rd_certified' $rd.certified 'PASS_CLOSED_STATIC_MODEL_RUNTIME_DEFERRED'
 Assert-Equal 'rd_mechanism_status' $rd.mountroot_mechanism.status 'PASS_STATIC'
 Assert-Equal 'rd_mechanism_pc' $rd.mountroot_mechanism.mountroot_pc '0xfffffff00ab96a38'
@@ -926,9 +927,9 @@ Assert-Equal 'rd_claim_namespace_identity' $rd.claim_level.exact_root_namespace_
 Assert-Equal 'rd_selected_nsid' $rd.selected_namespace.ROOT_ANS_NAMESPACE_NSID 'STATIC_UNRESOLVED'
 Assert-Equal 'rd_selected_nsid_status' $rd.selected_namespace.ROOT_ANS_NAMESPACE_STATUS 'RUNTIME_DEFERRED'
 
-Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZQ'
+Assert-Equal 'rd_preboom_iter' $summary.iteration '57ZR'
 Assert-Equal 'rd_preboom_57zl_state' $summary.certified.ITERATION_57ZL 'PARTIAL_PASS_REPAIR_REQUIRED'
-Assert-Equal 'rd_preboom_root_gate' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'OPEN'
+Assert-Equal 'rd_preboom_root_gate' $summary.certified.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'rd_preboom_next' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'rd_preboom_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
 Assert-Equal 'rd_preboom_gate_state' $summary.ios_root_device_selection.GATE_PROPOSED_STATE 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
@@ -946,6 +947,38 @@ Assert-Equal 'rd_preboom_chosen_boot_uuid' $summary.ios_root_device_selection.CH
 Assert-Equal 'rd_preboom_chosen_boot_device' $summary.ios_root_device_selection.CHOSEN_BOOT_DEVICE 'ABSENT'
 Assert-Equal 'rd_preboom_options_bootargs' $summary.ios_root_device_selection.OPTIONS_BOOTARGS 'ABSENT'
 Assert-Equal 'rd_preboom_root_matching_bytes' $summary.ios_root_device_selection.ROOT_MATCHING_BOOTED_BYTES '256 x 0x00 (SERIALIZED_MATCH_DATA, inert)'
+
+# 57ZR: root-device selection canonical state must agree across all four representations
+$rdCanonical = 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
+if ($summary.certified.IOS_ROOT_DEVICE_SELECTION -ne $rdCanonical -or
+    $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION -ne $rdCanonical -or
+    $summary.ios_root_device_selection.IOS_ROOT_DEVICE_SELECTION -ne $rdCanonical -or
+    $summary.ios_root_device_selection.GATE_PROPOSED_STATE -ne $rdCanonical) {
+    Write-Host 'MISMATCH root-device selection state not canonical across certified/storage_gates_open/ios_root_device_selection/GATE_PROPOSED_STATE'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_root_device_selection_cross_section_state'
+}
+if ($rd.claim_level.gate_proposed_state -ne $rdCanonical) {
+    Write-Host 'MISMATCH durable artifact gate_proposed_state not canonical'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_durable_gate_proposed_state'
+}
+if ($rd.IOS_ROOT_DEVICE_SELECTION_CANONICAL_STATE_PASS -ne $true -or
+    $rd.IOS_ROOT_DEVICE_SELECTION_CROSS_SECTION_STATE_PASS -ne $true) {
+    Write-Host 'MISMATCH root-device canonical/cross-section state flags missing in durable artifact'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_canonical_state_flags'
+}
+if ($summary.IOS_ROOT_DEVICE_SELECTION_CANONICAL_STATE_PASS -ne $true -or
+    $summary.IOS_ROOT_DEVICE_SELECTION_CROSS_SECTION_STATE_PASS -ne $true) {
+    Write-Host 'MISMATCH root-device canonical/cross-section state flags missing in preboom contract'
+    $script:failures++
+} else {
+    Write-Host 'OK rd_canonical_state_flags_preboom'
+}
 
 foreach ($flag in @(
     'IOS_ROOT_DEVICE_SELECTION_INPUT_IDENTITY_PASS',
@@ -1129,10 +1162,10 @@ if (-not (Test-Path (Join-Path $root 'artifacts\evidence\05f\phase05f-nxsb-repar
 
 # 57ZQ: negative-control single-state count consistency
 $nc = $rd.negative_controls
-if ($nc.TOTAL_NEGATIVE_CONTROLS -ne 43 -or
-    $nc.current_verified_run.TOTAL_NEGATIVE_CONTROLS -ne 43 -or
+if ($nc.TOTAL_NEGATIVE_CONTROLS -ne 45 -or
+    $nc.current_verified_run.TOTAL_NEGATIVE_CONTROLS -ne 45 -or
     $nc.TOTAL_NEGATIVE_CONTROLS -ne $nc.current_verified_run.TOTAL_NEGATIVE_CONTROLS) {
-    Write-Host 'MISMATCH negative-control count not single-state (current != 40)'
+    Write-Host 'MISMATCH negative-control count not single-state (current != 45)'
     $script:failures++
 } else {
     Write-Host 'OK rd_negative_control_count_single_state'
@@ -1174,6 +1207,7 @@ if ($summary.PREBOOM_ROOT_SELECTION_DEPENDENCY_SINGLE_STATE_PASS -ne $true -or
 }
 Assert-Equal 'rd_57zp_closed' $summary.certified.ITERATION_57ZP 'PASS_CLOSED'
 Assert-Equal 'rd_57zq_closed' $summary.certified.ITERATION_57ZQ 'PASS_CLOSED'
+Assert-Equal 'rd_57zr_closed' $summary.certified.ITERATION_57ZR 'PASS_CLOSED'
 Assert-Equal 'rd_root_gate_frozen' $summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION 'STATIC_PASS_RUNTIME_IDENTITY_DEFERRED'
 Assert-Equal 'rd_transition_next' $summary.storage_gates_open.IOS_ROOT_TRANSITION_MODEL 'NEXT'
 if ($summary.storage_gates_open.IOS_ROOT_DEVICE_SELECTION -eq 'PASS_CLOSED') {

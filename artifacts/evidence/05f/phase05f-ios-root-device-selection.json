@@ -1,6 +1,6 @@
 {
   "gate": "IOS_ROOT_DEVICE_SELECTION",
-  "iteration": "57ZQ",
+  "iteration": "57ZR",
   "date": "2026-10-01",
   "certified": "PASS_CLOSED_STATIC_MODEL_RUNTIME_DEFERRED",
   "input_identity": {
@@ -666,19 +666,19 @@
   "IOS_ROOT_DEVICE_SELECTION_STATIC_MODEL_PASS": true,
   "negative_controls": {
     "ROOT_SELECTION_NEGATIVE_CONTROLS_PASS": true,
-    "TOTAL_NEGATIVE_CONTROLS": 43,
+    "TOTAL_NEGATIVE_CONTROLS": 45,
     "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
     "RESTORED_BASELINE_EXIT": 0,
     "harness": "scripts/phase05f-root-selection-negative-controls.py",
     "parser": "scripts/phase05f-nxsb-reparse.py",
     "current_verified_run": {
-      "TOTAL_NEGATIVE_CONTROLS": 43,
+      "TOTAL_NEGATIVE_CONTROLS": 45,
       "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
       "RESTORED_BASELINE_EXIT": 0,
       "ALL_NEGATIVE_CONTROLS_PASS": true,
       "date": "2026-10-01"
     },
-    "note": "43 negative controls; every mutation EXIT=1; restored baseline EXIT=0",
+    "note": "45 negative controls; every mutation EXIT=1; restored baseline EXIT=0",
     "historical_verified_runs": {
       "57ZO": {
         "TOTAL_NEGATIVE_CONTROLS": 34,
@@ -688,8 +688,8 @@
         "non_canonical": true
       }
     },
-    "verified_run_57zq": {
-      "TOTAL_NEGATIVE_CONTROLS": 43,
+    "verified_run_57zr": {
+      "TOTAL_NEGATIVE_CONTROLS": 45,
       "ALL_NEGATIVE_CONTROLS_EXIT_NONZERO": true,
       "RESTORED_BASELINE_EXIT": 0,
       "ALL_NEGATIVE_CONTROLS_PASS": true,
@@ -701,5 +701,8 @@
   "RESTORE_MODE_NXSB_SINGLE_STATE_PASS": true,
   "ROOT_SELECTION_NEGATIVE_CONTROL_SINGLE_STATE_PASS": true,
   "ROOT_SELECTION_NEGATIVE_CONTROL_COUNT_CONSISTENCY_PASS": true,
-  "ROOT_SELECTION_REPARSE_RESULT_DURABILITY_PASS": true
+  "ROOT_SELECTION_REPARSE_RESULT_DURABILITY_PASS": true,
+  "PREBOOM_ROOT_SELECTION_DEPENDENCY_SINGLE_STATE_PASS": true,
+  "IOS_ROOT_DEVICE_SELECTION_CANONICAL_STATE_PASS": true,
+  "IOS_ROOT_DEVICE_SELECTION_CROSS_SECTION_STATE_PASS": true
 }

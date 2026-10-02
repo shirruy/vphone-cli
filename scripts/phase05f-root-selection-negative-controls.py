@@ -141,6 +141,37 @@ def main():
     shutil.copy(PRE + '.bak', PRE)
     os.remove(PRE + '.bak')
 
+    # 57ZR: preboom canonical-state refusal. OPEN must fail: the root-device
+    # selection gate must never regress back to an open/active gate once the
+    # static model has deferred runtime identity.
+    shutil.copy(PRE, PRE + '.bak')
+    data = json.load(open(PRE, encoding='utf-8'))
+    data['certified']['IOS_ROOT_DEVICE_SELECTION'] = 'OPEN'
+    open(PRE, 'w', encoding='utf-8', newline='\n').write(json.dumps(data, indent=2) + '\n')
+    code = run_checker()
+    ran += 1
+    ok = code != 0
+    if not ok:
+        failures.append('preboom_open_state')
+    print('NEG_PREBOOM_OPEN_STATE: EXIT=%d %s' % (code, 'OK' if ok else 'BROKEN'))
+    shutil.copy(PRE + '.bak', PRE)
+    os.remove(PRE + '.bak')
+
+    # 57ZR: PASS_CLOSED must also fail. Runtime root-device identity is
+    # deferred by the static model; hardening must refuse a bare closed claim.
+    shutil.copy(PRE, PRE + '.bak')
+    data = json.load(open(PRE, encoding='utf-8'))
+    data['certified']['IOS_ROOT_DEVICE_SELECTION'] = 'PASS_CLOSED'
+    open(PRE, 'w', encoding='utf-8', newline='\n').write(json.dumps(data, indent=2) + '\n')
+    code = run_checker()
+    ran += 1
+    ok = code != 0
+    if not ok:
+        failures.append('preboom_pass_closed_state')
+    print('NEG_PREBOOM_PASS_CLOSED_STATE: EXIT=%d %s' % (code, 'OK' if ok else 'BROKEN'))
+    shutil.copy(PRE + '.bak', PRE)
+    os.remove(PRE + '.bak')
+
     # Duplicate JSON key
     shutil.copy(ART, ART + '.bak')
     raw = open(ART, encoding='utf-8').read()
