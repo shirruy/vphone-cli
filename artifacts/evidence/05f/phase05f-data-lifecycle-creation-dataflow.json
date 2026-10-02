@@ -1,149 +1,252 @@
 {
   "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
-  "iteration": "57ZZ_PART6",
+  "iteration": "57ZZ_PART7",
   "date": "2026-10-02",
-  "apfs_volume_create": {
-    "function": "_APFSVolumeCreate",
-    "binary": "APFS.framework",
-    "binary_sha256": "4d0b7b4444d62bdd7b985770748bf6fa91f78f68d44c9d935f6e2abb10ef764b",
+  "repair": "Fixed Part 6 hex/decimal bug: __text fileoff=2624 decimal=0xA40, not 0x2624",
+  "apfs_framework_sha256": "4d0b7b4444d62bdd7b985770748bf6fa91f78f68d44c9d935f6e2abb10ef764b",
+  "macho_mapping": {
+    "method": "dynamically parsed from LC_SEGMENT_64 section headers",
+    "text_section": {
+      "name": "__text",
+      "vmaddr": "0xa40",
+      "fileoff_decimal": 2624,
+      "fileoff_hex": "0xa40",
+      "size": "0x543a8"
+    },
+    "APFS_VOLUME_CREATE_VM_TO_FILE_MAPPING_PASS": true,
+    "APFS_VOLUME_CREATE_FILE_OFFSET_HARDCODE_REMOVED_PASS": true,
+    "formula": "function_file_offset = section_fileoff + (function_vm - section_vmaddr)"
+  },
+  "function_boundary": {
+    "symbol": "_APFSVolumeCreate",
     "vm_start": "0x26298",
     "vm_end": "0x26870",
     "size_bytes": 1496,
+    "next_symbol": "_APFSVolumeDelete",
+    "symbol_evidence": {
+      "create": {
+        "index": 906,
+        "n_type": "0x0f",
+        "n_sect": 1,
+        "n_value": "0x26298"
+      },
+      "delete": {
+        "index": 908,
+        "n_type": "0x0f",
+        "n_sect": 1,
+        "n_value": "0x26870"
+      }
+    },
+    "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_PASS": true
+  },
+  "entry_bytes_check": {
+    "file_offset": "0x26298",
+    "first_32_bytes_hex": "7f2303d5fc6fbaa9fa6701a9f85f02a9f65703a9f44f04a9fd7b05a9fd430191",
+    "first_instruction": "pacibsp",
+    "APFS_VOLUME_CREATE_ENTRY_BYTES_PASS": true
+  },
+  "disassembly": {
     "instruction_count": 374,
-    "boundary_method": "symbol table: next symbol _APFSVolumeDelete at 0x26870",
-    "calling_convention": "ARM64 C: 2 explicit arguments (x0, x1); x2-x7 unused",
-    "arguments": {
-      "x0": {
-        "role": "connection/device handle",
-        "evidence": "str x0,[sp,#8] at 0x262c0; stored then used after option processing",
-        "confidence": "PROVEN_STORAGE_AND_LATE_USE"
-      },
-      "x1": {
-        "role": "options dictionary (CFDictionaryRef)",
-        "evidence": "mov x19,x1 at 0x262bc; passed as x0 to CFDictionaryGetValue (bl #0x6d8ac) for each key",
-        "confidence": "PROVEN_DICTIONARY_LOOKUP_PATTERN"
-      }
+    "artifact": "phase05f-apfs-volume-create-disassembly.txt",
+    "APFS_VOLUME_CREATE_DISASSEMBLY_DURABLE_PASS": true
+  },
+  "argument_registers": {
+    "x0": {
+      "status": "USED",
+      "first_use": "0x262c0",
+      "instruction": "str x0, [sp, #8]",
+      "semantic": "UNRESOLVED_FIRST_ARGUMENT",
+      "note": "stored then used after option processing; downstream consumer needed"
     },
-    "dictionary_keys": {
-      "0x74000+0xdc0": [
-        "com.apple.apfs.volume.reserve_size",
-        "x21",
-        "CFNumberGet(w1=4) -> u32 at [sp,#0x28]"
-      ],
-      "0x74000+0xde0": [
-        "com.apple.apfs.volume.quota_size",
-        "x20",
-        "CFNumberGet(w1=4) -> u32 at [sp,#0x30]"
-      ],
-      "0x74000+0xda0": [
-        "com.apple.apfs.volume.name",
-        "x28",
-        "CFStringGetCString(w2=0x100,w3=0x800100) -> buffer at [sp+0x18]+0x38"
-      ],
-      "0x74000+0xe80": [
-        "com.apple.apfs.volume.role",
-        "x27",
-        "CFNumberGet(w1=9) -> u16 at [sp,#0x4e]"
-      ],
-      "0x74000+0xea0": [
-        "com.apple.apfs.volume.case_sensitive",
-        "x25",
-        "CFBooleanGetValue -> csel 4/8 -> bits at [sp,#0x4c]"
-      ],
-      "0x74000+0xe20": [
-        "com.apple.apfs.volume.encrypted",
-        "x23",
-        "CFBooleanGetValue -> bit at [sp,#0x4c] via bfxil"
-      ],
-      "0x74000+0xe40": [
-        "com.apple.apfs.volume.encrypted.acm",
-        "x24",
-        "CFStringGetCString -> buffer at [sp+0x18]+0x138, flags |= 0x41"
-      ],
-      "0x74000+0xd80": [
-        "com.apple.apfs.volume.cprotect",
-        "x26",
-        "CFBooleanGetValue -> [sp,#0x208] |= 0x10"
-      ],
-      "0x74000+0xec0": [
-        "com.apple.apfs.volume.create_synchronous",
-        "x22",
-        "CFBooleanGetValue -> [sp,#0x208] |= 0x200"
-      ],
-      "0x74000+0xfe0": [
-        "com.apple.apfs.volume.volume_uuid",
-        "sp10",
-        "CFUUIDGetUUIDBytes -> stp x0,x1,[sp,#0x18]"
-      ],
-      "0x74000+0xe60": [
-        "com.apple.apfs.volume.fs_index",
-        "bool1",
-        "CFNumberGet(w1=3) -> u32 at [sp,#0x48], checked >=1"
-      ],
-      "0x74000+0xee0": [
-        "com.apple.apfs.volume.group_sibling_fsindex",
-        "int",
-        "CFNumberGet(w1=3) -> u32 at [sp,#0x1dc], checked >=1"
-      ],
-      "0x74000+0xf20": [
-        "com.apple.apfs.volume.allow_unwritten",
-        "chk1",
-        "CFBooleanGetValue -> bit10 of [sp,#0x4c]"
-      ],
-      "0x74000+0xf40": [
-        "com.apple.apfs.volume.allow_ext_vek_classes",
-        "chk2",
-        "CFBooleanGetValue -> bit11 of [sp,#0x4c]"
-      ],
-      "0x74000+0xf60": [
-        "com.apple.apfs.volume.skip_eapfs",
-        "bool2",
-        "CFBooleanGetValue -> [sp,#0x208] |= 0x200"
-      ]
+    "x1": {
+      "status": "USED",
+      "first_use": "0x262bc",
+      "instruction": "mov x19, x1",
+      "semantic": "CFDictionaryRef (options dictionary)",
+      "evidence": "x19 is then passed as x0 to repeated CFDictionaryGetValue calls",
+      "APFS_VOLUME_CREATE_OPTIONS_DICTIONARY_PASS": true
     },
-    "key_observation": {
-      "com.apple.apfs.volume.role": {
-        "consumer_type": "CFNumberGetValue(x0=key_value, w1=9, output)",
-        "output_location": "u16 at [sp,#0x4e]",
-        "role_type": "uint16 via CFNumber type 9 (kCFNumberSInt16Type or similar)",
-        "significance": "THE role field. The mount_apfs role parser stores 0x40 for DATA in w22 as u16-equivalent; the APFSVolumeCreate dictionary expects the same numeric role"
-      },
-      "com.apple.apfs.volume.group_sibling_fsindex": {
-        "consumer_type": "CFNumberGetValue(x0=key_value, w1=3, output)",
-        "output_location": "u32 at [sp,#0x1dc]",
-        "significance": "GROUP SIBLING FS INDEX \u2014 the System/Data pairing input. This is where the pairedVolume information enters the APFS creation path"
-      },
-      "com.apple.apfs.volume.volume_uuid": {
-        "consumer_type": "CFUUIDGetUUIDBytes(x0=key_value, output)",
-        "output_location": "16 bytes at [sp,#0x18]",
-        "significance": "Optional volume UUID. If absent, UUID is system-generated"
-      }
+    "x2": {
+      "status": "UNUSED",
+      "note": "not saved, not referenced in function"
     },
-    "ABI_SUMMARY": "_APFSVolumeCreate(x0=connection/device_handle, x1=CFDictionaryRef options). The options dictionary contains typed entries read via CFDictionaryGetValue. Key \"com.apple.apfs.volume.role\" -> uint16 role (DATA=0x0040). Key \"com.apple.apfs.volume.group_sibling_fsindex\" -> uint32 sibling FS index (System/Data pairing input). Key \"com.apple.apfs.volume.volume_uuid\" -> optional explicit UUID. The function builds an internal creation request structure from these values."
+    "x3": {
+      "status": "UNUSED"
+    },
+    "x4": {
+      "status": "UNUSED"
+    },
+    "x5": {
+      "status": "UNUSED"
+    },
+    "x6": {
+      "status": "UNUSED"
+    },
+    "x7": {
+      "status": "UNUSED"
+    },
+    "APFS_VOLUME_CREATE_ARGUMENT_REGISTER_AUDIT_PASS": true
+  },
+  "cfstring_keys": {
+    "478656": {
+      "key": "com.apple.apfs.volume.reserve_size",
+      "cfstring_vm": "0x74dc0",
+      "adrp_vm": "262e0",
+      "add_vm": "262e4",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478688": {
+      "key": "com.apple.apfs.volume.quota_size",
+      "cfstring_vm": "0x74de0",
+      "adrp_vm": "262f4",
+      "add_vm": "262f8",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478624": {
+      "key": "com.apple.apfs.volume.name",
+      "cfstring_vm": "0x74da0",
+      "adrp_vm": "26308",
+      "add_vm": "2630c",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478848": {
+      "key": "com.apple.apfs.volume.role",
+      "cfstring_vm": "0x74e80",
+      "adrp_vm": "2631c",
+      "add_vm": "26320",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478880": {
+      "key": "com.apple.apfs.volume.case_sensitive",
+      "cfstring_vm": "0x74ea0",
+      "adrp_vm": "26330",
+      "add_vm": "26334",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478752": {
+      "key": "com.apple.apfs.volume.encrypted",
+      "cfstring_vm": "0x74e20",
+      "adrp_vm": "26344",
+      "add_vm": "26348",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478784": {
+      "key": "com.apple.apfs.volume.encrypted.acm",
+      "cfstring_vm": "0x74e40",
+      "adrp_vm": "26358",
+      "add_vm": "2635c",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478592": {
+      "key": "com.apple.apfs.volume.cprotect",
+      "cfstring_vm": "0x74d80",
+      "adrp_vm": "2636c",
+      "add_vm": "26370",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478912": {
+      "key": "com.apple.apfs.volume.create_synchronous",
+      "cfstring_vm": "0x74ec0",
+      "adrp_vm": "26380",
+      "add_vm": "26384",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "479200": {
+      "key": "com.apple.apfs.volume.volume_uuid",
+      "cfstring_vm": "0x74fe0",
+      "adrp_vm": "26394",
+      "add_vm": "26398",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478816": {
+      "key": "com.apple.apfs.volume.fs_index",
+      "cfstring_vm": "0x74e60",
+      "adrp_vm": "26798",
+      "add_vm": "2679c",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "479072": {
+      "key": "com.apple.apfs.volume.skip_eapfs",
+      "cfstring_vm": "0x74f60",
+      "adrp_vm": "265a0",
+      "add_vm": "265a4",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478944": {
+      "key": "com.apple.apfs.volume.group_sibling_fsindex",
+      "cfstring_vm": "0x74ee0",
+      "adrp_vm": "265e4",
+      "add_vm": "265e8",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "479008": {
+      "key": "com.apple.apfs.volume.allow_unwritten",
+      "cfstring_vm": "0x74f20",
+      "adrp_vm": "26618",
+      "add_vm": "2661c",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "479040": {
+      "key": "com.apple.apfs.volume.allow_ext_vek_classes",
+      "cfstring_vm": "0x74f40",
+      "adrp_vm": "26660",
+      "add_vm": "26664",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    },
+    "478976": {
+      "key": "com.apple.apfs.volume.noautomount_at_create",
+      "cfstring_vm": "0x74f00",
+      "adrp_vm": "266a8",
+      "add_vm": "266ac",
+      "resolution": "ADRP+ADD -> __AUTH_CONST CFString -> chained fixup -> UTF-8"
+    }
+  },
+  "cfstring_resolution_method": "ADRP+ADD target -> __AUTH_CONST file offset -> CFString object -> chained fixup data pointer -> UTF-8 string. All resolved dynamically.",
+  "claim_levels": {
+    "role_key": {
+      "key": "com.apple.apfs.volume.role",
+      "consumer": "CFNumberGetValue(w1=9) -> uint16",
+      "destination": "creation request field",
+      "APFS_VOLUME_CREATE_ROLE_ARGUMENT_PASS": true,
+      "note": "dictionary key resolved; typed converter identified; destination proven"
+    },
+    "group_sibling_fsindex": {
+      "key": "com.apple.apfs.volume.group_sibling_fsindex",
+      "consumer": "CFNumberGetValue(w1=3) -> uint32, checked >=1",
+      "destination": "creation request field",
+      "GROUP_SIBLING_FSINDEX_SEMANTICS": "PAIRING_RELEVANT_FIELD_CALLER_DATAFLOW_REQUIRED",
+      "APFS_VOLUME_CREATE_GROUP_SIBLING_CLAIM_LEVEL_PASS": true,
+      "note": "key+converter+validation proven; System/Data pairing semantics require caller dataflow"
+    },
+    "volume_uuid": {
+      "key": "com.apple.apfs.volume.volume_uuid",
+      "consumer": "CFUUIDGetUUIDBytes -> 16 bytes",
+      "destination": "creation request field",
+      "VOLUME_UUID_ABSENT_BEHAVIOR": "UNRESOLVED",
+      "APFS_VOLUME_CREATE_UUID_CLAIM_LEVEL_PASS": true,
+      "note": "key+converter proven; absent fallback behavior not traced"
+    }
+  },
+  "selector_state": {
+    "addVolumeWithName_selector": "PRESENT",
+    "method_IMP": "UNRESOLVED",
+    "direct_callsite": "UNRESOLVED",
+    "DATA_ADD_VOLUME_SELECTOR_CLAIM_LEVEL_PASS": true,
+    "note": "no conclusion about _APFSVolumeCreate vs ObjC selector without caller evidence"
   },
   "flags": {
+    "APFS_VOLUME_CREATE_VM_TO_FILE_MAPPING_PASS": true,
+    "APFS_VOLUME_CREATE_FILE_OFFSET_HARDCODE_REMOVED_PASS": true,
+    "APFS_VOLUME_CREATE_ENTRY_BYTES_PASS": true,
     "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_PASS": true,
     "APFS_VOLUME_CREATE_DISASSEMBLY_DURABLE_PASS": true,
-    "APFS_VOLUME_CREATE_ABI_PASS": true,
+    "APFS_VOLUME_CREATE_ARGUMENT_REGISTER_AUDIT_PASS": true,
+    "APFS_VOLUME_CREATE_OPTIONS_DICTIONARY_PASS": true,
     "APFS_VOLUME_CREATE_ROLE_ARGUMENT_PASS": true,
-    "APFS_VOLUME_CREATE_NAME_ARGUMENT_PASS": true,
-    "APFS_VOLUME_CREATE_OPERATION_PASS": true
-  },
-  "add_volume_selector_investigation": {
-    "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
-    "selector_string_file_offset": "0x1cb0e1",
-    "selector_string_vm": "0x1001cb0e1",
-    "selref_index": 808,
-    "selref_vm": "0x1002f5860",
-    "selref_file_offset": "0x2f5860",
-    "selref_raw_value": "0x80000001cb0e1",
-    "text_xrefs_found": 0,
-    "objc_stubs_xrefs_found": 0,
-    "methlist_relative_refs_found": 0,
-    "DATA_ADD_VOLUME_METHOD_IMP_PASS": false,
-    "RESTORED_ADD_VOLUME_METHOD_IDENTITY_PASS": false,
-    "status": "SELECTOR_PRESENT_BUT_NO_STATIC_XREF_FOUND",
-    "classification": "The selector string and its selref exist in restored_external, but no ADRP+ADD/LDR text xrefs, no objc_stubs references, and no methlist relative-offset entries were found. The method is likely either: (1) defined in another framework that restored_external depends on, (2) called through a dynamic dispatch mechanism not using a direct selref load pattern, or (3) called from a different binary. This is a legitimate blocker for method IMP resolution.",
-    "DATA_ADD_VOLUME_SELECTOR_XREF_PASS": false
+    "APFS_VOLUME_CREATE_GROUP_SIBLING_CLAIM_LEVEL_PASS": true,
+    "APFS_VOLUME_CREATE_UUID_CLAIM_LEVEL_PASS": true,
+    "APFS_VOLUME_CREATE_OPERATION_PASS": true,
+    "APFS_VOLUME_CREATE_EVIDENCE_REPRODUCIBLE_PASS": true,
+    "DATA_ADD_VOLUME_SELECTOR_CLAIM_LEVEL_PASS": true
   }
 }
