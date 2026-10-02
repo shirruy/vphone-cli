@@ -383,5 +383,362 @@
   },
   "DATA_VOLUME_CREATE_CALLERS_ITERATION_SINGLE_STATE_PASS": true,
   "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_ABI_SAFE_PASS": false,
-  "APFS_VOLUME_CREATE_PRECEDING_HELPER_IDENTITY_PASS": false
+  "APFS_VOLUME_CREATE_PRECEDING_HELPER_IDENTITY_PASS": false,
+  "abi_safe_caller_trace": {
+    "engine": "phase05f-arm64-dataflow-engine.py (Part 14D certified)",
+    "binary_sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+    "callers": [
+      {
+        "callsite_vm": "0x100024428",
+        "function_start_heuristic": "0x1000243b8",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x100024428",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x100024428",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10003f970",
+        "function_start_heuristic": "0x10003f880",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10003f970",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10003f970",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x100053458",
+        "function_start_heuristic": "0x100053278",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x100053458",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x100053458",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10007c1ac",
+        "function_start_heuristic": "0x10007c138",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1ac",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1ac",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10007c1c4",
+        "function_start_heuristic": "0x10007c138",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1c4",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1c4",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10007e874",
+        "function_start_heuristic": "0x10007e4dc",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007e874",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007e874",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x1001a2320",
+        "function_start_heuristic": "0x1001a1db8",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x1001a2320",
+              "insn": "bl #0x1001be950",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x1001a2320",
+              "insn": "bl #0x1001be950",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      }
+    ],
+    "x0_summary": {
+      "0x100024428": "CALLEE_RETURN",
+      "0x10003f970": "CALLEE_RETURN",
+      "0x100053458": "CALLEE_RETURN",
+      "0x10007c1ac": "CALLEE_RETURN",
+      "0x10007c1c4": "CALLEE_RETURN",
+      "0x10007e874": "CALLEE_RETURN",
+      "0x1001a2320": "CALLEE_RETURN"
+    },
+    "x1_summary": {
+      "0x100024428": "CALL_CLOBBERED_UNKNOWN",
+      "0x10003f970": "CALL_CLOBBERED_UNKNOWN",
+      "0x100053458": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1ac": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1c4": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007e874": "CALL_CLOBBERED_UNKNOWN",
+      "0x1001a2320": "CALL_CLOBBERED_UNKNOWN"
+    }
+  },
+  "abi_safe_argument_trace": {
+    "method": "argument tracing: exclude target BL, trace backward from preceding instruction",
+    "note": "The target BL (_APFSVolumeCreate) is NOT treated as a clobber boundary for its own arguments. Intervening helper BLs ARE correctly treated as boundaries.",
+    "binary_sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+    "callers": [
+      {
+        "callsite_vm": "0x100024428",
+        "function_start_heuristic": "0x1000243b8",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x100024420",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10003f970",
+        "function_start_heuristic": "0x10003f880",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10003f968",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x100053458",
+        "function_start_heuristic": "0x100053278",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x100053450",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10007c1ac",
+        "function_start_heuristic": "0x10007c138",
+        "x0_argument_provenance": "ADDRESS_OF",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10007c160",
+            "insn": "bl #0x1001bcb60",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10007c1c4",
+        "function_start_heuristic": "0x10007c138",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10007c1bc",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10007e874",
+        "function_start_heuristic": "0x10007e4dc",
+        "x0_argument_provenance": "FUNCTION_ENTRY_ARGUMENT",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10007e844",
+            "insn": "bl #0x1001bcd40",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x1001a2320",
+        "function_start_heuristic": "0x1001a1db8",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x1001a2318",
+            "insn": "bl #0x1001bea80",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      }
+    ],
+    "x0_summary": {
+      "0x100024428": "CALLEE_RETURN",
+      "0x10003f970": "CALLEE_RETURN",
+      "0x100053458": "CALLEE_RETURN",
+      "0x10007c1ac": "ADDRESS_OF",
+      "0x10007c1c4": "CALLEE_RETURN",
+      "0x10007e874": "FUNCTION_ENTRY_ARGUMENT",
+      "0x1001a2320": "CALLEE_RETURN"
+    },
+    "x1_summary": {
+      "0x100024428": "CALL_CLOBBERED_UNKNOWN",
+      "0x10003f970": "CALL_CLOBBERED_UNKNOWN",
+      "0x100053458": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1ac": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1c4": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007e874": "CALL_CLOBBERED_UNKNOWN",
+      "0x1001a2320": "CALL_CLOBBERED_UNKNOWN"
+    }
+  }
 }
