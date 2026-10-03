@@ -1,16 +1,60 @@
-# 57ZZ Part 14L — External Orchestrator / Data Role Proof
+# 57ZZ Part 14L / 14L-R — External Orchestrator / Data Role Proof
 
-## Verdict
+## Verdict (updated by 14L-R)
 
 ```
-DATA_ROLE_0x40_STATIC_PROOF_BLOCKED
+DATA_ROLE_0x40_STATIC_PROOF: PASS
+ROLE_WRAPPER_DATAFLOW: PASS
+DATA_LIFECYCLE_STATIC_GATE: BLOCKED (external orchestrator only)
 ```
 
-The static dataflow chain from an external orchestrator through
-`LPStaticAPFSContainer addVolumeWithName:role:...` to a proven
-`role = 0x40` invocation cannot be completed with the currently extracted
-binaries. Per the fail-closed rules, the gate is **BLOCKED**, not "probably
-Data".
+14L-R resolves the x25/x23 contradiction from the original 14L report. The
+wrapper **does** perform the LP-enum → APFS-role-bits conversion internally,
+via `+[LPStaticAPFSVolume roleMetadataForRole:]`. The earlier
+"unmodified passthrough" claim is **RETRACTED**, and the "no 0x40 constant"
+wording is **CORRECTED**.
+
+The remaining blocker is now narrower: only the external orchestrator that
+passes LP role=3 for the actual Data invocation.
+
+## 14L-R: The conversion chain (proven)
+
+```
+0x1000821f0  mov x25, x3        ; save LP logical role
+0x100082588  mov x2, x25        ; lookup key
+0x10008258c  bl roleMetadataForRole:   ; +[LPStaticAPFSVolume roleMetadataForRole:]
+0x100082594  cbz x0, fail_path  ; nil -> default w23 = 0
+0x100082598  ldrh w23, [x0,#4]  ; APFS role bits from metadata entry +4
+...            w23 -> numberWithInt: -> dict[kAPFSVolumeRoleKey]
+```
+
+## 14L-R: Complete role metadata table
+
+Enumerated by `+[LPStaticAPFSVolume enumerateRoleMetadataUsingBlock:]`
+(IMP 0x100084044), 17 entries at table VM 0x1002cb238:
+
+| LP enum | APFS role bits | Name |
+|---:|---:|---|
+| 0x00 | 0x00000000 | (zero entry) |
+| 0x01 | 0x00000001 | System |
+| 0x02 | 0x00000002 | User |
+| 0x03 | **0x00000040** | **Data** |
+| 0x04 | 0x00000004 | Recovery |
+| 0x05 | 0x00000008 | VM |
+| 0x06 | 0x00000010 | Preboot |
+| 0x07 | 0x00000020 | Installer |
+| 0x08 | 0x00000080 | Baseband data |
+| 0x09 | 0x00000100 | xART |
+| 0x0a | 0x00000200 | Internal |
+| 0x0b | 0x00000180 | Backup |
+| 0x0c | 0x000000c0 | Update |
+| 0x0d | 0x00000140 | Hardware |
+| 0x0e | 0x000001c0 | SideCar |
+| 0x0f | 0x00000240 | Enterprise data |
+| 0x10 | 0x00000280 | iDiags |
+
+`mov w23, #0` is the **failure default** when `roleMetadataForRole:` returns
+nil for an unknown role — not a "default role".
 
 ## 1. Binaries searched
 
