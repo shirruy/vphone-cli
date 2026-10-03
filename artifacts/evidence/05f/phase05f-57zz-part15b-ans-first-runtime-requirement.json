@@ -24,6 +24,8 @@
   "first_ans_only_milestone": "NONE (no ANS-only milestone; only ASLR/timing noise differs)",
   "common_prefix_bytes": 2372,
   "ANS_MMIO_RANGE_SCANNER": "PASS",
+  "ANS_MMIO_RANGE_SCANNER_SELF_TEST": "PASS",
+  "FIRST_ANS_MMIO_ACCESS": "NOT_OBSERVED",
   "M1_state": "NOT_OBSERVED",
   "M2_state": {
     "RTBuddy_match": "NOT_OBSERVED",
@@ -35,7 +37,7 @@
   },
   "first_exception": "w access to unsupported AArch64 system register S3_4_c15_c0_6 (pc = 0x00000000070B4AC0)",
   "first_ans_mmio_access": "NOT_OBSERVED",
-  "first_mmio_consumer": "NONE (no ANS MMIO access observed; chain never reached AppleA7IOP)",
+  "first_mmio_consumer": "No ANS-range MMIO access was observed in the captured diagnostic logs. AppleA7IOP execution reachability is not established by this observation alone.",
   "interrupt_requirement": "NOT_YET_REACHED",
   "dma_requirement": "NOT_YET_REACHED",
   "queue_requirement": "NOT_YET_REACHED",

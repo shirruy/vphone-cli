@@ -1,0 +1,204 @@
+{
+  "gate": "PART15B_PROVIDER_CHAIN",
+  "iteration": "57ZZ_PART15B_S",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "ascwrap_personalities": [
+    {
+      "key": "IOClass",
+      "value": "AppleASCWrapV6"
+    },
+    {
+      "key": "IONameMatch",
+      "value": "<string>iop,ascwrap-v6</string>\n\t\t\t\t\t\t<string>iop,ascwrap-v7</string>"
+    },
+    {
+      "key": "IOPersonalityPublisher",
+      "value": "com.apple.driver.AppleA7IOP-ASCWrap-v6"
+    },
+    {
+      "key": "IOProviderClass",
+      "value": "AppleARMIODevice"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleASCWrapV6SEP"
+    },
+    {
+      "key": "IONameMatch",
+      "value": "<string>iop-sep,ascwrap-v6</string>\n\t\t\t\t\t\t<string>iop-sep,ascwrap-v7</string>"
+    },
+    {
+      "key": "IOPersonalityPublisher",
+      "value": "com.apple.driver.AppleA7IOP-ASCWrap-v6"
+    },
+    {
+      "key": "IOProviderClass",
+      "value": "AppleARMIODevice"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleASCWrapV6SISP"
+    },
+    {
+      "key": "IONameMatch",
+      "value": "<string>iop-isp,ascwrap-v6</string>"
+    },
+    {
+      "key": "IOPersonalityPublisher",
+      "value": "com.apple.driver.AppleA7IOP-ASCWrap-v6"
+    },
+    {
+      "key": "IOProviderClass",
+      "value": "AppleARMIODevice"
+    }
+  ],
+  "a7iop_info_keys": [],
+  "a7iop_bundle_dependencies": [
+    {
+      "bundle": "com.apple.driver.AppleARMPlatform",
+      "version": "1.0.0"
+    },
+    {
+      "bundle": "com.apple.driver.IOSlaveProcessor",
+      "version": "1.0.0"
+    },
+    {
+      "bundle": "com.apple.kpi.bsd",
+      "version": "8.0"
+    },
+    {
+      "bundle": "com.apple.kpi.iokit",
+      "version": "8.0"
+    },
+    {
+      "bundle": "com.apple.kpi.libkern",
+      "version": "8.0"
+    },
+    {
+      "bundle": "com.apple.kpi.mach",
+      "version": "8.0"
+    }
+  ],
+  "armplatform_relevant_personalities": [
+    {
+      "key": "IOClass",
+      "value": "AppleARMBacklight"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMBootPerf"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMCFIFlashController"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMCPU"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMFabricTrace"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMI2CEEPROM"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMLightEmUp"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMNMI"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMNORNVRAM"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMNORNVRAM"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMNORPanicLog"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMPE"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMPWMBacklight"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMSFRManifest"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMSPIFlashController"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMSlowAdaptiveClockingManager"
+    },
+    {
+      "key": "IOClass",
+      "value": "AppleARMSoftIICController"
+    }
+  ],
+  "key_findings": {
+    "ascwrap_personality": "AppleASCWrapV6: IOProviderClass=AppleARMIODevice, IONameMatch=iop,ascwrap-v6 / iop,ascwrap-v7 (and SEP/SISP variants)",
+    "applea7iop_is_personality_driven": "NO: com.apple.driver.AppleA7IOP Info.plist contains NO IOClass/IOProviderClass personality. It is an explicit client of AppleARMPlatform and IOSlaveProcessor.",
+    "applea7iop_dependencies": [
+      {
+        "bundle": "com.apple.driver.AppleARMPlatform",
+        "version": "1.0.0"
+      },
+      {
+        "bundle": "com.apple.driver.IOSlaveProcessor",
+        "version": "1.0.0"
+      },
+      {
+        "bundle": "com.apple.kpi.bsd",
+        "version": "8.0"
+      },
+      {
+        "bundle": "com.apple.kpi.iokit",
+        "version": "8.0"
+      },
+      {
+        "bundle": "com.apple.kpi.libkern",
+        "version": "8.0"
+      },
+      {
+        "bundle": "com.apple.kpi.mach",
+        "version": "8.0"
+      }
+    ],
+    "applearmio_device_publisher": "AppleARMIODevice instances are published from the arm-io DeviceTree subtree; the IOPlatformExpert-adjacent arm-io enumeration ('arm-io, this should not happen' error string at 0x15de6e is the matching-path log)",
+    "expected_provider_hypothesis": "AppleA7IOP is instantiated by code that iterates AppleARMIODevice children carrying AKF register data. The exact creator kext is NOT yet proven (candidate: IOSlaveProcessor / AppleARMPlatform platform expert).",
+    "qemu_visible_prerequisite": "BLOCKED: not yet proven which concrete DT node/property or MMIO region causes the AKF-capable provider to exist."
+  },
+  "verdicts": {
+    "APPLEA7IOP_START": "BLOCKED",
+    "START_PROVIDER_DATAFLOW": "BLOCKED",
+    "APPLEA7IOP_PROVIDER_CLASS": "UNKNOWN",
+    "APPLEA7IOP_PERSONALITY_MATCH": "BLOCKED (no personality in Info.plist)",
+    "PROVIDER_PUBLICATION_CHAIN": "BLOCKED",
+    "AKF_REGISTER_MAP_SOURCE": "UNKNOWN",
+    "AKF_MMIO_BASE": "UNKNOWN",
+    "AKF_MMIO_SIZE": "UNKNOWN",
+    "AKF_MAPPED_REGS_PRODUCTION": "BLOCKED",
+    "FIRST_AKF_MAPPED_REG_ACCESS": "UNKNOWN",
+    "MAILBOX_OFFSETS": "BLOCKED",
+    "AKF_ROLE_PROPERTY_REQUIRED": "UNKNOWN",
+    "ASC_FIRMWARE_REQUIRED_FOR_58B": "UNKNOWN",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "FIRST_ANS_RUNTIME_REQUIREMENT": "CANDIDATE_AKF_PROVIDER_CHAIN",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
+    "ANS_STORAGE_IMPLEMENTATION_READINESS": "BLOCKED_FOR_58B"
+  }
+}

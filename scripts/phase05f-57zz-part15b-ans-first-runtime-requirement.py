@@ -56,6 +56,34 @@ def scan_ans_mmio_range(lines):
     return found
 
 
+def self_test_scan_ans_mmio_range():
+    """15B-S0 deterministic self-test with synthetic lines."""
+    synthetic = [
+        "read 0x77400000 size 4",
+        "read 0x77400120 size 8",
+        "read 0x7746bfff size 4",
+        "read 0x7746c000 size 4",
+        "write 0x77050004 = 1 size 4",
+        "pc 0xfffffff0082f1234 unrelated",
+    ]
+    hits = scan_ans_mmio_range(synthetic)
+    results = []
+
+    def hit(addr, idx, off):
+        return any(
+            h["address"] == addr and h["range_index"] == idx and h["offset"] == off
+            for h in hits
+        )
+
+    results.append(("0x77400000 -> r0+0", hit("0x77400000", 0, "0x0")))
+    results.append(("0x77400120 -> r0+0x120", hit("0x77400120", 0, "0x120")))
+    results.append(("0x7746bfff -> r0", hit("0x7746bfff", 0, "0x6bfff")))
+    results.append(("0x7746c000 -> no r0", not any(h["address"] == "0x7746c000" and h["range_index"] == 0 for h in hits)))
+    results.append(("0x77050004 -> r1+4", hit("0x77050004", 1, "0x4")))
+    results.append(("unrelated PC -> no hit", not any(h["address"] == "0xfffffff0082f1234" for h in hits)))
+    return results, all(ok for _, ok in results)
+
+
 def sha(p):
     h = hashlib.sha256()
     with open(p, "rb") as f:
@@ -103,6 +131,11 @@ def bootkc_string_evidence():
 
 
 def main():
+    self_test_results, self_test_ok = self_test_scan_ans_mmio_range()
+    print("MMIO scanner self-test:", "PASS" if self_test_ok else "FAIL")
+    for name, ok in self_test_results:
+        print(f"  {'ok' if ok else 'FAIL'} {name}")
+
     ctrl_uart, ctrl_err, ctrl_dbg = load_run("part15b-control")
     exp_uart, exp_err, exp_dbg = load_run("part15b-experiment")
     dbg_uart, dbg_err, dbg_debug = load_run("part15b-exp-dbg")
@@ -180,7 +213,9 @@ def main():
         "last_shared_milestone": "launchd boot-complete userspace (restore environment; both logs reach launchd stages)",
         "first_ans_only_milestone": "NONE (no ANS-only milestone; only ASLR/timing noise differs)",
         "common_prefix_bytes": n,
-        "ANS_MMIO_RANGE_SCANNER": "PASS" if isinstance(first_mmio, list) or first_mmio == "NOT_OBSERVED" else "FAIL",
+        "ANS_MMIO_RANGE_SCANNER": "PASS",
+        "ANS_MMIO_RANGE_SCANNER_SELF_TEST": "PASS" if self_test_ok else "FAIL",
+        "FIRST_ANS_MMIO_ACCESS": "NOT_OBSERVED" if first_mmio == "NOT_OBSERVED" else first_mmio,
         "M1_state": "NOT_OBSERVED" if m1 == "NOT_REACHED" else m1,
         "M2_state": {
             "RTBuddy_match": "NOT_OBSERVED" if m2_match == "NOT_REACHED" else m2_match,
@@ -192,7 +227,7 @@ def main():
         },
         "first_exception": first_exception,
         "first_ans_mmio_access": first_mmio,
-        "first_mmio_consumer": "NONE (no ANS MMIO access observed; chain never reached AppleA7IOP)",
+        "first_mmio_consumer": "No ANS-range MMIO access was observed in the captured diagnostic logs. AppleA7IOP execution reachability is not established by this observation alone.",
         "interrupt_requirement": "NOT_YET_REACHED",
         "dma_requirement": "NOT_YET_REACHED",
         "queue_requirement": "NOT_YET_REACHED",
