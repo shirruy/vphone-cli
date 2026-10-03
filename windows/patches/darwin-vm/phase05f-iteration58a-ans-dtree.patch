@@ -1,0 +1,61 @@
+diff --git a/dt_fixup.py b/dt_fixup.py
+index aec0dcf..66a4d00 100755
+--- a/dt_fixup.py
++++ b/dt_fixup.py
+@@ -98,9 +98,12 @@ def decode_node(dt,node):
+ 
+   return our_size
+ 
+-def del_compat(d):
++ANS_COMPAT_PRESERVE = b'iop-nub,rtbuddy-v2'
++
++def del_compat(d, preserve_ans_compat=False):
++  is_ans_nub = (d.props.get('name') == 'iop-ans-nub')
+   for c in d.children:
+-    del_compat(c)
++    del_compat(c, preserve_ans_compat=preserve_ans_compat)
+ 
+   if 'compatible' in d.props:
+     # Device tree compatible fields will be str or bytes (if the underlying
+@@ -113,6 +116,8 @@ def del_compat(d):
+     if type(compat) == str:
+       compat = compat.encode('utf8')
+ 
++    if preserve_ans_compat and is_ans_nub and ANS_COMPAT_PRESERVE in compat:
++      return
+     if not any(x in compat for x in SUPPORTED_DRIVERS):
+       del d.props['compatible']
+ 
+@@ -166,7 +171,7 @@ def get_soc_gen(d):
+ 
+   return int(soc_gen_name[1:])
+ 
+-def fixup(d, nvram_file):
++def fixup(d, nvram_file, preserve_ans_compat=False):
+   d.props['platform-name'] = get_platform_name(d)
+   soc_gen = get_soc_gen(d)
+ 
+@@ -250,7 +255,7 @@ def fixup(d, nvram_file):
+     ctrr.props['write-disable-reg-mask'] = "u32:1"
+     ctrr.props['write-disable-reg-value'] = "u32:1"
+ 
+-  del_compat(d)
++  del_compat(d, preserve_ans_compat=preserve_ans_compat)
+   fixup_aic(d['arm-io']['aic'])
+   fixup_sptm(d)
+   del d.props['secure-root-prefix']
+@@ -312,11 +317,13 @@ def main():
+   p.add_argument('dtree', type=argparse.FileType('rb', 0))
+   p.add_argument('out', type=argparse.FileType('wb', 0))
+   p.add_argument('-nvram', required=True, type=argparse.FileType('rb', 0))
++  p.add_argument('--preserve-ans-compatible', action='store_true',
++                 help='Preserve iop-ans-nub compatible = iop-nub,rtbuddy-v2 for ANS storage enablement (opt-in)')
+   args = p.parse_args()
+ 
+   dt_root = ADTNode()
+   decode_node(args.dtree.read(),dt_root)
+-  fixup(dt_root, nvram_file=args.nvram)
++  fixup(dt_root, nvram_file=args.nvram, preserve_ans_compat=args.preserve_ans_compatible)
+   args.out.write(encode_node(dt_root))
+ 
+ if __name__=="__main__":

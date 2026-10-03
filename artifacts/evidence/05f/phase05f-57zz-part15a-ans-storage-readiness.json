@@ -277,9 +277,11 @@
       "note": "fields beyond these four are NOT proven consumed before publication; do not populate spec fields speculatively"
     },
     "lba_translation": {
-      "guest_lba_bytes": 4096,
-      "formula": "byte_offset = slba * 4096; byte_length = nlb_count * 4096",
-      "host_backend_unit": "UNPROVEN_IMPLEMENTATION_DETAIL (do not assume 512-byte sectors)"
+      "GUEST_LBA_BYTES": 4096,
+      "SLBA_ADDRESSING_SEMANTICS": "TO_BE_CONFIRMED_IN_QUEUE_COMMAND_TRACE",
+      "TRANSFER_LENGTH_ENCODING": "UNKNOWN",
+      "HOST_BYTE_TRANSLATION": "BLOCKED_PENDING_COMMAND_ENCODING",
+      "note": "Guest LBA size 4096 is proven. Exact NLB encoding (direct / zero-based / minus-one / Apple wrapper) is NOT proven and must be resolved before 58F read/write backing."
     },
     "namespace_capacity_policy": {
       "nsid_2_7": "use authoritative DT NSSize/NCAP",
@@ -395,42 +397,74 @@
   "milestones": [
     {
       "id": "M0",
-      "desc": "booted DeviceTree preserves ANS compatible",
-      "pass": "dtree.bin contains iop-nub,rtbuddy-v2"
+      "desc": "ANS-compatible property preserved in booted DT",
+      "pass": "iop-nub,rtbuddy-v2 present on iop-ans-nub"
     },
     {
       "id": "M1",
-      "desc": "RTBuddy chain publishes and AppleANS3NVMeController probe executes",
+      "desc": "AppleA7IOPNub publishes",
       "pass": "AppleA7IOPNub allocated-nub log"
     },
     {
       "id": "M2",
-      "desc": "controller start requests namespaces",
-      "pass": "'Creating %d namespaces on NAND' log"
+      "desc": "RTBuddy / RTBuddyService attaches",
+      "pass": "RTBuddyService attachment evidence"
     },
     {
       "id": "M3",
-      "desc": "Identify Namespace completes for at least one NS",
-      "pass": "no Invalid LogicalBlockSize; LBADS==12 accepted"
+      "desc": "AppleANS3NVMeController probe/start reached",
+      "pass": "ANS3 probe/start log"
     },
     {
       "id": "M4",
-      "desc": "one AppleEmbeddedBlockDevice publishes",
-      "pass": "block device media object appears"
+      "desc": "namespace request observed",
+      "pass": "'Creating %d namespaces on NAND' log"
     },
     {
       "id": "M5",
-      "desc": "read-only read reaches host backing",
-      "pass": "correct bytes returned"
+      "desc": "Identify response accepted",
+      "pass": "LBADS==12 accepted, no Invalid LogicalBlockSize"
     },
     {
       "id": "M6",
-      "desc": "APFS NXSB readable through guest storage",
+      "desc": "first block device/media published",
+      "pass": "AppleEmbeddedBlockDevice media object appears"
+    },
+    {
+      "id": "M7",
+      "desc": "read-only host-backed read verified",
+      "pass": "correct bytes returned for known LBA"
+    },
+    {
+      "id": "M8",
+      "desc": "APFS NXSB read through guest storage path",
       "pass": "NXSB magic at block 0"
     }
   ],
+  "derived_gates": {
+    "closed_contracts_valid": true,
+    "ITERATION_58A_ENTRY_GATE": "PASS",
+    "ITERATION_58B_PLUS_ENTRY_GATE": "BLOCKED",
+    "ANS_STORAGE_IMPLEMENTATION_READINESS": "BLOCKED_FOR_58B_PLUS"
+  },
+  "revalidation_checks": {
+    "controller": true,
+    "provider": true,
+    "lba_size": true,
+    "lba_shift": true,
+    "namespace_count": true,
+    "reg_pair_count": true,
+    "interrupts": true,
+    "interrupt_parent": true,
+    "nvme_interrupt_idx": true,
+    "nonzero_mmio_count": true,
+    "authoritative_compatible": true,
+    "booted_compatible_absent": true
+  },
   "verdicts": {
-    "ANS_STORAGE_IMPLEMENTATION_READINESS": "PASS",
+    "ANS_STORAGE_IMPLEMENTATION_READINESS": "BLOCKED_FOR_58B_PLUS",
+    "ITERATION_58A_ENTRY_GATE": "PASS",
+    "ITERATION_58B_PLUS_ENTRY_GATE": "BLOCKED",
     "ANS_CONTRACT_REVALIDATION": "PASS",
     "STORAGE_LBA_CONTRACT_REVALIDATION": "PASS"
   }

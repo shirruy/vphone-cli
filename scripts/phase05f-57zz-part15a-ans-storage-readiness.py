@@ -57,13 +57,41 @@ def main():
         "interrupt_parent": preboom.get("ans_device_tree", {}).get("interrupt_parent"),
         "nvme_interrupt_idx": preboom.get("ans_device_tree", {}).get("nvme_interrupt_idx"),
     }
-    ans_reval_pass = (
-        reval["ans_match_controller"] == "AppleANS3NVMeController"
-        and reval["ans_match_provider"] == "RTBuddyService"
-        and reval["lba_size"] == 4096
-        and reval["lba_shift"] == 12
-    )
-    lba_reval_pass = reval["namespace_records"] is not None and reval["reg_mmio"] is not None
+    # 15A-R3: exact expected values
+    expected = {
+        "controller": "AppleANS3NVMeController",
+        "provider": "RTBuddyService",
+        "lba_size": 4096,
+        "lba_shift": 12,
+        "namespace_count": 7,
+        "reg_pair_count": 14,
+        "nonzero_mmio_count": 7,
+        "interrupts": [622, 621, 624, 623, 629],
+        "interrupt_parent": 32,
+        "nvme_interrupt_idx": 4,
+        "authoritative_compatible": "iop-nub,rtbuddy-v2",
+        "booted_compatible": None,  # ABSENT
+    }
+    checks = {
+        "controller": reval["ans_match_controller"] == expected["controller"],
+        "provider": reval["ans_match_provider"] == expected["provider"],
+        "lba_size": reval["lba_size"] == expected["lba_size"],
+        "lba_shift": reval["lba_shift"] == expected["lba_shift"],
+        "namespace_count": len(reval["namespace_records"] or []) == expected["namespace_count"],
+        "reg_pair_count": len(reval["reg_mmio"] or []) == expected["reg_pair_count"],
+        "interrupts": reval["interrupts"] == expected["interrupts"],
+        "interrupt_parent": reval["interrupt_parent"] == expected["interrupt_parent"],
+        "nvme_interrupt_idx": reval["nvme_interrupt_idx"] == expected["nvme_interrupt_idx"],
+    }
+    nonzero_mmio = [r for r in (reval["reg_mmio"] or []) if r["size"] != "0x0"]
+    checks["nonzero_mmio_count"] = len(nonzero_mmio) == expected["nonzero_mmio_count"]
+    # authoritative compatible: from dt contract
+    auth_compat = dt_contract.get("authoritative_ans_nub_child", {}).get("D37AP_IOP_ANS_NUB_COMPATIBLE_AUTHORITATIVE")
+    checks["authoritative_compatible"] = auth_compat == expected["authoritative_compatible"]
+    # booted compatible absent: iop_ans_nub_child compatible field
+    booted_compat = dt_contract.get("iop_ans_nub_child", {}).get("iop_ans_nub_compatible")
+    checks["booted_compatible_absent"] = (booted_compat is None or "ABSENT" in str(booted_compat))
+    closed_contracts_valid = all(checks.values())
 
     # 15A-B: qemu-sptm device model audit
     qemu_src = DARWIN_C
@@ -103,7 +131,6 @@ def main():
     }
 
     # 15A-D: MMIO ranges
-    nonzero_mmio = [r for r in reval["reg_mmio"] if r["size"] != "0x0"]
     mmio_rows = []
     for i, r in enumerate(nonzero_mmio):
         mmio_rows.append(
@@ -144,11 +171,13 @@ def main():
         "status": "BLOCKED",
     }
 
-    # 15A-J: LBA translation
+    # 15A-R4: LBA addressing — retract unproven transfer-length formula
     lba_translation = {
-        "guest_lba_bytes": 4096,
-        "formula": "byte_offset = slba * 4096; byte_length = nlb_count * 4096",
-        "host_backend_unit": "UNPROVEN_IMPLEMENTATION_DETAIL (do not assume 512-byte sectors)",
+        "GUEST_LBA_BYTES": 4096,
+        "SLBA_ADDRESSING_SEMANTICS": "TO_BE_CONFIRMED_IN_QUEUE_COMMAND_TRACE",
+        "TRANSFER_LENGTH_ENCODING": "UNKNOWN",
+        "HOST_BYTE_TRANSLATION": "BLOCKED_PENDING_COMMAND_ENCODING",
+        "note": "Guest LBA size 4096 is proven. Exact NLB encoding (direct / zero-based / minus-one / Apple wrapper) is NOT proven and must be resolved before 58F read/write backing.",
     }
 
     # 15A-K: command surface
@@ -159,16 +188,36 @@ def main():
         "NOT_YET_REQUIRED": ["full admin feature set", "vendor-specific command surface"],
     }
 
-    # 15A-N: milestones
+    # 15A-R5: milestones split — each proves exactly its milestone
     milestones = [
-        {"id": "M0", "desc": "booted DeviceTree preserves ANS compatible", "pass": "dtree.bin contains iop-nub,rtbuddy-v2"},
-        {"id": "M1", "desc": "RTBuddy chain publishes and AppleANS3NVMeController probe executes", "pass": "AppleA7IOPNub allocated-nub log"},
-        {"id": "M2", "desc": "controller start requests namespaces", "pass": "'Creating %d namespaces on NAND' log"},
-        {"id": "M3", "desc": "Identify Namespace completes for at least one NS", "pass": "no Invalid LogicalBlockSize; LBADS==12 accepted"},
-        {"id": "M4", "desc": "one AppleEmbeddedBlockDevice publishes", "pass": "block device media object appears"},
-        {"id": "M5", "desc": "read-only read reaches host backing", "pass": "correct bytes returned"},
-        {"id": "M6", "desc": "APFS NXSB readable through guest storage", "pass": "NXSB magic at block 0"},
+        {"id": "M0", "desc": "ANS-compatible property preserved in booted DT", "pass": "iop-nub,rtbuddy-v2 present on iop-ans-nub"},
+        {"id": "M1", "desc": "AppleA7IOPNub publishes", "pass": "AppleA7IOPNub allocated-nub log"},
+        {"id": "M2", "desc": "RTBuddy / RTBuddyService attaches", "pass": "RTBuddyService attachment evidence"},
+        {"id": "M3", "desc": "AppleANS3NVMeController probe/start reached", "pass": "ANS3 probe/start log"},
+        {"id": "M4", "desc": "namespace request observed", "pass": "'Creating %d namespaces on NAND' log"},
+        {"id": "M5", "desc": "Identify response accepted", "pass": "LBADS==12 accepted, no Invalid LogicalBlockSize"},
+        {"id": "M6", "desc": "first block device/media published", "pass": "AppleEmbeddedBlockDevice media object appears"},
+        {"id": "M7", "desc": "read-only host-backed read verified", "pass": "correct bytes returned for known LBA"},
+        {"id": "M8", "desc": "APFS NXSB read through guest storage path", "pass": "NXSB magic at block 0"},
     ]
+
+    # 15A-R2: derived gates
+    rtbuddy_handshake_known = False
+    mmio_surface_known = False
+    interrupt_behavior_known = False
+    dma_path_known = False
+    queue_command_known = False
+    dt_fix_implementable = dt_fix["status"] == "OPEN_ACTION_ITEM" and del_compat_present and not rtbuddy_in_whitelist
+    entry_58a = closed_contracts_valid and checks["authoritative_compatible"] and checks["booted_compatible_absent"] and dt_fix_implementable
+    entry_58b_plus = (
+        entry_58a
+        and rtbuddy_handshake_known
+        and mmio_surface_known
+        and interrupt_behavior_known
+        and dma_path_known
+        and queue_command_known
+    )
+    global_readiness = "BLOCKED_FOR_58B_PLUS"
 
     # 15A-P: Iteration 58 scope
     iteration58 = {
@@ -191,9 +240,9 @@ def main():
             "ANS_DEVICE_TREE_CONTRACT": "PASS_CLOSED",
             "PREBOOM_STORAGE_CONTRACT": "PASS_CLOSED (namespace/reg/interrupt extraction)",
             "revalidation": {
-                "ans_match": "PASS" if ans_reval_pass else "BLOCKED",
-                "lba": "PASS" if lba_reval_pass else "BLOCKED",
-                "cross_artifact_consistency": "PASS" if ans_reval_pass and lba_reval_pass else "BLOCKED",
+                "ans_match": "PASS" if closed_contracts_valid else "BLOCKED",
+                "lba": "PASS" if closed_contracts_valid else "BLOCKED",
+                "cross_artifact_consistency": "PASS" if closed_contracts_valid else "BLOCKED",
             },
             "revalidation_data": reval,
         },
@@ -249,16 +298,26 @@ def main():
         },
         "iteration58_scope": iteration58,
         "milestones": milestones,
+        "derived_gates": {
+            "closed_contracts_valid": closed_contracts_valid,
+            "ITERATION_58A_ENTRY_GATE": "PASS" if entry_58a else "BLOCKED",
+            "ITERATION_58B_PLUS_ENTRY_GATE": "PASS" if entry_58b_plus else "BLOCKED",
+            "ANS_STORAGE_IMPLEMENTATION_READINESS": global_readiness,
+        },
+        "revalidation_checks": checks,
         "verdicts": {
-            "ANS_STORAGE_IMPLEMENTATION_READINESS": "PASS",
-            "ANS_CONTRACT_REVALIDATION": "PASS" if ans_reval_pass else "BLOCKED",
-            "STORAGE_LBA_CONTRACT_REVALIDATION": "PASS" if lba_reval_pass else "BLOCKED",
+            "ANS_STORAGE_IMPLEMENTATION_READINESS": global_readiness,
+            "ITERATION_58A_ENTRY_GATE": "PASS" if entry_58a else "BLOCKED",
+            "ITERATION_58B_PLUS_ENTRY_GATE": "PASS" if entry_58b_plus else "BLOCKED",
+            "ANS_CONTRACT_REVALIDATION": "PASS" if closed_contracts_valid else "BLOCKED",
+            "STORAGE_LBA_CONTRACT_REVALIDATION": "PASS" if closed_contracts_valid else "BLOCKED",
         },
     }
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(artifact, f, indent=2)
         f.write("\n")
-    print(json.dumps(artifact["verdicts"], indent=2))
+    print(json.dumps(artifact["derived_gates"], indent=2))
+    print(json.dumps(artifact["revalidation_checks"], indent=1))
     print("boot_tree_compat:", dt_fix["status"])
     print("ANS device implementation: ABSENT")
     print("DT fixup sha256:", file_sha(DT_FIXUP))
