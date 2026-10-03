@@ -1,0 +1,194 @@
+1000826d8  mov      x29, x29
+1000826dc  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+1000826e0  mov      x23, x0
+1000826e4  ldr      x3, [x20]
+1000826e8  mov      x0, x19
+1000826ec  mov      x2, x23
+1000826f0  bl       #0x1001c4b00  ; objc:setObject:forKey:
+1000826f4  mov      x0, x23
+1000826f8  bl       #0x1001bf0e0  ; import:_objc_release
+1000826fc  adrp     x20, #0x1002ee000
+100082700  cbz      w28, #0x10008273c
+100082704  ldr      x0, [x20, #0xf58]
+100082708  mov      w2, #1
+10008270c  bl       #0x1001c38e0  ; objc:numberWithBool:
+100082710  mov      x29, x29
+100082714  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+100082718  mov      x23, x0
+10008271c  adrp     x8, #0x1002ee000
+100082720  ldr      x8, [x8, #0xdf0]
+100082724  ldr      x3, [x8]
+100082728  mov      x0, x21
+10008272c  mov      x2, x23
+100082730  bl       #0x1001c4b00  ; objc:setObject:forKey:
+100082734  mov      x0, x23
+100082738  bl       #0x1001bf0e0  ; import:_objc_release
+10008273c  mov      x28, x21
+100082740  ldur     x19, [x29, #-0x78]
+100082744  cbz      x27, #0x100082780
+100082748  ldr      x0, [x20, #0xf58]
+10008274c  mov      x2, x27
+100082750  bl       #0x1001c3980  ; objc:numberWithLongLong:
+100082754  mov      x29, x29
+100082758  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+10008275c  mov      x23, x0
+100082760  adrp     x8, #0x1002ee000
+100082764  ldr      x8, [x8, #0xe20]
+100082768  ldr      x3, [x8]
+10008276c  mov      x0, x28
+100082770  mov      x2, x23
+100082774  bl       #0x1001c4b00  ; objc:setObject:forKey:
+100082778  mov      x0, x23
+10008277c  bl       #0x1001bf0e0  ; import:_objc_release
+100082780  cbz      x26, #0x1000827bc
+100082784  ldr      x0, [x20, #0xf58]
+100082788  mov      x2, x26
+10008278c  bl       #0x1001c3980  ; objc:numberWithLongLong:
+100082790  mov      x29, x29
+100082794  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+100082798  mov      x23, x0
+10008279c  adrp     x8, #0x1002ee000
+1000827a0  ldr      x8, [x8, #0xe18]
+1000827a4  ldr      x3, [x8]
+1000827a8  mov      x0, x28
+1000827ac  mov      x2, x23
+1000827b0  bl       #0x1001c4b00  ; objc:setObject:forKey:
+1000827b4  mov      x0, x23
+1000827b8  bl       #0x1001bf0e0  ; import:_objc_release
+1000827bc  ldur     x0, [x29, #-0x70]
+1000827c0  cbz      x0, #0x100082880
+1000827c4  adrp     x26, #0x1002ee000
+1000827c8  ldr      x26, [x26, #0xe00]
+1000827cc  cbz      x26, #0x100082aa8
+1000827d0  mov      w2, #4
+1000827d4  bl       #0x1001c5460  ; objc:substringFromIndex:
+1000827d8  mov      x29, x29
+1000827dc  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+1000827e0  mov      x23, x0
+1000827e4  adrp     x2, #0x1002e2000
+1000827e8  add      x2, x2, #0xaa0
+1000827ec  bl       #0x1001c1640  ; objc:componentsSeparatedByString:
+1000827f0  mov      x29, x29
+1000827f4  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+1000827f8  mov      x27, x0
+1000827fc  bl       #0x1001c1b20  ; objc:count
+100082800  cmp      x0, #1
+100082804  b.ls     #0x100082be8
+100082808  mov      x0, x27
+10008280c  bl       #0x1001c1b20  ; objc:count
+100082810  sub      x2, x0, #1
+100082814  mov      x0, x27
+100082818  bl       #0x1001c3a40  ; objc:objectAtIndex:
+10008281c  mov      x29, x29
+100082820  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+100082824  stur     x23, [x29, #-0x80]
+100082828  mov      x23, x0
+10008282c  bl       #0x1001c3060  ; objc:intValue
+100082830  mov      x28, x0
+100082834  mov      x0, x23
+100082838  bl       #0x1001bf0e0  ; import:_objc_release
+10008283c  ldr      x0, [x20, #0xf58]
+100082840  mov      x2, x28
+100082844  mov      x28, x21
+100082848  bl       #0x1001c3920  ; objc:numberWithInt:
+10008284c  mov      x29, x29
+100082850  bl       #0x1001bf1d0  ; import:_objc_retainAutoreleasedReturnValue
+100082854  mov      x23, x0
+100082858  ldr      x3, [x26]
+10008285c  mov      x0, x21
+100082860  mov      x2, x23
+100082864  bl       #0x1001c4b00  ; objc:setObject:forKey:
+100082868  mov      x0, x23
+10008286c  bl       #0x1001bf0e0  ; import:_objc_release
+100082870  mov      x0, x27
+100082874  bl       #0x1001bf0e0  ; import:_objc_release
+100082878  ldur     x0, [x29, #-0x80]
+10008287c  bl       #0x1001bf0e0  ; import:_objc_release
+100082880  mov      w0, #0x20
+100082884  bl       #0x1001bdc70  ; import:__os_log_pack_size
+100082888  mov      x1, x0
+10008288c  mov      x20, sp
+100082890  mov      x9, x0
+100082894  adrp     x17, #0x1002ef000
+100082898  add      x17, x17, #0x520
+10008289c  ldr      x16, [x17]
+1000828a0  blraa    x16, x17
+1000828a4  mov      x8, sp
+1000828a8  add      x9, x0, #0xf
+1000828ac  and      x9, x9, #0xfffffffffffffff0
+1000828b0  sub      x23, x8, x9
+1000828b4  mov      sp, x23
+1000828b8  adrp     x3, #0x100000000
+1000828bc  add      x3, x3, #0
+1000828c0  adrp     x4, #0x1002c1000
+1000828c4  add      x4, x4, #0x560
+1000828c8  mov      x0, x23
+1000828cc  mov      w2, #0
+1000828d0  bl       #0x1001bdc60  ; import:__os_log_pack_fill
+1000828d4  mov      x26, x0
+1000828d8  ldur     x21, [x29, #-0x60]
+1000828dc  mov      x0, x21
+1000828e0  bl       #0x1001bf1b0  ; import:_objc_retainAutorelease
+1000828e4  bl       #0x1001c24e0  ; objc:fileSystemRepresentation
+1000828e8  adrp     x8, #0x10022d000
+1000828ec  ldr      d0, [x8, #0x1d8]
+1000828f0  str      s0, [x26]
+1000828f4  adrp     x27, #0x100205000
+1000828f8  add      x27, x27, #0xaaa
+1000828fc  stur     x27, [x26, #4]
+100082900  mov      w8, #0x820
+100082904  strh     w8, [x26, #0xc]
+100082908  stur     x0, [x26, #0xe]
+10008290c  mov      w8, #0x840
+100082910  strh     w8, [x26, #0x16]
+100082914  str      x28, [x26, #0x18]
+100082918  mov      w0, #1
+10008291c  mov      x1, x23
+100082920  bl       #0x100089af8
+100082924  mov      sp, x20
+100082928  adrp     x8, #0x1002ef000
+10008292c  ldr      x8, [x8, #0x518]
+100082930  cbz      x8, #0x1000829c8
+100082934  cmp      w25, #1
+100082938  b.ne     #0x1000829c8
+10008293c  mov      w0, #0xc
+100082940  bl       #0x1001bdc70  ; import:__os_log_pack_size
+100082944  mov      x1, x0
+100082948  mov      x20, sp
+10008294c  mov      x9, x0
+100082950  adrp     x17, #0x1002ef000
+100082954  add      x17, x17, #0x520
+100082958  ldr      x16, [x17]
+10008295c  blraa    x16, x17
+100082960  mov      x8, sp
+100082964  add      x9, x0, #0xf
+100082968  and      x9, x9, #0xfffffffffffffff0
+10008296c  sub      x23, x8, x9
+100082970  mov      sp, x23
+100082974  adrp     x3, #0x100000000
+100082978  add      x3, x3, #0
+10008297c  adrp     x4, #0x1002c1000
+100082980  add      x4, x4, #0x58e
+100082984  mov      x0, x23
+100082988  mov      w2, #0
+10008298c  bl       #0x1001bdc60  ; import:__os_log_pack_fill
+100082990  adrp     x8, #0x10022d000
+100082994  ldr      d0, [x8, #0x690]
+100082998  str      s0, [x0]
+10008299c  stur     x27, [x0, #4]
+1000829a0  mov      w0, #1
+1000829a4  mov      x1, x23
+1000829a8  bl       #0x100089af8
+1000829ac  mov      sp, x20
+1000829b0  mov      x0, x21
+1000829b4  bl       #0x1001bf1b0  ; import:_objc_retainAutorelease
+1000829b8  bl       #0x1001c24e0  ; objc:fileSystemRepresentation
+1000829bc  mov      x1, x28
+1000829c0  bl       #0x1001bc520  ; import:_APFSVolumeCreateForMSU
+1000829c4  b        #0x1000829dc
+1000829c8  mov      x0, x21
+1000829cc  bl       #0x1001bf1b0  ; import:_objc_retainAutorelease
+1000829d0  bl       #0x1001c24e0  ; objc:fileSystemRepresentation
+1000829d4  mov      x1, x28
+1000829d8  bl       #0x1001bc510  ; import:_APFSVolumeCreate <<<< _APFSVolumeCreate
+1000829dc  mov      x25, x0
