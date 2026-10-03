@@ -1,0 +1,318 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14L_S_DATA_INVOCATION_CLOSURE",
+  "binary": {
+    "path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\57zz-binaries\\restored_external.bin",
+    "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770"
+  },
+  "phase_s0_metadata": {
+    "expected_entries": 17,
+    "accounted_entries": 17,
+    "classification": {
+      "zero_sentinel": 1,
+      "named_roles": 16,
+      "total": 17
+    },
+    "sentinel_explanation": "Index 0 is the zero entry: LP=0, APFS=0, nil name, all-zero raw. It is the empty/default entry returned by roleMetadataForRole: for role 0 (no role).",
+    "entries": [
+      {
+        "index": 0,
+        "lp_role": 0,
+        "apfs_bits": 0,
+        "name": null,
+        "classification": "ZERO_SENTINEL",
+        "raw": "000000000000000000000000000000000000000000000000"
+      },
+      {
+        "index": 1,
+        "lp_role": 1,
+        "apfs_bits": 1,
+        "name": "System",
+        "classification": "ROLE",
+        "raw": "0100000001000000602d2e00000018000000000000000000"
+      },
+      {
+        "index": 2,
+        "lp_role": 2,
+        "apfs_bits": 2,
+        "name": "User",
+        "classification": "ROLE",
+        "raw": "0200000002000000802d2e00000018000000000000000000"
+      },
+      {
+        "index": 3,
+        "lp_role": 4,
+        "apfs_bits": 4,
+        "name": "Recovery",
+        "classification": "ROLE",
+        "raw": "0400000004000000a02d2e00000018000000000000000000"
+      },
+      {
+        "index": 4,
+        "lp_role": 5,
+        "apfs_bits": 8,
+        "name": "VM",
+        "classification": "ROLE",
+        "raw": "0500000008000000c02d2e00000018000000000000000000"
+      },
+      {
+        "index": 5,
+        "lp_role": 6,
+        "apfs_bits": 16,
+        "name": "Preboot",
+        "classification": "ROLE",
+        "raw": "0600000010000000002b2e00000018000000000000000000"
+      },
+      {
+        "index": 6,
+        "lp_role": 7,
+        "apfs_bits": 32,
+        "name": "Installer",
+        "classification": "ROLE",
+        "raw": "0700000020000000e02d2e00000018000000000000000000"
+      },
+      {
+        "index": 7,
+        "lp_role": 3,
+        "apfs_bits": 64,
+        "name": "Data",
+        "classification": "ROLE",
+        "raw": "0300000040000000a06e2d00000018000000000000000000"
+      },
+      {
+        "index": 8,
+        "lp_role": 8,
+        "apfs_bits": 128,
+        "name": "Baseband data",
+        "classification": "ROLE",
+        "raw": "0800000080000000002e2e0000000800202e2e0000001000"
+      },
+      {
+        "index": 9,
+        "lp_role": 12,
+        "apfs_bits": 192,
+        "name": "Update",
+        "classification": "ROLE",
+        "raw": "0c000000c0000000402e2e00000018000000000000000000"
+      },
+      {
+        "index": 10,
+        "lp_role": 9,
+        "apfs_bits": 256,
+        "name": "xART",
+        "classification": "ROLE",
+        "raw": "0900000000010000602e2e00000018000000000000000000"
+      },
+      {
+        "index": 11,
+        "lp_role": 13,
+        "apfs_bits": 320,
+        "name": "Hardware",
+        "classification": "ROLE",
+        "raw": "0d00000040010000802e2e00000018000000000000000000"
+      },
+      {
+        "index": 12,
+        "lp_role": 11,
+        "apfs_bits": 384,
+        "name": "Backup",
+        "classification": "ROLE",
+        "raw": "0b00000080010000a02e2e00000018000000000000000000"
+      },
+      {
+        "index": 13,
+        "lp_role": 14,
+        "apfs_bits": 448,
+        "name": "SideCar",
+        "classification": "ROLE",
+        "raw": "0e000000c0010000c02e2e00000018000000000000000000"
+      },
+      {
+        "index": 14,
+        "lp_role": 10,
+        "apfs_bits": 512,
+        "name": "Internal",
+        "classification": "ROLE",
+        "raw": "0a00000000020000609d2d00000018000000000000000000"
+      },
+      {
+        "index": 15,
+        "lp_role": 15,
+        "apfs_bits": 576,
+        "name": "Enterprise data",
+        "classification": "ROLE",
+        "raw": "0f00000040020000e02e2e00000018000000000000000000"
+      },
+      {
+        "index": 16,
+        "lp_role": 16,
+        "apfs_bits": 640,
+        "name": "iDiags",
+        "classification": "ROLE",
+        "raw": "1000000080020000002f2e00000020000000000000000000"
+      }
+    ]
+  },
+  "phase_s1_locked_proof": {
+    "conversion_mechanism": "PROVEN",
+    "chain": [
+      "0x1000821f0 mov x25, x3 (save LP role)",
+      "0x100082588 mov x2, x25",
+      "0x10008258c bl roleMetadataForRole:",
+      "0x100082598 ldrh w23, [x0, #4] (APFS bits)",
+      "0x100082698-ish numberWithInt: -> dict[kAPFSVolumeRoleKey]"
+    ],
+    "data_entry": {
+      "lp": 3,
+      "apfs": 64,
+      "name": "Data"
+    },
+    "distinction": "Conversion mechanism PROVEN; actual external invocation with role=3 NOT PROVEN."
+  },
+  "phase_s2_binary_search": [
+    {
+      "binary": "APFS_framework.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "apfs_iosd.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "apfs_sealvolume.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "apfs_vol_converter.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "asr.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "fsck_apfs.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "mount_apfs.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "newfs_apfs.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    },
+    {
+      "binary": "restored_external.bin",
+      "selector_string": true,
+      "lpstatic_container_string": true,
+      "enumerate_role_metadata_string": true
+    },
+    {
+      "binary": "slurpAPFSMeta.bin",
+      "selector_string": false,
+      "lpstatic_container_string": false,
+      "enumerate_role_metadata_string": false
+    }
+  ],
+  "phase_s2_finding": "Selector string only in: ['restored_external.bin']. LPStaticAPFSContainer string only in: ['restored_external.bin'].",
+  "phase_s3_class_references": {
+    "class_object_vm": "0x1002f67b8",
+    "references": [
+      {
+        "slot": "0x1002eada0",
+        "type": "__objc_classlist entry (registration)"
+      },
+      {
+        "slot": "0x1002eecd8",
+        "type": "__got entry (no text users found)"
+      }
+    ],
+    "text_users_of_got_classref": 0
+  },
+  "phase_s4_dynamic_dispatch": {
+    "checked": true,
+    "findings": "addVolume selector selref 0x1002f5860 has zero text users. allAPFSContainers selref 0x1002f58a8 has zero text users. No objc stub exists for addVolumeWithName:... (not among 247 mapped stubs). NSSelectorFromString/sel_registerName/performSelector strings checked: no path produces the add-volume selector dynamically."
+  },
+  "phase_s7_metadata_orchestration": {
+    "enumerate_users": [
+      "0x100084124",
+      "0x100084298",
+      "0x1000843d8",
+      "0x100084624",
+      "0x1000846b4"
+    ],
+    "finding": "5 in-binary users of enumerateRoleMetadataUsingBlock: exist (roleMetadataForRole:, defaultMountPointGivenRole:, defaultVolumeNameGivenRole:, supportedContentTypes, setRole:withError:). NONE reaches the add-volume wrapper. All are metadata queries, not creation orchestration."
+  },
+  "phase_s6_role3_dataflow": "NOT PROVEN: no mov w?,#3 / table lookup / metadata iteration forwards LP role 3 into the add-volume interface within restored_external.bin.",
+  "phase_s8_external_boundary": {
+    "strongest_boundary": "The add-volume wrapper is invoked from OUTSIDE restored_external.bin. The strongest identifiable boundary is the restore host orchestration layer that drives restored_external / asr via the published ObjC interface.",
+    "reasoning": "LPStatic* classes are defined inline in restored_external.bin (not imported from a LogicalPlatform.framework - no such dylib in LC_LOAD_DYLIB). The selectors addVolumeWithName:... and allAPFSContainers have selrefs but zero in-binary users, meaning they are published interface consumed by an external driver. The caller is either the host-side restored executable, an XPC service, or another restore component not in the extracted set."
+  },
+  "phase_s9_dylib_inventory": [
+    "/System/Library/PrivateFrameworks/AppleDeviceQuerySupport.framework/AppleDeviceQuerySupport",
+    "/usr/lib/libutil.dylib",
+    "/usr/lib/libbz2.1.0.dylib",
+    "/usr/lib/liblzma.5.dylib",
+    "/System/Library/PrivateFrameworks/AppleFSCompression.framework/AppleFSCompression",
+    "/usr/lib/libBBUpdaterDynamic.dylib",
+    "/usr/lib/libFDR.dylib",
+    "/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation",
+    "/System/Library/PrivateFrameworks/AppleKeyStore.framework/AppleKeyStore",
+    "/System/Library/PrivateFrameworks/IOMobileFramebuffer.framework/IOMobileFramebuffer",
+    "/System/Library/PrivateFrameworks/UserManagementLayout.framework/UserManagementLayout",
+    "/System/Library/PrivateFrameworks/DiskImages2.framework/DiskImages2",
+    "/usr/lib/libimage4.dylib",
+    "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+    "/usr/lib/libMobileGestalt.dylib",
+    "/usr/lib/libpartition2_dynamic.dylib",
+    "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+    "/System/Library/Frameworks/Foundation.framework/Foundation",
+    "/usr/lib/libamsupport.dylib",
+    "/System/Library/Frameworks/SystemConfiguration.framework/SystemConfiguration",
+    "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+    "/usr/lib/libauthinstall.dylib",
+    "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+    "/System/Library/PrivateFrameworks/MediaKit.framework/MediaKit",
+    "/System/Library/PrivateFrameworks/Bom.framework/Bom",
+    "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+    "/System/Library/PrivateFrameworks/MobileKeyBag.framework/MobileKeyBag",
+    "/usr/lib/libz.1.dylib",
+    "/System/Library/Frameworks/CFNetwork.framework/CFNetwork",
+    "/usr/lib/libReverseProxyDevice.dylib",
+    "/System/Library/Frameworks/Security.framework/Security",
+    "/usr/lib/libc++.1.dylib",
+    "/usr/lib/libSystem.B.dylib",
+    "/System/Library/Frameworks/CryptoKit.framework/CryptoKit",
+    "/System/Library/PrivateFrameworks/RemoteServiceDiscovery.framework/RemoteServiceDiscovery",
+    "/System/Library/PrivateFrameworks/SoftLinking.framework/SoftLinking",
+    "/usr/lib/libobjc.A.dylib",
+    "/usr/lib/swift/libswiftCore.dylib",
+    "/usr/lib/swift/libswiftCoreFoundation.dylib",
+    "/usr/lib/swift/libswiftDispatch.dylib"
+  ],
+  "verdicts": {
+    "DATA_INVOCATION_ROLE3_PROOF": "BLOCKED",
+    "DATA_LIFECYCLE_STATIC_GATE": "BLOCKED"
+  },
+  "remaining_blockers": [
+    "The external restore orchestrator binary that invokes LPStaticAPFSContainer addVolumeWithName:role:... with LP role 3.",
+    "Runtime mount identity (deferred by design)."
+  ]
+}

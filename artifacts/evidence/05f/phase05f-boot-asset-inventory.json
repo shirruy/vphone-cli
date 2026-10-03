@@ -1,0 +1,109 @@
+{
+  "gate": "full-ios-root-system-volume-bringup",
+  "iteration": 55,
+  "date": "2026-09-29",
+  "marker": "FULL_BOOT_ASSET_INVENTORY_PASS",
+  "assets": [
+    {
+      "path": "phase05f-known-good/ipsw/iPhone15,4_27.0_24A437_Restore.ipsw",
+      "size": 11311808089,
+      "type": "IPSW (zip archive)",
+      "role": "full restore firmware source"
+    },
+    {
+      "path": "phase05f-known-good/extract-v3/24A437__iPhone15,4/043-69915-777.dmg",
+      "size": 243269659,
+      "type": "APFS image",
+      "apfs": true,
+      "role": "RestoreRamDisk (current boot root)"
+    },
+    {
+      "path": "phase05f-known-good/payloads-v3/ramdisk.dmg",
+      "size": 243269632,
+      "type": "APFS image",
+      "apfs": true,
+      "role": "RestoreRamDisk payload (booting today)"
+    },
+    {
+      "path": "phase05f-known-good/payloads-v3/bootkc.bin",
+      "size": 68747264,
+      "type": "IM4P-unwrapped kernelcache",
+      "role": "BootKC"
+    },
+    {
+      "path": "phase05f-known-good/payloads-v3/sptm.bin",
+      "size": 1196064,
+      "type": "IM4P-unwrapped SPTM",
+      "role": "Secure Page Table Monitor"
+    },
+    {
+      "path": "phase05f-known-good/payloads-v3/txm.bin",
+      "size": 557088,
+      "type": "IM4P-unwrapped TXM",
+      "role": "Trusted Execution Monitor"
+    },
+    {
+      "path": "phase05f-known-good/payloads-v3/dtree.bin",
+      "size": 259884,
+      "type": "IM4P-unwrapped DeviceTree",
+      "role": "device tree"
+    },
+    {
+      "path": "phase05f-known-good/payloads-v3/trustcache.bin",
+      "size": 8208,
+      "type": "trust cache",
+      "role": "boot trust cache"
+    }
+  ],
+  "ipsw_system_volume": {
+    "manifest_entry": "OS",
+    "path": "043-70116-656.dmg.aea",
+    "size": 8321499136,
+    "type": "AEA-encrypted APFS image (profile 1)",
+    "sha256_in_manifest": true,
+    "related": {
+      "mtree": "Firmware/043-70116-656.dmg.aea.mtree",
+      "root_hash": "Firmware/043-70116-656.dmg.aea.root_hash",
+      "trustcache": "Firmware/043-70116-656.dmg.aea.trustcache"
+    },
+    "classification": "PRESENT (encrypted; AEA key derivation required)"
+  },
+  "cryptex": {
+    "Cryptex1,AppOS": "043-69297-786.dmg (245,366,811)",
+    "Cryptex1,SystemOS": "043-69467-703.dmg.aea (2,348,810,240)"
+  },
+  "other_relevant": [
+    {"path": "Firmware/dcp/iphone15dcp.im4p", "size": 1725482, "role": "DCP firmware"},
+    {"path": "Firmware/dcp/iphone15dcp_restore.im4p", "size": 1726341, "role": "RestoreDCP firmware"},
+    {"path": "Firmware/all_flash/DeviceTree.d37ap.im4p", "size": 54230, "role": "production device tree"}
+  ],
+  "full_ios_system_volume": "PRESENT",
+  "full_ios_firmware_mapping": {
+    "marker": "FULL_IOS_FIRMWARE_MAPPING_PASS",
+    "device": "iPhone15,4",
+    "board": "d37ap",
+    "chip": "t8120",
+    "build": "24A437",
+    "system_image": "043-70116-656.dmg.aea",
+    "restore_ramdisk": "043-69915-777.dmg"
+  },
+  "storage_architecture_audit": {
+    "marker": "IOS_BOOT_STORAGE_PATH_AUDIT_PASS",
+    "qemu_sptm_darwin_storage": "NONE (no NVMe/ANS/block controller wired in darwin.c; no storage MACHINE_CLASS_ARG)",
+    "guest_dt_storage_nodes": "ans node PRESENT (interrupts/iop-version/dev-range properties), apcie node PRESENT; nvme-interrupt-idx property present. qemu-sptm implements none of them.",
+    "qemu_storage_models": "no apple ANS model anywhere in hw/; no nvme model at all (hw/nvme absent, CONFIG_NVME not set)",
+    "current_boot_path": "RAM-loaded ramdisk via -ramdisk (boot_args memory map), no block device",
+    "rd_argument_behavior": "rd=md0 mounts the RAM-loaded restore ramdisk",
+    "root_transition_model": "A (boot directly from System volume) requires a storage controller that does not exist yet",
+    "blocker_candidates": {
+      "primary": "IOS_STORAGE_EMULATION_REQUIRED",
+      "note": "AEA decryption of the System volume is ALSO required before it can be exposed; both must be solved for a full-root boot. Guest DT declares ans/apcie controllers that must be emulated."
+    }
+  },
+  "conclusion": {
+    "BLOCKER": "IOS_STORAGE_EMULATION_REQUIRED",
+    "reason": "The full System volume EXISTS (043-70116-656.dmg.aea, 8.3GB AEA-encrypted), but qemu-sptm exposes zero block storage to the guest. The restore ramdisk boots purely from RAM. Mounting a full root needs (a) an NVMe/ANS block device model wired to darwin.c, and (b) AEA-decrypted System + Cryptex images exposed through it.",
+    "not_fabricated": true
+  },
+  "regression_note": "Iteration 55 is a read-only audit; all prior gates remain PASS from Iteration 54 evidence (headless boot, SDL, window, framebuffer activity, visible frame, reservation)."
+}

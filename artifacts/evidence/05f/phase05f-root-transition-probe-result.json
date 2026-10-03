@@ -1,0 +1,209 @@
+{
+  "gate": "IOS_ROOT_TRANSITION_MODEL",
+  "answers": {
+    "system_container_authoritative_volume_count": 1,
+    "system_container_data_volume_present": false,
+    "system_container_roles": [
+      "SYSTEM"
+    ],
+    "system_container_volume_group_ids": [
+      "00000000-0000-0000-0000-000000000000"
+    ],
+    "single_volume_system_container": true,
+    "data_volume_absent_from_available_image_set": true,
+    "data_role_by_container": {
+      "base_system": false,
+      "system_cryptex": false,
+      "restore_ramdisk": false
+    },
+    "transition_source": "Static image-set analysis: System container holds exactly one SYSTEM-role volume (Rave24A437.D37OS); no DATA-role volume exists in the available decrypted image set. Volume-group UUID is zero in every available APSB, so system->data pairing cannot be resolved statically from these images."
+  },
+  "containers": [
+    {
+      "label": "base_system",
+      "container_uuid": "f9023b16-bb2f-46ec-b1dc-a3c8cb4ce65b",
+      "nxsb_xid": 491,
+      "block_size": 4096,
+      "block_count": 2347520,
+      "nxsb_checksum_valid": true,
+      "nx_max_file_systems": 18,
+      "nx_omap_oid": 65537,
+      "nx_fs_oids_raw": [
+        1026,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "nx_fs_oids_nonzero": [
+        1026
+      ],
+      "container_omap_phys_block": 65537,
+      "container_omap_tree_oid": 65538,
+      "omap_entry_count": 1,
+      "volumes": [
+        {
+          "apsb_block": 65536,
+          "apsb_oid": 1026,
+          "apsb_xid": 491,
+          "fs_index": 0,
+          "incompat": "0x8",
+          "omap_oid": 82271,
+          "root_tree_oid": 1028,
+          "extentref_tree_oid": 81063,
+          "snap_meta_tree_oid": 82451,
+          "volume_name": "Rave24A437.D37OS",
+          "role_raw": 1,
+          "role": "SYSTEM",
+          "volume_uuid": "9a503cf2-6d7a-4fda-a233-600dd13b4994",
+          "volume_group_id": "00000000-0000-0000-0000-000000000000",
+          "checksum_valid": true,
+          "fs_oid": 1026,
+          "omap_entry_xid": 491
+        }
+      ],
+      "roles_present": [
+        "SYSTEM"
+      ],
+      "volume_group_ids": [
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "has_system_role": true,
+      "has_data_role": false,
+      "has_preboot_role": false,
+      "data_volume_present_in_container": false,
+      "image_sha256": "5a4aa9c67944599d67da6971757526a50e6772da698c0502322631a0da37d73a"
+    },
+    {
+      "label": "system_cryptex",
+      "container_uuid": "bd649fe5-ae10-4b79-b7d8-92bb32bdef60",
+      "nxsb_xid": 15,
+      "block_size": 4096,
+      "block_count": 1468416,
+      "nxsb_checksum_valid": true,
+      "nx_max_file_systems": 12,
+      "nx_omap_oid": 97923,
+      "nx_fs_oids_raw": [
+        1026,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "nx_fs_oids_nonzero": [
+        1026
+      ],
+      "container_omap_phys_block": 97923,
+      "container_omap_tree_oid": 97924,
+      "omap_entry_count": 1,
+      "volumes": [
+        {
+          "apsb_block": 97922,
+          "apsb_oid": 1026,
+          "apsb_xid": 15,
+          "fs_index": 0,
+          "incompat": "0x28",
+          "omap_oid": 97917,
+          "root_tree_oid": 1291,
+          "extentref_tree_oid": 95124,
+          "snap_meta_tree_oid": 95136,
+          "volume_name": "Rave24A437.D37SystemCryptex",
+          "role_raw": 0,
+          "role": "NONE",
+          "volume_uuid": "7f74e822-6697-46de-878e-1b0172ed0eb9",
+          "volume_group_id": "00000000-0000-0000-0000-000000000000",
+          "checksum_valid": true,
+          "fs_oid": 1026,
+          "omap_entry_xid": 15
+        }
+      ],
+      "roles_present": [
+        "NONE"
+      ],
+      "volume_group_ids": [
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "has_system_role": false,
+      "has_data_role": false,
+      "has_preboot_role": false,
+      "data_volume_present_in_container": false,
+      "image_sha256": "b2131a5c1e6cf2c95e369e57379ab6d180d558e8a988e0cc66181d64fb781538"
+    },
+    {
+      "label": "restore_ramdisk",
+      "container_uuid": "4ada299f-6451-4a1f-a5fe-df42ab77e45d",
+      "nxsb_xid": 9,
+      "block_size": 4096,
+      "block_count": 59392,
+      "nxsb_checksum_valid": true,
+      "nx_max_file_systems": 1,
+      "nx_omap_oid": 1462,
+      "nx_fs_oids_raw": [
+        1026
+      ],
+      "nx_fs_oids_nonzero": [
+        1026
+      ],
+      "container_omap_phys_block": 1462,
+      "container_omap_tree_oid": 1463,
+      "omap_entry_count": 1,
+      "volumes": [
+        {
+          "apsb_block": 1461,
+          "apsb_oid": 1026,
+          "apsb_xid": 9,
+          "fs_index": 0,
+          "incompat": "0x8",
+          "omap_oid": 51201,
+          "root_tree_oid": 1028,
+          "extentref_tree_oid": 51196,
+          "snap_meta_tree_oid": 1466,
+          "volume_name": "ramdisk",
+          "role_raw": 0,
+          "role": "NONE",
+          "volume_uuid": "3c78af1a-bdd0-4115-a51f-02e7376dfb03",
+          "volume_group_id": "00000000-0000-0000-0000-000000000000",
+          "checksum_valid": true,
+          "fs_oid": 1026,
+          "omap_entry_xid": 9
+        }
+      ],
+      "roles_present": [
+        "NONE"
+      ],
+      "volume_group_ids": [
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "has_system_role": false,
+      "has_data_role": false,
+      "has_preboot_role": false,
+      "data_volume_present_in_container": false,
+      "image_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069"
+    }
+  ],
+  "certified": {
+    "APFS_VOLUME_ROLE_TABLE_PASS": true,
+    "DATA_ROLE_IMAGE_SET_AGGREGATION_PASS": true,
+    "AUTHORITATIVE_VOLUME_ENUMERATION_PASS": true
+  }
+}

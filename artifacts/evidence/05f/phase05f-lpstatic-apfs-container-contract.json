@@ -1,0 +1,118 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14K_LPSTATIC_CONTAINER_CONTRACT",
+  "binary": {
+    "path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\57zz-binaries\\restored_external.bin",
+    "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770"
+  },
+  "method_list": {
+    "vm": "0x1001c6890",
+    "entsize": "0x8000000c",
+    "entry_count": 13,
+    "format": "relative-offset (0x8000000c)",
+    "owning_class": "LPStaticAPFSContainer",
+    "class_name_evidence": "0x1cf0a1 string area contains LPStaticAPFSContainer/LPStaticAPFSVolume/LPStaticAPFSPhysicalStore cluster"
+  },
+  "addVolume_method": {
+    "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
+    "type_encoding": "@64@0:8@16i24B28q32q40@48^@56",
+    "imp_vm": "0x1000821bc",
+    "argument_decode": {
+      "@16": "name (NSString)",
+      "i24": "role (int) -> kAPFSVolumeRoleKey",
+      "B28": "caseSensitive (BOOL) -> kAPFSVolumeCaseSensitiveKey",
+      "q32": "reserveSize (long long) -> kAPFSVolumeReserveSizeKey",
+      "q40": "quotaSize (long long) -> kAPFSVolumeQuotaSizeKey",
+      "@48": "pairedVolume (id) -> kAPFSVolumeGroupSiblingFSIndexKey source",
+      "^@56": "error (NSError**)",
+      "return @64... ": "note: stack size prefix"
+    }
+  },
+  "all_methods": [
+    {
+      "index": 0,
+      "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
+      "type_encoding": "@64@0:8@16i24B28q32q40@48^@56",
+      "imp_vm": "0x1000821bc"
+    },
+    {
+      "index": 1,
+      "selector": "_matchVolumesWithRole:group:",
+      "type_encoding": "@28@0:8i16@20",
+      "imp_vm": "0x100082cc0"
+    },
+    {
+      "index": 2,
+      "selector": "volumesWithRole:group:",
+      "type_encoding": "@28@0:8i16@20",
+      "imp_vm": "0x100082f64"
+    },
+    {
+      "index": 3,
+      "selector": "volumesWithRole:",
+      "type_encoding": "@20@0:8i16",
+      "imp_vm": "0x1000831c0"
+    },
+    {
+      "index": 4,
+      "selector": "volumes",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x1000831c8"
+    },
+    {
+      "index": 5,
+      "selector": "physicalStores",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x1000831d0"
+    },
+    {
+      "index": 6,
+      "selector": "volumeWithRole:group:",
+      "type_encoding": "@28@0:8i16@20",
+      "imp_vm": "0x100083490"
+    },
+    {
+      "index": 7,
+      "selector": "prebootVolume",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x100083538"
+    },
+    {
+      "index": 8,
+      "selector": "recoveryVolume",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x100083544"
+    },
+    {
+      "index": 9,
+      "selector": "updateVolume",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x100083550"
+    },
+    {
+      "index": 10,
+      "selector": "VMVolume",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x10008355c"
+    },
+    {
+      "index": 11,
+      "selector": "xARTVolume",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x100083568"
+    },
+    {
+      "index": 12,
+      "selector": "hardwareVolume",
+      "type_encoding": "@16@0:8",
+      "imp_vm": "0x100083574"
+    }
+  ],
+  "upstream_contract": {
+    "finding": "No in-binary caller of addVolumeWithName:... exists; the selector has exactly one selref with no ADRP+LDR text users. LPStaticAPFSContainer exposes this method to an external restore orchestrator (asr/restored host-side).",
+    "role_source": "int role argument at offset 24, provided by external caller",
+    "sibling_source": "pairedVolume object at offset 48, provided by external caller; converted to group fsindex via intValue",
+    "encryption": "No encryption keys appear in the creation dictionary; encryption is not configured through _APFSVolumeCreate in this path"
+  },
+  "result": "PASS"
+}

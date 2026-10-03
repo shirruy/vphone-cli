@@ -1,0 +1,70 @@
+{
+  "gate": "mutation-sprint1-hardened-evidence",
+  "structural_mutator": "NOT YET IMPLEMENTED — current mutation used reconnaissance-based block targeting. Structural mutator (APSB/xid/OMAP/FSTREE record resolution → derive physical block + offset from parsed record) is queued as the next sprint.",
+  "independent_plist_parse": {
+    "semantic_delta": "Key 'EnableTransactions' changed to 'EnableTransacthons' (character 't' at plist offset 100 changed 'i'->'h' in binary-plist string table)",
+    "tool": "Python stdlib plistlib.loads",
+    "all_other_keys_unchanged": true,
+    "result": "PASS",
+    "mutated_sha256": "187dfd9175c359682ecf106ef7784bb44133c468d7748ca5d5a0fcbd9a4da432"
+  },
+  "date": "2026-09-27 21:41:20",
+  "phase": "05G-mutation",
+  "mutated_image_sha256": "919519d34bb16d3070d58ad409179de5e9809b75eee7f71c70286aa7e65c1a74",
+  "exact_image_diff": {
+    "total_differing_bytes": 5,
+    "changes": [
+      {
+        "block": 36400,
+        "role": "checksum_byte_0",
+        "new": "0x95",
+        "blk_off": 0,
+        "old": "0x93",
+        "abs_offset": 149094400
+      },
+      {
+        "block": 36400,
+        "role": "checksum_byte_3",
+        "new": "0xa5",
+        "blk_off": 3,
+        "old": "0x57",
+        "abs_offset": 149094403
+      },
+      {
+        "block": 36400,
+        "role": "checksum_byte_4",
+        "new": "0xc4",
+        "blk_off": 4,
+        "old": "0xc6",
+        "abs_offset": 149094404
+      },
+      {
+        "block": 36400,
+        "role": "checksum_byte_7",
+        "new": "0x12",
+        "blk_off": 7,
+        "old": "0x5f",
+        "abs_offset": 149094407
+      },
+      {
+        "block": 36400,
+        "role": "payload_byte_plist_offset_100",
+        "new": "0x68",
+        "blk_off": 1743,
+        "old": "0x69",
+        "abs_offset": 149096143
+      }
+    ],
+    "containment": "All 5 bytes in block 36400: 4 Fletcher-64 checksum bytes [0..7] + 1 payload byte at blk_off 1743",
+    "all_in_block": 36400
+  },
+  "selected_era": {
+    "target_leaf_block": 36400,
+    "root_tree_oid": 1028,
+    "resolved_root_block": 51206,
+    "note": "Phase 5G structural reader resolves APSB 1461 (xid 9) -> OMAP 51201 -> FSTREE 51206 -> leaf 36400 containing XATTR for CNID 639",
+    "volume_xid": 9,
+    "apsb_block": 1461,
+    "apsb_oid": 1026
+  }
+}

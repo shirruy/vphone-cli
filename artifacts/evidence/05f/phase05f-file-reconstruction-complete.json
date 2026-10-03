@@ -1,0 +1,31 @@
+{
+  "phase": "05G-prep",
+  "gate": "read-only-file-reconstruction-complete",
+  "date": "2026-09-27 19:33:14",
+  "note": "No Apple plist content committed — only SHA-256 hash, size, format, and identity chain metadata.",
+  "item_6_pending": "Synthetic xfield/extent regressions still queued (reviewer Item 5) — the source fixes are in place but dedicated test cases for multi-entry xfield, extent gaps, holes, and partial-block ranges are not yet added. This is the remaining gap before the full hardening gate.",
+  "reviewer_items_applied": [
+    "Item 1: PLAIN_ATTR content starts at xdata[17] — marker byte 0xCC at xdata[16] verified, not included in file bytes",
+    "Item 2: XATTR name_len = 18 (17 chars + NUL); NUL required; logical name 17 chars = com.apple.decmpfs exact match",
+    "Item 3: XATTR value fully validated — xdata_len == value_len-4, >= 17 bytes for algo 9, signature/algo/size fit, traversal_ok checked",
+    "Item 4: Deterministic candidate identity persisted — com.apple.driverkitd.plist CNID 639 private_id 639 before decmpfs extraction",
+    "Item 5: Xfield bounds hardened — metadata array fit, padded value fit, full 40-byte DSTREAM required",
+    "Item 7: JSON commas fixed between top-level members"
+  ],
+  "file_reconstruction": {
+    "parent_cnid": 632,
+    "format": "binary-plist (bplist00 magic verified)",
+    "name": "com.apple.driverkitd.plist",
+    "file_size": 721,
+    "private_id": 639,
+    "drec_cnid": 639,
+    "extraction": "xdata[17:17+721] = exactly 721 bytes",
+    "marker_byte": "0xCC verified at xdata[16]",
+    "decmpfs_storage": "DATA_EMBEDDED",
+    "status": "READ_OK",
+    "inode_cnid": 639,
+    "decmpfs_algo": 9,
+    "sha256": "a5ff5c5e0b656c51befcae503d0ba878ff41a348b3b19dcfd01877a09e41b2eb"
+  },
+  "chain": "DIR_REC(com.apple.driverkitd.plist, CNID 639) -> INODE(639, parent=632, private_id=639, mode=regular, compressed) -> XATTR(com.apple.decmpfs, DATA_EMBEDDED) -> decmpfs header(cmpf, algo=9, size=721) -> marker(0xCC) -> 721 bytes -> binary-plist"
+}

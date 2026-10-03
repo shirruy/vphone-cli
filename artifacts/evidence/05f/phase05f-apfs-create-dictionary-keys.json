@@ -1,0 +1,116 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14J_DICTIONARY_KEYS",
+  "binary": {
+    "path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\57zz-binaries\\restored_external.bin",
+    "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770"
+  },
+  "caller": {
+    "function_start": "0x1000821bc",
+    "apfs_volume_create_call": "0x1000829d8"
+  },
+  "key_slot_verification": {
+    "0x1002eee08": {
+      "expected": "_kAPFSVolumeNameKey",
+      "resolved": "_kAPFSVolumeNameKey",
+      "ordinal": 1194,
+      "pass": true
+    },
+    "0x1002eee28": {
+      "expected": "_kAPFSVolumeRoleKey",
+      "resolved": "_kAPFSVolumeRoleKey",
+      "ordinal": 1198,
+      "pass": true
+    },
+    "0x1002eee10": {
+      "expected": "_kAPFSVolumeNoAutomountAtCreateKey",
+      "resolved": "_kAPFSVolumeNoAutomountAtCreateKey",
+      "ordinal": 1195,
+      "pass": true
+    },
+    "0x1002eedf0": {
+      "expected": "_kAPFSVolumeCaseSensitiveKey",
+      "resolved": "_kAPFSVolumeCaseSensitiveKey",
+      "ordinal": 1191,
+      "pass": true
+    },
+    "0x1002eee20": {
+      "expected": "_kAPFSVolumeReserveSizeKey",
+      "resolved": "_kAPFSVolumeReserveSizeKey",
+      "ordinal": 1197,
+      "pass": true
+    },
+    "0x1002eee18": {
+      "expected": "_kAPFSVolumeQuotaSizeKey",
+      "resolved": "_kAPFSVolumeQuotaSizeKey",
+      "ordinal": 1196,
+      "pass": true
+    },
+    "0x1002eee00": {
+      "expected": "_kAPFSVolumeGroupSiblingFSIndexKey",
+      "resolved": "_kAPFSVolumeGroupSiblingFSIndexKey",
+      "ordinal": 1193,
+      "pass": true
+    }
+  },
+  "dictionary_entries": [
+    {
+      "site": "0x10008267c",
+      "key": "_kAPFSVolumeNameKey",
+      "value": {
+        "type": "ldur",
+        "source": "x2, [x29, #-0x78]"
+      }
+    },
+    {
+      "site": "0x1000826b0",
+      "key": "_kAPFSVolumeRoleKey",
+      "value": {
+        "type": "REG",
+        "source": "x23"
+      }
+    },
+    {
+      "site": "0x1000826f0",
+      "key": "_kAPFSVolumeNoAutomountAtCreateKey",
+      "value": {
+        "type": "REG",
+        "source": "x23"
+      }
+    },
+    {
+      "site": "0x100082730",
+      "key": "_kAPFSVolumeCaseSensitiveKey",
+      "value": {
+        "type": "REG",
+        "source": "x23"
+      }
+    },
+    {
+      "site": "0x100082774",
+      "key": "_kAPFSVolumeReserveSizeKey",
+      "value": {
+        "type": "REG",
+        "source": "x23"
+      }
+    },
+    {
+      "site": "0x1000827b0",
+      "key": "_kAPFSVolumeQuotaSizeKey",
+      "value": {
+        "type": "REG",
+        "source": "x23"
+      }
+    },
+    {
+      "site": "0x100082864",
+      "key": "_kAPFSVolumeGroupSiblingFSIndexKey",
+      "value": {
+        "type": "REG",
+        "source": "x23"
+      }
+    }
+  ],
+  "result": "PASS",
+  "summary": "All 7 options-dictionary keys decoded: Name, Role, NoAutomountAtCreate, CaseSensitive, ReserveSize, QuotaSize, GroupSiblingFSIndex."
+}

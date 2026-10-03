@@ -1,0 +1,28 @@
+{
+  "phase": "05F",
+  "state": "BOOTSTRAP_READY",
+  "branch": "phase/05f-minimum-guest-payload-serial",
+  "certified_parent": "0520f14ea99d9619929c01ce47df9832bc9625a0",
+  "qemu_sptm_base": "2867d847d3471560e773120ee50c42dbcbb6d60b",
+  "qemu_sha256": "d4d74db8c2ac45fb1b6ecabe32171823711e99a8a758f2ca4567f90753fbe875",
+  "payload_storage": "EXTERNAL_TO_GIT_REPOSITORY",
+  "payload_contract": {
+    "nosptm": [
+      "bootkc",
+      "dtree",
+      "trust_cache",
+      "ramdisk"
+    ],
+    "sptm_additional": [
+      "sptm",
+      "txm"
+    ]
+  },
+  "claims": {
+    "payload_admission": "NOT_TESTED",
+    "apple_kernel_execution": "NOT_TESTED",
+    "serial_activity": "NOT_TESTED",
+    "deterministic_serial": "NOT_TESTED",
+    "apple_guest_boot": "NOT_CLAIMED"
+  }
+}

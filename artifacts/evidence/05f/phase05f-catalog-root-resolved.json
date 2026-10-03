@@ -1,0 +1,19 @@
+{
+  "result": {
+    "apsb_51214": "root_tree_oid 1028 (xid 6) -> root_tree_block 51206",
+    "fstree_root_51206": "flags=0x1(root) level=2 nkeys=3 footer(bt_flags=66 node_size=4096) — matches census subtype 0x0E FSTREE exactly as predicted",
+    "apsb_1461": "root_tree_oid 1028 (xid 9) -> root_tree_block 51206"
+  },
+  "meaning": "The full chain NXSB -> APSB -> volume OMAP (oid,xid) lookup -> FSTREE root now resolves on the real iPhone15,4 ramdisk. Next: walk the level-2 FSTREE to catalog leaves and locate /System/Library/LaunchDaemons.",
+  "date": "2026-09-27 16:58:51",
+  "phase": "05G-prep",
+  "regression": "APFS_READER_TEST_PASS — 3-entry OMAP leaf: same oid at xid 2 (winner, paddr 3), xid 1 (older, loses), xid 5 (future, loses); non-contiguous kvoff.v values prove disk-read offsets",
+  "gate": "catalog-root-resolved-via-volume-omap",
+  "reviewer_corrections_applied": [
+    "fixed-KV TOC entries are 4-byte kvoff {k u16, v u16} — value offsets read only from disk, never synthesized",
+    "OMAP keys parsed as {oid u64, xid u64}",
+    "lookup = greatest xid <= requested volume xid with exact oid match",
+    "catalog root resolved through VOLUME omap (container-omap conclusion reversed)",
+    "nx_omap_oid documented as NXSB+0xA0 (not used for catalog lookup)"
+  ]
+}

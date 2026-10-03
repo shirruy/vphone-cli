@@ -1,0 +1,59 @@
+{
+  "gate": "visual-guest-bring-up-sdl-ramfb",
+  "iteration": 53,
+  "date": "2026-09-29",
+  "qemu_sptm_head_before": "2867d847d3471560e773120ee50c42dbcbb6d60b",
+  "qemu_binary_sha256_final": "9096b0e3bd578f613ba03bf15a2a7d7c57e0f7fecf5b562ba5367395f63665e1",
+  "boot_video_handoff_audit": {
+    "marker": "BOOT_VIDEO_HANDOFF_AUDIT_PASS",
+    "struct_source": "include/xnu/boot/args.h Boot_Video 48 bytes at offset 40",
+    "framebuffer_base_source": "NONE previously (boot_args zero-initialized); now experimental allocation in hw/arm/darwin.c darwin_init_fb",
+    "framebuffer_size_source": "parse_fb_geometry WxH@depth",
+    "width": "runtime (1024 test)",
+    "height": "runtime (768 test)",
+    "rowbytes": "width * (depth/8)",
+    "depth": "32 (or 16)",
+    "boot_framebuffer_memory": "was ABSENT; now EXISTS only when fb= machine property is set"
+  },
+  "sdl_backend": {
+    "marker": "WINDOWS_QEMU_SDL_BACKEND_PASS",
+    "sdl2_version": "2.32.10 (mingw-w64-x86_64-SDL2 via pacman)",
+    "display_help": ["none", "sdl", "curses", "dbus"],
+    "meson_reconfigure": "meson setup --reconfigure with sdl=enabled"
+  },
+  "framebuffer_wiring": {
+    "machine_property": "-M darwin,fb=1024x768@32",
+    "fb_base": "0x00000101FFD00000",
+    "fb_size": "0x300000 (3 MiB)",
+    "boot_args_video": "v_baseAddr/v_width/v_height/v_rowBytes/v_depth populated only when fb= set (experimental)",
+    "console": "qemu_graphic_console_create + 500ms poll timer",
+    "fix": "non-NULL GraphicHwOps (invalidate) required; NULL hw_ops crashed on display refresh"
+  },
+  "window": {
+    "marker": "QEMU_WINDOW_CREATED_PASS",
+    "evidence": "Win32 EnumWindows: title='QEMU' class='SDL_app' visible=True",
+    "dimensions": "1024x768 logical (guest framebuffer)"
+  },
+  "framebuffer_activity": {
+    "marker": "GUEST_FRAMEBUFFER_ACTIVITY_PASS",
+    "evidence": "hash changes every poll when boot args omit serial=3 (video console path); 16+ distinct hashes observed",
+    "with_serial3": "hash constant (guest routes console to UART, not video)",
+    "ppm_artifact": "darwin-fb-frame-20.ppm: 330789 nonzero bytes (14%), structured text-like glyphs across 304 rows x 494 cols"
+  },
+  "first_visible_frame": {
+    "marker": "FIRST_VISIBLE_GUEST_FRAME_PASS",
+    "artifact": "darwin-fb-frame-20.ppm (2359312 bytes) + crop-topleft.png",
+    "classification": "guest-generated verbose console framebuffer (non-black, structured content)"
+  },
+  "headless_regression": {
+    "marker": "HEADLESS_BOOT_REGRESSION_PASS",
+    "evidence": "rebuilt binary with -display none and fb unset: 32447 uart bytes, launchd+ignition milestones reached, stderr empty"
+  },
+  "not_claimed": [
+    "SPRINGBOARD_VISIBLE",
+    "KAIRO_VISIBLE",
+    "TOUCH_INPUT_WORKING",
+    "GRAPHICAL_IOS_COMPLETE"
+  ],
+  "input_capability": "unchanged from Iteration 52: INPUT_NOT_IMPLEMENTED (no Apple HID/touch wired; generic qemu input devices exist but not attached)"
+}

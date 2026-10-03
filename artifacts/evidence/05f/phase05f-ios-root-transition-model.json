@@ -1,0 +1,347 @@
+{
+  "gate": "IOS_ROOT_TRANSITION_MODEL",
+  "iteration": "57ZX",
+  "date": "2026-10-02",
+  "input_identity": {
+    "fixture": "iPhone15,4 / iOS 27.0 / 24A437 / d37ap / t8120",
+    "bootkc_sha256": "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
+    "system_os_sha256": "5a4aa9c67944599d67da6971757526a50e6772da698c0502322631a0da37d73a",
+    "cryptex_sha256": "b2131a5c1e6cf2c95e369e57379ab6d180d558e8a988e0cc66181d64fb781538"
+  },
+  "certified": "PASS_STATIC_MODEL_RUNTIME_DATA_DEFERRED",
+  "role_table": {
+    "source": "BootKC kernel role-enum string table at file offset 0xbb4b5d",
+    "kernel_string": "CaseSensitive.OSInternal.VolBootable.IncompatibleFeatures.EncryptionType.EncryptionRolling.Locked.EnhancedAPFS.RoleValue.System.User.Recovery.Preboot.Installer.Data.Baseband data.xART.Internal.Backup.Update.Hardware.SideCar.Enterprise data.iDiags.Overprovision.Cache.Role",
+    "APFS_VOLUME_ROLE_TABLE_PASS": true,
+    "APFS_ROLE_FIELD_OFFSET_PASS": true,
+    "apfs_role_offset": "APSB+0x3C4",
+    "APFS_VOLUME_GROUP_ID_FIELD_OFFSET_PASS": true,
+    "apfs_volume_group_id_offset": "APSB+0x3F0",
+    "roles": {
+      "0x0000": "NONE",
+      "0x0001": "SYSTEM",
+      "0x0002": "USER",
+      "0x0004": "RECOVERY",
+      "0x0008": "VM",
+      "0x0010": "PREBOOT",
+      "0x0020": "INSTALLER",
+      "0x0040": "DATA",
+      "0x0080": "BASEBAND",
+      "0x00C0": "UPDATE",
+      "0x0100": "XART",
+      "0x0140": "HARDWARE",
+      "0x0180": "BACKUP",
+      "0x01C0": "RESERVED_7",
+      "0x0200": "RESERVED_8",
+      "0x0240": "ENTERPRISE",
+      "0x0280": "RESERVED_10",
+      "0x02C0": "PRELOGIN"
+    }
+  },
+  "role_lookup_consumer": {
+    "IOS_ROLE_BASED_VOLUME_LOOKUP_PASS": true,
+    "IOS_SYSTEM_DATA_ROLE_DISCOVERY_PASS": true,
+    "function": "DT_get_fstab_entries",
+    "vm_region": "0xfffffff00a22f800-0xfffffff00a22fe00",
+    "role_property": "vol.fs_role",
+    "role_property_string_vm": "0xfffffff007bb9437",
+    "mechanism": [
+      "reads vol.fs_file/vol.fs_type/vol.fs_mntopts/vol.fs_passno/vol.fs_ephemeral/vol.fs_role from the boot container fstab node",
+      "iterates the container volume array; loads each volume apfs_role (ldr w8,[x0,#0xe0])",
+      "exact equality comparison (cmp w8,w25 @ 0xfffffff00a22fc00)",
+      "no match logs \"failed to get volume for role: %u\""
+    ],
+    "key_sites": [
+      {
+        "vm": "0xfffffff00a22fbbc",
+        "insn": "vol.fs_role read (w3=2 bytes)"
+      },
+      {
+        "vm": "0xfffffff00a22fbfc",
+        "insn": "ldr w8,[x0,#0xe0] load volume role"
+      },
+      {
+        "vm": "0xfffffff00a22fc00",
+        "insn": "cmp w8, w25 exact role match"
+      }
+    ]
+  },
+  "data_miss_behavior": {
+    "IOS_DATA_ROLE_LOOKUP_MISS_BEHAVIOR_PASS": true,
+    "site": "0xfffffff00a22fc34",
+    "insn": "cmp w25, #0x40",
+    "behavior": "a missing DATA-role volume at the fstab lookup layer is handled specially: the mount entry is zeroed and boot continues at this layer",
+    "scope_note": "proven only for the fstab lookup layer; does NOT generalize to \"normal iOS boot works without Data\""
+  },
+  "volume_group_metadata_consumer": {
+    "IOS_VOLUME_GROUP_METADATA_CONSUMER_PASS": true,
+    "mount_path_region": "0xfffffff00a206fd0",
+    "mount_mechanism": [
+      "ldrh w9,[x8,#0x3c4] reads apfs_role; cmp w9,#1 tests SYSTEM",
+      "add x0,x8,#0x3f0 reads apfs_volume_group_id",
+      "zero group id on SYSTEM root-mounted volume enters the ROSV shadow-fs_root path",
+      "ldrh w8,[x8,#0x3c4] + cmp w8,#0x40 tests DATA for the unencrypted-Data refusal"
+    ]
+  },
+  "group_pairing": {
+    "IOS_SYSTEM_DATA_GROUP_PAIRING_PASS": true,
+    "IOS_SYSTEM_DATA_GROUP_PAIRING_CONSUMER_PASS": true,
+    "consumer_vm": "0xfffffff00a265548",
+    "mechanism": [
+      "input: a mounted volume + a requested role (w1)",
+      "ldrh w8,[x8,#0x3c4] reads input volume apfs_role; cmp w8,w1 early-returns if roles already match",
+      "otherwise iterates the container nx_fs_oid[] array (ldr x2,[x9,x25,lsl#3] from container+0xB8, count from container+0xB4)",
+      "resolves each candidate oid through the container omap resolver",
+      "ldrh w9,[x8,#0x3c4] checks candidate apfs_role equals requested role (cmp w9,w21)",
+      "add x0,x8,#0x3f0 / add x1,x9,#0x3f0 passes BOTH volume_group_id pointers to uuid_compare (GOT-indirect call @0xfffffff00a2be274)",
+      "cbz w0 @0xfffffff00a265614: uuid_compare returning 0 (equal) selects the candidate as the sibling",
+      "mov x19,x24 @0xfffffff00a265678 returns the sibling volume"
+    ],
+    "failure": "no sibling match returns 0 after exhausting the nx_fs_oid[] list",
+    "consumer_disasm_durable": "artifacts/evidence/05f/phase05f-group-pairing-consumer-disasm.txt",
+    "kernel_evidence": "artifacts/evidence/05f/phase05f-root-transition-kernel-evidence.json",
+    "comparison_helper": {
+      "identity": "SEMANTICALLY_PROVEN_UUID_EQUALITY",
+      "got_stub_vm": "0xfffffff00a2be274",
+      "resolved_stub_vm": "0xfffffff00aa980c0",
+      "impl_vm": "0xfffffff00a50f5c0",
+      "length": "w2=0x10 (16 bytes)",
+      "semantics": "byte-wise compare, returns 0 iff equal",
+      "IOS_GROUP_PAIRING_UUID_COMPARE_SYMBOL_PASS": false,
+      "IOS_GROUP_PAIRING_UUID_EQUALITY_SEMANTICS_PASS": true
+    },
+    "bypass_flag_classification": "PROVEN: arg2 controls bypass; w2=1 skips uuid_compare, w2=0 requires 16-byte equality; fstab caller sets it from source group-UUID nullness",
+    "pairing_mechanism_proven": {
+      "same_container": true,
+      "role_must_match": true,
+      "volume_group_id_equality": "CONDITIONAL: required only when source volume group UUID is nonzero; zero source UUID selects role-only mode",
+      "caller_dependent": true,
+      "callers": "4 total: three pass arg2=1 (role-only); fstab caller passes arg2 conditionally on source group-UUID nullness"
+    }
+  },
+  "pairing_claim_levels": {
+    "IOS_SYSTEM_DATA_PAIRING_CLAIM_LEVEL_PASS": true,
+    "ROLE_BASED_VOLUME_DISCOVERY": "PROVEN_STATIC",
+    "VOLUME_GROUP_METADATA_CONSUMPTION": "PROVEN_STATIC",
+    "SYSTEM_DATA_PAIRING_MECHANISM": "PROVEN_STATIC_CALLER_CONDITIONAL",
+    "PAIRING_MECHANISM_MEANING": "role matching is always required; group-UUID equality is conditional. fstab caller: source group UUID nonzero -> equality required; zero -> role-only bypass. three other known callers: role-only mode.",
+    "RUNTIME_SYSTEM_DATA_PAIR_IDENTITY": "DEFERRED",
+    "RUNTIME_SELECTED_DATA_VOLUME": "DEFERRED",
+    "RUNTIME_GROUP_UUID_VALUES": "DEFERRED",
+    "IOS_PAIRING_MECHANISM_VS_RUNTIME_INSTANCE_SEPARATION_PASS": true
+  },
+  "group_assignment_producer": {
+    "IOS_VOLUME_GROUP_ASSIGNMENT_CLAIM_LEVEL_PASS": true,
+    "GROUP_UUID_ASSIGNMENT_PRODUCER": "STATIC_UNRESOLVED",
+    "IOS_RESTORE_VOLUME_GROUP_CREATION_PATH": "STATIC_UNRESOLVED",
+    "reason": "restore ramdisk binaries not yet disassembled for volume-group creation producers"
+  },
+  "encryption_requirement": {
+    "IOS_DATA_ENCRYPTION_REQUIREMENT_PASS": true,
+    "consumer_vm": "0xfffffff00a210cfc",
+    "mechanism": [
+      "ldr x8,[x19,#0xc0] loads the APSB pointer",
+      "ldrh w9,[x8,#0x3c4] reads apfs_role",
+      "cmp w9,#0x40 tests DATA role; b.ne skips the check",
+      "ldrb w8,[x8,#0x108] reads apfs_fs_flags",
+      "tbnz w8,#0 tests bit 0 (unencrypted)",
+      "bit 0 SET on a DATA volume reaches the \"unencrypted data volume is not allowed\" panic path"
+    ],
+    "requirement": "DATA-role volume must have fs_flags bit 0 CLEAR (encrypted)",
+    "fs_flags_offset": "APSB+0x108"
+  },
+  "source_vs_runtime": {
+    "SOURCE_VS_DEPLOYED_VOLUME_MODEL_PASS": true,
+    "SOURCE_SYSTEM_IMAGE": {
+      "container_uuid": "f9023b16-bb2f-46ec-b1dc-a3c8cb4ce65b",
+      "volume_name": "Rave24A437.D37OS",
+      "role": "SYSTEM",
+      "volume_uuid": "9a503cf2-6d7a-4fda-a233-600dd13b4994",
+      "volume_group_id": "00000000-0000-0000-0000-000000000000",
+      "status": "source deployment artifact; group UUID not assigned in the image"
+    },
+    "DEPLOYED_RUNTIME_SYSTEM_VOLUME": {
+      "volume_group_id": "STATIC_UNRESOLVED"
+    },
+    "DEPLOYED_RUNTIME_DATA_VOLUME": {
+      "volume_group_id": "STATIC_UNRESOLVED",
+      "role": "DATA",
+      "status": "INPUT_OR_RUNTIME_DEFERRED; not present in any available source image"
+    }
+  },
+  "transition_chain": {
+    "IOS_ROOT_TRANSITION_CHAIN_PASS": true,
+    "IOS_ROOT_TRANSITION_CHAIN_CLAIM_LEVEL_PASS": true,
+    "chain": [
+      {
+        "stage": "IPSW/source System DMG",
+        "state": "PROVEN_STATIC",
+        "evidence": "authoritative enumeration 57ZS"
+      },
+      {
+        "stage": "restore/deployment transformation",
+        "state": "STATIC_UNRESOLVED",
+        "evidence": "group-assignment producer not traced"
+      },
+      {
+        "stage": "runtime System volume",
+        "state": "STATIC_PARTIAL",
+        "evidence": "source APSB proven; runtime group UUID unresolved"
+      },
+      {
+        "stage": "role-based Data discovery",
+        "state": "PROVEN_STATIC",
+        "evidence": "fstab + sibling consumer disassembled"
+      },
+      {
+        "stage": "System/Data pairing mechanism",
+        "state": "PROVEN_STATIC_CALLER_CONDITIONAL",
+        "evidence": "uuid_compare consumer @0xfffffff00a265548; caller-conditional per 57ZW"
+      },
+      {
+        "stage": "System root mount code path",
+        "state": "PROVEN_STATIC",
+        "evidence": "mountroot + APFS mount path"
+      },
+      {
+        "stage": "actual Data volume discovered",
+        "state": "RUNTIME_DEFERRED",
+        "evidence": "no DATA volume in available image set"
+      },
+      {
+        "stage": "Data mount",
+        "state": "RUNTIME_DEFERRED",
+        "evidence": "requires deployed DATA volume"
+      },
+      {
+        "stage": "firmlink namespace composition",
+        "state": "RUNTIME_DEFERRED",
+        "evidence": "machinery present; composition needs both volumes"
+      },
+      {
+        "stage": "normal userspace namespace",
+        "state": "RUNTIME_DEFERRED",
+        "evidence": "requires complete namespace"
+      },
+      {
+        "stage": "actual runtime System/Data sibling relationship",
+        "state": "RUNTIME_DEFERRED",
+        "evidence": "runtime System group UUID, Data UUID, Data group UUID, and runtime sibling selection all unresolved/deferred"
+      }
+    ],
+    "IOS_ROOT_TRANSITION_CHAIN_SINGLE_STATE_PASS": true
+  },
+  "mount_order": {
+    "IOS_ROOT_TO_DATA_TRANSITION_ORDER_PASS": true,
+    "IOS_ROOT_TO_DATA_TRANSITION_ORDER_CLAIM_LEVEL_PASS": true,
+    "order": [
+      {
+        "stage": "System root selection path",
+        "state": "PROVEN_STATIC",
+        "evidence": "mountroot static model 57ZR"
+      },
+      {
+        "stage": "System mount code path",
+        "state": "PROVEN_STATIC",
+        "evidence": "APFS mount path disassembled"
+      },
+      {
+        "stage": "DATA-role lookup",
+        "state": "PROVEN_STATIC",
+        "evidence": "fstab + sibling consumer"
+      },
+      {
+        "stage": "actual Data volume discovered",
+        "state": "RUNTIME_DEFERRED"
+      },
+      {
+        "stage": "Data mount",
+        "state": "RUNTIME_DEFERRED"
+      },
+      {
+        "stage": "firmlink table loaded",
+        "state": "RUNTIME_DEFERRED",
+        "evidence": "firmlink strings + force-stitch boot-arg present"
+      },
+      {
+        "stage": "namespace stitching enabled",
+        "state": "RUNTIME_DEFERRED"
+      },
+      {
+        "stage": "launchd/userspace startup",
+        "state": "RUNTIME_DEFERRED"
+      }
+    ]
+  },
+  "data_mountpoint": {
+    "IOS_DATA_MOUNTPOINT_CONTRACT": "STATIC_PARTIAL",
+    "kernel_strings": [
+      "/private/var present in BootKC at file offsets 0x49b77,0x5cd66,0x5d5cd,0x5e747,0x121d99,0x43cd88",
+      "\"Stripping of data volume mount path enabled\" at 0xb97ab4"
+    ],
+    "claim": "/private/var is the kernel string-anchored candidate; mountpoint contract needs the deployed Data volume to certify"
+  },
+  "minimum_data_metadata_contract": {
+    "MINIMUM_IOS_DATA_VOLUME_METADATA_CONTRACT_PASS": true,
+    "MINIMUM_IOS_DATA_VOLUME_METADATA_CLAIM_LEVEL_PASS": true,
+    "fields": {
+      "role": "REQUIRED_PROVEN (=0x0040; kernel compares exactly at multiple sites)",
+      "root_tree": "REQUIRED_PROVEN (APFS filesystem necessity)",
+      "OMAP": "REQUIRED_PROVEN (APFS filesystem necessity)",
+      "valid_APSB_container_membership": "REQUIRED_PROVEN (sibling lookup iterates the same container nx_fs_oid[])",
+      "volume_group_id": "CONDITIONAL_REQUIRED_PROVEN: a nonzero group UUID is required to participate in group-identity-constrained sibling lookup; when the pairing caller invokes role-only bypass mode, group UUID equality is not consulted; therefore not an unconditional requirement for every role-based sibling lookup",
+      "APSB_UUID": "REQUIRED_INFERRED (unique identity; consumer necessity not individually traced)",
+      "encryption": "REQUIRED_PROVEN (fs_flags bit0 SET on DATA reaches the unencrypted-Data refusal @0xfffffff00a210cfc)",
+      "feature_flags": "UNKNOWN (no specific Data-side requirement traced)",
+      "incompatible_flags": "REQUIRED_INFERRED (APFS structural necessity)",
+      "firmlink_metadata": "RUNTIME_DEFERRED",
+      "quota_reserve": "NOT_REQUIRED_FOR_TRANSITION",
+      "volume_name": "NOT_REQUIRED_FOR_TRANSITION (lookup is role+group based, not name based)"
+    },
+    "MINIMUM_DATA_VOLUME_GROUP_ID_CLAIM_LEVEL_PASS": true
+  },
+  "static_vs_runtime_separation": {
+    "IOS_ROOT_TRANSITION_STATIC_VS_RUNTIME_SEPARATION_PASS": true,
+    "TRANSITION_MECHANISM_STATIC_MODEL": "PROVEN_STATIC",
+    "CONCRETE_DATA_VOLUME_IDENTITY": "INPUT_OR_RUNTIME_DEFERRED",
+    "RUNTIME_SYSTEM_DATA_PAIRING_VALIDATION": "DEFERRED_UNTIL_STORAGE_AVAILABLE"
+  },
+  "aggregation": {
+    "DATA_ROLE_IMAGE_SET_AGGREGATION_PASS": true,
+    "DATA_ABSENCE_SCOPE_PASS": true,
+    "data_role_by_container": {
+      "base_system": false,
+      "system_cryptex": false,
+      "restore_ramdisk": false
+    },
+    "data_volume_absent_from_available_image_set": true,
+    "scope_statement": "no DATA-role volume is present in the available examined image set; does NOT mean normal deployed iOS has no Data volume"
+  },
+  "authoritative_enumeration": {
+    "AUTHORITATIVE_VOLUME_ENUMERATION_PASS": true,
+    "source": "phase05f-root-transition-probe-result.json (57ZS preserved)"
+  },
+  "remaining_unknowns": [
+    "GROUP_UUID_ASSIGNMENT_PRODUCER: STATIC_UNRESOLVED",
+    "IOS_DATA_MOUNTPOINT_CONTRACT: STATIC_PARTIAL",
+    "runtime Data volume identity: INPUT_OR_RUNTIME_DEFERRED",
+    "runtime firmlink composition: RUNTIME_DEFERRED"
+  ],
+  "kernel_evidence_certified": {
+    "ROOT_TRANSITION_KERNEL_EVIDENCE_EXTRACTOR_PASS": true,
+    "ROOT_TRANSITION_KERNEL_EVIDENCE_DURABLE_PASS": true,
+    "IOS_GROUP_PAIRING_INSTRUCTION_CHAIN_PASS": true,
+    "IOS_GROUP_PAIRING_NX_FS_OID_ITERATION_PASS": true,
+    "IOS_GROUP_PAIRING_ROLE_MATCH_PASS": true,
+    "IOS_GROUP_PAIRING_GROUP_POINTER_PASS": true,
+    "IOS_GROUP_PAIRING_UUID_EQUALITY_SEMANTICS_PASS": true,
+    "IOS_GROUP_PAIRING_EQUAL_RESULT_SELECTION_PASS": true,
+    "IOS_GROUP_PAIRING_BYPASS_FLAG_CLAIM_LEVEL_PASS": true,
+    "IOS_GROUP_PAIRING_DISASSEMBLY_DURABILITY_PASS": true,
+    "IOS_DATA_ENCRYPTION_INSTRUCTION_CHAIN_PASS": true,
+    "IOS_DATA_UNENCRYPTED_BIT_SEMANTICS_PASS": true,
+    "IOS_GROUP_PAIRING_CALLER_ANALYSIS_PASS": true,
+    "IOS_GROUP_PAIRING_CONDITIONAL_RULE_PASS": true
+  },
+  "kernel_evidence_path": "artifacts/evidence/05f/phase05f-root-transition-kernel-evidence.json"
+}

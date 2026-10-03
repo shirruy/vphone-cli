@@ -1,0 +1,21 @@
+{
+  "phase": "05G-prep",
+  "gate": "launchdaemons-structural-resolution",
+  "date": "2026-09-27 17:43:35",
+  "reviewer_items_applied": [
+    "Item 1: FSTREE child OIDs resolved through volume OMAP (greatest xid <= volume xid) — never treated as physical blocks; footer bt_flags=0x42 confirmed BTREE_PHYSICAL not set",
+    "Item 2: variable-KV 8-byte kvloc TOC with full bounds checks (TOC entry, key range, value range, child OID length); node level strictly decreases; visited-OID cycle detection",
+    "Item 3 (partial): checksums now enforced on APSB, omap_phys_t, OMAP B-tree nodes, FSTREE nodes — every node in the walk; negative flip-byte regression still queued with the mutation gate",
+    "Item 4: APSB + omap_phys_t checksums wired before trusting apfs_omap_oid / root_tree_oid / om_tree_oid / incompatible_features",
+    "Item 5: structural DIR_REC traversal — root CNID 2 -> System(16) -> Library(115) -> LaunchDaemons(632); type 9 record filter; low-60-bit parent CNID; j_drec_val.file_id child CNID; hashed/unhashed chosen from APSB apfs_incompatible_features +0x38 (case-insensitive 0x1 / normalization-insensitive 0x8)",
+    "Item 6: kBtreeTypeAlt renamed kBtreeTypeNode (APFS OBJECT_TYPE_BTREE_NODE)"
+  ],
+  "checksum_chain": "NXSB(geometry) -> APSB(fletcher64) -> omap_phys(fletcher64) -> OMAP btree nodes(fletcher64) -> FSTREE root(fletcher64+subtype+footer) -> FSTREE interior/leaf nodes(fletcher64)",
+  "runtime_result": {
+    "traversal": "2 -> System(16) -> Library(115) -> LaunchDaemons(632)",
+    "status": "RESOLVED",
+    "dir_records_decoded": "thousands across ~90 FSTREE leaves; SystemVersion.plist cross-check visible in catalog (parent=119, name=SystemVersion.plist) without any global string scan",
+    "launchdaemons_cnid": 632,
+    "bug_found": "APFS drec names are NUL-padded within name_len; trailing NUL trimmed before comparison (real fixture proved System == 53 79 73 74 65 6d 00 with len 7)"
+  }
+}

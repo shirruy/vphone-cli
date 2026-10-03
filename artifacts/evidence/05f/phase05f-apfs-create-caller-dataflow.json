@@ -1,0 +1,47 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14I_CORRECTION",
+  "binary": {
+    "path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\57zz-binaries\\restored_external.bin",
+    "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770"
+  },
+  "correction": {
+    "part14h_claim": "6 callers via stub 0x1001bc990",
+    "part14h_bug": "indirect-symbol resolver missing reserved1 base index",
+    "actual_stub_0x1001bc990": "_CFArrayGetTypeID",
+    "real_APFSVolumeCreate_stub": "0x1001bc510",
+    "real_stub_resolution": {
+      "got": "0x1002ecc08",
+      "ordinal": 121,
+      "symbol": "_APFSVolumeCreate"
+    }
+  },
+  "full_text_scan": {
+    "target": "_APFSVolumeCreate",
+    "stub": "0x1001bc510",
+    "callsite_count": 1,
+    "callsites": [
+      "0x1000829d8"
+    ]
+  },
+  "caller_dataflow_summary": {
+    "callsite": "0x1000829d8",
+    "x1_setup": "mov x1, x28 @ 0x1000829d4",
+    "x28_dictionary_origin": [
+      "0x10008282c bl objc:intValue -> x28 = x0 (role/int value)",
+      "0x100082840 mov x2, x28 (value arg)",
+      "0x100082848 bl objc:setObject:forKey: (dictionary insert)",
+      "0x100082844 mov x28, x21 (x21 = the CFDictionary)"
+    ],
+    "dictionary_construction_calls": [
+      "objc:intValue",
+      "objc:numberWithInt:",
+      "objc:setObject:forKey:",
+      "objc:numberWithBool:",
+      "objc:numberWithLongLong:",
+      "objc:objectAtIndex:",
+      "objc:count"
+    ]
+  },
+  "verdict": "PART14H_RETRACTED_SINGLE_TRUE_CALLER"
+}

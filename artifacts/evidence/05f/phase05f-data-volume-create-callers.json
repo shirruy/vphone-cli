@@ -1,0 +1,817 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14",
+  "date": "2026-10-02",
+  "binary_sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+  "chained_starts_table": {
+    "0": {
+      "segment": "__PAGEZERO",
+      "participates": false
+    },
+    "1": {
+      "segment": "__TEXT",
+      "participates": false
+    },
+    "2": {
+      "segment": "__DATA_CONST",
+      "participates": true,
+      "size": 42,
+      "page_size": 16384,
+      "pointer_format": 12,
+      "segment_offset": 2916352,
+      "max_valid_pointer": 0,
+      "page_count": 10
+    },
+    "3": {
+      "segment": "__DATA",
+      "participates": true,
+      "size": 28,
+      "page_size": 16384,
+      "pointer_format": 12,
+      "segment_offset": 3080192,
+      "max_valid_pointer": 0,
+      "page_count": 3
+    },
+    "4": {
+      "segment": "__LINKEDIT",
+      "participates": false
+    }
+  },
+  "DYLD_CHAINED_STARTS_LAYOUT_PASS": true,
+  "caller_count": 7,
+  "callers": [
+    {
+      "callsite_vm": "0x100024428",
+      "stub_vm": "0x1001bc990",
+      "symbol": "_APFSVolumeCreate",
+      "function_start": "0x1000243b8",
+      "function_size": 112,
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "mov x1, sp",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
+    },
+    {
+      "callsite_vm": "0x10003f970",
+      "stub_vm": "0x1001bc990",
+      "symbol": "_APFSVolumeCreate",
+      "function_start": "0x10003f880",
+      "function_size": 240,
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "add x1, x1, #0xd60",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
+    },
+    {
+      "callsite_vm": "0x100053458",
+      "stub_vm": "0x1001bc990",
+      "symbol": "_APFSVolumeCreate",
+      "function_start": "0x100053278",
+      "function_size": 480,
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "mov x1, x21",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
+    },
+    {
+      "callsite_vm": "0x10007c1ac",
+      "stub_vm": "0x1001bc990",
+      "symbol": "_APFSVolumeCreate",
+      "function_start": "0x10007c138",
+      "function_size": 116,
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
+    },
+    {
+      "callsite_vm": "0x10007c1c4",
+      "stub_vm": "0x1001bc990",
+      "symbol": "_APFSVolumeCreate",
+      "function_start": "0x10007c138",
+      "function_size": 140,
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
+    },
+    {
+      "callsite_vm": "0x10007e874",
+      "stub_vm": "0x1001bc990",
+      "symbol": "_APFSVolumeCreate",
+      "function_start": "0x10007e4dc",
+      "function_size": 920,
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
+    },
+    {
+      "callsite_vm": "0x1001a2320",
+      "stub_vm": "0x1001be950",
+      "symbol": "_APFSVolumeCreate",
+      "function_start": "0x1001a1db8",
+      "function_size": 1384,
+      "hkdf_preceding": null,
+      "pre_clobber_observation": {
+        "instruction": "unknown",
+        "canonical_provenance": false,
+        "reason": "INTERVENING_BL_CLOBBERS_X1"
+      },
+      "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL"
+    }
+  ],
+  "hkdf_analysis": {
+    "total_callers": 7,
+    "hkdf_preceding_count": 0,
+    "classification": "0_OF_7_CALLERS_OBSERVED_WITH_NEARBY_HKDF",
+    "APFS_VOLUME_CREATE_HKDF_CLAIM_LEVEL_PASS": true,
+    "note": "HKDF proximity does NOT prove encryption dataflow; value/result tracing required"
+  },
+  "claim_level_corrections": {
+    "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false,
+    "status": "UNVERIFIED_CANDIDATE_BIT_PATTERNS",
+    "DATA_LIFECYCLE_BIND_LOCATION_CLAIM_LEVEL_PASS": true
+  },
+  "APFS_VOLUME_CREATE_DIRECT_BL_CALLSITE_ENUMERATION_PASS": true,
+  "APFS_VOLUME_CREATE_CALL_COMPLETENESS_CLASSIFICATION": "DIRECT_CALLS_ONLY_PROVEN",
+  "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_SOURCE": "HEURISTIC_PACIBSP_BACKWARD_SCAN",
+  "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY": "HEURISTIC_CANDIDATE",
+  "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_PASS": false,
+  "DYLD_CHAINED_POINTER_FORMAT_IDENTIFICATION_PASS": true,
+  "DYLD_CHAINED_POINTER_CHAIN_WALK_PASS": false,
+  "x1_backward_trace": {
+    "method": "bounded backward slicing through mov/add/ldr/adrp/BL return",
+    "callers": [
+      {
+        "callsite_vm": "0x100024428",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10003f970",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x100053458",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007c1ac",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007c1c4",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x10007e874",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      },
+      {
+        "callsite_vm": "0x1001a2320",
+        "x1_provenance_status": "CLOBBERED_BY_INTERVENING_CALL",
+        "x1_local_definition_pass": false
+      }
+    ],
+    "all_7_traced": false,
+    "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
+    "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
+    "CORRECTION": "The previous x1 backward traces are INCORRECT. The engine did not account for BL instructions clobbering volatile registers (x0-x18). Example: caller 1 has \"mov x1,sp\" at 0x100024408 for an EARLIER call at 0x100024410, then two BL calls follow before _APFSVolumeCreate at 0x100024428. The x1 value at _APFSVolumeCreate is whatever the immediately preceding BL (0x1001bcc50 = _CCKDFParametersCreateHkdf) left it as, NOT sp. All 5 \"traced\" x1 values are similarly invalidated.",
+    "previous_results_valid": false,
+    "engine_limitation_identified": "BL instructions clobber x0-x18 volatile registers. The backward slicer must stop at any BL and classify the register as HELPER_DEPENDENT rather than continuing to trace through the call.",
+    "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
+    "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false
+  },
+  "DYLD_CHAINED_POINTER_CLAIM_LEVEL_PASS": true,
+  "APFS_VOLUME_CREATE_FUNCTION_BOUNDARY_CLAIM_LEVEL_PASS": true,
+  "APFS_VOLUME_CREATE_DIRECT_CALLSITE_CONTEXT_PASS": true,
+  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_COUNT": 0,
+  "APFS_VOLUME_CREATE_X1_LOCAL_TRACE_TOTAL": 7,
+  "APFS_VOLUME_CREATE_X1_PARTIAL_LOCAL_TRACE_PASS": false,
+  "APFS_VOLUME_CREATE_X1_LOCAL_DEFINITION_PASS": false,
+  "APFS_VOLUME_CREATE_X1_PROVENANCE_PASS": false,
+  "APFS_VOLUME_CREATE_X1_PROVENANCE_STATUS": "PARTIAL",
+  "APFS_VOLUME_CREATE_X1_SINGLE_STATE_PASS": true,
+  "caller_call_pattern_analysis": {
+    "discovery": "Most _APFSVolumeCreate calls are IMMEDIATELY preceded by BL to a helper. The helper return (x0) is used as _APFSVolumeCreate x0, while x1 is whatever the helper left it as OR was set before the helper was called (if the helper preserves x1 as a non-standard return convention).",
+    "caller_1_pattern": "mov x0,x20; bl PRECEDING_HELPER; mov x21,x0; bl APFSVolumeCreate",
+    "caller_5_pattern": "mov x0,x19; bl PRECEDING_HELPER; mov x20,x0; bl APFSVolumeCreate",
+    "caller_4_pattern": "branch to code path; bl APFSVolumeCreate (no visible x1 setup)",
+    "caller_7_pattern": "bl helper; str x0,[x19,#0x1bc]; bl APFSVolumeCreate",
+    "significance": "An intervening BL invalidates ordinary caller-saved x1 provenance. Whether any helper intentionally communicates a secondary result in x1 is UNKNOWN until its implementation and all callsites prove such a non-standard convention.",
+    "HELPER_X1_RETURN_NON_OVERCLAIM_PASS": true,
+    "helper_identity": {
+      "classification": "PRECEDING_HELPER_STATIC_IDENTITY_UNRESOLVED",
+      "note": "Helper stub identity must be re-resolved from exact import/bind before CCKDF naming"
+    }
+  },
+  "historical_invalidated_x1_traces": [
+    {
+      "original": {
+        "callsite_vm": "0x100024428",
+        "function_start_heuristic": "0x1000243b8",
+        "x1_chain": [
+          {
+            "vm": "0x100024408",
+            "insn": "mov x1, sp",
+            "defines": "x1",
+            "type": "STACK_POINTER",
+            "source": "sp"
+          }
+        ],
+        "x1_final_source": "STACK_POINTER",
+        "x1_local_definition_pass": true
+      },
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
+        "callsite_vm": "0x10003f970",
+        "function_start_heuristic": "0x10003f880",
+        "x1_chain": [
+          {
+            "vm": "0x10003f954",
+            "insn": "add x1, x1, #0xd60",
+            "defines": "x1",
+            "type": "REGISTER_PLUS_IMMEDIATE",
+            "source": "x1",
+            "immediate": "#0xd60"
+          },
+          {
+            "vm": "0x10003f950",
+            "insn": "adrp x1, #0x1002da000",
+            "defines": "x1",
+            "type": "PAGE_ADDRESS"
+          }
+        ],
+        "x1_final_source": "PAGE_ADDRESS",
+        "x1_local_definition_pass": true
+      },
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
+        "callsite_vm": "0x100053458",
+        "function_start_heuristic": "0x100053278",
+        "x1_chain": [
+          {
+            "vm": "0x10005343c",
+            "insn": "mov x1, x21",
+            "defines": "x1",
+            "type": "REGISTER_TRANSFER",
+            "source": "x21"
+          },
+          {
+            "vm": "0x100053408",
+            "insn": "mov x21, x0",
+            "defines": "x21",
+            "type": "REGISTER_TRANSFER",
+            "source": "x0"
+          },
+          {
+            "vm": "0x1000533f4",
+            "insn": "mov x0, x23",
+            "defines": "x0",
+            "type": "REGISTER_TRANSFER",
+            "source": "x23"
+          },
+          {
+            "vm": "0x1000532a0",
+            "insn": "mov x23, x0",
+            "defines": "x23",
+            "type": "REGISTER_TRANSFER",
+            "source": "x0"
+          }
+        ],
+        "x1_final_source": "REGISTER_TRANSFER",
+        "x1_local_definition_pass": true
+      },
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
+        "callsite_vm": "0x10007e874",
+        "function_start_heuristic": "0x10007e4dc",
+        "x1_chain": [
+          {
+            "vm": "0x10007e7ec",
+            "insn": "add x1, x1, #0x500",
+            "defines": "x1",
+            "type": "REGISTER_PLUS_IMMEDIATE",
+            "source": "x1",
+            "immediate": "#0x500"
+          },
+          {
+            "vm": "0x10007e7e8",
+            "insn": "adrp x1, #0x1002e2000",
+            "defines": "x1",
+            "type": "PAGE_ADDRESS"
+          }
+        ],
+        "x1_final_source": "PAGE_ADDRESS",
+        "x1_local_definition_pass": true
+      },
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    },
+    {
+      "original": {
+        "callsite_vm": "0x1001a2320",
+        "function_start_heuristic": "0x1001a1db8",
+        "x1_chain": [
+          {
+            "vm": "0x1001a2230",
+            "insn": "add x1, sp, #0x18",
+            "defines": "x1",
+            "type": "REGISTER_PLUS_IMMEDIATE",
+            "source": "sp",
+            "immediate": "#0x18"
+          }
+        ],
+        "x1_final_source": "REGISTER_PLUS_IMMEDIATE",
+        "x1_local_definition_pass": true
+      },
+      "valid": false,
+      "reason": "INTERVENING_BL_CLOBBERS_CALLER_SAVED_REGISTER"
+    }
+  ],
+  "HELPER_X1_RETURN_NON_OVERCLAIM_PASS": true,
+  "add_volume_method_investigation": {
+    "selector": "addVolumeWithName:role:caseSensitive:reserveSize:quotaSize:pairedVolume:error:",
+    "selector_file_offset": "0x1cb0e1",
+    "selector_section": "__objc_methname",
+    "selref_vm": "0x1002f5860",
+    "selref_file_offset": "0x2f5860",
+    "method_implementation_found": false,
+    "search_performed": [
+      "__objc_methlist relative offsets (all 12KB scanned)",
+      "__objc_const chained fixup pointers",
+      "__DATA full section 8-byte scan",
+      "entire binary 4-byte relative offset scan",
+      "APFS.framework binary scan"
+    ],
+    "conclusion": "The selector string exists in __objc_methname and its selref exists in __objc_selrefs, but NO method implementation is statically findable in restored_external or APFS.framework. This is a legitimate ObjC/Swift metadata analysis blocker. Possible causes: Swift class (different metadata format), runtime category loading, or dynamic method resolution.",
+    "RESTORED_ADD_VOLUME_METHOD_IDENTITY_PASS": false,
+    "classification": "SELECTOR_PRESENT_IMP_STATIC_UNRESOLVED"
+  },
+  "DATA_VOLUME_CREATE_CALLERS_ITERATION_SINGLE_STATE_PASS": true,
+  "DATA_LIFECYCLE_REGISTER_DATAFLOW_ENGINE_ABI_SAFE_PASS": false,
+  "APFS_VOLUME_CREATE_PRECEDING_HELPER_IDENTITY_PASS": false,
+  "abi_safe_caller_trace": {
+    "engine": "phase05f-arm64-dataflow-engine.py (Part 14D certified)",
+    "binary_sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+    "callers": [
+      {
+        "callsite_vm": "0x100024428",
+        "function_start_heuristic": "0x1000243b8",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x100024428",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x100024428",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10003f970",
+        "function_start_heuristic": "0x10003f880",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10003f970",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10003f970",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x100053458",
+        "function_start_heuristic": "0x100053278",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x100053458",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x100053458",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10007c1ac",
+        "function_start_heuristic": "0x10007c138",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1ac",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1ac",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10007c1c4",
+        "function_start_heuristic": "0x10007c138",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1c4",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007c1c4",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x10007e874",
+        "function_start_heuristic": "0x10007e4dc",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007e874",
+              "insn": "bl #0x1001bc990",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x10007e874",
+              "insn": "bl #0x1001bc990",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      },
+      {
+        "callsite_vm": "0x1001a2320",
+        "function_start_heuristic": "0x1001a1db8",
+        "x0_provenance": {
+          "chain": [
+            {
+              "vm": "0x1001a2320",
+              "insn": "bl #0x1001be950",
+              "state": "CALLEE_RETURN",
+              "defines": "x0"
+            }
+          ],
+          "terminal_register": "reg0",
+          "first_state": "CALLEE_RETURN",
+          "terminal_state": "CALLEE_RETURN"
+        },
+        "x1_provenance": {
+          "chain": [
+            {
+              "vm": "0x1001a2320",
+              "insn": "bl #0x1001be950",
+              "state": "CALL_CLOBBERED_UNKNOWN",
+              "defines": "x1"
+            }
+          ],
+          "terminal_register": "reg1",
+          "first_state": "CALL_CLOBBERED_UNKNOWN",
+          "terminal_state": "CALL_CLOBBERED_UNKNOWN"
+        }
+      }
+    ],
+    "x0_summary": {
+      "0x100024428": "CALLEE_RETURN",
+      "0x10003f970": "CALLEE_RETURN",
+      "0x100053458": "CALLEE_RETURN",
+      "0x10007c1ac": "CALLEE_RETURN",
+      "0x10007c1c4": "CALLEE_RETURN",
+      "0x10007e874": "CALLEE_RETURN",
+      "0x1001a2320": "CALLEE_RETURN"
+    },
+    "x1_summary": {
+      "0x100024428": "CALL_CLOBBERED_UNKNOWN",
+      "0x10003f970": "CALL_CLOBBERED_UNKNOWN",
+      "0x100053458": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1ac": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1c4": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007e874": "CALL_CLOBBERED_UNKNOWN",
+      "0x1001a2320": "CALL_CLOBBERED_UNKNOWN"
+    }
+  },
+  "abi_safe_argument_trace": {
+    "method": "argument tracing: exclude target BL, trace backward from preceding instruction",
+    "note": "The target BL (_APFSVolumeCreate) is NOT treated as a clobber boundary for its own arguments. Intervening helper BLs ARE correctly treated as boundaries.",
+    "binary_sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+    "callers": [
+      {
+        "callsite_vm": "0x100024428",
+        "function_start_heuristic": "0x1000243b8",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x100024420",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10003f970",
+        "function_start_heuristic": "0x10003f880",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10003f968",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x100053458",
+        "function_start_heuristic": "0x100053278",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x100053450",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10007c1ac",
+        "function_start_heuristic": "0x10007c138",
+        "x0_argument_provenance": "ADDRESS_OF",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10007c160",
+            "insn": "bl #0x1001bcb60",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10007c1c4",
+        "function_start_heuristic": "0x10007c138",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10007c1bc",
+            "insn": "bl #0x1001bcc50",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x10007e874",
+        "function_start_heuristic": "0x10007e4dc",
+        "x0_argument_provenance": "FUNCTION_ENTRY_ARGUMENT",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x10007e844",
+            "insn": "bl #0x1001bcd40",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      },
+      {
+        "callsite_vm": "0x1001a2320",
+        "function_start_heuristic": "0x1001a1db8",
+        "x0_argument_provenance": "CALLEE_RETURN",
+        "x1_argument_provenance": "CALL_CLOBBERED_UNKNOWN",
+        "x1_chain": [
+          {
+            "vm": "0x1001a2318",
+            "insn": "bl #0x1001bea80",
+            "state": "CALL_CLOBBERED_UNKNOWN",
+            "defines": "x1"
+          }
+        ]
+      }
+    ],
+    "x0_summary": {
+      "0x100024428": "CALLEE_RETURN",
+      "0x10003f970": "CALLEE_RETURN",
+      "0x100053458": "CALLEE_RETURN",
+      "0x10007c1ac": "ADDRESS_OF",
+      "0x10007c1c4": "CALLEE_RETURN",
+      "0x10007e874": "FUNCTION_ENTRY_ARGUMENT",
+      "0x1001a2320": "CALLEE_RETURN"
+    },
+    "x1_summary": {
+      "0x100024428": "CALL_CLOBBERED_UNKNOWN",
+      "0x10003f970": "CALL_CLOBBERED_UNKNOWN",
+      "0x100053458": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1ac": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007c1c4": "CALL_CLOBBERED_UNKNOWN",
+      "0x10007e874": "CALL_CLOBBERED_UNKNOWN",
+      "0x1001a2320": "CALL_CLOBBERED_UNKNOWN"
+    }
+  },
+  "helper_stub_resolution": {
+    "0x1001bcc50": {
+      "symbol": "_CCKDFParametersCreateHkdf",
+      "framework": "CryptoKit",
+      "got_addr": "0x1002ed028",
+      "symtab_index": 368,
+      "used_by_callers": [
+        "0x100024428",
+        "0x10003f970",
+        "0x100053458",
+        "0x10007c1c4"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "0x1001bcb60": {
+      "symbol": "_BOMCopierSetUserData",
+      "framework": "BOM",
+      "got_addr": "0x1002ece48",
+      "used_by_callers": [
+        "0x10007c1ac"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "0x1001bcd40": {
+      "symbol": "_CC_SHA384_Final",
+      "framework": "CommonCrypto/libcommonCrypto",
+      "got_addr": "0x1002ed080",
+      "symtab_index": 379,
+      "used_by_callers": [
+        "0x10007e874"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "0x1001bea80": {
+      "symbol": "_BBUpdaterRegisterLogSink",
+      "framework": "libBBUpdaterDynamic",
+      "got_addr": null,
+      "used_by_callers": [
+        "0x1001a2320"
+      ],
+      "classification": "PROVEN_SYMBOL"
+    },
+    "APFS_VOLUME_CREATE_PRECEDING_HELPER_IDENTITY_PASS": true,
+    "note": "All 4 preceding helper stubs resolved to exact imported symbols. The dominant pattern is _CCKDFParametersCreateHkdf (CryptoKit key derivation) immediately before _APFSVolumeCreate. The helpers are crypto/restore utility functions, NOT dictionary constructors. The x1 options dictionary must be constructed elsewhere in the caller function or passed as a higher-level parameter."
+  },
+  "x1_deep_investigation": {
+    "method": "Callee-saved register scan + helper implementation disassembly",
+    "x1_explicit_definition_in_caller": {
+      "result": "NONE_FOUND",
+      "note": "Scanned all 7 caller functions for any ldr x1, mov x1,x19-x28, or ldp x1 pattern. Zero x1 definitions found in any caller function body."
+    },
+    "helper_x1_preservation_check": {
+      "_APFSContainerWaitForReaper": {
+        "x1_modified": true,
+        "evidence": [
+          {
+            "vm": "0x2d104",
+            "insn": "mov x1, #0"
+          },
+          {
+            "vm": "0x2d124",
+            "insn": "mov w1, #0x50"
+          }
+        ],
+        "conclusion": "x1 IS clobbered by this helper"
+      }
+    },
+    "x1_provenance_conclusion": "x1 = CALL_CLOBBERED_UNKNOWN. AAPCS64 caller-saved semantics prove loss of provenance at intervening BL boundaries, NOT a particular post-call value. The actual x1 value at _APFSVolumeCreate depends on each helper implementation and is UNKNOWN without implementation-side analysis. The _APFSVolumeCreate ABI must be reconstructed from its own implementation to determine which argument registers are actually consumed and their semantics.",
+    "x1_provenance_status": "CALL_CLOBBERED_UNKNOWN",
+    "X1_IS_STALE_VALUE": false,
+    "X1_IS_CFDICTIONARY": "UNPROVEN",
+    "APFS_VOLUME_CREATE_X1_CLAIM_LEVEL_PASS": true
+  }
+}

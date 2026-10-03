@@ -1,0 +1,27 @@
+{
+  "phase": "05G-prep",
+  "gate": "launchdaemons-file-enumeration-and-inode-chain",
+  "next_step": "Implement APFS compressed-file read support (read compressed xattr, decompress via zlib, reconstruct logical bytes). This is required not just for evidence but for the actual ramdisk mutation — the plists we need to replace are all compressed.",
+  "date": "2026-09-27 18:49:20",
+  "chain_proven": {
+    "INODE_resolution": "each candidate resolved to its APFS_TYPE_INODE record via the hardened FSTREE raw-record walker (checksums + topology + OMAP resolution)",
+    "DIR_REC_scan": "10 .plist files enumerated under parent CNID 632 with drec_type != DT_DIR",
+    "dstream": "dstream xfield (type 8) parsed with size from the 40-byte apfs_dstream structure",
+    "private_id": "inode private_id parsed at +0x08 for every candidate",
+    "mode": "all candidates mode & 0xF000 == 0x8000 (regular file) confirmed",
+    "parent_id": "all candidates parent_id == 632 (LaunchDaemons) confirmed"
+  },
+  "launchdaemons_children": [
+    "com.apple.driverkitd.plist (CNID 639, compressed)",
+    "com.apple.syslogd.plist (compressed)",
+    "com.apple.restorecameraispd.plist (compressed)",
+    "com.apple.dietappleh16camerad.plist (compressed)",
+    "com.apple.diskimagesiod.plist (compressed)",
+    "com.apple.dietappleh13camerad.plist (compressed)",
+    "com.apple.PurpleReverseProxy.ramdisk.plist (compressed)",
+    "com.apple.diskimagesiod.ram.plist (compressed)",
+    "com.apple.ReportCrash.plist (compressed)",
+    "com.apple.restored_external.plist (compressed)"
+  ],
+  "structural_finding": "Every single LaunchDaemons plist in the iPhone15,4 iOS 27.0 restore ramdisk carries APFS_INOBSD_COMPRESSED (0x20) in bsd_flags. There are zero uncompressed plists in this directory. The first file-read gate requires either: (a) decompression support (zlib/decmpfs), or (b) targeting a file from a different directory (e.g., SystemVersion.plist under CoreServices). Option (a) is the production-correct path for the ramdisk patch pipeline since Apple compresses launchd plists by default."
+}

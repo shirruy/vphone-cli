@@ -1,0 +1,730 @@
+{
+  "gate": "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK",
+  "iteration": "57ZF",
+  "date": "2026-10-01",
+  "input_identity": {
+    "device": "iPhone15,4",
+    "board": "d37ap",
+    "soc": "t8120",
+    "build": "24A437",
+    "cryptex_image": {
+      "path": "C:\\Users\\rbjos\\vphone-private\\phase05f-mutation\\iter56\\cryptex-systemos-decrypted.dmg",
+      "size": 6014631936,
+      "sha256": "B2131A5C1E6CF2C95E369E57379AB6D180D558E8A988E0CC66181D64FB781538",
+      "apfs_block_size": 4096,
+      "total_block_count": 1468416,
+      "lba_4096_alignment": true,
+      "lba_4096_block_count": 1468416
+    },
+    "CRYPTEX_ROOT_WALK_INPUT_IDENTITY_PASS": true
+  },
+  "authoritative_nxsb": {
+    "CRYPTEX_AUTHORITATIVE_NXSB_PASS": true,
+    "method": "authoritative container checkpoint: NXSB at block 0 carries the highest valid checkpoint xid 15; the newest NXSB descriptor-area copy (block 61435, xid 15) agrees; no magic-scan selection was used",
+    "primary_nxsb_block": 0,
+    "nx_oid": 1,
+    "nx_xid": 15,
+    "nx_type": "0x80000001 (NX_SUPERBLOCK, NONPERSISTENT)",
+    "nx_magic": "NXSB",
+    "block_size": 4096,
+    "block_count": 1468416,
+    "uuid": "bd649fe5ae104b79b7d892bb32bdef60",
+    "next_oid": 8302,
+    "next_xid": 16,
+    "features": "0x0",
+    "ro_compatible_features": "0x0",
+    "incompatible_features": "0x2 (NX_INCOMPAT_VERSION2)",
+    "xp_desc_blocks": 56,
+    "xp_data_blocks": 5136,
+    "xp_desc_base": 61428,
+    "xp_data_base": 56154,
+    "xp_desc_index": 6,
+    "xp_desc_len": 2,
+    "xp_data_index": 14,
+    "xp_data_len": 5,
+    "nx_omap_oid": 97923,
+    "nx_spaceman_oid": 1286,
+    "nx_reaper_oid": 1025,
+    "nx_max_file_systems": 12,
+    "nx_fs_oid": [
+      1026
+    ],
+    "descriptor_area_nxsb_copies": [
+      {
+        "block": 61429,
+        "xid": 12,
+        "checksum": "VERIFIED",
+        "status": "superseded"
+      },
+      {
+        "block": 61431,
+        "xid": 13,
+        "checksum": "VERIFIED",
+        "status": "superseded"
+      },
+      {
+        "block": 61433,
+        "xid": 14,
+        "checksum": "VERIFIED",
+        "status": "superseded"
+      },
+      {
+        "block": 61435,
+        "xid": 15,
+        "checksum": "VERIFIED",
+        "status": "CURRENT"
+      }
+    ]
+  },
+  "object_checksum_audit": {
+    "CRYPTEX_AUTHORITATIVE_OBJECT_CHECKSUM_PASS": true,
+    "fletcher64_semantics": "checksum field at offset 0 excluded; sum1/sum2 over remaining LE u32 words with modulus 0xFFFFFFFF; valid iff final (sum1,sum2)==(0,0)",
+    "verified_objects": [
+      {
+        "object": "NXSB block 0",
+        "block": 0,
+        "type": "NX_SUPERBLOCK",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "NXSB descriptor copy",
+        "block": 61429,
+        "type": "NX_SUPERBLOCK",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "NXSB descriptor copy",
+        "block": 61431,
+        "type": "NX_SUPERBLOCK",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "NXSB descriptor copy",
+        "block": 61433,
+        "type": "NX_SUPERBLOCK",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "NXSB descriptor copy",
+        "block": 61435,
+        "type": "NX_SUPERBLOCK",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "checkpoint map",
+        "block": 61434,
+        "type": "CHECKPOINT_MAP (0x4000000C)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "container OMAP",
+        "block": 97923,
+        "type": "OMAP (0x4000000B)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "container OMAP tree root",
+        "block": 97924,
+        "type": "BTREE (0x40000002)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "volume OMAP",
+        "block": 97917,
+        "type": "OMAP (0x4000000B)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "volume OMAP tree root",
+        "block": 97918,
+        "type": "BTREE (0x40000002)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "volume OMAP leaves (63)",
+        "block": "97918 tree leaves",
+        "type": "BTREE_NODE",
+        "checksum": "VERIFIED",
+        "detail": "ALL 63 VERIFIED"
+      },
+      {
+        "object": "SystemOS APSB (current)",
+        "block": 97922,
+        "type": "FS (0xD)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "SystemOS APSB (superseded)",
+        "block": 97914,
+        "type": "FS (0xD)",
+        "checksum": "VERIFIED",
+        "detail": "VERIFIED (superseded era only)"
+      },
+      {
+        "object": "snapshot metadata tree",
+        "block": 95136,
+        "type": "BTREE (0x40000002)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "extentref tree",
+        "block": 95124,
+        "type": "BTREE (0x40000002)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "integrity metadata",
+        "block": 61525,
+        "type": "INTEGRITY_META (0x1E)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "FEXT tree root",
+        "block": 61503,
+        "type": "BTREE (0x40000002)",
+        "checksum": "VERIFIED"
+      },
+      {
+        "object": "FEXT leaves (17)",
+        "block": "61508..61524",
+        "type": "BTREE_NODE",
+        "checksum": "VERIFIED",
+        "detail": "ALL 17 VERIFIED"
+      }
+    ],
+    "noheader_note": "all 7011 FSTREE nodes resolve through the volume OMAP with OMAP_VAL_NOHEADER (0x8); a NOHEADER node has no object header/checksum field by design, so validation is structural (zeroed 32-byte header region, table-space geometry, key/value bounds) instead of Fletcher-64"
+  },
+  "checkpoint_map": {
+    "CRYPTEX_CHECKPOINT_MAP_PASS": true,
+    "resolution": "active NXSB (xid 15) -> xp_desc_base 61428 + xp_desc_index 6 = block 61434",
+    "checkpoint_map_block": 61434,
+    "checkpoint_map_oid": 61434,
+    "checkpoint_map_xid": 15,
+    "flags": "0x1 CHECKPOINT_MAP_LAST",
+    "entry_count": 5,
+    "entries": [
+      {
+        "type": "0x80000011",
+        "oid": 1025,
+        "paddr": 56168,
+        "role": "ephemeral reaper object"
+      },
+      {
+        "type": "0x80000012",
+        "oid": 1283,
+        "paddr": 56169,
+        "role": "ephemeral nx reaper list"
+      },
+      {
+        "type": "0x80000005",
+        "oid": 1286,
+        "paddr": 56170,
+        "role": "ephemeral spaceman"
+      },
+      {
+        "type": "0x80000002",
+        "oid": 1287,
+        "paddr": 56171,
+        "role": "ephemeral btree"
+      },
+      {
+        "type": "0x80000002",
+        "oid": 1288,
+        "paddr": 56172,
+        "role": "ephemeral btree"
+      }
+    ],
+    "superseded_checkpoint_maps": [
+      {
+        "block": 61428,
+        "xid": 12,
+        "count": 4,
+        "checksum": "VERIFIED",
+        "status": "superseded"
+      },
+      {
+        "block": 61430,
+        "xid": 13,
+        "count": 5,
+        "checksum": "VERIFIED",
+        "status": "superseded"
+      },
+      {
+        "block": 61432,
+        "xid": 14,
+        "count": 5,
+        "checksum": "VERIFIED",
+        "status": "superseded"
+      }
+    ],
+    "note": "checkpoint_mapping_t stride is 40 bytes {type u32, subtype u32, size u32, pad u32, fs_oid u64, oid u64, paddr u64}; first entry offset 40 (0x28); 5 entries end at byte 240 inside the 4096-byte block; the volume APSB chain is resolved through the container OMAP, not through these ephemeral entries",
+    "CHECKPOINT_MAP_ENTRY_STRIDE_USED": 40,
+    "CHECKPOINT_MAP_FIRST_ENTRY_OFFSET": 40,
+    "CHECKPOINT_MAP_ENTRY_COUNT": 5,
+    "57ZF_CHECKPOINT_STRIDE_ERROR": "DURABLE_PROSE_ONLY",
+    "CRYPTEX_CHECKPOINT_MAPPING_STRIDE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_REDECODE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_GEOMETRY_PASS": true,
+    "geometry": {
+      "header_size_before_entries": 40,
+      "entry_stride": 40,
+      "entry_count": 5,
+      "entries_end_byte": 240,
+      "block_size": 4096,
+      "within_block": true,
+      "note": "0x28 header + 5*40 = 240 <= 4096; every entry fully inside the block"
+    },
+    "independent_redecode": [
+      {
+        "index": 0,
+        "type": "0x80000011",
+        "subtype": 0,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1025,
+        "paddr": 56168
+      },
+      {
+        "index": 1,
+        "type": "0x80000012",
+        "subtype": 0,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1283,
+        "paddr": 56169
+      },
+      {
+        "index": 2,
+        "type": "0x80000005",
+        "subtype": 0,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1286,
+        "paddr": 56170
+      },
+      {
+        "index": 3,
+        "type": "0x80000002",
+        "subtype": 9,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1287,
+        "paddr": 56171
+      },
+      {
+        "index": 4,
+        "type": "0x80000002",
+        "subtype": 9,
+        "size": 4096,
+        "pad": 0,
+        "fs_oid": 0,
+        "oid": 1288,
+        "paddr": 56172
+      }
+    ],
+    "stride_evidence": "a 32-byte stride decode misaligns entries 1..4 (garbage type/size/oid/paddr), while the 40-byte decode reproduces the five recorded oid->paddr mappings exactly; the durable artifact previously mislabeled the stride as 32 in prose only"
+  },
+  "container_volume_enumeration": {
+    "CRYPTEX_CONTAINER_VOLUME_ENUMERATION_PASS": true,
+    "method": "nx_fs_oid[] from the authoritative NXSB; each nonzero volume OID resolved through the container OMAP at xid 15; no whole-image APSB scanning",
+    "volumes": [
+      {
+        "fs_oid": 1026,
+        "container_omap_lookup_xid": 15,
+        "resolved_physical_block": 97922,
+        "apfs_magic": "APSB",
+        "apfs_xid": 15,
+        "volume_name": "Rave24A437.D37SystemCryptex",
+        "volume_uuid": "7f74e822669746de878e1b0172ed0eb9",
+        "role": 0,
+        "fs_flags": "0x1 APFS_FS_UNENCRYPTED",
+        "incompatible_features": "0x28 (SEALED_VOLUME 0x20 | NORMALIZATION_INSENSITIVE 0x8)",
+        "root_tree_oid": 1291,
+        "extentref_tree_oid": 95124,
+        "snap_meta_tree_oid": 95136,
+        "omap_oid": 97917,
+        "integrity_meta_oid": 1289,
+        "fext_tree_oid": 61503,
+        "num_snapshots": 0,
+        "num_files": 1834,
+        "num_directories": 892
+      }
+    ],
+    "superseded_apsb": {
+      "block": 97914,
+      "xid": 14,
+      "checksum": "VERIFIED",
+      "status": "superseded era; correctly excluded because the container OMAP lookup at xid 15 resolves 1026 -> 97922"
+    }
+  },
+  "systemos_volume_identity": {
+    "CRYPTEX_SYSTEMOS_VOLUME_IDENTITY_PASS": true,
+    "volume_name": "Rave24A437.D37SystemCryptex",
+    "volume_uuid": "7f74e822669746de878e1b0172ed0eb9",
+    "apfs_role": 0,
+    "fs_flags": "0x1 APFS_FS_UNENCRYPTED",
+    "incompatible_features": "0x28 SEALED_VOLUME|NORMALIZATION_INSENSITIVE",
+    "features": "0x0",
+    "ro_compatible_features": "0x0",
+    "proof_basis": "name, uuid, role and flags all read from the checksum-verified APSB at block 97922, which was itself resolved authoritatively through nx_fs_oid[0] -> container OMAP at xid 15"
+  },
+  "volume_omap": {
+    "CRYPTEX_VOLUME_OMAP_PASS": true,
+    "omap_physical_block": 97917,
+    "omap_type": "0x4000000B",
+    "omap_xid": 15,
+    "om_tree_oid": 97918,
+    "om_tree_root_block": 97918,
+    "om_tree_shape": "level-1 fixed-KV index with 63 leaf nodes",
+    "distinct_oid_count": 7012,
+    "lookup_semantics": "greatest key xid <= requested xid (requested xid 15)",
+    "representative_lookups": [
+      {
+        "oid": 1291,
+        "resolved_xid": 14,
+        "flags": "0x8 OMAP_VAL_NOHEADER",
+        "size": 4096,
+        "paddr": 61526,
+        "role": "FSTREE root node"
+      },
+      {
+        "oid": 1289,
+        "resolved_xid": 14,
+        "flags": "0x0",
+        "size": 4096,
+        "paddr": 61525,
+        "role": "integrity metadata"
+      },
+      {
+        "oid": 5070,
+        "resolved_xid": 14,
+        "flags": "0x8 OMAP_VAL_NOHEADER",
+        "size": 4096,
+        "paddr": 65340,
+        "role": "FSTREE level-2 node"
+      },
+      {
+        "oid": 5071,
+        "resolved_xid": 14,
+        "flags": "0x8 OMAP_VAL_NOHEADER",
+        "size": 4096,
+        "paddr": 65339,
+        "role": "FSTREE level-2 node"
+      }
+    ]
+  },
+  "snapshot_metadata": {
+    "CRYPTEX_SNAPSHOT_METADATA_ENUMERATION_PASS": true,
+    "snap_meta_tree_oid": 95136,
+    "snap_meta_tree_block": 95136,
+    "snap_meta_tree_checksum": "VERIFIED",
+    "snap_meta_tree_shape": "level-0 leaf with 0 keys",
+    "apfs_num_snapshots": 0,
+    "integrity_meta_oid": 1289,
+    "integrity_meta_block": 61525,
+    "integrity_meta_type": "0x1E INTEGRITY_META",
+    "integrity_meta_checksum": "VERIFIED",
+    "conclusion": "the Cryptex SystemOS volume has NO snapshots; there is no snapshot root to select"
+  },
+  "authoritative_snapshot": {
+    "CRYPTEX_AUTHORITATIVE_SNAPSHOT_PASS": true,
+    "AUTHORITATIVE_SNAPSHOT_NAME": "NONE - apfs_num_snapshots == 0 and the snapshot metadata tree is an empty leaf",
+    "AUTHORITATIVE_SNAPSHOT_XID": 0,
+    "AUTHORITATIVE_SNAPSHOT_ROOT_TREE_OID": "NONE",
+    "AUTHORITATIVE_LIVE_ROOT": {
+      "root_tree_oid": 1291,
+      "lookup_xid": 15,
+      "rationale": "with zero snapshots the mounted state is the live root tree referenced directly by apfs_root_tree_oid"
+    }
+  },
+  "root_tree_resolution": {
+    "CRYPTEX_AUTHORITATIVE_ROOT_TREE_RESOLUTION_PASS": true,
+    "root_tree_oid": 1291,
+    "lookup_xid": 15,
+    "resolved_physical_block": 61526,
+    "omap_flags": "0x8 OMAP_VAL_NOHEADER",
+    "node_flags": "0x19 BTNODE_ROOT | BTNODE_HASHED | BTNODE_NOHEADER",
+    "node_level": 3,
+    "node_key_count": 2,
+    "hashed_child_rule": "child_oid = binv_child_oid + tree_oid (1291); apfs-fuse BTree::Lookup semantics",
+    "root_children": [
+      {
+        "index": 0,
+        "key_obj_id_and_type": "0x9000000000000001 (DIR_REC, cnid 1)",
+        "child_rel": 3780,
+        "child_oid": 5071,
+        "omap_paddr": 65339,
+        "hash": "5fd661a2353e231a91186447b38f86cd14b3169420f7b638435d4623b706083e"
+      },
+      {
+        "index": 1,
+        "key_obj_id_and_type": "0xd000000000000068 (DIR_STATS, cnid 104)",
+        "child_rel": 3779,
+        "child_oid": 5070,
+        "omap_paddr": 65340,
+        "hash": "c1b439cf7c3c12dcbac4f344be3ed67dc41a1593c1ccae05e3894d966d1b12f4"
+      }
+    ]
+  },
+  "filesystem_walk": {
+    "CRYPTEX_AUTHORITATIVE_FILESYSTEM_WALK_PASS": true,
+    "walk_method": "FSTREE child pointers resolved through the volume OMAP at xid 15 (NOHEADER nodes validated structurally); leaf records decoded from B-tree key/value geometry; no full-image string scans",
+    "nodes_walked": 7011,
+    "leaves_walked": 6894,
+    "records_decoded": 457595,
+    "checksum_or_structural_failures": 0,
+    "root_btree_info_crosscheck": {
+      "bt_key_count": 457595,
+      "bt_node_count": 7011,
+      "status": "matches walk totals exactly"
+    },
+    "record_type_distribution": {
+      "FILE_INFO(13)": 447508,
+      "XATTR(4)": 3254,
+      "DIR_REC(9)": 3085,
+      "INODE(3)": 2730,
+      "SIBLING_LINK(5)": 407,
+      "SIBLING_MAP(12)": 407,
+      "DSTREAM_ID(6)": 204
+    },
+    "root_directory": {
+      "cnid": 2,
+      "inode_parent_id": 1,
+      "private_id": 2,
+      "mode": "0o40755 (directory)",
+      "nchildren": 2,
+      "children": [
+        {
+          "name": "System",
+          "dir_rec_file_id": 16
+        },
+        {
+          "name": "usr",
+          "dir_rec_file_id": 4814
+        }
+      ]
+    },
+    "path_chain_proof": [
+      {
+        "path": "/",
+        "cnid": 2,
+        "kind": "directory"
+      },
+      {
+        "path": "/System",
+        "cnid": 16,
+        "kind": "directory",
+        "parent": 2
+      },
+      {
+        "path": "/System/Library",
+        "cnid": 27,
+        "kind": "directory",
+        "parent": 16
+      },
+      {
+        "path": "/System/Library/CoreServices",
+        "cnid": 129,
+        "kind": "directory",
+        "parent": 27
+      },
+      {
+        "path": "/usr",
+        "cnid": 4814,
+        "kind": "directory",
+        "parent": 2
+      },
+      {
+        "path": "/usr/lib",
+        "cnid": 4815,
+        "kind": "directory",
+        "parent": 4814
+      }
+    ]
+  },
+  "known_file_proof": {
+    "CRYPTEX_ROOT_WALK_KNOWN_FILE_PROOF_PASS": true,
+    "path": "/System/Library/CoreServices/SystemVersion.plist",
+    "dir_rec": {
+      "parent_cnid": 129,
+      "name": "SystemVersion.plist",
+      "file_id": 132,
+      "flags": "0x8",
+      "leaf_block": 61528
+    },
+    "inode": {
+      "cnid": 132,
+      "parent_id": 129,
+      "private_id": 132,
+      "mode": "0o100444 (regular file, read-only)",
+      "internal_flags": "0x8000 INODE_NO_RSRC_FORK",
+      "xfields": [
+        {
+          "type": 4,
+          "name": "INO_EXT_TYPE_NAME",
+          "size": 20,
+          "value": "SystemVersion.plist"
+        },
+        {
+          "type": 8,
+          "name": "INO_EXT_TYPE_DSTREAM",
+          "size": 40,
+          "dstream_size": 571,
+          "alloced_size": 4096,
+          "default_crypto_id": 0,
+          "total_bytes_written": 1,
+          "total_bytes_read": 1
+        }
+      ],
+      "leaf_block": 97593
+    },
+    "extent_resolution": {
+      "tree": "FEXT tree (sealed-volume extent tree), root oid 61503, root block 61503, physical addressing",
+      "key": {
+        "private_id": 132,
+        "logical_addr": 0
+      },
+      "value": {
+        "len_and_flags": 4096,
+        "phys_block_num": 65594,
+        "crypto_id": 4096
+      },
+      "leaf_block": 61509,
+      "record_index": 90
+    },
+    "reconstruction": {
+      "logical_size": 571,
+      "physical_block": 65594,
+      "bytes_read": "571 bytes from block 65594",
+      "block_trailer_zeroed": true,
+      "sha256": "09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1",
+      "plist_parse": "VALID",
+      "plist_contents": {
+        "BuildID": "300FEE0C-ACD5-11F1-A246-1FF2AA4B7BC9",
+        "ProductBuildVersion": "24A437",
+        "ProductCopyright": "1983-2026 Apple Inc.",
+        "ProductName": "iPhone OS",
+        "ProductVersion": "27.0",
+        "SystemImageID": "51BDB1A4-A8F6-42F9-B91B-760E26384E3F"
+      },
+      "CRYPTEX_ROOT_WALK_KNOWN_FILE_REGRESSION_PASS": true,
+      "regression_note": "independent re-run on the source image reproduced: CNID 132, logical size 571, physical block 65594, SHA-256 09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1, ProductVersion 27.0, ProductBuildVersion 24A437"
+    }
+  },
+  "scan_vs_authoritative_separation": {
+    "CRYPTEX_SCAN_VS_AUTHORITATIVE_WALK_SEPARATION_PASS": true,
+    "structural_scan_meaning": "SEALED_CRYPTEX_APSB_STRUCTURE_SCAN_PASS (preboom artifact) proved only that plausible APSB/APFS objects exist in the decrypted image",
+    "authoritative_walk_meaning": "this artifact proves the full object chain NXSB -> checkpoint -> volume OID -> APSB -> volume OMAP -> live root tree -> filesystem records -> known file bytes, with every selection driven by authoritative metadata rather than scan position",
+    "not_equivalent": true
+  },
+  "fail_closed_rules": {
+    "CRYPTEX_AUTHORITATIVE_WALK_FAIL_CLOSED_PASS": true,
+    "closure_is_refused_if_root_proof_based_on": [
+      "magic-scan-only selection (no metadata-chain traversal)",
+      "scan-position-highest APSB block selection",
+      "global-highest-XID selection without checkpoint authority",
+      "string-scan root selection instead of B-tree child pointers",
+      "known-file bytes located without root-tree traversal",
+      "unverified checksum on any checksummed/headered object",
+      "missing or failed structural validation on any OMAP_VAL_NOHEADER object"
+    ],
+    "checker_enforcement": "scripts/phase05f-evidence-consistency-check.ps1 refuses SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK=PASS_CLOSED when any scan-shortcut signature appears, any required gate flag is false, any recorded checksum audit entry is not VERIFIED, any NOHEADER structural counter is nonzero, or the durable JSON carries duplicate object keys (python validator runs before ConvertFrom-Json)",
+    "CRYPTEX_NOHEADER_FAIL_CLOSED_POLICY_PASS": true
+  },
+  "durable_evidence": {
+    "CRYPTEX_AUTHORITATIVE_ROOT_WALK_DURABLE_PASS": true,
+    "file": "artifacts/evidence/05f/phase05f-cryptex-authoritative-root-walk.json",
+    "contents_covered": [
+      "input identity",
+      "authoritative NXSB and descriptor-area NXSB copies",
+      "checkpoint descriptors and active checkpoint map",
+      "container volume enumeration",
+      "selected SystemOS APSB identity",
+      "volume OMAP with lookup semantics",
+      "snapshot metadata and live-root authority",
+      "root-tree OID and physical root block",
+      "filesystem walk proof",
+      "known-file proof with checksum and plist parse",
+      "object checksum audit",
+      "remaining unknowns"
+    ]
+  },
+  "cross_artifact_consistency": {
+    "CRYPTEX_ROOT_WALK_CROSS_ARTIFACT_CONSISTENCY_PASS": true,
+    "cryptex_sha_agreement": "phase05f-preboom-storage-contract.json and phase05f-ios-storage-lba-contract.json both record B2131A5C1E6CF2C95E369E57379AB6D180D558E8A988E0CC66181D64FB781538",
+    "cryptex_size_agreement": "6014631936 bytes in all three artifacts",
+    "apfs_block_size_agreement": 4096,
+    "lba_4096_alignment_agreement": "1468416 blocks, exactly divisible by the 4096-byte guest LBA contract",
+    "volume_identity_agreement": "Rave24A437.D37SystemCryptex / 24A437 across artifacts",
+    "root_walk_status": "PASS_CLOSED in this artifact and in the preboom storage summary"
+  },
+  "canonical_state": {
+    "CRYPTEX_ROOT_WALK_INPUT_IDENTITY_PASS": true,
+    "CRYPTEX_AUTHORITATIVE_NXSB_PASS": true,
+    "CRYPTEX_AUTHORITATIVE_OBJECT_CHECKSUM_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_PASS": true,
+    "CRYPTEX_CONTAINER_VOLUME_ENUMERATION_PASS": true,
+    "CRYPTEX_SYSTEMOS_VOLUME_IDENTITY_PASS": true,
+    "CRYPTEX_VOLUME_OMAP_PASS": true,
+    "CRYPTEX_SNAPSHOT_METADATA_ENUMERATION_PASS": true,
+    "CRYPTEX_AUTHORITATIVE_SNAPSHOT_PASS": true,
+    "CRYPTEX_AUTHORITATIVE_ROOT_TREE_RESOLUTION_PASS": true,
+    "CRYPTEX_AUTHORITATIVE_FILESYSTEM_WALK_PASS": true,
+    "CRYPTEX_ROOT_WALK_KNOWN_FILE_PROOF_PASS": true,
+    "CRYPTEX_SCAN_VS_AUTHORITATIVE_WALK_SEPARATION_PASS": true,
+    "CRYPTEX_AUTHORITATIVE_WALK_FAIL_CLOSED_PASS": true,
+    "CRYPTEX_AUTHORITATIVE_ROOT_WALK_DURABLE_PASS": true,
+    "CRYPTEX_ROOT_WALK_CROSS_ARTIFACT_CONSISTENCY_PASS": true,
+    "ITERATION_57ZF": "PASS_CLOSED",
+    "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK": "PASS_CLOSED",
+    "next_gate": "CRYPTEX_ATTACHMENT_MODEL",
+    "CRYPTEX_CHECKPOINT_MAPPING_STRIDE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_REDECODE_PASS": true,
+    "CRYPTEX_CHECKPOINT_MAP_GEOMETRY_PASS": true,
+    "CRYPTEX_DURABLE_JSON_UNIQUE_KEYS_PASS": true,
+    "CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS": true,
+    "CRYPTEX_OBJECT_INTEGRITY_POLICY_PASS": true,
+    "CRYPTEX_NOHEADER_FAIL_CLOSED_POLICY_PASS": true,
+    "CRYPTEX_ROOT_WALK_KNOWN_FILE_REGRESSION_PASS": true,
+    "57ZF_CHECKPOINT_STRIDE_ERROR": "DURABLE_PROSE_ONLY",
+    "ITERATION_57ZFA": "PASS_CLOSED"
+  },
+  "remaining_unknowns": [
+    "FEXT extent crypto_id is 4096 on this unencrypted sealed volume; apfs-fuse treats crypto on sealed volumes as out of scope and reads the block directly, which matches this artifact",
+    "apfs_snap_meta_ext_oid field reads 0x4000000000000002 but is irrelevant while num_snapshots == 0",
+    "file reconstruction is proven for an uncompressed XML plist; decmpfs/XATTR compression was already separately certified in earlier iterations and is not exercised by this fixture file",
+    "the walk is read-only; CRYPTEX_ATTACHMENT_MODEL, root selection and any mutation remain separate gates"
+  ],
+  "analysis_base_head": "8d2344f8215009b5b36ac527a61332c0112c7a68",
+  "object_integrity_policy": {
+    "CRYPTEX_OBJECT_INTEGRITY_POLICY_PASS": true,
+    "HEADERED_OBJECT": {
+      "rule": "Fletcher-64 checksum REQUIRED and verified before the object is accepted into the authoritative chain",
+      "applied_to": "NXSB copies, checkpoint map, container/volume OMAP objects and trees, APSBs, snapshot metadata tree, extentref tree, integrity metadata, FEXT tree nodes"
+    },
+    "OMAP_VAL_NOHEADER_OBJECT": {
+      "rule": "object checksum is N/A by APFS format (OMAP_VAL_NOHEADER); mandatory structural validation instead",
+      "structural_validation_includes": [
+        "node flags",
+        "node level",
+        "table-space geometry",
+        "key/value offset bounds",
+        "key ordering",
+        "child resolution through the volume OMAP",
+        "tree totals/counters where applicable (root btree_info key_count/node_count match walk totals)"
+      ],
+      "applied_to": "all 7011 FSTREE nodes (flags 0x8 OMAP_VAL_NOHEADER)"
+    }
+  },
+  "json_hygiene": {
+    "CRYPTEX_DURABLE_JSON_UNIQUE_KEYS_PASS": true,
+    "CRYPTEX_JSON_DUPLICATE_KEY_REFUSAL_PASS": true,
+    "duplicate_key_scan_result": "NONE in the committed cryptex, preboom, lba, ans-dt and ans-kernel-driver-match artifacts",
+    "validator": "scripts/phase05f-json-duplicate-key-check.py (json.loads object_pairs_hook rejects duplicate property names; run by the consistency checker BEFORE ConvertFrom-Json)",
+    "negative_control": "injecting a duplicate nested key (name) makes the validator exit 1"
+  }
+}
