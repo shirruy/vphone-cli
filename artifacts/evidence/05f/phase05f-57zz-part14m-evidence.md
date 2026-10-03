@@ -47,6 +47,63 @@ The wrapper takes the MSU branch only when:
 **CreateForMSU is exclusively the System-volume (LP role 1 → APFS 0x01)
 creation path.** It is not used for Data, Preboot, or any other role.
 
+## 14M-R: Post-call behavior (correction pass)
+
+The wrapper's post-call region converges both paths at `0x1000829dc`:
+
+```
+0x1000829dc  mov x25, x0         ; result (errno-like)
+0x1000829e0  cbz w0, 0x100082b30 ; 0 = success -> fsindex post-processing
+```
+
+Since the implementation in this build always returns `0x2d`, the MSU call
+always takes the error path:
+
+```
+0x1000829e4  cbz x22, skip-error-object
+0x1000829fc  sxtw x3, w25       ; errno -> NSError
+0x100082a14  str x0, [x22]      ; error out-param
+0x100082a84  stur w25, [x0,#0xe]; errno in log record
+0x100082aa0  mov x24, #0        ; nil result
+0x100082aa4  b 0x10008242c      ; release + return
+```
+
+**Fallback to `_APFSVolumeCreate`: PROVEN_ABSENT.**
+No branch in the post-call region targets the normal-create block
+(`0x1000829c8..0x1000829dc`). Directional BFS from `0x1000829c0` shows all
+failure edges terminate at the release/error-record paths returning nil.
+
+**Error semantics:** nonzero = error int, zero = success (then fsindex
+post-processing). `0x2d` symbolic meaning: UNKNOWN (no errno table or
+strerror mapping found in the analyzed artifacts).
+
+## 14M-R5: Import binding
+
+Import ordinal 122 (`_APFSVolumeCreateForMSU`) has `weak_import = 1`
+(raw import entry bit 8). `_APFSVolumeCreate` (ordinal 121) has
+`weak_import = 0`. Therefore the `cbz x8` after the auth_ptr load is a
+genuine weak-import availability check.
+
+```
+CREATEFORMSU_IMPORT: WEAK
+```
+
+## 14M-R7: OTI reachability (correction)
+
+The adjacent function at `0x2b82c` is NOT an anonymous pre-stub: it is
+`_APFSVolumeSetOtiLockerData` (exported, N_EXT). The 6 exported OtiLocker
+APIs tail-branch into the internal `__APFSVolumeOtiRequestHelper`
+(`0x2b8c4`, N_EXT=False). `_APFSVolumeCreateForMSU` (`0x2b824`) is a
+separate 2-instruction stub with an immediate ret and **no CFG edge** to
+the helper. No caller of `0x2b824` or `0x2b82c` exists within
+APFS.framework text.
+
+```
+CREATEFORMSU_TO_OTI_EDGE: PROVEN_ABSENT
+```
+
+OTI is removed from the CreateForMSU architectural chain.
+
 ## 14M-E: Options/dictionary comparison
 
 | Property | Normal `_APFSVolumeCreate` | `_APFSVolumeCreateForMSU` |
