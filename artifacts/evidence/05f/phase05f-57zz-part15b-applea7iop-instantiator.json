@@ -126,15 +126,34 @@
       "x1_saved_to_register": "x19"
     }
   },
+  "V1_start_proof": {
+    "start_string_xrefs": [
+      "0xfffffff0082f7804"
+    ],
+    "mod_init_class_object": "0xfffffff00afed5c0",
+    "expected_vtable": "0xfffffff007d14370",
+    "vtable_verdict": "BLOCKED",
+    "start_proof": "BLOCKED",
+    "twin_function_found": "0xfffffff0082f804c (identical prologue; candidate is one of a pair)"
+  },
+  "V3_vtable_0x2c0": {
+    "vtable_base": "0xfffffff007d151a0",
+    "entry_raw": "0x80113c6802da9920",
+    "target_fo": "0x2da9920",
+    "target_vm": "0xfffffff009dad920",
+    "classification": "SUPER_START_CHAIN (kernel entry 236 IOService-style start)"
+  },
   "verdicts": {
     "PRELINK_METADATA_PARSE": "PASS",
     "APPLEA7IOP_IOKIT_PERSONALITY": "ABSENT_PROVEN",
     "APPLEA7IOP_FILESET_MAPPING": "PASS",
-    "APPLEA7IOP_START": "0xfffffff0082f4df0",
+    "APPLEA7IOP_START": "BLOCKED",
     "START_ABI": "PROVEN",
+    "APPLEA7IOP_VTABLE": "BLOCKED",
+    "START_VTABLE_SLOT": "BLOCKED",
     "APPLEA7IOP_INSTANTIATOR": "UNKNOWN",
     "FIELD_0xF8": "UNKNOWN_OBJECT_FROM_VTABLE_0x2C0",
-    "VTABLE_0x2C0": "UNKNOWN",
+    "VTABLE_0x2C0": "SUPER_START_CHAIN (not factory)",
     "VTABLE_0x118": "UNKNOWN",
     "VTABLE_0x3D0": "UNKNOWN",
     "VTABLE_0x568": "UNKNOWN",

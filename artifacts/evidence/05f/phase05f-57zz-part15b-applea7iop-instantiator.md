@@ -117,3 +117,29 @@ FIRST_ANS_RUNTIME_REQUIREMENT: CANDIDATE_AKF_PROVIDER_CHAIN
 ITERATION_58B_ENTRY_GATE: BLOCKED_PROOF_INCOMPLETE
 ANS_STORAGE_IMPLEMENTATION_READINESS: BLOCKED_FOR_58B
 ```
+
+## 15B-V: FINAL boundary findings
+
+V3 correction: the vtable+0x2c0 call inside the candidate start is a
+SUPER-START chain (resolved to kernel entry 236 fn 0xfffffff009dad920,
+an IOService-style start that calls its own +0x2c0 and creates an object
+on success), NOT a factory. The object stored at this+0xf8 is returned by
+a class-chain walk helper (entry 13, 0xfffffff00aa4ebc0) that compares the
+provider's class against a target class vtable (0xfffffff007d33100).
+
+V1 status: the candidate 0xfffffff0082f4df0 has a twin function at
+0xfffffff0082f804c with an identical prologue (x19=x1, x20=x0, same
+0x2c0 super-chain). Neither is yet proven to be the vtable start slot:
+no vtable entry in the AppleA7IOP vtable (0xfffffff007d14370) points to
+either function's file offset. START_VTABLE_SLOT remains BLOCKED.
+
+Given the FINAL-slice constraint, the honest single blocker is:
+
+```
+APPLEA7IOP_START_VTABLE_SLOT: BLOCKED
+```
+
+The runtime path (V2 fallback) is available: a diagnostic breakpoint at
+either candidate with x0/x1 capture would settle the question without
+more static guessing. VTABLE_0x2C0 classification stands corrected:
+SUPER_START_CHAIN (not factory).
