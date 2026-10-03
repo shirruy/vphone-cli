@@ -162,3 +162,58 @@ Remaining blockers:
 
 1. External orchestrator binary/interface that supplies the DATA role value.
 2. Downstream role-bits conversion proof linking this path to 0x40.
+
+## 14L-S0: All 17 metadata entries accounted (correction)
+
+The enumeration count is 0x11 = 17. The previously published table listed
+only the 16 named roles and folded index 0 into a parenthetical. The full
+accounting in original table order:
+
+| Index | LP enum | APFS role bits | Name |
+|---:|---:|---:|---|
+| 0 | 0x00 | 0x00000000 | *(zero sentinel - nil name)* |
+| 1 | 0x01 | 0x00000001 | System |
+| 2 | 0x02 | 0x00000002 | User |
+| 3 | 0x04 | 0x00000004 | Recovery |
+| 4 | 0x05 | 0x00000008 | VM |
+| 5 | 0x06 | 0x00000010 | Preboot |
+| 6 | 0x07 | 0x00000020 | Installer |
+| 7 | **0x03** | **0x00000040** | **Data** |
+| 8 | 0x08 | 0x00000080 | Baseband data |
+| 9 | 0x0c | 0x000000c0 | Update |
+| 10 | 0x09 | 0x00000100 | xART |
+| 11 | 0x0d | 0x00000140 | Hardware |
+| 12 | 0x0b | 0x00000180 | Backup |
+| 13 | 0x0e | 0x000001c0 | SideCar |
+| 14 | 0x0a | 0x00000200 | Internal |
+| 15 | 0x0f | 0x00000240 | Enterprise data |
+| 16 | 0x10 | 0x00000280 | iDiags |
+
+Index 0 is the **zero sentinel**: LP=0, APFS=0, nil CFString, all-zero raw
+bytes. It is the empty entry returned by roleMetadataForRole: for role 0.
+Classification: 1 sentinel + 16 named roles = 17.
+
+## 14L-S: Invocation closure result
+
+DATA_INVOCATION_ROLE3_PROOF: BLOCKED
+
+Evidence-backed boundary:
+- The addVolume selector string and LPStaticAPFSContainer exist only in
+  restored_external.bin among all extracted binaries.
+- The selector has exactly one selref and zero in-binary text users; no
+  objc stub exists for it among the 247 mapped stubs.
+- The class GOT slot (0x1002eecd8) has zero text users.
+- Five in-binary users of enumerateRoleMetadataUsingBlock: exist, but all
+  are metadata queries (roleMetadataForRole:, defaultMountPointGivenRole:,
+  defaultVolumeNameGivenRole:, supportedContentTypes, setRole:withError:);
+  none reaches the add-volume wrapper.
+- No mov w?,#3 / table lookup / metadata iteration forwards LP role 3 into
+  the add-volume interface within this binary.
+- LPStatic* classes are defined inline in restored_external.bin; no
+  LogicalPlatform.framework dylib appears in LC_LOAD_DYLIB. The published
+  interface is therefore consumed by an external restore driver.
+
+Strongest external boundary: the host-side restore orchestrator that drives
+restored_external / asr over the published ObjC interface (restored host
+executable, XPC service, or equivalent restore component not present in the
+extracted set).
