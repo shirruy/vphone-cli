@@ -1,0 +1,101 @@
+{
+  "gate": "FIRST_ANS_RUNTIME_REQUIREMENT",
+  "iteration": "57ZZ_PART15B",
+  "control_identity": {
+    "dtree_sha256": "9e84c9add25b99eddd8b088b249e7ce348394b80a0def59949e9bb9c63a24e1b",
+    "bootkc_sha256": "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
+    "ramdisk_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069",
+    "serial_bytes": 32788
+  },
+  "experiment_identity": {
+    "dtree_sha256": "9f87087f4a147922c2327950e8e77efbf958765820a86c679549f43f1d7ff8e9",
+    "bootkc_sha256": "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
+    "ramdisk_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069",
+    "serial_bytes": 32798
+  },
+  "payload_hashes": {
+    "bootkc": "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
+    "ramdisk": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069",
+    "trustcache": "d632fe32c638e328e825e42a49343a626129e2e22d3220f3afa2cc7c7b40a85e",
+    "sptm": "7a4483ff53c11a533e2ada4f1292ac263d90d8d7e68890361cfe8351294170ab",
+    "txm": "e058931840ac000f6d050578fd7fc4ddb8c640125d92a713f61433be793fbf04"
+  },
+  "last_shared_milestone": "launchd boot-complete userspace (restore environment; both logs reach launchd stages)",
+  "first_ans_only_milestone": "NONE (no ANS-only milestone; only ASLR/timing noise differs)",
+  "common_prefix_bytes": 2372,
+  "M1_state": "NOT_REACHED",
+  "M2_state": {
+    "RTBuddy_match": "NOT_REACHED",
+    "RTBuddyService_attach": "NOT_REACHED"
+  },
+  "M3_state": {
+    "ANS3_probe": "NOT_REACHED",
+    "ANS3_start": "NOT_REACHED"
+  },
+  "first_exception": "w access to unsupported AArch64 system register S3_4_c15_c0_6 (pc = 0x00000000070B4AC0)",
+  "first_ans_mmio_access": "NOT_OBSERVED",
+  "first_mmio_consumer": "NONE (no ANS MMIO access observed; chain never reached AppleA7IOP)",
+  "interrupt_requirement": "NOT_YET_REACHED",
+  "dma_requirement": "NOT_YET_REACHED",
+  "queue_requirement": "NOT_YET_REACHED",
+  "first_missing_behavior": "AppleA7IOP::start never runs because the emulator publishes no AKFProvider with an AKF register map. Static BootKC evidence: 'AppleA7IOP::start' REQUIRE '_akfProvider != nullptr' (0x1388e5), '_akfRegisterMap != nullptr' (0x138999), '_akfMappedRegs != 0' (0x1389b4); and AppleASCWrapV6::initialize requires 'ASC firmware must be loaded by iBoot' (0x13804e). The AKF transport carries mailbox registers AKF_KIC_INBOX_CTRL / AKF_KIC_MAILBOX_SET / AKF_AP_OUTBOX_CTRL / AKF_AP_MAILBOX_SET (0x99cf09..0x99cf85). Without AKFProvider publication, AppleA7IOP iterates no children, no iop-ans-nub is published, and the RTBuddy->RTBuddyService->AppleANS3NVMeController chain never starts.",
+  "bootkc_static_evidence": {
+    "ASC firmware must be loaded by iBoot": {
+      "offset": "0x13804e",
+      "text": "\"ASC firmware must be loaded by iBoot\" @%s:%d"
+    },
+    "AKF_RUNNING: False": {
+      "offset": "0x1380f7",
+      "text": "AKF_RUNNING: False\n"
+    },
+    "AppleA7IOP::start REQUIRE _akfProvider": {
+      "offset": "0x1388e5",
+      "text": "_akfProvider != nullptr"
+    },
+    "_akfRegisterMap REQUIRE": {
+      "offset": "0x138999",
+      "text": "_akfRegisterMap != nullptr"
+    },
+    "_akfMappedRegs REQUIRE": {
+      "offset": "0x1389b4",
+      "text": "_akfMappedRegs != 0"
+    },
+    "AKF_KIC_INBOX_CTRL log": {
+      "offset": "0x99cf09",
+      "text": "AKF_KIC_INBOX_CTRL = 0x%08x, AKF_KIC_MAILBOX_SET = 0x%08x\n  Outbox AKF_AP_OUTBOX_CTRL = 0x%08x, "
+    },
+    "AKF_KIC_MAILBOX_SET log": {
+      "offset": "0x99cf26",
+      "text": "AKF_KIC_MAILBOX_SET = 0x%08x\n  Outbox AKF_AP_OUTBOX_CTRL = 0x%08x, "
+    },
+    "AKF_AP_OUTBOX_CTRL log": {
+      "offset": "0x99cf4c",
+      "text": "AKF_AP_OUTBOX_CTRL = 0x%08x, "
+    },
+    "AKF_AP_MAILBOX_SET log": {
+      "offset": "0x99cf85",
+      "text": "AKF_AP_MAILBOX_SET  = 0x%08x\n"
+    },
+    "akf getProperty(role)": {
+      "offset": "0x9a0ca5",
+      "text": "akf->getProperty(\"role\")))"
+    },
+    "AKFIOPNub class name": {
+      "offset": "0x8cc3a2",
+      "text": "AKFIOPNub"
+    }
+  },
+  "iteration58b_scope": "Publish a minimal AKFProvider (or AKFIOPNub) IOKit service carrying an AKF register map MemoryRegion with the proven mailbox registers (AKF_KIC_INBOX_CTRL, AKF_KIC_MAILBOX_SET, AKF_AP_OUTBOX_CTRL, AKF_AP_MAILBOX_SET) and role property, sufficient for AppleA7IOP::start to pass its akfProvider/akfRegisterMap/akfMappedRegs predicates. Diagnostic observation first: do NOT fabricate mailbox responses beyond what observation proves.",
+  "runtime_deferred": [
+    "exact root NSID",
+    "exact Data NSID",
+    "mount identity",
+    "external role=3 orchestrator caller",
+    "per-NSID publication"
+  ],
+  "verdicts": {
+    "FIRST_ANS_RUNTIME_REQUIREMENT": "PROVEN",
+    "ITERATION_58B_ENTRY_GATE": "PASS",
+    "ANS_STORAGE_IMPLEMENTATION_READINESS": "READY_FOR_58B_ONLY"
+  }
+}
