@@ -23,14 +23,15 @@
   "last_shared_milestone": "launchd boot-complete userspace (restore environment; both logs reach launchd stages)",
   "first_ans_only_milestone": "NONE (no ANS-only milestone; only ASLR/timing noise differs)",
   "common_prefix_bytes": 2372,
-  "M1_state": "NOT_REACHED",
+  "ANS_MMIO_RANGE_SCANNER": "PASS",
+  "M1_state": "NOT_OBSERVED",
   "M2_state": {
-    "RTBuddy_match": "NOT_REACHED",
-    "RTBuddyService_attach": "NOT_REACHED"
+    "RTBuddy_match": "NOT_OBSERVED",
+    "RTBuddyService_attach": "NOT_OBSERVED"
   },
   "M3_state": {
-    "ANS3_probe": "NOT_REACHED",
-    "ANS3_start": "NOT_REACHED"
+    "ANS3_probe": "NOT_OBSERVED",
+    "ANS3_start": "NOT_OBSERVED"
   },
   "first_exception": "w access to unsupported AArch64 system register S3_4_c15_c0_6 (pc = 0x00000000070B4AC0)",
   "first_ans_mmio_access": "NOT_OBSERVED",
@@ -38,7 +39,7 @@
   "interrupt_requirement": "NOT_YET_REACHED",
   "dma_requirement": "NOT_YET_REACHED",
   "queue_requirement": "NOT_YET_REACHED",
-  "first_missing_behavior": "AppleA7IOP::start never runs because the emulator publishes no AKFProvider with an AKF register map. Static BootKC evidence: 'AppleA7IOP::start' REQUIRE '_akfProvider != nullptr' (0x1388e5), '_akfRegisterMap != nullptr' (0x138999), '_akfMappedRegs != 0' (0x1389b4); and AppleASCWrapV6::initialize requires 'ASC firmware must be loaded by iBoot' (0x13804e). The AKF transport carries mailbox registers AKF_KIC_INBOX_CTRL / AKF_KIC_MAILBOX_SET / AKF_AP_OUTBOX_CTRL / AKF_AP_MAILBOX_SET (0x99cf09..0x99cf85). Without AKFProvider publication, AppleA7IOP iterates no children, no iop-ans-nub is published, and the RTBuddy->RTBuddyService->AppleANS3NVMeController chain never starts.",
+  "first_missing_behavior": "CANDIDATE_AKF_PROVIDER_CHAIN (not yet proven): static leads only. String evidence shows AppleA7IOP::start references _akfProvider/_akfRegisterMap/_akfMappedRegs and AppleASCWrapV6 requires ASC firmware loaded by iBoot, but xrefs, provider class, register-map source, and mailbox offsets remain unproven in this artifact revision.",
   "bootkc_static_evidence": {
     "ASC firmware must be loaded by iBoot": {
       "offset": "0x13804e",
@@ -85,7 +86,7 @@
       "text": "AKFIOPNub"
     }
   },
-  "iteration58b_scope": "Publish a minimal AKFProvider (or AKFIOPNub) IOKit service carrying an AKF register map MemoryRegion with the proven mailbox registers (AKF_KIC_INBOX_CTRL, AKF_KIC_MAILBOX_SET, AKF_AP_OUTBOX_CTRL, AKF_AP_MAILBOX_SET) and role property, sufficient for AppleA7IOP::start to pass its akfProvider/akfRegisterMap/akfMappedRegs predicates. Diagnostic observation first: do NOT fabricate mailbox responses beyond what observation proves.",
+  "iteration58b_scope": "BLOCKED_PROOF_INCOMPLETE: bounded QEMU-visible 58B cannot be named until AppleA7IOP::start CFG, expected provider class, provider publication chain, register-map source, and first QEMU-visible primitive are proven.",
   "runtime_deferred": [
     "exact root NSID",
     "exact Data NSID",
@@ -93,9 +94,10 @@
     "external role=3 orchestrator caller",
     "per-NSID publication"
   ],
+  "differential_ans_boot": "PASS",
   "verdicts": {
-    "FIRST_ANS_RUNTIME_REQUIREMENT": "PROVEN",
-    "ITERATION_58B_ENTRY_GATE": "PASS",
-    "ANS_STORAGE_IMPLEMENTATION_READINESS": "READY_FOR_58B_ONLY"
+    "FIRST_ANS_RUNTIME_REQUIREMENT": "CANDIDATE_AKF_PROVIDER_CHAIN",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
+    "ANS_STORAGE_IMPLEMENTATION_READINESS": "BLOCKED_FOR_58B"
   }
 }

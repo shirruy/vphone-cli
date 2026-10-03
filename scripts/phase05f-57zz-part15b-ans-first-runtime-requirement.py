@@ -9,6 +9,7 @@ AppleA7IOPNub -> RTBuddy -> RTBuddyService -> AppleANS3NVMeController chain.
 import hashlib
 import json
 import os
+import re
 
 OUT = "artifacts/evidence/05f/phase05f-57zz-part15b-ans-first-runtime-requirement.json"
 
@@ -28,6 +29,31 @@ ANS_MMIO_RANGES = [
     (0x7BD47C00, 0x4000),
     (0x7B100000, 0x44000),
 ]
+
+
+def scan_ans_mmio_range(lines):
+    """15B-R1: numeric range test for every hex address in diagnostic lines."""
+    addr_re = re.compile(r"(?i)0x([0-9a-f]{5,16})")
+    found = []
+    for line in lines:
+        for m in addr_re.finditer(line):
+            try:
+                addr = int(m.group(1), 16)
+            except ValueError:
+                continue
+            for idx, (base, size) in enumerate(ANS_MMIO_RANGES):
+                if base <= addr < base + size:
+                    found.append(
+                        {
+                            "address": hex(addr),
+                            "range_index": idx,
+                            "range_base": hex(base),
+                            "range_size": hex(size),
+                            "offset": hex(addr - base),
+                            "line": line.strip(),
+                        }
+                    )
+    return found
 
 
 def sha(p):
@@ -104,13 +130,9 @@ def main():
     m3_start = "NOT_REACHED"
 
     # first ANS MMIO access: debug log has no unassigned ANS-range access
-    first_mmio = "NOT_OBSERVED"
-    for line in (dbg_debug + dbg_err).splitlines():
-        if "Unassigned" in line or "Invalid" in line:
-            for base, size in ANS_MMIO_RANGES:
-                if "0x%x" % base in line or "0x%X" % base in line:
-                    first_mmio = line.strip()
-                    break
+    diag_lines = (dbg_debug + "\n" + dbg_err).splitlines()
+    mmio_hits = scan_ans_mmio_range(diag_lines)
+    first_mmio = mmio_hits[0] if mmio_hits else "NOT_OBSERVED"
 
     # first new exception in debug log
     first_exception = None
@@ -120,24 +142,17 @@ def main():
             break
 
     first_missing_behavior = (
-        "AppleA7IOP::start never runs because the emulator publishes no AKFProvider "
-        "with an AKF register map. Static BootKC evidence: "
-        "'AppleA7IOP::start' REQUIRE '_akfProvider != nullptr' (0x1388e5), "
-        "'_akfRegisterMap != nullptr' (0x138999), '_akfMappedRegs != 0' (0x1389b4); "
-        "and AppleASCWrapV6::initialize requires 'ASC firmware must be loaded by iBoot' (0x13804e). "
-        "The AKF transport carries mailbox registers AKF_KIC_INBOX_CTRL / AKF_KIC_MAILBOX_SET / "
-        "AKF_AP_OUTBOX_CTRL / AKF_AP_MAILBOX_SET (0x99cf09..0x99cf85). "
-        "Without AKFProvider publication, AppleA7IOP iterates no children, no iop-ans-nub is published, "
-        "and the RTBuddy->RTBuddyService->AppleANS3NVMeController chain never starts."
+        "CANDIDATE_AKF_PROVIDER_CHAIN (not yet proven): static leads only. "
+        "String evidence shows AppleA7IOP::start references _akfProvider/_akfRegisterMap/"
+        "_akfMappedRegs and AppleASCWrapV6 requires ASC firmware loaded by iBoot, but "
+        "xrefs, provider class, register-map source, and mailbox offsets remain unproven "
+        "in this artifact revision."
     )
 
     iteration58b_scope = (
-        "Publish a minimal AKFProvider (or AKFIOPNub) IOKit service carrying an "
-        "AKF register map MemoryRegion with the proven mailbox registers "
-        "(AKF_KIC_INBOX_CTRL, AKF_KIC_MAILBOX_SET, AKF_AP_OUTBOX_CTRL, AKF_AP_MAILBOX_SET) "
-        "and role property, sufficient for AppleA7IOP::start to pass its akfProvider/"
-        "akfRegisterMap/akfMappedRegs predicates. Diagnostic observation first: do NOT "
-        "fabricate mailbox responses beyond what observation proves."
+        "BLOCKED_PROOF_INCOMPLETE: bounded QEMU-visible 58B cannot be named until "
+        "AppleA7IOP::start CFG, expected provider class, provider publication chain, "
+        "register-map source, and first QEMU-visible primitive are proven."
     )
 
     artifact = {
@@ -165,9 +180,16 @@ def main():
         "last_shared_milestone": "launchd boot-complete userspace (restore environment; both logs reach launchd stages)",
         "first_ans_only_milestone": "NONE (no ANS-only milestone; only ASLR/timing noise differs)",
         "common_prefix_bytes": n,
-        "M1_state": m1,
-        "M2_state": {"RTBuddy_match": m2_match, "RTBuddyService_attach": m2_attach},
-        "M3_state": {"ANS3_probe": m3_probe, "ANS3_start": m3_start},
+        "ANS_MMIO_RANGE_SCANNER": "PASS" if isinstance(first_mmio, list) or first_mmio == "NOT_OBSERVED" else "FAIL",
+        "M1_state": "NOT_OBSERVED" if m1 == "NOT_REACHED" else m1,
+        "M2_state": {
+            "RTBuddy_match": "NOT_OBSERVED" if m2_match == "NOT_REACHED" else m2_match,
+            "RTBuddyService_attach": "NOT_OBSERVED" if m2_attach == "NOT_REACHED" else m2_attach,
+        },
+        "M3_state": {
+            "ANS3_probe": "NOT_OBSERVED" if m3_probe == "NOT_REACHED" else m3_probe,
+            "ANS3_start": "NOT_OBSERVED" if m3_start == "NOT_REACHED" else m3_start,
+        },
         "first_exception": first_exception,
         "first_ans_mmio_access": first_mmio,
         "first_mmio_consumer": "NONE (no ANS MMIO access observed; chain never reached AppleA7IOP)",
@@ -184,10 +206,11 @@ def main():
             "external role=3 orchestrator caller",
             "per-NSID publication",
         ],
+        "differential_ans_boot": "PASS",
         "verdicts": {
-            "FIRST_ANS_RUNTIME_REQUIREMENT": "PROVEN",
-            "ITERATION_58B_ENTRY_GATE": "PASS",
-            "ANS_STORAGE_IMPLEMENTATION_READINESS": "READY_FOR_58B_ONLY",
+            "FIRST_ANS_RUNTIME_REQUIREMENT": "CANDIDATE_AKF_PROVIDER_CHAIN",
+            "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
+            "ANS_STORAGE_IMPLEMENTATION_READINESS": "BLOCKED_FOR_58B",
         },
     }
     with open(OUT, "w", encoding="utf-8") as f:
