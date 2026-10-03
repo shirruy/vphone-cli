@@ -4,7 +4,7 @@
 
 ```
 CREATEFORMSU_STATIC_AUDIT: PASS
-CLASSIFICATION: CREATEFORMSU_SPECIALIZED_MSU_VOLUME_PATH
+CLASSIFICATION: CREATEFORMSU_SYSTEM_ONLY_STUBBED_PATH
 ```
 
 ## 14M-A: Symbol/reference discovery
@@ -52,7 +52,7 @@ creation path.** It is not used for Data, Preboot, or any other role.
 The wrapper's post-call region converges both paths at `0x1000829dc`:
 
 ```
-0x1000829dc  mov x25, x0         ; result (errno-like)
+0x1000829dc  mov x25, x0         ; result (integer status)
 0x1000829e0  cbz w0, 0x100082b30 ; 0 = success -> fsindex post-processing
 ```
 
@@ -61,9 +61,9 @@ always takes the error path:
 
 ```
 0x1000829e4  cbz x22, skip-error-object
-0x1000829fc  sxtw x3, w25       ; errno -> NSError
+0x1000829fc  sxtw x3, w25       ; integer status -> NSError
 0x100082a14  str x0, [x22]      ; error out-param
-0x100082a84  stur w25, [x0,#0xe]; errno in log record
+0x100082a84  stur w25, [x0,#0xe]; status value in log record
 0x100082aa0  mov x24, #0        ; nil result
 0x100082aa4  b 0x10008242c      ; release + return
 ```
@@ -74,7 +74,7 @@ No branch in the post-call region targets the normal-create block
 failure edges terminate at the release/error-record paths returning nil.
 
 **Error semantics:** nonzero = error int, zero = success (then fsindex
-post-processing). `0x2d` symbolic meaning: UNKNOWN (no errno table or
+post-processing). `0x2d` symbolic meaning: UNKNOWN (no error table or
 strerror mapping found in the analyzed artifacts).
 
 ## 14M-R5: Import binding
@@ -90,9 +90,10 @@ CREATEFORMSU_IMPORT: WEAK
 
 ## 14M-R7: OTI reachability (correction)
 
-The adjacent function at `0x2b82c` is NOT an anonymous pre-stub: it is
-`_APFSVolumeSetOtiLockerData` (exported, N_EXT). The 6 exported OtiLocker
-APIs tail-branch into the internal `__APFSVolumeOtiRequestHelper`
+The adjacent function at `0x2b82c` is a named sibling API —
+`_APFSVolumeSetOtiLockerData` (exported, N_EXT) — not a CreateForMSU
+preamble. The 6 exported OtiLocker APIs tail-branch into the internal
+`__APFSVolumeOtiRequestHelper`
 (`0x2b8c4`, N_EXT=False). `_APFSVolumeCreateForMSU` (`0x2b824`) is a
 separate 2-instruction stub with an immediate ret and **no CFG edge** to
 the helper. No caller of `0x2b824` or `0x2b82c` exists within
@@ -136,14 +137,15 @@ In THIS firmware build the exported `_APFSVolumeCreateForMSU` is a
 2-instruction stub returning error `0x2d`. The specialized path cannot
 succeed through this export.
 
-### Internal OTI helper
+### Adjacent OtiLocker subsystem (separate from CreateForMSU)
 
-The adjacent internal function (`__APFSVolumeOtiRequestHelper` @ 0x2b8c4,
-reached from the pre-stub wrapper at 0x2b82c with `w5=2`) builds a
-0x4c8-byte request and issues internal calls (0xcac / 0x6da6c); request
-types 1 and 4 output a volume handle. This is the OTI (one-time-index)
-machinery, but it is **not reachable** through the exported stub in this
-build.
+The adjacent OtiLocker subsystem is independently present in
+APFS.framework: `_APFSVolumeSetOtiLockerData` (@ 0x2b82c) and five sibling
+exports tail-branch into the internal `__APFSVolumeOtiRequestHelper`
+(@ 0x2b8c4, N_EXT=False), which builds a 0x4c8-byte request and issues
+internal calls (0xcac / 0x6da6c). No executable control-flow edge from
+`_APFSVolumeCreateForMSU` (@ 0x2b824) to this helper was found. It is
+therefore excluded from the CreateForMSU architectural chain.
 
 ### Restore-side
 
@@ -152,13 +154,17 @@ snapshot operation is invoked by the CreateForMSU path in
 restored_external.bin. No fallback from MSU failure to normal create exists
 at the wrapper level: the MSU result is returned directly.
 
-## 14M-J: Why two paths exist
+## 14M-J: Observed normal-vs-MSU path distinction
 
-CreateForMSU is the specialized MSU (sealed System) creation entry, gated
-on API availability and restricted to LP role 1. On this firmware build the
-export is stubbed to `0x2d`, so the specialized path cannot execute
-successfully; the normal `_APFSVolumeCreate` path (taken when the API
-pointer is null or the role is not System) is the functional path.
+The wrapper contains two creation call paths:
+
+- The normal path invokes `_APFSVolumeCreate`.
+- The optional System-only path invokes the weakly imported
+  `_APFSVolumeCreateForMSU` when that API is available and LP role == 1.
+
+Both receive the same creation dictionary. In the analyzed APFS.framework
+build, the CreateForMSU export is stubbed and cannot succeed. The design
+motive for the split is not proven and is not claimed here.
 
 ## Negative evidence (scoped)
 
@@ -171,3 +177,62 @@ pointer is null or the role is not System) is the functional path.
   wrapper.
 - No Data-role usage of CreateForMSU found anywhere in restored_external
   (the `cmp w25,#1` gate excludes it).
+
+## 57ZZ PART 14M CANONICAL STATUS
+
+```
+CreateForMSU:
+  _APFSVolumeCreateForMSU @ 0x2b824
+
+Analyzed implementation:
+  mov w0, #0x2d
+  ret
+
+Import:
+  WEAK
+
+Role eligibility:
+  LP role 1 / System only
+
+Caller-side dictionary:
+  Same dictionary as normal _APFSVolumeCreate path
+
+Return contract:
+  0 = success path
+  nonzero = error path
+
+0x2d symbolic meaning:
+  UNKNOWN
+
+Fallback to normal create:
+  PROVEN ABSENT
+
+CreateForMSU -> OTI edge:
+  PROVEN ABSENT
+
+Additional caller-side encryption/keybag input:
+  PROVEN ABSENT
+
+Seal/snapshot behavior through analyzed export:
+  PROVEN ABSENT IN THIS BUILD
+
+Classification:
+  CREATEFORMSU_SYSTEM_ONLY_STUBBED_PATH
+
+CREATEFORMSU_STATIC_AUDIT:
+  PASS
+
+DATA_ROLE_MAPPING:
+  PASS
+
+DATA_INVOCATION_ROLE3_PROOF:
+  BLOCKED_EXTERNAL_BOUNDARY
+
+DATA_LIFECYCLE_STATIC_GATE:
+  BLOCKED_EXTERNAL_BOUNDARY
+
+RUNTIME_MOUNT_IDENTITY:
+  DEFERRED
+```
+
+PART14M_CANONICAL_EVIDENCE_INTEGRITY: PASS

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""57ZZ Part 14M: CreateForMSU sealed-volume path audit.
+"""57ZZ Part 14M: CreateForMSU volume-creation path audit.
 
 Audits _APFSVolumeCreateForMSU across APFS.framework, asr, and
 restored_external: symbol discovery, import resolution, callers, ABI,
@@ -120,12 +120,12 @@ def main():
         "framework_stub": {
             "vm": "0x2b824",
             "disassembly": "mov w0, #0x2d; ret",
-            "finding": "In THIS firmware build the exported _APFSVolumeCreateForMSU is a 2-instruction stub returning error 0x2d (not-implemented/unavailable). The sealed/MSU path cannot succeed via this export in this build.",
+            "finding": "In THIS firmware build the exported _APFSVolumeCreateForMSU is a 2-instruction stub returning integer status 0x2d. No volume creation succeeds through this export in this build.",
         },
         "internal_helper": {
             "symbol": "__APFSVolumeOtiRequestHelper",
             "vm": "0x2b8c4",
-            "finding": "The adjacent internal function (reached from the pre-stub wrapper at 0x2b82c with w5=2) builds a 0x4c8-byte request and invokes an internal ioctl-ish call (0xcac / 0x6da6c). Request types 1 and 4 output a volume handle. This is the OTI (one-time-index) machinery, but it is NOT reachable through the exported stub in this build.",
+            "finding": "The adjacent OtiLocker subsystem (exported _APFSVolumeSetOtiLockerData @ 0x2b82c and 5 sibling exports) tail-branches into the internal __APFSVolumeOtiRequestHelper (0x2b8c4), which builds a 0x4c8-byte request and invokes internal calls (0xcac / 0x6da6c). No executable CFG edge from _APFSVolumeCreateForMSU (0x2b824) to this helper exists.",
         },
         "encryption_keybag": "No encryption/keybag property is added by the CreateForMSU path: the dictionary is identical to the normal path.",
         "seal_snapshot": "No seal/snapshot operation is invoked by the CreateForMSU path in restored_external.bin.",
@@ -148,15 +148,15 @@ def main():
             "result_test": "0x1000829dc mov x25, x0; 0x1000829e0 cbz w0, 0x100082b30 (0=success)",
             "error_path": [
                 "0x1000829e4 cbz x22, skip-error-object",
-                "0x1000829fc sxtw x3, w25 (errno into NSError constructor)",
+                "0x1000829fc sxtw x3, w25 (integer status into NSError constructor)",
                 "0x100082a14 str x0, [x22] (error object out)",
-                "0x100082a84 stur w25, [x0, #0xe] (errno stored in log record)",
+                "0x100082a84 stur w25, [x0, #0xe] (status value stored in log record)",
                 "0x100082aa0 mov x24, #0 (nil result)",
                 "0x100082aa4 b 0x10008242c (release + return)",
             ],
             "fallback_to_normal": "PROVEN_ABSENT: no branch in post-call region [0x1000829dc, end) targets the normal-create block [0x1000829c8, 0x1000829dc). BFS from the callsite (excluding pre-call reachability) shows the failure edges terminate at release/error-record paths returning x24=0.",
-            "error_semantics": "nonzero = error (errno-like int), zero = success (then continues to fsindex post-processing at 0x100082b30)",
-            "0x2d_meaning": "UNKNOWN (no errno table/strerror mapping found in analyzed artifacts; do not label ENOTSUP from memory)",
+            "error_semantics": "nonzero = error (integer status), zero = success (then continues to fsindex post-processing at 0x100082b30)",
+            "0x2d_meaning": "UNKNOWN (no error table/strerror mapping found in analyzed artifacts; do not label ENOTSUP from memory)",
         },
         "phase_r_import_binding": {
             "ordinal": 122,
@@ -166,12 +166,12 @@ def main():
         },
         "phase_r_oti_reachability": {
             "corrected": True,
-            "finding": "The adjacent function at 0x2b82c is NOT an anonymous pre-stub: it is _APFSVolumeSetOtiLockerData (exported, N_EXT). __APFSVolumeOtiRequestHelper (0x2b8c4) is N_EXT=False (internal). The 6 exported OtiLocker APIs tail-branch into the internal helper; _APFSVolumeCreateForMSU (0x2b824) is a separate 2-instruction stub with NO CFG edge to the helper (immediate ret; no caller of 0x2b824 or 0x2b82c within APFS.framework text).",
+            "finding": "The adjacent function at 0x2b82c is _APFSVolumeSetOtiLockerData (exported, N_EXT) - it is a named sibling API, not a CreateForMSU preamble. __APFSVolumeOtiRequestHelper (0x2b8c4) is N_EXT=False (internal). The 6 exported OtiLocker APIs tail-branch into the internal helper; _APFSVolumeCreateForMSU (0x2b824) is a separate 2-instruction stub with NO CFG edge to the helper (immediate ret; no caller of 0x2b824 or 0x2b82c within APFS.framework text).",
             "edge": "CREATEFORMSU_TO_OTI_EDGE: PROVEN_ABSENT",
         },
         "phase_j_comparison": {
             "normal_vs_msu": "Both paths share the SAME wrapper, SAME dictionary construction, and SAME x1 CFDictionary. The only differences are (1) the API called and (2) the eligibility check: MSU requires the API pointer to be non-null AND LP role == 1 (System).",
-            "why_two_paths": "CreateForMSU is the sealed/MSU System-volume creation entry. On this firmware build it is stubbed to return 0x2d, so restore falls back to... actually NO fallback exists at the wrapper level: the MSU result is returned directly. The sealed path is simply unavailable in this build.",
+            "why_two_paths": "Observed distinction, not design motive: the wrapper has two call paths. The normal path invokes _APFSVolumeCreate; the optional System-only path invokes the weakly imported _APFSVolumeCreateForMSU when available and LP role==1. Both receive the same dictionary. In this build the CreateForMSU export is stubbed and cannot succeed; no fallback exists at the wrapper level.",
         },
         "classification": "CREATEFORMSU_SYSTEM_ONLY_STUBBED_PATH",
         "classification_rationale": "CreateForMSU is exclusively System-role (LP 1), weakly imported (availability-gated), shares the normal dictionary, and its implementation in this firmware build always returns 0x2d with no fallback to normal create. The error propagates as NSError and the wrapper returns nil. The MSU path is a disabled/dead System-only branch in this build.",
