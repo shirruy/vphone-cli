@@ -1,0 +1,17 @@
+{
+    "run_name":  "p9-ascwrap-v3",
+    "stamp":  "20261004-152556",
+    "dtree_sha256":  "ce06c3379f50e6e9fbb60d2ea0fba6733f0ff2784c3e4e11aa7ec0f2f07d8868",
+    "bootkc_sha256":  "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
+    "qemu_sha256":  "dcf12b26593cb78f02b87acc57adbd6c74468478df3da6b603f791b144527d51",
+    "gdb_sha256":  "e0ca00b941759db88b987f3ab8a69da1e759e71e6eadd191dd5b8077dddb7f98",
+    "warmup_seconds":  8,
+    "gdb_window_seconds":  150,
+    "gdb_exit_code":  0,
+    "gdb_elapsed_seconds":  151.4,
+    "serial_bytes":  37148,
+    "serial_sha256":  "0abeee92b255630cb56e6cb923e915244bb5600de57c5acd5bea901129e5c4ff",
+    "natural_exit":  false,
+    "stderr_bytes":  0,
+    "capture_json":  "gdb-capture.json"
+}

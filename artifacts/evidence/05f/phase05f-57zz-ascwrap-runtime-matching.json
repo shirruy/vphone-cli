@@ -1,0 +1,45 @@
+{
+  "gate": "57ZZ_ASCWRAP_RUNTIME_MATCHING",
+  "run": {
+    "dir": "build/phase05f-runtime/p9-ascwrap-v3",
+    "dtree": "canonical ascwrap experiment (CE06C3379F50E6E9FBB60D2EA0FBA6733F0FF2784C3E4E11AA7EC0F2F07D8868)",
+    "classification": "NO_HIT",
+    "slide": 536870912,
+    "instrumented_targets": {
+      "ascwrap_start_entry": "0xfffffff0082f4dec + slide (vtable +0x348, bti c pad)",
+      "nub_start_entry": "0xfffffff0082f8048 + slide (vtable +0x348, bti c pad)",
+      "nub_withregistryentry": "0xfffffff0082f7b40 + slide"
+    },
+    "arm_evidence": [
+      "CAPTURE [0000.033] hbreak candA @ 0xfffffff0282f4dec installed",
+      "CAPTURE [0000.034] hbreak candB @ 0xfffffff0282f8048 installed",
+      "CAPTURE [0000.034] hbreak nubWRE @ 0xfffffff0282f7b40 installed"
+    ],
+    "serial_bytes": 37148,
+    "serial_lines": 721,
+    "gdb_elapsed": 151.4
+  },
+  "timing_gate": {
+    "warmup_seconds": 8,
+    "arming_wall_clock": "~8.03s (slide derived 0.029s after attach; hbreaks 0.034s)",
+    "kernel_checkpoint_range": "[00:00:20] .. [00:01:06] kernel time observed in serial",
+    "kernel_iokit_starts_in_window": 14,
+    "analysis": "Breakpoints were armed at ~8.03s wall-clock. The kernel IOKit matching phase (CoreAnalyticsHub/OLYHAL/Backlight starts, kernel timestamps [00:00:20+] = ~17-22s wall) occurred entirely within the instrumented window. The boot reached idle within the window (first watchdog stop at 30s GDB-time showed the idle-loop PC). T2 < T3 is proven for the observed matching phase.",
+    "BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING": "PROVEN_FOR_OBSERVED_MATCHING_PHASE"
+  },
+  "runtime_results": {
+    "APPLEASCWRAPV6_START": "NOT_OBSERVED",
+    "APPLEA7IOPNUB_START": "NOT_OBSERVED",
+    "APPLEA7IOPNUB_WITHREGISTRYENTRY": "NOT_OBSERVED",
+    "iokit_start_calls_of_other_drivers": 14
+  },
+  "verdicts": {
+    "BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING": "PROVEN_FOR_OBSERVED_MATCHING_PHASE",
+    "APPLEASCWRAPV6_START_HIT": "NO",
+    "APPLEA7IOPNUB_START_HIT": "NO",
+    "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_PROVIDER_PUBLICATION_INSTRUMENTATION",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
+    "58B_IMPLEMENTATION": "NONE"
+  }
+}
