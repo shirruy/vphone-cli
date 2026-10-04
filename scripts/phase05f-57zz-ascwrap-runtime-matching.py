@@ -30,6 +30,44 @@ def main():
             if "::start" in line or "OLYHAL" in line:
                 iokit_starts_observed.append(line.rstrip())
 
+    # Provider publication analysis (P7/P8): merge the v2/v3 provider runs
+    import os as _os
+    provider_runs = {}
+    for run_name in ("p7-provider-v2", "p7-provider-v3"):
+        d = _os.path.join("build", "phase05f-runtime", run_name)
+        p = _os.path.join(d, "gdb-capture.json")
+        if _os.path.exists(p):
+            pc = json.load(open(p, encoding="utf-8-sig"))
+            allocs = [e for e in pc.get("events", []) if e.get("label") == "bp:candB"]
+            starts = [e for e in pc.get("events", []) if e.get("label") == "bp:candA"]
+            SLIDE = pc["slide"]["slide"] if pc.get("slide") else 0
+            known_vts = {
+                0xFFFFFFF007D131E0: "AppleASCWrapV6",
+                0xFFFFFFF007D14370: "AppleA7IOP",
+                0xFFFFFFF007D14960: "AppleA7IOPNub",
+                0xFFFFFFF007D139B8: "AppleASCWrapV6SEP",
+                0xFFFFFFF007D12A08: "AppleASCWrapV6SISP",
+            }
+            start_clients = []
+            ascwrap_start = False
+            for e in starts:
+                vt_hex = (e.get("mem_x0") or {}).get("+00")
+                if not vt_hex:
+                    continue
+                vt_static = int(vt_hex, 16) - SLIDE
+                cls = known_vts.get(vt_static, "other")
+                start_clients.append(cls)
+                if cls != "other":
+                    ascwrap_start = True
+            provider_runs[run_name] = {
+                "classification": pc.get("classification"),
+                "armio_allocations": len(allocs),
+                "start_dispatch_hits": len(starts),
+                "start_client_classes": start_clients,
+                "ascwrap_family_start_observed": ascwrap_start,
+                "serial_bytes_path": _os.path.join(d, "uart0.log"),
+            }
+
     artifact = {
         "gate": "57ZZ_ASCWRAP_RUNTIME_MATCHING",
         "run": {
@@ -69,9 +107,14 @@ def main():
             "APPLEA7IOPNUB_WITHREGISTRYENTRY": "NOT_OBSERVED",
             "iokit_start_calls_of_other_drivers": len(iokit_starts_observed),
         },
+        "provider_publication_runs": provider_runs,
         "verdicts": {
             "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
-            "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN",
+            "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (3s warmup; allocations observed from t=0.057)",
+            "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS-specific alloc not yet identified among ARMIO allocations)",
+            "ARMIO_ALLOCATIONS_OBSERVED": max((r["armio_allocations"] for r in provider_runs.values()), default=0),
+            "IOKIT_START_DISPATCHES_OBSERVED": max((r["start_dispatch_hits"] for r in provider_runs.values()), default=0),
+            "ASCWRAP_FAMILY_START_OBSERVED": any(r["ascwrap_family_start_observed"] for r in provider_runs.values()),
             "APPLEASCWRAPV6_START_HIT": "NO",
             "APPLEA7IOPNUB_START_HIT": "NO",
             "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_PROVIDER_PUBLICATION_INSTRUMENTATION",

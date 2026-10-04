@@ -48,7 +48,19 @@ def run_ascwrap_fixup(raw, out, nvram):
     iop,ascwrap-v6 compatible when --preserve-ans-compatible semantics are
     active. No output re-decode/re-encode round-trip is performed.
     """
-    src = open(DT_FIXUP, "r", encoding="utf-8").read()
+    src_bytes = open(DT_FIXUP, "rb").read()
+    import hashlib as _hl
+    src_sha = _hl.sha256(src_bytes).hexdigest().upper()
+    src = src_bytes.decode("utf-8")
+    expected_patterns = [
+        "def del_compat(d, preserve_ans_compat=False):",
+        "if preserve_ans_compat and is_ans_nub and ANS_COMPAT_PRESERVE in compat:",
+    ]
+    for pat in expected_patterns:
+        if src.count(pat) != 1:
+            raise SystemExit(
+                "dt_fixup source drift (pattern count != 1): %r (sha %s)" % (pat, src_sha)
+            )
     old = """def del_compat(d, preserve_ans_compat=False):
   is_ans_nub = (d.props.get('name') == 'iop-ans-nub')
   for c in d.children:
@@ -84,6 +96,7 @@ def run_ascwrap_fixup(raw, out, nvram):
     ns["fixup"](root, nvram_file=open(nvram, "rb"), preserve_ans_compat=True)
     with open(out, "wb") as f:
         f.write(ns["encode_node"](root))
+    return src_sha
 
 def load_parser():
     src = open(DT_FIXUP, "r", encoding="utf-8").read().split("if __name__==")[0]
@@ -143,7 +156,7 @@ def main():
 
     run_canonical_fixup(args.raw, control, args.nvram, [])
     run_canonical_fixup(args.raw, ans58a, args.nvram, ["--preserve-ans-compatible"])
-    run_ascwrap_fixup(args.raw, ascwrap, args.nvram)
+    src_sha = run_ascwrap_fixup(args.raw, ascwrap, args.nvram)
 
     ns = load_parser()
     r_ctrl = parse(ns, control)
@@ -162,6 +175,7 @@ def main():
 
     report = {
         "gate": "57ZZ_ASCWRAP_DT_FIXTURE_BUILDER",
+        "DT_FIXUP_SOURCE_SHA256": src_sha,
         "raw_dt_sha256": sha256(args.raw),
         "control_dt_sha256": sha256(control),
         "ans58a_dt_sha256": sha256(ans58a),

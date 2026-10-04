@@ -10,8 +10,7 @@
 ## Timing gate
 
 ```
-GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING: PROVEN
-BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING: UNKNOWN
+BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING: PROVEN_FOR_OBSERVED_MATCHING_PHASE
 ```
 
 Breakpoints were armed at ~8.03s wall-clock. The kernel IOKit matching phase (CoreAnalyticsHub/OLYHAL/Backlight starts, kernel timestamps [00:00:20+] = ~17-22s wall) occurred entirely within the instrumented window. The boot reached idle within the window (first watchdog stop at 30s GDB-time showed the idle-loop PC). T2 < T3 is proven for the observed matching phase.
@@ -20,7 +19,11 @@ Breakpoints were armed at ~8.03s wall-clock. The kernel IOKit matching phase (Co
 
 ```
 GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING: PROVEN
-BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING: UNKNOWN
+BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE: PROVEN (3s warmup; allocations observed from t=0.057)
+BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING: UNKNOWN (ANS-specific alloc not yet identified among ARMIO allocations)
+ARMIO_ALLOCATIONS_OBSERVED: 55
+IOKIT_START_DISPATCHES_OBSERVED: 40
+ASCWRAP_FAMILY_START_OBSERVED: False
 APPLEASCWRAPV6_START_HIT: NO
 APPLEA7IOPNUB_START_HIT: NO
 MATCHING_STAGE_CLASSIFICATION: UNKNOWN_REQUIRES_PROVIDER_PUBLICATION_INSTRUMENTATION
