@@ -1,20 +1,26 @@
-# 57ZZ — BootKC Chained-Fixup Decoder
+# 57ZZ — BootKC Chained-Fixup Decoder (format-complete)
 
 ```
-BOOTKC_CHAIN_FORMAT: PROVEN (pointer_format 8 where chained)
+BOOTKC_CHAIN_FORMAT: PROVEN (pointer format 8)
+CHAIN_DECODER_FORMAT_COMPLETE: PASS
 CHAIN_WALK_SELF_CONSISTENCY: PASS
-total chain-walked fixups: 532174
+total fixups: 532174
+cache levels: {'0': 532174, '1': 0, '2': 0, '3': 0}
 ```
 
-## Validation against known pointers
+| segment | fmt | pages | single | multi | none | heads | fixups |
+|---|---|---|---|---|---|---|---|
+| __DATA_CONST | 8 | 352 | 334 | 0 | 18 | 334 | 516451 |
+| __DATA_SPTM | 8 | 19 | 0 | 0 | 19 | 0 | 0 |
+| __DATA | 8 | 152 | 52 | 0 | 100 | 52 | 15723 |
 
-- PASS ASCWrap GOT superclass -> AppleA7IOP class object: 0xfffffff00afed5c0 (expected 0xfffffff00afed5c0)
-- PASS ASCWrap mod_init[1] (AppleASCWrapV6 registration): 0xfffffff0082f42b4 (expected 0xfffffff0082f42b4)
-- PASS ASCWrap mod_init[2] (AppleASCWrapV6SEP registration): 0xfffffff0082f4800 (expected 0xfffffff0082f4800)
-- PASS A7IOP mod_init[0] chain entry: 0xfffffff0082f7798 (expected 0xfffffff0082f7798)
+## Validation
 
-## Candidate references (real chain decode)
+- PASS ASCWrap GOT superclass -> AppleA7IOP class object: 0xfffffff00afed5c0
+- PASS ASCWrap mod_init[1] (AppleASCWrapV6 registration): 0xfffffff0082f42b4
+- PASS ASCWrap mod_init[2] (AppleASCWrapV6SEP registration): 0xfffffff0082f4800
+- PASS A7IOP mod_init[0] chain entry: 0xfffffff0082f7798
 
-- candA `0xfffffff0082f4df0`: 0 reference(s)
-- candB `0xfffffff0082f804c`: 0 reference(s)
+candA references (valid decoder): 0
+candB references (valid decoder): 0
 

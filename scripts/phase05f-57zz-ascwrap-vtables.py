@@ -17,17 +17,47 @@ OUT_JSON = "artifacts/evidence/05f/phase05f-57zz-ascwrap-vtables.json"
 OUT_MD = "artifacts/evidence/05f/phase05f-57zz-ascwrap-vtables.md"
 
 KC_BASE = 0xFFFFFFF007004000
-START_SLOT = 0x348
+START_SLOT = 0x360  # PROVEN from client->start(provider) dispatch at 0xfffffff00aada0c8
 CAND_A = 0xFFFFFFF0082F4DF0
 CAND_B = 0xFFFFFFF0082F804C
 
-VTABLES = {
-    "AppleA7IOP":         {"slot_vm": 0xFFFFFFF007D14370, "mod_init": "0xfffffff0082f7798"},
-    "AppleASCWrapV6":     {"slot_vm": 0xFFFFFFF007D131E0, "mod_init": "0xfffffff0082f42b4"},
-    "AppleASCWrapV6SEP":  {"slot_vm": 0xFFFFFFF007D139B8, "mod_init": "0xfffffff0082f4800"},
-    "AppleASCWrapV6SISP": {"slot_vm": 0xFFFFFFF007D12A08, "mod_init": "0xfffffff0082f3238"},
-    "AppleA7IOPNub":      {"slot_vm": 0xFFFFFFF007D14960, "mod_init": "0xfffffff0082f7d90"},
+# mod_init function VMs are chain-decoder-validated anchors (see
+# phase05f-57zz-bootkc-chained-fixups.json validation_checks). The vtable
+# addresses themselves are DERIVED below from each mod_init's ARM64
+# adrp/add x16 sequence, then asserted against the expected values.
+MOD_INITS = {
+    "AppleA7IOP":         {"mod_init_vm": 0xFFFFFFF0082F7798, "expected_vtable": 0xFFFFFFF007D14370},
+    "AppleASCWrapV6":     {"mod_init_vm": 0xFFFFFFF0082F42B4, "expected_vtable": 0xFFFFFFF007D131E0},
+    "AppleASCWrapV6SEP":  {"mod_init_vm": 0xFFFFFFF0082F4800, "expected_vtable": 0xFFFFFFF007D139B8},
+    "AppleASCWrapV6SISP": {"mod_init_vm": 0xFFFFFFF0082F3238, "expected_vtable": 0xFFFFFFF007D12A08},
+    "AppleA7IOPNub":      {"mod_init_vm": 0xFFFFFFF0082F7D90, "expected_vtable": 0xFFFFFFF007D14960},
 }
+
+
+def derive_vtable_from_mod_init(data, mod_init_vm):
+    """Parse adrp/add x16 chain in a mod_init to find the vtable address
+    it installs (the final x16 value before pacda/str)."""
+    import capstone as _cs
+    md = _cs.Cs(_cs.CS_ARCH_ARM64, _cs.CS_MODE_LITTLE_ENDIAN)
+    fo = 0x11E0000 + (mod_init_vm - 0xFFFFFFF0081E4000)
+    insns = list(md.disasm(data[fo : fo + 0x40], mod_init_vm))
+    x16 = None
+    for ins in insns:
+        if ins.mnemonic == "adrp" and ins.op_str.startswith("x16,"):
+            try:
+                x16 = int(ins.op_str.split("#")[1], 16)
+            except Exception:
+                pass
+        elif ins.mnemonic == "add" and ins.op_str.startswith("x16,"):
+            parts = [q.strip() for q in ins.op_str.split(",")]
+            if len(parts) == 3 and x16 is not None:
+                try:
+                    x16 += int(parts[2].replace("#", "").replace("0x", ""), 16)
+                except Exception:
+                    pass
+        elif ins.mnemonic == "pacda":
+            break
+    return x16
 
 A7_EXEC = (0xFFFFFFF0082F4CB0, 0xFFFFFFF0082F4CB0 + 0x69B4)
 ASC_EXEC = (0xFFFFFFF0082F2BF0, 0xFFFFFFF0082F2BF0 + 0x20B4)
@@ -74,6 +104,22 @@ def main():
                 break
             cur += nxt * 4
 
+    raw_kc = open(BOOTKC, "rb").read()
+    VTABLES = {}
+    derivation_report = {}
+    for name, info in MOD_INITS.items():
+        derived = derive_vtable_from_mod_init(raw_kc, info["mod_init_vm"])
+        ok = derived == info["expected_vtable"]
+        derivation_report[name] = {
+            "mod_init": hex(info["mod_init_vm"]),
+            "derived_vtable": hex(derived) if derived else None,
+            "expected": hex(info["expected_vtable"]),
+            "match": ok,
+        }
+        if not ok:
+            raise SystemExit("vtable derivation mismatch for %s: %s vs %s" % (name, derived, info["expected_vtable"]))
+        VTABLES[name] = {"slot_vm": derived, "mod_init": hex(info["mod_init_vm"])}
+
     out = {}
     for name, info in VTABLES.items():
         vt = info["slot_vm"]
@@ -85,7 +131,7 @@ def main():
         start_target = entries.get(START_SLOT)
         classification = None
         if start_target is None:
-            classification = "INHERITS_SUPER_START (no +0x348 override)"
+            classification = "INHERITS_SUPER_START (no +%0x%x override)" % (START_SLOT, 0) if False else "INHERITS_SUPER_START"
         else:
             classification = "OVERRIDES_START"
         out[name] = {
@@ -124,20 +170,35 @@ def main():
             "candA": {"vm": hex(CAND_A), "vtable_hits": cand_hits["candA"], "count": len(cand_hits["candA"])},
             "candB": {"vm": hex(CAND_B), "vtable_hits": cand_hits["candB"], "count": len(cand_hits["candB"])},
             "relationship": (
-                "candA is the function body 4 bytes after the AppleASCWrapV6/A7IOP "
-                "start landing pad (%s); candB is the body 4 bytes after the "
-                "AppleA7IOPNub start pad (%s). Neither is the direct vtable "
-                "target, but both lie on the entry path."
+                "candA (%s pad) and candB (%s pad) sit at vtable slot +0x348, "
+                "which the proven start dispatch proves is NOT start (start is "
+                "+0x360). The semantic identity of +0x348 is UNKNOWN; prior "
+                "breakpoints there were never start instrumentation."
             ),
         },
+        "vtable_base_derivation": derivation_report,
+        "ALL_FIVE_VTABLE_BASES": "DERIVED_AND_ASSERTED",
         "verdicts": {
-            "START_VTABLE_SLOT_SEMANTIC_IDENTITY": "UNPROVEN",
-            "START_SLOT_0x348": "CANDIDATE_SUPPORTED_BY_VTABLE_CORRELATION",
-            "APPLEA7IOP_START_SLOT_0x348": "CANDIDATE (semantic identity pending callsite proof)",
+            "IOSERVICE_START_VTABLE_SLOT": "PROVEN_FROM_CALLSITE (+0x360)",
+            "IOSERVICE_START_DISPATCH_CALLSITE_VM": "0xfffffff00aada0c8",
+            "DISPATCH_INSTRUCTIONS": [
+                "0xfffffff00aada0bc  mov x17, x27",
+                "0xfffffff00aada0c0  ldr x16, [x22]        ; client vtable",
+                "0xfffffff00aada0c4  autda x16, x17",
+                "0xfffffff00aada0c8  add x8, x16, #0x360   ; slot",
+                "0xfffffff00aada0cc  ldr x9, [x16, #0x360] ; fn ptr",
+                "0xfffffff00aada0d0  mov x0, x22           ; client (this)",
+                "0xfffffff00aada0d4  ldr x1, [sp, #0x78]   ; provider",
+                "0xfffffff00aada0e0  blraa x9, x17         ; client->start(provider)",
+                "0xfffffff00aada0e4  cbz w0                ; bool result",
+            ],
             "APPLEASCWRAPV6_START_TARGET": true_ascwrap_start,
             "APPLEA7IOPNUB_START_TARGET": true_nub_start,
-            "CANDA_VTABLE_STATUS": "FUNCTION_BODY_AFTER_LANDING_PAD (reachable via +0x348 entry)",
-            "CANDB_VTABLE_STATUS": "FUNCTION_BODY_AFTER_LANDING_PAD (reachable via +0x348 entry)",
+            "CANDA_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
+            "CANDB_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
+            "PRIOR_0x348_START_CLAIM": "INVALIDATED (real start slot is +0x360 per callsite proof)",
+            "PRIOR_NO_HIT_INTERPRETATION": "CANDA/CANDB breakpoints did not instrument start; the NO_HIT says nothing about ASCWrapV6::start",
+            "START_DETECTION_TARGET": "0xfffffff00aad7da0 (base IOService::start inherited by ASCWrapV6/A7IOP/Nub/SISP) or the dispatch callsite 0xfffffff00aada0e0",
             "PRIOR_0x2C0_SUPER_START_CLAIM": "INVALIDATED (slot +0x2c0 resolves to a shared kernel function, not start)",
         },
     }

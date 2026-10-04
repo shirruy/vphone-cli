@@ -1,14 +1,14 @@
 {
   "gate": "57ZZ_ASCWRAP_VTABLES",
   "derivation": "vtable CONTENTS chain-decoder derived; vtable BASE ADDRESSES are known anchors until independently rederived from mod_init instruction sequences",
-  "start_slot": "+0x348 (bti c landing pad targets)",
+  "start_slot": "+0x360 (bti c landing pad targets)",
   "vtables": {
     "AppleA7IOP": {
       "vtable_vm": "0xfffffff007d14370",
       "mod_init": "0xfffffff0082f7798",
       "resolved_entries": 125,
-      "start_slot": "+0x348",
-      "start_target": "0xfffffff00aad8190",
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
       "start_owner": "kernel",
       "start_classification": "OVERRIDES_START",
       "entries": {
@@ -518,9 +518,9 @@
       "vtable_vm": "0xfffffff007d131e0",
       "mod_init": "0xfffffff0082f42b4",
       "resolved_entries": 125,
-      "start_slot": "+0x348",
-      "start_target": "0xfffffff0082f4dec",
-      "start_owner": "a7iop",
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
+      "start_owner": "kernel",
       "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
@@ -1029,8 +1029,8 @@
       "vtable_vm": "0xfffffff007d139b8",
       "mod_init": "0xfffffff0082f4800",
       "resolved_entries": 107,
-      "start_slot": "+0x348",
-      "start_target": "0xfffffff00aac8d44",
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aac8a4c",
       "start_owner": "kernel",
       "start_classification": "OVERRIDES_START",
       "entries": {
@@ -1468,9 +1468,9 @@
       "vtable_vm": "0xfffffff007d12a08",
       "mod_init": "0xfffffff0082f3238",
       "resolved_entries": 125,
-      "start_slot": "+0x348",
-      "start_target": "0xfffffff0082f4dec",
-      "start_owner": "a7iop",
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
+      "start_owner": "kernel",
       "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
@@ -1979,9 +1979,9 @@
       "vtable_vm": "0xfffffff007d14960",
       "mod_init": "0xfffffff0082f7d90",
       "resolved_entries": 125,
-      "start_slot": "+0x348",
-      "start_target": "0xfffffff0082f8048",
-      "start_owner": "a7iop",
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
+      "start_owner": "kernel",
       "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
@@ -2498,16 +2498,62 @@
       "vtable_hits": [],
       "count": 0
     },
-    "relationship": "candA is the function body 4 bytes after the AppleASCWrapV6/A7IOP start landing pad (%s); candB is the body 4 bytes after the AppleA7IOPNub start pad (%s). Neither is the direct vtable target, but both lie on the entry path."
+    "relationship": "candA (%s pad) and candB (%s pad) sit at vtable slot +0x348, which the proven start dispatch proves is NOT start (start is +0x360). The semantic identity of +0x348 is UNKNOWN; prior breakpoints there were never start instrumentation."
   },
+  "vtable_base_derivation": {
+    "AppleA7IOP": {
+      "mod_init": "0xfffffff0082f7798",
+      "derived_vtable": "0xfffffff007d14370",
+      "expected": "0xfffffff007d14370",
+      "match": true
+    },
+    "AppleASCWrapV6": {
+      "mod_init": "0xfffffff0082f42b4",
+      "derived_vtable": "0xfffffff007d131e0",
+      "expected": "0xfffffff007d131e0",
+      "match": true
+    },
+    "AppleASCWrapV6SEP": {
+      "mod_init": "0xfffffff0082f4800",
+      "derived_vtable": "0xfffffff007d139b8",
+      "expected": "0xfffffff007d139b8",
+      "match": true
+    },
+    "AppleASCWrapV6SISP": {
+      "mod_init": "0xfffffff0082f3238",
+      "derived_vtable": "0xfffffff007d12a08",
+      "expected": "0xfffffff007d12a08",
+      "match": true
+    },
+    "AppleA7IOPNub": {
+      "mod_init": "0xfffffff0082f7d90",
+      "derived_vtable": "0xfffffff007d14960",
+      "expected": "0xfffffff007d14960",
+      "match": true
+    }
+  },
+  "ALL_FIVE_VTABLE_BASES": "DERIVED_AND_ASSERTED",
   "verdicts": {
-    "START_VTABLE_SLOT_SEMANTIC_IDENTITY": "UNPROVEN",
-    "START_SLOT_0x348": "CANDIDATE_SUPPORTED_BY_VTABLE_CORRELATION",
-    "APPLEA7IOP_START_SLOT_0x348": "CANDIDATE (semantic identity pending callsite proof)",
-    "APPLEASCWRAPV6_START_TARGET": "0xfffffff0082f4dec",
-    "APPLEA7IOPNUB_START_TARGET": "0xfffffff0082f8048",
-    "CANDA_VTABLE_STATUS": "FUNCTION_BODY_AFTER_LANDING_PAD (reachable via +0x348 entry)",
-    "CANDB_VTABLE_STATUS": "FUNCTION_BODY_AFTER_LANDING_PAD (reachable via +0x348 entry)",
+    "IOSERVICE_START_VTABLE_SLOT": "PROVEN_FROM_CALLSITE (+0x360)",
+    "IOSERVICE_START_DISPATCH_CALLSITE_VM": "0xfffffff00aada0c8",
+    "DISPATCH_INSTRUCTIONS": [
+      "0xfffffff00aada0bc  mov x17, x27",
+      "0xfffffff00aada0c0  ldr x16, [x22]        ; client vtable",
+      "0xfffffff00aada0c4  autda x16, x17",
+      "0xfffffff00aada0c8  add x8, x16, #0x360   ; slot",
+      "0xfffffff00aada0cc  ldr x9, [x16, #0x360] ; fn ptr",
+      "0xfffffff00aada0d0  mov x0, x22           ; client (this)",
+      "0xfffffff00aada0d4  ldr x1, [sp, #0x78]   ; provider",
+      "0xfffffff00aada0e0  blraa x9, x17         ; client->start(provider)",
+      "0xfffffff00aada0e4  cbz w0                ; bool result"
+    ],
+    "APPLEASCWRAPV6_START_TARGET": "0xfffffff00aad7da0",
+    "APPLEA7IOPNUB_START_TARGET": "0xfffffff00aad7da0",
+    "CANDA_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
+    "CANDB_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
+    "PRIOR_0x348_START_CLAIM": "INVALIDATED (real start slot is +0x360 per callsite proof)",
+    "PRIOR_NO_HIT_INTERPRETATION": "CANDA/CANDB breakpoints did not instrument start; the NO_HIT says nothing about ASCWrapV6::start",
+    "START_DETECTION_TARGET": "0xfffffff00aad7da0 (base IOService::start inherited by ASCWrapV6/A7IOP/Nub/SISP) or the dispatch callsite 0xfffffff00aada0e0",
     "PRIOR_0x2C0_SUPER_START_CLAIM": "INVALIDATED (slot +0x2c0 resolves to a shared kernel function, not start)"
   }
 }
