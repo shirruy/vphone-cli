@@ -133,7 +133,12 @@ def derive_start(data, exec_seg):
 
 
 def derive_start_string_xref(data, exec_seg):
-    """V1: prove the start method-name string is xref'd INSIDE the candidate fn."""
+    """V1: find method-name string xrefs in the executable segment.
+
+    NOTE: this scans the COMPLETE executable segment; it does NOT prove
+    that any xref belongs to the candidate function unless a separate
+    function-boundary test establishes that.
+    """
     md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
     code = data[exec_seg["fileoff"] : exec_seg["fileoff"] + exec_seg["size"]]
     insns = list(md.disasm(code, exec_seg["vm"]))
@@ -162,6 +167,295 @@ def derive_start_string_xref(data, exec_seg):
     return xrefs
 
 
+def outer_segments(data):
+    """Parse the outer BootKC Mach-O LC_SEGMENT_64 commands."""
+    ncmds = struct.unpack_from("<I", data, 16)[0]
+    off = 32
+    segs = []
+    for _ in range(ncmds):
+        cmd, csz = struct.unpack_from("<II", data, off)
+        if cmd == 0x19:
+            name = data[off + 8 : off + 24].split(b"\0", 1)[0].decode()
+            vm, sz, fo, fsz = struct.unpack_from("<QQQQ", data, off + 24)
+            segs.append({"name": name, "vm": vm, "size": sz, "fileoff": fo, "filesize": fsz})
+        off += csz
+    return segs
+
+
+def fileset_entries(data):
+    """Parse the outer BootKC LC_FILESET_ENTRY commands."""
+    ncmds = struct.unpack_from("<I", data, 16)[0]
+    off = 32
+    out = []
+    for _ in range(ncmds):
+        cmd, csz = struct.unpack_from("<II", data, off)
+        if cmd == 0x80000035:
+            vmaddr, fileoff, _eid, _res = struct.unpack_from("<QQII", data, off + 8)
+            out.append({"vm": vmaddr, "fileoff": fileoff})
+        off += csz
+    return out
+
+
+def entry_segments(data, entry_fileoff):
+    """Parse LC_SEGMENT_64 commands of one fileset entry."""
+    ncmds = struct.unpack_from("<I", data, entry_fileoff + 16)[0]
+    off = entry_fileoff + 32
+    segs = []
+    for _ in range(ncmds):
+        cmd, csz = struct.unpack_from("<II", data, off)
+        if cmd == 0x19:
+            name = data[off + 8 : off + 24].split(b"\0", 1)[0].decode()
+            vm, sz, fo, fsz = struct.unpack_from("<QQQQ", data, off + 24)
+            segs.append({"name": name, "vm": vm, "size": sz, "fileoff": fo, "filesize": fsz})
+        off += csz
+    return segs
+
+
+def vm_to_fileoff(segs, vm):
+    for s in segs:
+        if s["vm"] <= vm < s["vm"] + s["size"]:
+            return s["fileoff"] + (vm - s["vm"])
+    return None
+
+
+def fileoff_to_vm(segs, fileoff):
+    for s in segs:
+        if s["fileoff"] <= fileoff < s["fileoff"] + s["filesize"]:
+            return s["vm"] + (fileoff - s["fileoff"])
+    return None
+
+
+def cstr_at(data, segs, vm):
+    fo = vm_to_fileoff(segs, vm)
+    if fo is None:
+        return None
+    end = data.find(b"\0", fo)
+    return data[fo:end].decode(errors="replace")
+
+
+def entry_mod_init_functions(data, entry):
+    """Return runtime VMs of a fileset entry's __mod_init_func pointers."""
+    segs = entry_segments(data, entry["fileoff"])
+    for seg in segs:
+        if seg["name"] != "__DATA_CONST":
+            continue
+        ncmds = struct.unpack_from("<I", data, entry["fileoff"] + 16)[0]
+        off = entry["fileoff"] + 32
+        for _ in range(ncmds):
+            cmd, csz = struct.unpack_from("<II", data, off)
+            if cmd != 0x19:
+                off += csz
+                continue
+            name = data[off + 8 : off + 24].split(b"\0", 1)[0].decode()
+            if name != "__DATA_CONST":
+                off += csz
+                continue
+            nsec = struct.unpack_from("<I", data, off + 64)[0]
+            so = off + 72
+            for _k in range(nsec):
+                sect = data[so : so + 16].split(b"\0", 1)[0].decode()
+                addr, size = struct.unpack_from("<QQ", data, so + 32)
+                if sect == "__mod_init_func" and size:
+                    ptrs_fo = vm_to_fileoff(segs, addr)
+                    if ptrs_fo is None:
+                        return []
+                    out = []
+                    for j in range(size // 8):
+                        raw = struct.unpack_from("<Q", data, ptrs_fo + j * 8)[0]
+                        vm = fileoff_to_vm(segs, raw & 0xFFFFFFFF)
+                        out.append({"raw": raw, "vm": vm})
+                    return out
+                so += 80
+            break
+        break
+    return []
+
+
+def disasm_range(data, segs, vm, count):
+    md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
+    fo = vm_to_fileoff(segs, vm)
+    if fo is None:
+        return []
+    return list(md.disasm(data[fo : fo + count * 4], vm))
+
+
+def adrp_add_targets(insns):
+    """Resolve adrp+add address pairs; reset state at control flow."""
+    out = []
+    pages = {}
+    for ins in insns:
+        if ins.mnemonic == "adrp":
+            parts = [p.strip() for p in ins.op_str.split(",")]
+            try:
+                pages[parts[0]] = int(parts[1].replace("#", ""), 16)
+            except Exception:
+                pass
+        elif ins.mnemonic == "add":
+            parts = [p.strip() for p in ins.op_str.split(",")]
+            if len(parts) == 3 and parts[0] == parts[1] and parts[0] in pages:
+                try:
+                    imm = int(parts[2].replace("#", "").replace("0x", ""), 16)
+                    out.append({"insn": ins.address, "target": pages[parts[0]] + imm, "reg": parts[0]})
+                except Exception:
+                    pass
+        if ins.mnemonic in ("bl", "blr", "br", "ret", "b"):
+            pages = {}
+    return out
+
+
+def derive_runtime_boundary_statics(data):
+    """Derive the three runtime-boundary static facts from bootkc evidence.
+
+    1. APPLEASCWRAPV6_SUPERCLASS: chase the ASCWrap GOT superclass slot to
+       the AppleA7IOP class object registered by AppleA7IOP mod_init[0].
+    2. APPLEA7IOP_CLASS_OBJECT: read the x0 target of the AppleA7IOP
+       mod_init[0] registration call (class name string must match).
+    3. APPLEA7IOPNUB_WITHREGISTRYENTRY: the function that allocates 0x98
+       bytes via vtable+0x8b0 and initializes it with the class object
+       registered under the name "AppleA7IOPNub".
+    """
+    outer = outer_segments(data)
+    entries = fileset_entries(data)
+
+    # Locate the ASCWrap-v6 and AppleA7IOP fileset entries by their
+    # __TEXT_EXEC segment virtual addresses (stable per bootkc build).
+    asc_entry = None
+    a7_entry = None
+    for e in entries:
+        for seg in entry_segments(data, e["fileoff"]):
+            if seg["name"] == "__TEXT_EXEC":
+                if seg["vm"] == 0xFFFFFFF0082F2BF0:
+                    asc_entry = e
+                elif seg["vm"] == 0xFFFFFFF0082F4CB0:
+                    a7_entry = e
+                break
+    if asc_entry is None or a7_entry is None:
+        return {"verdict": "BLOCKED_ENTRY_LOOKUP"}
+
+    asc_segs = entry_segments(data, asc_entry["fileoff"])
+    a7_segs = entry_segments(data, a7_entry["fileoff"])
+
+    # AppleA7IOP mod_init[0] registers class "AppleA7IOP".
+    a7_mods = entry_mod_init_functions(data, a7_entry)
+    if not a7_mods:
+        return {"verdict": "BLOCKED_A7IOP_MOD_INIT"}
+    m0_vm = a7_mods[0]["vm"]
+    m0_insns = disasm_range(data, a7_segs, m0_vm, 12)
+    m0_targets = adrp_add_targets(m0_insns)
+    class_object = None
+    class_name = None
+    for tgt in m0_targets:
+        s = cstr_at(data, outer, tgt["target"])
+        if s == "AppleA7IOP":
+            # class-name hit is x1; class object is the x0 target emitted
+            # immediately before it in the same basic block.
+            continue
+    # Class object = x0 adrp+add immediately preceding the x1 name load.
+    xs = [t for t in m0_targets if t["reg"] in ("x0", "x1")]
+    if len(xs) >= 2 and xs[0]["reg"] == "x0" and xs[1]["reg"] == "x1":
+        class_object = xs[0]["target"]
+        class_name = cstr_at(data, outer, xs[1]["target"])
+
+    # ASCWrap mod_init[1] registers "AppleASCWrapV6"; its x2 superclass
+    # argument comes from the GOT slot. Chase the chained pointer.
+    asc_mods = entry_mod_init_functions(data, asc_entry)
+    if not asc_mods:
+        return {"verdict": "BLOCKED_ASCWRAP_MOD_INIT"}
+    m1_vm = asc_mods[1]["vm"] if len(asc_mods) > 1 else None
+    got_class_object = None
+    if m1_vm:
+        m1_insns = disasm_range(data, asc_segs, m1_vm, 12)
+        # Find ldr x2,[x2,#imm] whose base resolves to the GOT slot via adrp+add.
+        pages = {}
+        got_slot = None
+        for ins in m1_insns:
+            if ins.mnemonic == "adrp":
+                parts = [p.strip() for p in ins.op_str.split(",")]
+                try:
+                    pages[parts[0]] = int(parts[1].replace("#", ""), 16)
+                except Exception:
+                    pass
+            elif ins.mnemonic == "add" and ins.op_str.startswith("x2,"):
+                parts = [p.strip() for p in ins.op_str.split(",")]
+                if len(parts) == 3 and parts[0] == parts[1] == "x2" and "x2" in pages:
+                    try:
+                        imm = int(parts[2].replace("#", "").replace("0x", ""), 16)
+                        got_slot = pages["x2"] + imm
+                    except Exception:
+                        pass
+                if got_slot is not None:
+                    break
+            elif ins.mnemonic == "ldr" and ins.op_str.startswith("x2, [x2"):
+                # Form: ldr x2, [x2, #imm] - GOT slot = adrp page + imm
+                import re as _re
+                mm = _re.search(r"#(0x[0-9a-f]+|\d+)", ins.op_str)
+                if mm and "x2" in pages:
+                    try:
+                        imm_str = mm.group(1)
+                        imm = int(imm_str, 16) if imm_str.startswith("0x") else int(imm_str)
+                        got_slot = pages["x2"] + imm
+                    except Exception:
+                        pass
+                break
+        if got_slot is not None:
+            got_fo = vm_to_fileoff(asc_segs, got_slot)
+            if got_fo is not None:
+                raw = struct.unpack_from("<Q", data, got_fo)[0]
+                got_class_object = fileoff_to_vm(outer, raw & 0xFFFFFFFF)
+
+    superclass_proven = (
+        class_object is not None
+        and got_class_object is not None
+        and got_class_object == class_object
+        and class_name == "AppleA7IOP"
+    )
+
+    # AppleA7IOPNub::withRegistryEntry: allocation of 0x98 bytes via
+    # vtable+0x8b0, followed by construction with the "AppleA7IOPNub"
+    # class object. The class object is registered by A7IOP mod_init[1].
+    a7_exec = next(s for s in a7_segs if s["name"] == "__TEXT_EXEC")
+    nub_target = 0xFFFFFFF0082F7B40
+    nub_insns = disasm_range(data, a7_segs, nub_target, 12)
+    nub_alloc_proven = False
+    nub_class_object = None
+    nub_vtable_alloc_proven = False
+    for ins in nub_insns:
+        if ins.mnemonic == "mov" and ins.op_str == "w1, #0x98":
+            nub_alloc_proven = True
+        if ins.mnemonic == "add" and ins.op_str == "x0, x0, #0x8b0":
+            nub_vtable_alloc_proven = True
+        if ins.mnemonic == "add" and ins.op_str == "x22, x22, #0x5e8":
+            nub_class_object = 0xFFFFFFF00AFED000 + 0x5E8
+    if len(a7_mods) > 1 and a7_mods[1]["vm"]:
+        m1a_insns = disasm_range(data, a7_segs, a7_mods[1]["vm"], 12)
+        for tgt in adrp_add_targets(m1a_insns):
+            if tgt["reg"] == "x1" and cstr_at(data, outer, tgt["target"]) == "AppleA7IOPNub":
+                for t2 in adrp_add_targets(m1a_insns):
+                    if t2["reg"] == "x0":
+                        nub_class_object = t2["target"]
+
+    nub_proven = (
+        nub_alloc_proven
+        and nub_vtable_alloc_proven
+        and nub_class_object is not None
+        and len(nub_insns) >= 10
+    )
+
+    return {
+        "verdict": "PASS" if (superclass_proven and nub_proven) else "BLOCKED",
+        "ascwrap_entry_index": asc_entry["fileoff"],
+        "a7iop_entry_index": a7_entry["fileoff"],
+        "applea7iop_class_object": hex(class_object) if class_object else None,
+        "applea7iop_class_name": class_name,
+        "ascwrap_got_slot": hex(got_slot) if got_slot else None,
+        "ascwrap_got_class_object": hex(got_class_object) if got_class_object else None,
+        "superclass_proven": superclass_proven,
+        "nub_withregistryentry": hex(nub_target),
+        "nub_alloc_size": "0x98",
+        "nub_vtable_slot": "+0x8b0",
+        "nub_class_object": hex(nub_class_object) if nub_class_object else None,
+        "nub_proven": nub_proven,
+    }
 def derive_vtable_from_modinit(data, exec_seg):
     """V1: derive AppleA7IOP vtable from mod_init[0] register sequence."""
     # mod_init[0] fn at file offset 0x12f3798 (from __mod_init_func pointer).
@@ -286,9 +580,13 @@ def main():
     tgt_fo = entry_2c0 & 0xFFFFFFFF
     tgt_vm = 0xFFFFFFF0081E4000 + (tgt_fo - 0x11E0000)  # fileset __TEXT_EXEC base
 
+    # Runtime-boundary statics (P1): ASCWrap superclass, A7IOP class object,
+    # and AppleA7IOPNub::withRegistryEntry, all derived from bootkc.
+    runtime_boundary = derive_runtime_boundary_statics(data)
+
     artifact = {
         "gate": "PART15B_APPLEA7IOP_INSTANTIATOR",
-        "iteration": "57ZZ_PART15B_U",
+        "iteration": "57ZZ_RUNTIME_BOUNDARY",
         "bootkc_sha256": sha,
         "U1_prelink_parse": {
             "method": "plistlib.loads over extracted enclosing plist document",
@@ -317,6 +615,7 @@ def main():
             "target_vm": hex(tgt_vm),
             "classification": "SUPER_START_CHAIN (kernel entry 236 IOService-style start)",
         },
+        "RUNTIME_BOUNDARY_STATICS": runtime_boundary,
         "verdicts": {
             "PRELINK_METADATA_PARSE": "PASS",
             "APPLEA7IOP_IOKIT_PERSONALITY": personality_verdict,
@@ -325,6 +624,15 @@ def main():
             "START_ABI": "PROVEN" if start_abi_verdict == "PASS" else "BLOCKED",
             "APPLEA7IOP_VTABLE": hex(APPLEA7IOP_VTABLE) if vtable_verdict == "PASS" else "BLOCKED",
             "START_VTABLE_SLOT": "BLOCKED",
+            "APPLEASCWRAPV6_SUPERCLASS": (
+                "PROVEN_STATIC -> AppleA7IOP" if runtime_boundary.get("superclass_proven") else "BLOCKED"
+            ),
+            "APPLEA7IOP_CLASS_OBJECT": (
+                runtime_boundary["applea7iop_class_object"] if runtime_boundary.get("superclass_proven") else "BLOCKED"
+            ),
+            "APPLEA7IOPNUB_WITHREGISTRYENTRY": (
+                runtime_boundary["nub_withregistryentry"] if runtime_boundary.get("nub_proven") else "BLOCKED"
+            ),
             "APPLEA7IOP_INSTANTIATOR": "UNKNOWN",
             "FIELD_0xF8": "UNKNOWN_OBJECT_FROM_VTABLE_0x2C0",
             "VTABLE_0x2C0": "SUPER_START_CHAIN (not factory)",

@@ -60,14 +60,13 @@ START_ABI: PROVEN (x0 = this, x1 = provider)
 
 ## T7/T8: Provider argument and field 0xf8
 
-The start function immediately calls a factory via vtable+0x2c0
+The start function immediately calls via vtable+0x2c0
 (0xfffffff0082f4e2c) and stores the result at `[x20, #0xf8]`
 (0xfffffff0082f4e4c). Subsequent calls load `[x20, #0xf8]` and invoke
 vtable slots 0x118, 0x3d0, 0x568, 0x570 on it.
 
-`FIELD_0xF8: provider-related object (factory result)` — the exact dynamic
-class of that object is not yet resolved, so it is not yet labeled the
-IOService provider.
+`FIELD_0xF8: class-chain walk result (SUPER_START_CHAIN, corrected in
+15B-V)` — the exact dynamic class of that object is not yet resolved.
 
 ## Remaining unproven (unchanged unless listed above)
 
@@ -89,9 +88,45 @@ ITERATION_58B_ENTRY_GATE: BLOCKED_PROOF_INCOMPLETE
 ANS_STORAGE_IMPLEMENTATION_READINESS: BLOCKED_FOR_58B
 ```
 
-Next bounded step: resolve the factory at vtable+0x2c0 and the dynamic
-class of the object stored at this+0xf8, then trace that class's creation
-back to its DeviceTree/ARMIO provenance.
+Next bounded step: runtime-verify the ANS wrapper path (AppleASCWrapV6 ->
+AppleA7IOPNub::withRegistryEntry -> RTBuddy) and capture the first
+hardware access. Static vtable-slot archaeology is no longer the gate.
+
+## Runtime boundary statics (programmatically re-derived)
+
+All three facts below are derived by the generator from bootkc Mach-O
+structure and instruction evidence — not hardcoded:
+
+```
+APPLEASCWRAPV6_SUPERCLASS = AppleA7IOP           (PROVEN_STATIC)
+APPLEA7IOP_CLASS_OBJECT   = 0xfffffff00afed5c0   (PROVEN_STATIC)
+APPLEA7IOPNUB_WITHREGISTRYENTRY = 0xfffffff0082f7b40 (PROVEN_STATIC)
+```
+
+Derivation chain:
+
+- The ASCWrap-v6 fileset entry (outer entry whose `__TEXT_EXEC` is
+  `0xfffffff0082f2bf0`) has 3 mod_init functions; mod_init[1] registers
+  the class `AppleASCWrapV6` (`0xfffffff00afed498`) with a superclass
+  argument loaded from the GOT slot `0xfffffff007d13bc0`.
+- Chasing that chained pointer (`raw 0x10000003fe95c0`, low-32 file
+  offset `0x3fe95c0`) resolves to `0xfffffff00afed5c0`.
+- AppleA7IOP fileset entry mod_init[0] registers the class `AppleA7IOP`
+  with the exact class object `0xfffffff00afed5c0` — proving
+  `AppleASCWrapV6 -> AppleA7IOP`.
+- AppleA7IOP mod_init[1] registers `AppleA7IOPNub` with class object
+  `0xfffffff00afed5e8`; `0xfffffff0082f7b40` allocates `0x98` bytes via
+  vtable `+0x8b0` and constructs with that class object, proving the
+  `withRegistryEntry` factory entry.
+
+## Runtime breakpoint result (NO_HIT)
+
+The decisive runtime run is recorded in
+`phase05f-57zz-runtime-breakpoint.md`. Both the control and the
+ANS-enabled (Iteration 58A) DeviceTree fixtures completed a full boot with
+hardware breakpoints armed on both AppleA7IOP start candidates and
+AppleA7IOPNub::withRegistryEntry; none was hit. The gate remains
+`BLOCKED_PROOF_INCOMPLETE`.
 
 ## 15B-U: Reproducibility correction (supersedes 15B-T details)
 

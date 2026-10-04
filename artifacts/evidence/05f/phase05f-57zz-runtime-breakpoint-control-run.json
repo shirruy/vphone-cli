@@ -1,0 +1,17 @@
+{
+    "run_name":  "p2-control-v1",
+    "stamp":  "20261004-015326",
+    "dtree_sha256":  "9e84c9add25b99eddd8b088b249e7ce348394b80a0def59949e9bb9c63a24e1b",
+    "bootkc_sha256":  "c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800",
+    "qemu_sha256":  "dcf12b26593cb78f02b87acc57adbd6c74468478df3da6b603f791b144527d51",
+    "gdb_sha256":  "e0ca00b941759db88b987f3ab8a69da1e759e71e6eadd191dd5b8077dddb7f98",
+    "warmup_seconds":  12,
+    "gdb_window_seconds":  150,
+    "gdb_exit_code":  0,
+    "gdb_elapsed_seconds":  150.28,
+    "serial_bytes":  37256,
+    "serial_sha256":  "82b5cf86d0361deaa934f83f5a33bf7766b2f1ccb70bf5ac76e9b39bb03ce2c3",
+    "natural_exit":  false,
+    "stderr_bytes":  0,
+    "capture_json":  "gdb-capture.json"
+}

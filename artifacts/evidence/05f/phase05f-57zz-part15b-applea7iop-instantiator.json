@@ -1,6 +1,6 @@
 {
   "gate": "PART15B_APPLEA7IOP_INSTANTIATOR",
-  "iteration": "57ZZ_PART15B_U",
+  "iteration": "57ZZ_RUNTIME_BOUNDARY",
   "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
   "U1_prelink_parse": {
     "method": "plistlib.loads over extracted enclosing plist document",
@@ -143,6 +143,21 @@
     "target_vm": "0xfffffff009dad920",
     "classification": "SUPER_START_CHAIN (kernel entry 236 IOService-style start)"
   },
+  "RUNTIME_BOUNDARY_STATICS": {
+    "verdict": "PASS",
+    "ascwrap_entry_index": 1275680,
+    "a7iop_entry_index": 1278448,
+    "applea7iop_class_object": "0xfffffff00afed5c0",
+    "applea7iop_class_name": "AppleA7IOP",
+    "ascwrap_got_slot": "0xfffffff007d13bc0",
+    "ascwrap_got_class_object": "0xfffffff00afed5c0",
+    "superclass_proven": true,
+    "nub_withregistryentry": "0xfffffff0082f7b40",
+    "nub_alloc_size": "0x98",
+    "nub_vtable_slot": "+0x8b0",
+    "nub_class_object": "0xfffffff00afed5e8",
+    "nub_proven": true
+  },
   "verdicts": {
     "PRELINK_METADATA_PARSE": "PASS",
     "APPLEA7IOP_IOKIT_PERSONALITY": "ABSENT_PROVEN",
@@ -151,6 +166,9 @@
     "START_ABI": "PROVEN",
     "APPLEA7IOP_VTABLE": "BLOCKED",
     "START_VTABLE_SLOT": "BLOCKED",
+    "APPLEASCWRAPV6_SUPERCLASS": "PROVEN_STATIC -> AppleA7IOP",
+    "APPLEA7IOP_CLASS_OBJECT": "0xfffffff00afed5c0",
+    "APPLEA7IOPNUB_WITHREGISTRYENTRY": "0xfffffff0082f7b40",
     "APPLEA7IOP_INSTANTIATOR": "UNKNOWN",
     "FIELD_0xF8": "UNKNOWN_OBJECT_FROM_VTABLE_0x2C0",
     "VTABLE_0x2C0": "SUPER_START_CHAIN (not factory)",
