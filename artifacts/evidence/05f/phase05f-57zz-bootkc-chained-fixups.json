@@ -1,0 +1,120 @@
+{
+  "gate": "57ZZ_BOOTKC_CHAINED_FIXUPS",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "format": {
+    "fixups_version": 0,
+    "starts_offset": "0x1c",
+    "imports_count": 0,
+    "imports_format": 1,
+    "symbols_format": 0,
+    "seg_count": 9
+  },
+  "segments": [
+    {
+      "segment": "__TEXT",
+      "has_chain": false
+    },
+    {
+      "segment": "__PRELINK_TEXT",
+      "has_chain": false
+    },
+    {
+      "segment": "__DATA_CONST",
+      "has_chain": true,
+      "pointer_format": 8,
+      "page_size": "0x4000",
+      "page_count": 352,
+      "segment_offset": "0xc14000",
+      "max_valid_pointer": 0
+    },
+    {
+      "segment": "__DATA_SPTM",
+      "has_chain": true,
+      "pointer_format": 8,
+      "page_size": "0x4000",
+      "page_count": 19,
+      "segment_offset": "0x1194000",
+      "max_valid_pointer": 0
+    },
+    {
+      "segment": "__TEXT_EXEC",
+      "has_chain": false
+    },
+    {
+      "segment": "__TEXT_BOOT_EXEC",
+      "has_chain": false
+    },
+    {
+      "segment": "__PRELINK_INFO",
+      "has_chain": false
+    },
+    {
+      "segment": "__DATA",
+      "has_chain": true,
+      "pointer_format": 8,
+      "page_size": "0x4000",
+      "page_count": 152,
+      "segment_offset": "0x3e74000",
+      "max_valid_pointer": 0
+    },
+    {
+      "segment": "__LINKEDIT",
+      "has_chain": false
+    }
+  ],
+  "decoder_semantics": {
+    "pointer_format": "DYLD_CHAINED_PTR_64_KERNEL_CACHE (=8) where present",
+    "resolution": "resolved_vm = basePointers[cacheLevel] + target",
+    "basePointer_source": "osfmk/arm/arm_init.c: collection_base_pointers[0] = kc_mh",
+    "cacheLevel0_base_static": "0xfffffff007004000",
+    "note": "All decoded entries in this image carry cacheLevel=0 unless reported otherwise; non-zero levels would require their KC base before resolution."
+  },
+  "chain_walk": {
+    "total_fixups": 532174,
+    "nonzero_cache_levels": 0,
+    "auth_entries": 446307
+  },
+  "validation_checks": [
+    {
+      "known": "ASCWrap GOT superclass -> AppleA7IOP class object",
+      "location": "0xfffffff007d13bc0",
+      "expected": "0xfffffff00afed5c0",
+      "decoded": "0xfffffff00afed5c0",
+      "pass": true
+    },
+    {
+      "known": "ASCWrap mod_init[1] (AppleASCWrapV6 registration)",
+      "location": "0xfffffff007d12280",
+      "expected": "0xfffffff0082f42b4",
+      "decoded": "0xfffffff0082f42b4",
+      "pass": true
+    },
+    {
+      "known": "ASCWrap mod_init[2] (AppleASCWrapV6SEP registration)",
+      "location": "0xfffffff007d12288",
+      "expected": "0xfffffff0082f4800",
+      "decoded": "0xfffffff0082f4800",
+      "pass": true
+    },
+    {
+      "known": "A7IOP mod_init[0] chain entry",
+      "location": "0xfffffff007d13bd0",
+      "expected": "0xfffffff0082f7798",
+      "decoded": "0xfffffff0082f7798",
+      "pass": true
+    }
+  ],
+  "CHAIN_WALK_SELF_CONSISTENCY": "PASS",
+  "candidates": {
+    "candA": {
+      "vm": "0xfffffff0082f4df0",
+      "reference_locations": [],
+      "count": 0
+    },
+    "candB": {
+      "vm": "0xfffffff0082f804c",
+      "reference_locations": [],
+      "count": 0
+    }
+  }
+}
