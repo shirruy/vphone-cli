@@ -1,0 +1,915 @@
+{
+  "gate": "57ZZ_ASCWRAP_MATCHING",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "control_dt_path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\dtree_control.bin",
+  "control_dt_sha256": "9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B",
+  "ans_dt_path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\dtree_experiment.bin",
+  "ans_dt_sha256": "9F87087F4A147922C2327950E8E77EFBF958765820A86C679549F43F1D7FF8E9",
+  "P1_personality_contract": {
+    "bundle": {
+      "CFBundleIdentifier": "com.apple.driver.AppleA7IOP-ASCWrap-v6",
+      "CFBundleExecutable": "AppleA7IOP-ASCWrap-v6",
+      "OSBundleLibraries": {
+        "com.apple.driver.AppleA7IOP": "1.0.0",
+        "com.apple.driver.AppleARMPlatform": "1.0.0",
+        "com.apple.driver.IOSlaveProcessor": "1.0.0",
+        "com.apple.kpi.bsd": "8.0",
+        "com.apple.kpi.iokit": "8.0",
+        "com.apple.kpi.libkern": "8.0",
+        "com.apple.kpi.mach": "8.0"
+      }
+    },
+    "personalities": {
+      "AppleASCWrapV6": {
+        "IOClass": "AppleASCWrapV6",
+        "IOProviderClass": "AppleARMIODevice",
+        "IONameMatch": [
+          "iop,ascwrap-v6",
+          "iop,ascwrap-v7"
+        ],
+        "_other_keys": [
+          "CFBundleIdentifier",
+          "IOPersonalityPublisher"
+        ],
+        "_all_keys": [
+          "CFBundleIdentifier",
+          "IOClass",
+          "IONameMatch",
+          "IOPersonalityPublisher",
+          "IOProviderClass"
+        ]
+      },
+      "AppleASCWrapV6SEP": {
+        "IOClass": "AppleASCWrapV6SEP",
+        "IOProviderClass": "AppleARMIODevice",
+        "IONameMatch": [
+          "iop-sep,ascwrap-v6",
+          "iop-sep,ascwrap-v7"
+        ],
+        "_other_keys": [
+          "CFBundleIdentifier",
+          "IOPersonalityPublisher"
+        ],
+        "_all_keys": [
+          "CFBundleIdentifier",
+          "IOClass",
+          "IONameMatch",
+          "IOPersonalityPublisher",
+          "IOProviderClass"
+        ]
+      },
+      "AppleASCWrapV6SISP": {
+        "IOClass": "AppleASCWrapV6SISP",
+        "IOProviderClass": "AppleARMIODevice",
+        "IONameMatch": [
+          "iop-isp,ascwrap-v6"
+        ],
+        "_other_keys": [
+          "CFBundleIdentifier",
+          "IOPersonalityPublisher"
+        ],
+        "_all_keys": [
+          "CFBundleIdentifier",
+          "IOClass",
+          "IONameMatch",
+          "IOPersonalityPublisher",
+          "IOProviderClass"
+        ]
+      }
+    }
+  },
+  "P1_PERSONALITY_PARSE": "PASS",
+  "P2_topology": {
+    "control": {
+      "root_children": [
+        "chosen",
+        "options",
+        "cpus",
+        "aliases",
+        "memory",
+        "pram",
+        "vram",
+        "arm-io",
+        "buttons",
+        "port-usb-c-1",
+        "port-magsafe-1",
+        "backlight",
+        "core-brightness",
+        "socd-trace-ram",
+        "baseband",
+        "amfm",
+        "sacm-general",
+        "sacm-jasper",
+        "defaults",
+        "product",
+        "filesystems",
+        "iboot-syscfg",
+        "osenvironments",
+        "rtc"
+      ],
+      "nodes": [
+        {
+          "path": "/arm-io/ans",
+          "name": "ans",
+          "compatible": [],
+          "device_type": [
+            "ans"
+          ],
+          "reg": [
+            {
+              "base": 2000683008,
+              "size": 442368
+            },
+            {
+              "base": 1996816384,
+              "size": 16384
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 2076966912,
+              "size": 393216
+            },
+            {
+              "base": 2030043136,
+              "size": 16777216
+            },
+            {
+              "base": 2075721728,
+              "size": 49152
+            },
+            {
+              "base": 2077522944,
+              "size": 16384
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 2064646144,
+              "size": 278528
+            }
+          ],
+          "role": [
+            "ANS2"
+          ],
+          "iop_version": 1,
+          "interrupt_parent": 32,
+          "iommu_parent": 107,
+          "phandle": 105,
+          "children": [
+            "iop-ans-nub"
+          ],
+          "prop_names": [
+            "AAPL,phandle",
+            "clock-gates",
+            "clock-ids",
+            "device_type",
+            "function-spi0_mosi_config",
+            "function-spi0_sclk_config",
+            "interrupt-parent",
+            "interrupts",
+            "iommu-parent",
+            "iop-version",
+            "msp-bfh-params",
+            "name",
+            "namespaces",
+            "nand-debug",
+            "nvme-interrupt-idx",
+            "nvme-linear-sq",
+            "nvme-prp-flush-wa",
+            "nvme-queue-entries",
+            "nvme-vdma-wa",
+            "power-gates",
+            "reg",
+            "role",
+            "tunable-table-bundle"
+          ]
+        },
+        {
+          "path": "/arm-io/ans/iop-ans-nub",
+          "name": "iop-ans-nub",
+          "compatible": [],
+          "device_type": [],
+          "reg": null,
+          "role": null,
+          "iop_version": null,
+          "interrupt_parent": null,
+          "iommu_parent": null,
+          "phandle": 106,
+          "children": [],
+          "prop_names": [
+            "AAPL,phandle",
+            "continuous-time",
+            "crashlog-non-fatal",
+            "name",
+            "power-managed",
+            "quiesced",
+            "region-base",
+            "region-size",
+            "shutdown-sleep"
+          ]
+        }
+      ],
+      "arm_io_child_names": [
+        "aic",
+        "aic-timebase",
+        "pmgr",
+        "nco",
+        "wdt",
+        "gpio",
+        "mcc",
+        "error-handler",
+        "dwi",
+        "pwm",
+        "event-log-handler",
+        "aes",
+        "aop",
+        "dart-aop",
+        "aop-gpio",
+        "nub-gpio",
+        "smc-gpio",
+        "mtp-gpio",
+        "pmp",
+        "dart-pmp",
+        "sep",
+        "dart-sep",
+        "sio",
+        "dart-sio",
+        "ans",
+        "sart-ans",
+        "smc",
+        "rsm",
+        "dart-rsm",
+        "dockchannel-mtp",
+        "mtp",
+        "dart-mtp",
+        "mtp-aop-mux",
+        "uart0",
+        "spi3",
+        "i2c0",
+        "i2c2",
+        "i2c3",
+        "smc-i2c1",
+        "nub-spmi0",
+        "nub-spmi1",
+        "aop-spmi0",
+        "aop-spmi1",
+        "atc-phy0",
+        "dart-usb",
+        "usb-drd",
+        "dcp",
+        "dcp0-expert",
+        "disp0",
+        "dart-dcp",
+        "dart-disp0",
+        "dart-dispgrt",
+        "dcp-sac-controller",
+        "dispext0",
+        "dcpext-expert",
+        "dcpext",
+        "dart-dcpext",
+        "dart-dispext0",
+        "dp-audio1",
+        "scaler0",
+        "dart-scaler",
+        "jpeg0",
+        "dart-jpeg0",
+        "jpeg1",
+        "dart-jpeg1",
+        "isp",
+        "dart-isp",
+        "ave",
+        "dart-ave",
+        "avd",
+        "dart-avd",
+        "ane",
+        "dart-ane",
+        "apr",
+        "dart-apr",
+        "gfx-asc",
+        "mapper-gfx-asc",
+        "admac-aop-audio",
+        "admac-sio",
+        "mca-switch",
+        "mca1",
+        "mca2",
+        "mca4",
+        "mca5",
+        "alc0",
+        "alc2",
+        "alc4",
+        "apcie",
+        "dart-apcie1",
+        "dart-apcie2",
+        "smctempsensor0",
+        "cpu-debug-interface",
+        "aod2",
+        "aod3",
+        "pearl-sep",
+        "haptics-support-interface",
+        "audio-resource-manager",
+        "wlan",
+        "bluetooth",
+        "grimaldi",
+        "gpio-canary",
+        "apple-processor-trace"
+      ]
+    },
+    "ans58a": {
+      "root_children": [
+        "chosen",
+        "options",
+        "cpus",
+        "aliases",
+        "memory",
+        "pram",
+        "vram",
+        "arm-io",
+        "buttons",
+        "port-usb-c-1",
+        "port-magsafe-1",
+        "backlight",
+        "core-brightness",
+        "socd-trace-ram",
+        "baseband",
+        "amfm",
+        "sacm-general",
+        "sacm-jasper",
+        "defaults",
+        "product",
+        "filesystems",
+        "iboot-syscfg",
+        "osenvironments",
+        "rtc"
+      ],
+      "nodes": [
+        {
+          "path": "/arm-io/ans",
+          "name": "ans",
+          "compatible": [],
+          "device_type": [
+            "ans"
+          ],
+          "reg": [
+            {
+              "base": 2000683008,
+              "size": 442368
+            },
+            {
+              "base": 1996816384,
+              "size": 16384
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 2076966912,
+              "size": 393216
+            },
+            {
+              "base": 2030043136,
+              "size": 16777216
+            },
+            {
+              "base": 2075721728,
+              "size": 49152
+            },
+            {
+              "base": 2077522944,
+              "size": 16384
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 0,
+              "size": 0
+            },
+            {
+              "base": 2064646144,
+              "size": 278528
+            }
+          ],
+          "role": [
+            "ANS2"
+          ],
+          "iop_version": 1,
+          "interrupt_parent": 32,
+          "iommu_parent": 107,
+          "phandle": 105,
+          "children": [
+            "iop-ans-nub"
+          ],
+          "prop_names": [
+            "AAPL,phandle",
+            "clock-gates",
+            "clock-ids",
+            "device_type",
+            "function-spi0_mosi_config",
+            "function-spi0_sclk_config",
+            "interrupt-parent",
+            "interrupts",
+            "iommu-parent",
+            "iop-version",
+            "msp-bfh-params",
+            "name",
+            "namespaces",
+            "nand-debug",
+            "nvme-interrupt-idx",
+            "nvme-linear-sq",
+            "nvme-prp-flush-wa",
+            "nvme-queue-entries",
+            "nvme-vdma-wa",
+            "power-gates",
+            "reg",
+            "role",
+            "tunable-table-bundle"
+          ]
+        },
+        {
+          "path": "/arm-io/ans/iop-ans-nub",
+          "name": "iop-ans-nub",
+          "compatible": [
+            "iop-nub,rtbuddy-v2"
+          ],
+          "device_type": [],
+          "reg": null,
+          "role": null,
+          "iop_version": null,
+          "interrupt_parent": null,
+          "iommu_parent": null,
+          "phandle": 106,
+          "children": [],
+          "prop_names": [
+            "AAPL,phandle",
+            "compatible",
+            "continuous-time",
+            "crashlog-non-fatal",
+            "name",
+            "power-managed",
+            "quiesced",
+            "region-base",
+            "region-size",
+            "shutdown-sleep"
+          ]
+        }
+      ],
+      "arm_io_child_names": [
+        "aic",
+        "aic-timebase",
+        "pmgr",
+        "nco",
+        "wdt",
+        "gpio",
+        "mcc",
+        "error-handler",
+        "dwi",
+        "pwm",
+        "event-log-handler",
+        "aes",
+        "aop",
+        "dart-aop",
+        "aop-gpio",
+        "nub-gpio",
+        "smc-gpio",
+        "mtp-gpio",
+        "pmp",
+        "dart-pmp",
+        "sep",
+        "dart-sep",
+        "sio",
+        "dart-sio",
+        "ans",
+        "sart-ans",
+        "smc",
+        "rsm",
+        "dart-rsm",
+        "dockchannel-mtp",
+        "mtp",
+        "dart-mtp",
+        "mtp-aop-mux",
+        "uart0",
+        "spi3",
+        "i2c0",
+        "i2c2",
+        "i2c3",
+        "smc-i2c1",
+        "nub-spmi0",
+        "nub-spmi1",
+        "aop-spmi0",
+        "aop-spmi1",
+        "atc-phy0",
+        "dart-usb",
+        "usb-drd",
+        "dcp",
+        "dcp0-expert",
+        "disp0",
+        "dart-dcp",
+        "dart-disp0",
+        "dart-dispgrt",
+        "dcp-sac-controller",
+        "dispext0",
+        "dcpext-expert",
+        "dcpext",
+        "dart-dcpext",
+        "dart-dispext0",
+        "dp-audio1",
+        "scaler0",
+        "dart-scaler",
+        "jpeg0",
+        "dart-jpeg0",
+        "jpeg1",
+        "dart-jpeg1",
+        "isp",
+        "dart-isp",
+        "ave",
+        "dart-ave",
+        "avd",
+        "dart-avd",
+        "ane",
+        "dart-ane",
+        "apr",
+        "dart-apr",
+        "gfx-asc",
+        "mapper-gfx-asc",
+        "admac-aop-audio",
+        "admac-sio",
+        "mca-switch",
+        "mca1",
+        "mca2",
+        "mca4",
+        "mca5",
+        "alc0",
+        "alc2",
+        "alc4",
+        "apcie",
+        "dart-apcie1",
+        "dart-apcie2",
+        "smctempsensor0",
+        "cpu-debug-interface",
+        "aod2",
+        "aod3",
+        "pearl-sep",
+        "haptics-support-interface",
+        "audio-resource-manager",
+        "wlan",
+        "bluetooth",
+        "grimaldi",
+        "gpio-canary",
+        "apple-processor-trace"
+      ]
+    }
+  },
+  "P3_matrix": {
+    "control": [
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [],
+        "device_type": [],
+        "name_match_value": "iop,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [],
+        "device_type": [],
+        "name_match_value": "iop,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop-sep,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop-sep,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [],
+        "device_type": [],
+        "name_match_value": "iop-sep,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [],
+        "device_type": [],
+        "name_match_value": "iop-sep,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SISP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop-isp,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SISP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [],
+        "device_type": [],
+        "name_match_value": "iop-isp,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      }
+    ],
+    "ans58a": [
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [
+          "iop-nub,rtbuddy-v2"
+        ],
+        "device_type": [],
+        "name_match_value": "iop,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": true,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [
+          "iop-nub,rtbuddy-v2"
+        ],
+        "device_type": [],
+        "name_match_value": "iop,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": true,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop-sep,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop-sep,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [
+          "iop-nub,rtbuddy-v2"
+        ],
+        "device_type": [],
+        "name_match_value": "iop-sep,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": true,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SEP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [
+          "iop-nub,rtbuddy-v2"
+        ],
+        "device_type": [],
+        "name_match_value": "iop-sep,ascwrap-v7",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": true,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SISP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans",
+        "actual_node_name": "ans",
+        "compatible": [],
+        "device_type": [
+          "ans"
+        ],
+        "name_match_value": "iop-isp,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": false,
+        "node_has_ascwrap_compatible": false
+      },
+      {
+        "personality": "AppleASCWrapV6SISP",
+        "expected_provider_class": "AppleARMIODevice",
+        "dt_path": "/arm-io/ans/iop-ans-nub",
+        "actual_node_name": "iop-ans-nub",
+        "compatible": [
+          "iop-nub,rtbuddy-v2"
+        ],
+        "device_type": [],
+        "name_match_value": "iop-isp,ascwrap-v6",
+        "matches_personality": false,
+        "node_has_iop_nub_rtbuddy": true,
+        "node_has_ascwrap_compatible": false
+      }
+    ]
+  },
+  "P4_H1_MISSING_ASCWRAP_PROVIDER_IDENTITY": {
+    "control": {
+      "AppleASCWrapV6": {
+        "any_name_match": false,
+        "ascwrap_compatible_node": false
+      },
+      "AppleASCWrapV6SEP": {
+        "any_name_match": false,
+        "ascwrap_compatible_node": false
+      },
+      "AppleASCWrapV6SISP": {
+        "any_name_match": false,
+        "ascwrap_compatible_node": false
+      }
+    },
+    "ans58a": {
+      "AppleASCWrapV6": {
+        "any_name_match": false,
+        "ascwrap_compatible_node": false
+      },
+      "AppleASCWrapV6SEP": {
+        "any_name_match": false,
+        "ascwrap_compatible_node": false
+      },
+      "AppleASCWrapV6SISP": {
+        "any_name_match": false,
+        "ascwrap_compatible_node": false
+      }
+    }
+  },
+  "verdicts": {
+    "P1_PERSONALITY_PARSE": "PASS",
+    "H1_MISSING_ASCWRAP_PROVIDER_IDENTITY": "SUPPORTED"
+  }
+}
