@@ -2,18 +2,16 @@
 
 ## Key correction: prior instrumentation targets invalidated
 
-A whole-binary scan proves that no qword in bootkc.bin references
-either start candidate (`0xfffffff0082f4df0` / `0xfffffff0082f804c`)
-as a chained-fixup target:
+RETRACTED: the prior scan masked raw qwords to 30 bits and compared
+them directly to file offsets. That is not the
+DYLD_CHAINED_PTR_64_KERNEL_CACHE resolution semantics; the real
+resolution is basePointers[cacheLevel] + target. The scan result is:
 
 ```
-candA references: 0
-candB references: 0
+VTABLE_REFERENCE_SCAN_CANDA_CANDB: INVALID_DECODER_ASSUMPTION
+CANDA_VTABLE_DISPATCH_STATUS: UNKNOWN
+CANDB_VTABLE_DISPATCH_STATUS: UNKNOWN
 ```
-
-Neither candidate is vtable-dispatched. The prior NO_HIT results on
-these addresses therefore do not disprove AppleASCWrapV6 or
-AppleA7IOP instantiation.
 
 ## Corrected-DT runtime run
 
@@ -29,8 +27,10 @@ be drawn from the breakpoint result.
 ## Verdicts
 
 ```
-VTABLE_REFERENCE_SCAN_CANDA_CANDB: ZERO_REFERENCES_PROVEN
-PRIOR_NO_HIT_DISPROVES_INSTANTIATION: INVALIDATED
+VTABLE_REFERENCE_SCAN_CANDA_CANDB: INVALID_DECODER_ASSUMPTION
+CANDA_VTABLE_DISPATCH_STATUS: UNKNOWN
+CANDB_VTABLE_DISPATCH_STATUS: UNKNOWN
+PRIOR_NO_HIT_DISPROVES_INSTANTIATION: UNKNOWN
 APPLEASCWRAPV6_RUNTIME_ENTRY: NOT_OBSERVED
 APPLEA7IOP_INSTANTIATION: UNKNOWN
 BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING: UNKNOWN

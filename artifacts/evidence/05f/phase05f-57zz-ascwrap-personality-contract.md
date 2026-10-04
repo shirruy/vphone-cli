@@ -70,3 +70,15 @@ _No personality name-match against any ANS-related node in either fixture._
 ```
 H1_MISSING_ASCWRAP_PROVIDER_IDENTITY: SUPPORTED
 ```
+
+## Wording correction
+
+```
+STATIC_MATCHING_PRECONDITION_DEFECT: PROVEN
+RUNTIME_CAUSAL_SUFFICIENCY: UNKNOWN
+```
+
+The stripped provider-compatible is a proven missing matching
+precondition, not yet the proven sole cause of runtime
+non-instantiation. Provider publication, matching consideration,
+probe, and start remain runtime UNKNOWN.
