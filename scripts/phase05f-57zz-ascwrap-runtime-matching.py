@@ -60,7 +60,8 @@ def main():
                 "(first watchdog stop at 30s GDB-time showed the idle-loop PC). "
                 "T2 < T3 is proven for the observed matching phase."
             ),
-            "BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING": "PROVEN_FOR_OBSERVED_MATCHING_PHASE",
+            "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
+            "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN",
         },
         "runtime_results": {
             "APPLEASCWRAPV6_START": "NOT_OBSERVED",
@@ -69,7 +70,8 @@ def main():
             "iokit_start_calls_of_other_drivers": len(iokit_starts_observed),
         },
         "verdicts": {
-            "BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING": "PROVEN_FOR_OBSERVED_MATCHING_PHASE",
+            "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
+            "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN",
             "APPLEASCWRAPV6_START_HIT": "NO",
             "APPLEA7IOPNUB_START_HIT": "NO",
             "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_PROVIDER_PUBLICATION_INSTRUMENTATION",

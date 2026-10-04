@@ -117,7 +117,7 @@ def main():
 
     artifact = {
         "gate": "57ZZ_ASCWRAP_VTABLES",
-        "derivation": "chain-decoder derived (LC_DYLD_CHAINED_FIXUPS, pointer format 8, stride 4)",
+        "derivation": "vtable CONTENTS chain-decoder derived; vtable BASE ADDRESSES are known anchors until independently rederived from mod_init instruction sequences",
         "start_slot": "+0x%x (bti c landing pad targets)" % START_SLOT,
         "vtables": out,
         "candidate_evaluation": {
@@ -131,8 +131,9 @@ def main():
             ),
         },
         "verdicts": {
-            "ASCWRAP_START_VTABLE_SLOT": "PROVEN (+0x348)",
-            "APPLEA7IOP_START_VTABLE_SLOT": "PROVEN (+0x348, INHERITS from ASCWrapV6 region target)",
+            "START_VTABLE_SLOT_SEMANTIC_IDENTITY": "UNPROVEN",
+            "START_SLOT_0x348": "CANDIDATE_SUPPORTED_BY_VTABLE_CORRELATION",
+            "APPLEA7IOP_START_SLOT_0x348": "CANDIDATE (semantic identity pending callsite proof)",
             "APPLEASCWRAPV6_START_TARGET": true_ascwrap_start,
             "APPLEA7IOPNUB_START_TARGET": true_nub_start,
             "CANDA_VTABLE_STATUS": "FUNCTION_BODY_AFTER_LANDING_PAD (reachable via +0x348 entry)",

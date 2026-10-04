@@ -1,7 +1,11 @@
-# 57ZZ — ASCWrap/A7IOP Vtables (Chain Decoder Derived)
+# 57ZZ — ASCWrap/A7IOP Vtables
+
+Vtable contents are chain-decoder derived; vtable base addresses are
+known anchors until independently rederived.
 
 ```
-ASCWRAP_START_VTABLE_SLOT: PROVEN (+0x348)
+START_VTABLE_SLOT_SEMANTIC_IDENTITY: UNPROVEN
+START_SLOT_0x348: CANDIDATE_SUPPORTED_BY_VTABLE_CORRELATION
 ```
 
 | Class | Vtable VM | +0x348 target | Owner | Classification |
