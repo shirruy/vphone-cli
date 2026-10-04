@@ -625,7 +625,9 @@ def main():
             "APPLEA7IOP_VTABLE": hex(APPLEA7IOP_VTABLE) if vtable_verdict == "PASS" else "BLOCKED",
             "START_VTABLE_SLOT": "BLOCKED",
             "APPLEASCWRAPV6_SUPERCLASS": (
-                "PROVEN_STATIC -> AppleA7IOP" if runtime_boundary.get("superclass_proven") else "BLOCKED"
+                "VALIDATED_WITH_KNOWN_ANCHORS -> AppleA7IOP"
+                if runtime_boundary.get("superclass_proven")
+                else "BLOCKED"
             ),
             "APPLEA7IOP_CLASS_OBJECT": (
                 runtime_boundary["applea7iop_class_object"] if runtime_boundary.get("superclass_proven") else "BLOCKED"

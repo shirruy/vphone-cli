@@ -94,8 +94,18 @@ hardware access. Static vtable-slot archaeology is no longer the gate.
 
 ## Runtime boundary statics (programmatically re-derived)
 
-All three facts below are derived by the generator from bootkc Mach-O
-structure and instruction evidence — not hardcoded:
+All three facts below are validated programmatically by the generator
+against bootkc Mach-O structure and instruction evidence. The generator
+uses previously established addresses as assertion/lookup anchors (the
+ASCWrap-v6 and AppleA7IOP `__TEXT_EXEC` segment addresses, the nub entry
+address, and the start-candidate address); the relationships and
+instruction-level properties are discovered structurally, while those
+addresses are reproducible validation anchors rather than being
+rediscovered from zero:
+
+```
+STATIC_RELATIONSHIPS: VALIDATED_PROGRAMMATICALLY_WITH_KNOWN_ANCHORS
+```
 
 ```
 APPLEASCWRAPV6_SUPERCLASS = AppleA7IOP           (PROVEN_STATIC)
@@ -123,10 +133,20 @@ Derivation chain:
 
 The decisive runtime run is recorded in
 `phase05f-57zz-runtime-breakpoint.md`. Both the control and the
-ANS-enabled (Iteration 58A) DeviceTree fixtures completed a full boot with
-hardware breakpoints armed on both AppleA7IOP start candidates and
-AppleA7IOPNub::withRegistryEntry; none was hit. The gate remains
-`BLOCKED_PROOF_INCOMPLETE`.
+ANS-enabled (Iteration 58A) DeviceTree fixtures completed the tested boot
+with hardware breakpoints armed on both AppleA7IOP start candidates and
+AppleA7IOPNub::withRegistryEntry; no entry into any instrumented function
+was observed from breakpoint arm time forward. This is an
+interval-limited observation, not a whole-boot absence proof:
+
+```
+APPLEA7IOP_CANDIDATE_RUNTIME_ENTRY: NOT_OBSERVED
+APPLEA7IOPNUB_WITHREGISTRYENTRY_RUNTIME: NOT_OBSERVED
+APPLEA7IOP_INSTANTIATION: UNKNOWN
+BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING: UNKNOWN
+```
+
+The gate remains `BLOCKED_PROOF_INCOMPLETE`.
 
 ## 15B-U: Reproducibility correction (supersedes 15B-T details)
 

@@ -3,12 +3,18 @@
 ## Verdict
 
 ```
-APPLEA7IOP_START_RUNTIME: NO_HIT
-APPLEA7IOP_START_VTABLE_SLOT: BLOCKED (no runtime entry observed)
-APPLEA7IOPNUB_WITHREGISTRYENTRY_RUNTIME: NOT_EXERCISED
-FIRST_QEMU_VISIBLE_PRIMITIVE: BLOCKED (no ANS runtime entry observed)
+APPLEA7IOP_CANDIDATE_RUNTIME_ENTRY: NOT_OBSERVED
+APPLEA7IOPNUB_WITHREGISTRYENTRY_RUNTIME: NOT_OBSERVED
+APPLEA7IOP_INSTANTIATION: UNKNOWN
+APPLEA7IOP_START_VTABLE_SLOT: BLOCKED
+BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING: UNKNOWN
+FIRST_QEMU_VISIBLE_PRIMITIVE: BLOCKED
 ITERATION_58B_ENTRY_GATE: BLOCKED_PROOF_INCOMPLETE
 ```
+
+These are interval-limited observations: the breakpoints were armed after
+a 12-second warmup, so the NO_HIT result is proven only from breakpoint
+arm time forward. It is not yet a whole-boot absence proof.
 
 Classification follows the P3 contract exactly: NO_HIT means none of the
 three instrumented functions (candidate A, candidate B, or
@@ -28,9 +34,13 @@ either DeviceTree fixture within the capture window.
 2. Both DeviceTree fixtures produced NO_HIT:
    - control (`dtree_control.bin`, SHA `9e84c9ad...`): NO_HIT
    - ANS-enabled (`dtree_experiment.bin`, SHA `9f87087f...`, Iteration 58A): NO_HIT
-3. The AppleA7IOP start candidates and the nub factory are **not
-   instantiated** by the Iteration 58A `iop-nub,rtbuddy-v2` compatible
-   restoration alone.
+3. No runtime entry into either instrumented AppleA7IOP start candidate or
+   into AppleA7IOPNub::withRegistryEntry was observed under either tested
+   DeviceTree fixture during the instrumented interval. Iteration 58A
+   therefore does not yet provide evidence that the AppleASCWrapV6 ->
+   AppleA7IOP -> AppleA7IOPNub runtime chain is exercised; whether
+   AppleA7IOP was instantiated through an uninstrumented path remains
+   UNKNOWN.
 
 ## Control vs ANS-enabled differential
 
