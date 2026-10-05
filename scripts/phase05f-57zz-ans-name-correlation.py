@@ -85,23 +85,11 @@ def main():
             "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
             "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
         },
-        "allocator_caller_static_analysis": {
-            "allocator_vm": "0xfffffff008387eb8",
-            "thunk_entry": "0xfffffff008387eb0 (mov x1,x2; b allocator)",
-            "direct_BL_callers_in_AppleARMPlatform_exec": [],
-            "direct_BL_callers_in_kernel_exec": [],
-            "fixup_references_to_allocator": [],
-            "fixup_references_to_thunk": [],
-            "xrefs_to_ARMIO_class_object": "registration/allocator thunks only (no external creation-path caller in AppleARMPlatform exec)",
-            "conclusion": (
-                "The allocator has no direct BL/B callers and no vtable/fixup "
-                "references. It is invoked via the OSMetaClass metaclass "
-                "dispatch mechanism (kernel generic allocClassWithName path). "
-                "The caller is kernel-side IOService/IORegistryEntry code, not "
-                "AppleARMPlatform code. Next: instrument the OSMetaClass alloc "
-                "or IORegistryEntry name accessor from the kernel side."
-            ),
-        },
+        "allocator_caller_static_analysis": (
+            json.load(open("artifacts/evidence/05f/phase05f-57zz-allocator-caller-analysis.json", encoding="utf-8-sig"))
+            if os.path.exists("artifacts/evidence/05f/phase05f-57zz-allocator-caller-analysis.json")
+            else {"error": "analyzer artifact missing; run phase05f-57zz-allocator-caller-analyzer.py first"}
+        ),
         "next_approaches": [
             "1. STATIC: derive caller-of-ARMIO-allocator argument semantics (which arg is IORegistryEntry/OSDictionary/DT node)",
             "2. Instrument the DT plane name accessor (IORegistryEntry::getName / compareName) with an ANS filter",

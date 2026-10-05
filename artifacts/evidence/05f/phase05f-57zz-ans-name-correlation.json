@@ -9,14 +9,14 @@
       "ans_string_hits": 0,
       "ascwrap_compat_hits": 0,
       "search_ranges": [
-        "0xffffffe30c0ed000-0xffffffe30c10d000",
-        "0xffffffe30c0ec000-0xffffffe30c10c000",
         "0xffffffe30c0ef000-0xffffffe30c10f000",
-        "0xffffffe30c0ee000-0xffffffe30c10e000",
-        "0xffffffe30c0d9000-0xffffffe30c0f9000",
-        "0xffffffe30c0da000-0xffffffe30c0fa000",
         "0xffffffe30c0d8000-0xffffffe30c0f8000",
         "0xffffffe30c0db000-0xffffffe30c0fb000",
+        "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "0xffffffe30c0da000-0xffffffe30c0fa000",
+        "0xffffffe30c0d9000-0xffffffe30c0f9000",
+        "0xffffffe30c0ec000-0xffffffe30c10c000",
         "0xffffffe30c0e5000-0xffffffe30c105000",
         "0xffffffe30c0e7000-0xffffffe30c107000"
       ],
@@ -37,12 +37,12 @@
       "ascwrap_compat_hits": 0,
       "search_ranges": [
         "0xffffffde1bea5000-0xffffffde1c0a5000",
+        "0xffffffde1be98000-0xffffffde1c098000",
         "0xffffffde1be9a000-0xffffffde1c09a000",
-        "0xffffffde1bea7000-0xffffffde1c0a7000",
-        "0xffffffde1be99000-0xffffffde1c099000",
         "0xffffffde1bea6000-0xffffffde1c0a6000",
         "0xffffffde1bea4000-0xffffffde1c0a4000",
-        "0xffffffde1be98000-0xffffffde1c098000"
+        "0xffffffde1bea7000-0xffffffde1c0a7000",
+        "0xffffffde1be99000-0xffffffde1c099000"
       ],
       "search_window": "\u00b11MB around each allocator x1 (v7) / \u00b164KB (v6)",
       "start_client_classes": [
@@ -99,14 +99,70 @@
     "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE"
   },
   "allocator_caller_static_analysis": {
-    "allocator_vm": "0xfffffff008387eb8",
-    "thunk_entry": "0xfffffff008387eb0 (mov x1,x2; b allocator)",
-    "direct_BL_callers_in_AppleARMPlatform_exec": [],
-    "direct_BL_callers_in_kernel_exec": [],
-    "fixup_references_to_allocator": [],
-    "fixup_references_to_thunk": [],
-    "xrefs_to_ARMIO_class_object": "registration/allocator thunks only (no external creation-path caller in AppleARMPlatform exec)",
-    "conclusion": "The allocator has no direct BL/B callers and no vtable/fixup references. It is invoked via the OSMetaClass metaclass dispatch mechanism (kernel generic allocClassWithName path). The caller is kernel-side IOService/IORegistryEntry code, not AppleARMPlatform code. Next: instrument the OSMetaClass alloc or IORegistryEntry name accessor from the kernel side."
+    "gate": "57ZZ_ALLOCATOR_CALLER_ANALYSIS",
+    "method": "executable: canonical fixup decoder + Capstone BL/B scan + adrp/add xref scan",
+    "fixup_decoder": "scripts/phase05f-57zz-fixup-index.py (shared canonical)",
+    "chained_segments_searched": [
+      "__DATA_CONST",
+      "__DATA_SPTM",
+      "__DATA"
+    ],
+    "total_fixup_index_size": 532174,
+    "allocator": {
+      "vm": "0xfffffff008387eb8",
+      "direct_bl_b_callers": [],
+      "fixup_references": []
+    },
+    "thunk": {
+      "vm": "0xfffffff008387eb0",
+      "instructions": [
+        {
+          "addr": "0xfffffff008387eb0",
+          "mnemonic": "mov",
+          "operands": "x1, x2"
+        },
+        {
+          "addr": "0xfffffff008387eb4",
+          "mnemonic": "b",
+          "operands": "#0xfffffff008387eb8"
+        },
+        {
+          "addr": "0xfffffff008387eb8",
+          "mnemonic": "bti",
+          "operands": "c"
+        },
+        {
+          "addr": "0xfffffff008387ebc",
+          "mnemonic": "pacibsp",
+          "operands": ""
+        }
+      ],
+      "register_transformation": "thunk x2 -> allocator x1 (derived from 'mov x1, x2')",
+      "direct_bl_b_callers": [],
+      "fixup_references": []
+    },
+    "armio_class_object": {
+      "vm": "0xfffffff00afef458",
+      "xrefs_in_AppleARMPlatform_exec": [
+        "0xfffffff008387ef0",
+        "0xfffffff008388ce8",
+        "0xfffffff008388d68",
+        "0xfffffff008388dd8",
+        "0xfffffff008388e34",
+        "0xfffffff00838a1b4",
+        "0xfffffff00838a208"
+      ]
+    },
+    "verdicts": {
+      "DIRECT_CALLER_TO_ALLOCATOR": "NOT_OBSERVED",
+      "DIRECT_CALLER_TO_THUNK": "NOT_OBSERVED",
+      "FIXUP_REFERENCE_TO_ALLOCATOR": "NOT_OBSERVED",
+      "FIXUP_REFERENCE_TO_THUNK": "NOT_OBSERVED",
+      "INDIRECT_CALL_MECHANISM": "UNKNOWN",
+      "OSMETACLASS_DISPATCH": "SUPPORTED_HYPOTHESIS_ONLY (not proven)",
+      "ALLOCATOR_ARG1_SOURCE": "THUNK_INPUT_X2 (derived from thunk instruction)",
+      "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate target)"
+    }
   },
   "next_approaches": [
     "1. STATIC: derive caller-of-ARMIO-allocator argument semantics (which arg is IORegistryEntry/OSDictionary/DT node)",

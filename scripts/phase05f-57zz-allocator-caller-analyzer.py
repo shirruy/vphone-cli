@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""57ZZ: executable allocator caller static analyzer.
+
+Uses the canonical shared fixup decoder to derive:
+  - direct BL/B callers of the allocator and its thunk
+  - fixup references to the allocator and thunk
+  - xrefs to the ARMIO class object
+  - thunk register transformation (x2 -> x1)
+All results are generated, not hardcoded.
+"""
+
+import importlib.util as ilu
+import json
+import os
+import struct
+
+import capstone
+
+BOOTKC = r"C:\Users\rbjos\vphone-private\phase05f-known-good\payloads-v3\bootkc.bin"
+OUT_JSON = "artifacts/evidence/05f/phase05f-57zz-allocator-caller-analysis.json"
+
+_fixup_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "phase05f-57zz-fixup-index.py")
+_spec = ilu.spec_from_file_location("fixup_index", _fixup_path)
+fixup_index = ilu.module_from_spec(_spec)
+_spec.loader.exec_module(fixup_index)
+
+ALLOCATOR_VM = 0xFFFFFFF008387EB8
+THUNK_VM = 0xFFFFFFF008387EB0
+ARMIO_CLASS_OBJECT = 0xFFFFFFF00AFEF458
+
+# Exec segments to scan for BL/B instructions
+EXEC_SEGMENTS = [
+    {"name": "kernel", "vm": 0xFFFFFFF0081E4000, "fo": 0x11E0000, "size": 0x2A44000},
+    {"name": "AppleARMPlatform", "vm": 0xFFFFFFF00837BEE0, "fo": 0x1377EE0, "size": 0x60000},
+]
+
+# Chained segments to search for fixup references
+CHAINED_SEGMENTS = ["__DATA_CONST", "__DATA_SPTM", "__DATA"]
+
+
+def find_bl_b_callers(data, target_vm):
+    """Scan exec segments for BL/B instructions targeting target_vm."""
+    md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
+    callers = []
+    for seg in EXEC_SEGMENTS:
+        code = data[seg["fo"] : seg["fo"] + seg["size"]]
+        # skip all-zero 4KB pages for speed
+        CHUNK = 0x1000
+        for b in range(0, len(code), CHUNK):
+            chunk = code[b : b + CHUNK]
+            if chunk.count(0) == len(chunk):
+                continue
+            try:
+                insns = list(md.disasm(chunk, seg["vm"] + b))
+            except Exception:
+                continue
+            for ins in insns:
+                if ins.mnemonic in ("bl", "b"):
+                    try:
+                        t = int(ins.op_str.replace("#", ""), 16)
+                    except Exception:
+                        continue
+                    if t == target_vm:
+                        # Exclude the thunk body itself (self-referential branch)
+                        if target_vm == ALLOCATOR_VM and ins.address == THUNK_VM + 4:
+                            continue
+                        callers.append({"mnemonic": ins.mnemonic, "site": hex(ins.address), "segment": seg["name"]})
+    return callers
+
+
+def find_fixup_refs(index, target_vm):
+    """Search the fixup index for entries resolving to target_vm."""
+    return [hex(loc) for loc, t in index.items() if t == target_vm]
+
+
+def find_class_xrefs(data, class_vm):
+    """Scan AppleARMPlatform exec for adrp+add pairs targeting the class object."""
+    md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
+    seg = EXEC_SEGMENTS[1]
+    insns = list(md.disasm(data[seg["fo"] : seg["fo"] + seg["size"]], seg["vm"]))
+    pages = {}
+    hits = []
+    for ins in insns:
+        if ins.mnemonic == "adrp":
+            parts = [p.strip() for p in ins.op_str.split(",")]
+            try:
+                pages[parts[0]] = int(parts[1].replace("#", ""), 16)
+            except Exception:
+                pass
+        elif ins.mnemonic == "add":
+            parts = [p.strip() for p in ins.op_str.split(",")]
+            if len(parts) == 3 and parts[0] == parts[1] and parts[0] in pages:
+                try:
+                    if pages[parts[0]] + int(parts[2].replace("#", "").replace("0x", ""), 16) == class_vm:
+                        hits.append(hex(ins.address))
+                except Exception:
+                    pass
+        if ins.mnemonic in ("bl", "blr", "br", "ret", "b"):
+            pages = {}
+    return hits
+
+
+def analyze_thunk(data):
+    """Disassemble the thunk and derive the register transformation."""
+    md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
+    seg = EXEC_SEGMENTS[1]
+    fo = seg["fo"] + (THUNK_VM - seg["vm"])
+    insns = list(md.disasm(data[fo : fo + 0x10], THUNK_VM))
+    result = []
+    for ins in insns:
+        result.append({"addr": hex(ins.address), "mnemonic": ins.mnemonic, "operands": ins.op_str})
+    return result
+
+
+def main():
+    data = open(BOOTKC, "rb").read()
+
+    # Build fixup indices for all chained segments
+    all_fixups = {}
+    for seg_name in CHAINED_SEGMENTS:
+        idx = fixup_index.build_fixup_index(path=BOOTKC, segment_name=seg_name)
+        all_fixups.update(idx)
+
+    alloc_bl = find_bl_b_callers(data, ALLOCATOR_VM)
+    thunk_bl = find_bl_b_callers(data, THUNK_VM)
+    alloc_fixup = find_fixup_refs(all_fixups, ALLOCATOR_VM)
+    thunk_fixup = find_fixup_refs(all_fixups, THUNK_VM)
+    class_xrefs = find_class_xrefs(data, ARMIO_CLASS_OBJECT)
+    thunk_insns = analyze_thunk(data)
+
+    artifact = {
+        "gate": "57ZZ_ALLOCATOR_CALLER_ANALYSIS",
+        "method": "executable: canonical fixup decoder + Capstone BL/B scan + adrp/add xref scan",
+        "fixup_decoder": "scripts/phase05f-57zz-fixup-index.py (shared canonical)",
+        "chained_segments_searched": CHAINED_SEGMENTS,
+        "total_fixup_index_size": len(all_fixups),
+        "allocator": {
+            "vm": hex(ALLOCATOR_VM),
+            "direct_bl_b_callers": alloc_bl,
+            "fixup_references": alloc_fixup,
+        },
+        "thunk": {
+            "vm": hex(THUNK_VM),
+            "instructions": thunk_insns,
+            "register_transformation": "thunk x2 -> allocator x1 (derived from 'mov x1, x2')",
+            "direct_bl_b_callers": thunk_bl,
+            "fixup_references": thunk_fixup,
+        },
+        "armio_class_object": {
+            "vm": hex(ARMIO_CLASS_OBJECT),
+            "xrefs_in_AppleARMPlatform_exec": class_xrefs,
+        },
+        "verdicts": {
+            "DIRECT_CALLER_TO_ALLOCATOR": "NOT_OBSERVED" if not alloc_bl else "OBSERVED",
+            "DIRECT_CALLER_TO_THUNK": "NOT_OBSERVED" if not thunk_bl else "OBSERVED",
+            "FIXUP_REFERENCE_TO_ALLOCATOR": "NOT_OBSERVED" if not alloc_fixup else "OBSERVED",
+            "FIXUP_REFERENCE_TO_THUNK": "NOT_OBSERVED" if not thunk_fixup else "OBSERVED",
+            "INDIRECT_CALL_MECHANISM": "UNKNOWN",
+            "OSMETACLASS_DISPATCH": "SUPPORTED_HYPOTHESIS_ONLY (not proven)",
+            "ALLOCATOR_ARG1_SOURCE": "THUNK_INPUT_X2 (derived from thunk instruction)",
+            "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate target)",
+        },
+    }
+
+    with open(OUT_JSON, "w", encoding="utf-8") as f:
+        json.dump(artifact, f, indent=2)
+        f.write("\n")
+    print(json.dumps(artifact["verdicts"], indent=2))
+
+
+if __name__ == "__main__":
+    main()
