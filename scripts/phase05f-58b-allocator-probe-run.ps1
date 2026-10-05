@@ -7,8 +7,10 @@ param(
     [string]$RunName,
 
     [int]$GdbPort = 1235,
-    [int]$WarmupSeconds = 18,
-    [int]$WindowSeconds = 90
+    [int]$WarmupSeconds = 0,
+    [int]$WindowSeconds = 90,
+
+    [switch]$KeepQemu
 )
 
 $ErrorActionPreference = 'Stop'
@@ -52,7 +54,8 @@ $argsList = @(
     '-m', '8G',
     '-sptm', (QPath (Join-Path $PayloadRoot 'sptm.bin')),
     '-txm', (QPath (Join-Path $PayloadRoot 'txm.bin')),
-    '-gdb', "tcp:127.0.0.1:$GdbPort"
+    '-gdb', "tcp:127.0.0.1:$GdbPort",
+    '-S'
 )
 $argString = ($argsList | ForEach-Object {
     if ($_ -match '\s' -and -not $_.StartsWith('"')) { '"' + $_ + '"' } else { $_ }
@@ -99,11 +102,15 @@ $gdbExit = $LASTEXITCODE
 $gdbOutput | Set-Content -LiteralPath $gdbLog -Encoding UTF8
 Write-Host ("GDB exit={0}" -f $gdbExit)
 
-Start-Sleep -Seconds 2
-if (-not $proc.HasExited) {
-    & taskkill /F /T /PID $proc.Id 2>$null | Out-Null
-    Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-    try { [void]$proc.WaitForExit(10000) } catch {}
+if ($KeepQemu) {
+    Write-Host ("QEMU still running (PID {0}) for walk pass" -f $proc.Id)
+} else {
+    Start-Sleep -Seconds 2
+    if (-not $proc.HasExited) {
+        & taskkill /F /T /PID $proc.Id 2>$null | Out-Null
+        Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+        try { [void]$proc.WaitForExit(10000) } catch {}
+    }
 }
 
 $probeJson = Join-Path $RunRoot 'allocator-name-probe.json'
