@@ -1,0 +1,97 @@
+# Phase 05F 58B: DT plane scan orchestrator. Boots, waits for the DT
+# plane to be built, attaches GDB, scans DRAM for compatible strings.
+
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$RunName,
+
+    [int]$GdbPort = 1236,
+    [int]$WarmupSeconds = 20
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$RepoRoot = 'C:\Users\rbjos\source\vphone-cli-windows'
+$QemuBuild = Join-Path $RepoRoot 'build\phase05e-qemu-sptm-source-build\darwin-vm\qemu-sptm\build-win'
+$QemuExe = Join-Path $QemuBuild 'qemu-system-aarch64.exe'
+$MingwBin = 'C:\msys64\mingw64\bin'
+$GdbExe = Join-Path $MingwBin 'gdb-multiarch.exe'
+$PayloadRoot = Join-Path $env:USERPROFILE 'vphone-private\phase05f-known-good\payloads-v3'
+$Dtree = Join-Path $RepoRoot 'build\phase05f-runtime\dt-fixtures\dtree_ascwrap.bin'
+$ScanScript = Join-Path $RepoRoot 'scripts\phase05f-58b-dt-plane-scan.py'
+$RunRoot = Join-Path $RepoRoot "build\phase05f-runtime\$RunName"
+New-Item -ItemType Directory -Force -Path $RunRoot | Out-Null
+
+Get-Process -Name 'qemu-system-aarch64' -ErrorAction SilentlyContinue |
+    Stop-Process -Force -ErrorAction SilentlyContinue
+Start-Sleep -Milliseconds 500
+
+$serial = Join-Path $RunRoot 'uart0.log'
+$so = Join-Path $RunRoot 'stdout.log'
+$se = Join-Path $RunRoot 'stderr.log'
+function QPath([string]$p) { ([System.IO.Path]::GetFullPath($p)).Replace('\', '/') }
+
+$argsList = @(
+    '-M','darwin',
+    '-bootkc', (QPath (Join-Path $PayloadRoot 'bootkc.bin')),
+    '-dtree', (QPath $Dtree),
+    '-tc', (QPath (Join-Path $PayloadRoot 'trustcache.bin')),
+    '-ramdisk', (QPath (Join-Path $PayloadRoot 'ramdisk.dmg')),
+    '-args', 'rd=md0 serial=3 -v -noprogress wdt=-1 wlan-olyhal-abort',
+    '-display','none','-monitor','none',
+    '-chardev', ("file,id=uart0,path=" + (QPath $serial)),
+    '-serial','chardev:uart0',
+    '-m','8G',
+    '-sptm', (QPath (Join-Path $PayloadRoot 'sptm.bin')),
+    '-txm', (QPath (Join-Path $PayloadRoot 'txm.bin')),
+    '-gdb', "tcp:127.0.0.1:$GdbPort"
+)
+$argString = ($argsList | ForEach-Object {
+    if ($_ -match '\s' -and -not $_.StartsWith('"')) { '"' + $_ + '"' } else { $_ }
+}) -join ' '
+
+$oldPath = $env:PATH
+try {
+    $env:PATH = "$MingwBin;$oldPath"
+    $proc = Start-Process -FilePath $QemuExe -WorkingDirectory $QemuBuild `
+        -ArgumentList $argString -RedirectStandardOutput $so -RedirectStandardError $se `
+        -PassThru -WindowStyle Hidden
+} finally { $env:PATH = $oldPath }
+Write-Host ("QEMU PID {0}; warmup {1}s..." -f $proc.Id, $WarmupSeconds)
+
+$deadline = (Get-Date).AddSeconds($WarmupSeconds)
+while ((Get-Date) -lt $deadline -and -not $proc.HasExited) { Start-Sleep -Milliseconds 500 }
+if ($proc.HasExited) { throw "qemu exited: $($proc.ExitCode)" }
+
+$gdbCmds = Join-Path $RunRoot 'gdb.cmds'
+$cmdLines = @(
+    'set pagination off','set confirm off','set height 0','set width 0',
+    "target remote 127.0.0.1:$GdbPort",
+    "source $($ScanScript.Replace('\','/'))",
+    'scan58d'
+)
+[System.IO.File]::WriteAllLines($gdbCmds, [string[]]$cmdLines, (New-Object System.Text.UTF8Encoding($false)))
+
+$env:P2_OUT_DIR = $RunRoot
+$gdbLog = Join-Path $RunRoot 'gdb-session.log'
+$gdbCmd = "`"$GdbExe`" --batch -x `"$gdbCmds`" 2>&1"
+$gdbOutput = & cmd.exe /c $gdbCmd
+$gdbExit = $LASTEXITCODE
+$gdbOutput | Set-Content -LiteralPath $gdbLog -Encoding UTF8
+Write-Host ("GDB exit={0}" -f $gdbExit)
+
+if (-not $proc.HasExited) {
+    & taskkill /F /T /PID $proc.Id 2>$null | Out-Null
+    Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+    try { [void]$proc.WaitForExit(10000) } catch {}
+}
+
+$scanJson = Join-Path $RunRoot 'dt-plane-scan.json'
+if (Test-Path $scanJson) {
+    Write-Host "SCAN OUTPUT:"
+    Get-Content $scanJson
+} else {
+    Write-Host "NO SCAN OUTPUT; gdb tail:"
+    Get-Content $gdbLog | Select-Object -Last 20
+}
