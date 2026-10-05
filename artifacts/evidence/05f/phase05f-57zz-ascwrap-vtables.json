@@ -10,7 +10,6 @@
       "start_slot": "+0x360",
       "start_target": "0xfffffff00aad7da0",
       "start_owner": "kernel",
-      "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
           "target": "0xfffffff0082f4cfc",
@@ -512,7 +511,9 @@
           "target": "0xfffffff00aad531c",
           "owner": "kernel"
         }
-      }
+      },
+      "start_classification": "INHERITS_START",
+      "superclass_start_target": "0xfffffff00aad7da0"
     },
     "AppleASCWrapV6": {
       "vtable_vm": "0xfffffff007d131e0",
@@ -521,7 +522,6 @@
       "start_slot": "+0x360",
       "start_target": "0xfffffff00aad7da0",
       "start_owner": "kernel",
-      "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
           "target": "0xfffffff0082f32e8",
@@ -1023,7 +1023,9 @@
           "target": "0xfffffff00aad531c",
           "owner": "kernel"
         }
-      }
+      },
+      "start_classification": "INHERITS_START",
+      "superclass_start_target": "0xfffffff00aad7da0"
     },
     "AppleASCWrapV6SEP": {
       "vtable_vm": "0xfffffff007d139b8",
@@ -1032,7 +1034,6 @@
       "start_slot": "+0x360",
       "start_target": "0xfffffff00aac8a4c",
       "start_owner": "kernel",
-      "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
           "target": "0xfffffff0082f43c0",
@@ -1462,7 +1463,9 @@
           "target": "0xfffffff00aac7418",
           "owner": "kernel"
         }
-      }
+      },
+      "start_classification": "OVERRIDES_START",
+      "superclass_start_target": "0xfffffff00aad7da0"
     },
     "AppleASCWrapV6SISP": {
       "vtable_vm": "0xfffffff007d12a08",
@@ -1471,7 +1474,6 @@
       "start_slot": "+0x360",
       "start_target": "0xfffffff00aad7da0",
       "start_owner": "kernel",
-      "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
           "target": "0xfffffff0082f2c3c",
@@ -1973,7 +1975,9 @@
           "target": "0xfffffff00aad531c",
           "owner": "kernel"
         }
-      }
+      },
+      "start_classification": "INHERITS_START",
+      "superclass_start_target": "0xfffffff00aad7da0"
     },
     "AppleA7IOPNub": {
       "vtable_vm": "0xfffffff007d14960",
@@ -1982,7 +1986,6 @@
       "start_slot": "+0x360",
       "start_target": "0xfffffff00aad7da0",
       "start_owner": "kernel",
-      "start_classification": "OVERRIDES_START",
       "entries": {
         "+0x000": {
           "target": "0xfffffff0082f78c0",
@@ -2484,7 +2487,9 @@
           "target": "0xfffffff00aad531c",
           "owner": "kernel"
         }
-      }
+      },
+      "start_classification": "INHERITS_START",
+      "superclass_start_target": "0xfffffff00aad7da0"
     }
   },
   "candidate_evaluation": {
@@ -2498,7 +2503,7 @@
       "vtable_hits": [],
       "count": 0
     },
-    "relationship": "candA (%s pad) and candB (%s pad) sit at vtable slot +0x348, which the proven start dispatch proves is NOT start (start is +0x360). The semantic identity of +0x348 is UNKNOWN; prior breakpoints there were never start instrumentation."
+    "relationship": "candA (0xfffffff0082f4dec pad) and candB (0xfffffff0082f8048 pad) are vtable slot +0x348 targets. The proven start slot is +0x360; +0x348 is NOT start and its semantic identity is UNKNOWN. Prior breakpoints at the +4 function bodies were never start instrumentation."
   },
   "vtable_base_derivation": {
     "AppleA7IOP": {

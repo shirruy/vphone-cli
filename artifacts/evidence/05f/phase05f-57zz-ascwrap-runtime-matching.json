@@ -37,8 +37,11 @@
   "provider_publication_runs": {
     "p7-provider-v2": {
       "classification": "BOTH_WITH_DISTINCT_RECEIVERS",
-      "armio_allocations": 55,
-      "start_dispatch_hits": 5,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 55",
+      "START_DISPATCH_HITS_OBSERVED": ">= 5",
+      "START_DISPATCH_HITS_OBSERVED_COUNT": 5,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT": 55,
       "start_client_classes": [
         "other",
         "other",
@@ -51,8 +54,11 @@
     },
     "p7-provider-v3": {
       "classification": "BOTH_WITH_DISTINCT_RECEIVERS",
-      "armio_allocations": 20,
-      "start_dispatch_hits": 40,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 20",
+      "START_DISPATCH_HITS_OBSERVED": ">= 40",
+      "START_DISPATCH_HITS_OBSERVED_COUNT": 40,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT": 20,
       "start_client_classes": [
         "other",
         "other",
@@ -103,8 +109,8 @@
     "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
     "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (3s warmup; allocations observed from t=0.057)",
     "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS-specific alloc not yet identified among ARMIO allocations)",
-    "ARMIO_ALLOCATIONS_OBSERVED": 55,
-    "IOKIT_START_DISPATCHES_OBSERVED": 40,
+    "ARMIO_ALLOCATIONS_OBSERVED": ">= 55",
+    "IOKIT_START_DISPATCHES_OBSERVED": ">= 40",
     "ASCWRAP_FAMILY_START_OBSERVED": false,
     "APPLEASCWRAPV6_START_HIT": "NO",
     "APPLEA7IOPNUB_START_HIT": "NO",

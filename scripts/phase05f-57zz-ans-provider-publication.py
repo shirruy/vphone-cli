@@ -8,17 +8,26 @@ RUNS = ["p7-provider-v2", "p7-provider-v3"]
 OUT_JSON = "artifacts/evidence/05f/phase05f-57zz-ans-provider-publication.json"
 OUT_MD = "artifacts/evidence/05f/phase05f-57zz-ans-provider-publication.md"
 
-KNOWN_VTABLES = {
-    0xFFFFFFF007D131E0: "AppleASCWrapV6",
-    0xFFFFFFF007D14370: "AppleA7IOP",
-    0xFFFFFFF007D14960: "AppleA7IOPNub",
-    0xFFFFFFF007D139B8: "AppleASCWrapV6SEP",
-    0xFFFFFFF007D12A08: "AppleASCWrapV6SISP",
-    0xFFFFFFF007D336E0: "AppleARMIODevice",
-}
+# Single source of truth: consume the canonical derived-vtable artifact.
+# The static AppleARMIODevice vtable (0xfffffff007d336e0) is derived from its
+# mod_init adrp/add x16 sequence (registration at 0xfffffff008388bb0).
+VTABLES_ARTIFACT = "artifacts/evidence/05f/phase05f-57zz-ascwrap-vtables.json"
+APPLEARMIODevice_VTABLE_STATIC = 0xFFFFFFF007D336E0  # mod_init-derived
+
+
+def load_known_vtables():
+    with open(VTABLES_ARTIFACT, encoding="utf-8") as f:
+        art = json.load(f)
+    out = {}
+    for name, v in art["vtables"].items():
+        out[int(v["vtable_vm"], 16)] = name
+    out[APPLEARMIODevice_VTABLE_STATIC] = "AppleARMIODevice"
+    return out
 
 
 def main():
+    global KNOWN_VTABLES
+    KNOWN_VTABLES = load_known_vtables()
     runs = {}
     for run in RUNS:
         d = os.path.join("build", "phase05f-runtime", run)
@@ -27,6 +36,7 @@ def main():
             continue
         c = json.load(open(p, encoding="utf-8-sig"))
         slide = c["slide"]["slide"] if c.get("slide") else 0
+        known = KNOWN_VTABLES
         allocs = [e for e in c["events"] if e["label"] == "bp:candB"]
         starts = [e for e in c["events"] if e["label"] == "bp:candA"]
         start_classes = []
@@ -36,8 +46,9 @@ def main():
         runs[run] = {
             "warmup_seconds": 3,
             "slide": slide,
-            "armio_allocator_hits": len(allocs),
-            "start_dispatch_hits": len(starts),
+            "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= %d" % len(allocs),
+            "START_DISPATCH_HITS_OBSERVED": ">= %d" % len(starts),
+            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": len(allocs) + len(starts) >= 60,
             "start_client_vtables": start_classes,
             "ascwrap_family_start": any(s != "other" and "ASCWrap" in s or s in ("AppleA7IOP", "AppleA7IOPNub") for s in start_classes),
             "note": "event cap 60 truncates counts; both phases observed",
@@ -46,8 +57,21 @@ def main():
     artifact = {
         "gate": "57ZZ_ANS_PROVIDER_PUBLICATION",
         "instrumentation_targets": {
-            "armio_allocator": "0xfffffff008387eb8 (AppleARMIODevice alloc, x1=DT dict)",
+            "armio_allocator": "0xfffffff008387eb8",
             "start_dispatch": "0xfffffff00aada0e0 (client->start(provider) blraa; proven +0x360 slot)",
+        },
+        "allocator_register_contract": {
+            "derived_from": "disassembly of 0xfffffff008387eb8 (AppleARMPlatform exec)",
+            "instructions": [
+                "0xfffffff008387ed0  mov x20, x1        ; save arg1",
+                "0xfffffff008387ed4  mov x21, x0        ; save arg0",
+                "0xfffffff008387f50  mov x1, x21        ; init arg1 <- caller arg0",
+                "0xfffffff008387f54  mov x2, x20        ; init arg2 <- caller arg1",
+                "0xfffffff008387f60  blraa x9, x17      ; OSMetaClass init virtual",
+            ],
+            "ARMIO_ALLOC_ARG0": "forwarded unchanged as init arg1; role UNKNOWN pending caller analysis",
+            "ARMIO_ALLOC_ARG1": "forwarded unchanged as init arg2; role UNKNOWN pending caller analysis",
+            "DT_REGISTRY_ENTRY_ARG": "UNKNOWN (both args forwarded; needs caller-of-allocator trace)",
         },
         "runs": runs,
         "findings": {
@@ -78,7 +102,7 @@ def main():
         "",
         "## Instrumentation",
         "",
-        "- AppleARMIODevice allocator: `0xfffffff008387eb8` (x1 = DT dict)",
+        "- AppleARMIODevice allocator: `0xfffffff008387eb8` (both args forwarded to init; DT-registry arg role UNKNOWN pending caller trace)",
         "- IOService start dispatch: `0xfffffff00aada0e0` (+0x360 slot, callsite-proven)",
         "- 3s warmup; slide 0x20000000; canonical ascwrap DT",
         "",

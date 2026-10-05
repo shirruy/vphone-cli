@@ -121,7 +121,11 @@
     }
   ],
   "CHAIN_WALK_SELF_CONSISTENCY": "PASS",
-  "CHAIN_DECODER_FORMAT_COMPLETE": "PASS",
+  "CHAIN_DECODER_CURRENT_FIXTURE": "PASS",
+  "MULTI_START_PAGES_OBSERVED": 0,
+  "MULTI_PATH_IMPLEMENTED": "YES",
+  "MULTI_PATH_RUNTIME_VALIDATED": "NO",
+  "note_format_complete": "FORMAT_COMPLETE is intentionally NOT claimed: the MULTI overflow-pool path is implemented but not exercised by this fixture (zero MULTI pages). A synthetic MULTI fixture is required before a generic FORMAT_COMPLETE verdict.",
   "candidates": {
     "candA": {
       "vm": "0xfffffff0082f4df0",

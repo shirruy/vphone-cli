@@ -129,11 +129,6 @@ def main():
             if t is not None:
                 entries[k] = t
         start_target = entries.get(START_SLOT)
-        classification = None
-        if start_target is None:
-            classification = "INHERITS_SUPER_START (no +%0x%x override)" % (START_SLOT, 0) if False else "INHERITS_SUPER_START"
-        else:
-            classification = "OVERRIDES_START"
         out[name] = {
             "vtable_vm": hex(vt),
             "mod_init": info["mod_init"],
@@ -141,9 +136,34 @@ def main():
             "start_slot": "+0x%x" % START_SLOT,
             "start_target": hex(start_target) if start_target else None,
             "start_owner": owner(start_target) if start_target else None,
-            "start_classification": classification,
             "entries": {("+0x%03x" % k): {"target": hex(t), "owner": owner(t)} for k, t in sorted(entries.items())},
         }
+
+    # Inheritance classification BY TARGET COMPARISON against the proven
+    # superclass chains (never from slot existence):
+    #   AppleA7IOP -> IOService base
+    #   AppleASCWrapV6/SISP -> AppleA7IOP
+    #   AppleASCWrapV6SEP -> AppleASCWrapV6
+    #   AppleA7IOPNub -> AppleA7IOP
+    PARENT_OF = {
+        "AppleA7IOP": None,
+        "AppleASCWrapV6": "AppleA7IOP",
+        "AppleASCWrapV6SEP": "AppleASCWrapV6",
+        "AppleASCWrapV6SISP": "AppleASCWrapV6",
+        "AppleA7IOPNub": "AppleA7IOP",
+    }
+    BASE_IOSTART = out["AppleA7IOP"]["start_target"]
+    for name, parent in PARENT_OF.items():
+        own = out[name]["start_target"]
+        ref = BASE_IOSTART if parent is None else out[parent]["start_target"]
+        if own is None or ref is None:
+            cls = "UNRESOLVED"
+        elif own == ref:
+            cls = "INHERITS_START"
+        else:
+            cls = "OVERRIDES_START"
+        out[name]["start_classification"] = cls
+        out[name]["superclass_start_target"] = ref
 
     # Candidate evaluation: reverse lookup across ALL five vtables
     cand_hits = {"candA": [], "candB": []}
@@ -170,10 +190,11 @@ def main():
             "candA": {"vm": hex(CAND_A), "vtable_hits": cand_hits["candA"], "count": len(cand_hits["candA"])},
             "candB": {"vm": hex(CAND_B), "vtable_hits": cand_hits["candB"], "count": len(cand_hits["candB"])},
             "relationship": (
-                "candA (%s pad) and candB (%s pad) sit at vtable slot +0x348, "
-                "which the proven start dispatch proves is NOT start (start is "
-                "+0x360). The semantic identity of +0x348 is UNKNOWN; prior "
-                "breakpoints there were never start instrumentation."
+                "candA (0xfffffff0082f4dec pad) and candB (0xfffffff0082f8048 "
+                "pad) are vtable slot +0x348 targets. The proven start slot is "
+                "+0x360; +0x348 is NOT start and its semantic identity is "
+                "UNKNOWN. Prior breakpoints at the +4 function bodies were "
+                "never start instrumentation."
             ),
         },
         "vtable_base_derivation": derivation_report,
@@ -208,18 +229,21 @@ def main():
         f.write("\n")
 
     md = [
-        "# 57ZZ — ASCWrap/A7IOP Vtables (Chain Decoder Derived)",
+        "# 57ZZ — ASCWrap/A7IOP Vtables",
+        "",
+        "Vtable contents are chain-decoder derived; vtable bases are derived",
+        "from mod_init instruction sequences and asserted.",
         "",
         "```",
-        "ASCWRAP_START_VTABLE_SLOT: PROVEN (+0x348)",
+        "IOSERVICE_START_VTABLE_SLOT: PROVEN_FROM_CALLSITE (+0x360)",
         "```",
         "",
-        "| Class | Vtable VM | +0x348 target | Owner | Classification |",
+        "| Class | Vtable VM | +0x360 start target | Superclass target | Classification |",
         "|---|---|---|---|---|",
     ]
     for name, v in out.items():
         md.append(
-            f"| {name} | {v['vtable_vm']} | {v['start_target']} | {v['start_owner']} | {v['start_classification']} |"
+            f"| {name} | {v['vtable_vm']} | {v['start_target']} | {v.get('superclass_start_target')} | {v['start_classification']} |"
         )
     md += [
         "",
@@ -227,9 +251,10 @@ def main():
         "",
         artifact["candidate_evaluation"]["relationship"],
         "",
-        "The +0x2c0 slot resolves to the same shared kernel function in every",
-        "derived vtable — it is not the start slot. The prior SUPER_START_CHAIN",
-        "claim at +0x2c0 is invalidated.",
+        "The start slot is +0x360 (callsite-proven). Slot +0x2c0 resolves to a",
+        "shared kernel function in every derived vtable; both the prior",
+        "+0x2c0 SUPER_START claim and the later +0x348 hypothesis are",
+        "invalidated.",
         "",
     ]
     with open(OUT_MD, "w", encoding="utf-8") as f:

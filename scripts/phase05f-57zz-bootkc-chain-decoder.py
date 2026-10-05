@@ -87,6 +87,13 @@ def main():
         if owner is None:
             segments_out.append({"segment": seg_name, "has_chain": True, "error": "segment_offset unmatched"})
             continue
+        if pointer_format != 8:
+            segments_out.append({
+                "segment": seg_name, "has_chain": True,
+                "pointer_format": pointer_format,
+                "error": "UNSUPPORTED_POINTER_FORMAT (only 8 = 64_KERNEL_CACHE is decoded)",
+            })
+            continue
         seg_vm = owner["vm"] + (segment_offset - owner["fileoff"])
         seg_fo = segment_offset
 
@@ -120,6 +127,7 @@ def main():
                 continue
             if ps & START_MULTI:
                 multi += 1
+                multi_pages_total += 1
                 idx = ps & 0x7FFF
                 while True:
                     entry = struct.unpack_from("<H", chain, pool_base + 2 * idx)[0]
@@ -168,11 +176,12 @@ def main():
 
     nonzero_levels = cache_counts[1] + cache_counts[2] + cache_counts[3]
     self_consistent = all(c["pass"] for c in checks)
-    format_complete = (
+    fixture_complete = (
         starts_bound
         and all("error" not in s for s in segments_out if s.get("has_chain"))
         and (nonzero_levels == 0)
     )
+    multi_observed = multi_pages_total > 0
 
     candA = [hex(x) for x, t in fixup_index.items() if t == CAND_A_VM]
     candB = [hex(x) for x, t in fixup_index.items() if t == CAND_B_VM]
@@ -199,7 +208,16 @@ def main():
         "total_fixups": len(fixup_index),
         "validation_checks": checks,
         "CHAIN_WALK_SELF_CONSISTENCY": "PASS" if self_consistent else "FAIL",
-        "CHAIN_DECODER_FORMAT_COMPLETE": "PASS" if format_complete else "FAIL",
+        "CHAIN_DECODER_CURRENT_FIXTURE": "PASS" if fixture_complete else "FAIL",
+        "MULTI_START_PAGES_OBSERVED": multi_pages_total,
+        "MULTI_PATH_IMPLEMENTED": "YES",
+        "MULTI_PATH_RUNTIME_VALIDATED": "YES" if multi_observed else "NO",
+        "note_format_complete": (
+            "FORMAT_COMPLETE is intentionally NOT claimed: the MULTI overflow-"
+            "pool path is implemented but not exercised by this fixture "
+            "(zero MULTI pages). A synthetic MULTI fixture is required before "
+            "a generic FORMAT_COMPLETE verdict."
+        ),
         "candidates": {
             "candA": {"vm": hex(CAND_A_VM), "count": len(candA), "locations": candA},
             "candB": {"vm": hex(CAND_B_VM), "count": len(candB), "locations": candB},
@@ -217,7 +235,9 @@ def main():
         "",
         "```",
         "BOOTKC_CHAIN_FORMAT: PROVEN (pointer format 8)",
-        f"CHAIN_DECODER_FORMAT_COMPLETE: {artifact['CHAIN_DECODER_FORMAT_COMPLETE']}",
+        f"CHAIN_DECODER_CURRENT_FIXTURE: {artifact['CHAIN_DECODER_CURRENT_FIXTURE']}",
+        f"MULTI_START_PAGES_OBSERVED: {multi_pages_total}",
+        f"MULTI_PATH_RUNTIME_VALIDATED: {'YES' if multi_observed else 'NO'}",
         f"CHAIN_WALK_SELF_CONSISTENCY: {artifact['CHAIN_WALK_SELF_CONSISTENCY']}",
         f"total fixups: {len(fixup_index)}",
         f"cache levels: {artifact['cache_level_counts']}",
@@ -246,7 +266,8 @@ def main():
         f.write("\n".join(md) + "\n")
 
     print(json.dumps({
-        "format_complete": artifact["CHAIN_DECODER_FORMAT_COMPLETE"],
+        "fixture_complete": artifact["CHAIN_DECODER_CURRENT_FIXTURE"],
+        "multi_pages": multi_pages_total,
         "self_consistency": artifact["CHAIN_WALK_SELF_CONSISTENCY"],
         "starts_bound": starts_bound,
         "total_fixups": len(fixup_index),

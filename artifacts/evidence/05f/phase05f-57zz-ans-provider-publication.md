@@ -2,7 +2,7 @@
 
 ## Instrumentation
 
-- AppleARMIODevice allocator: `0xfffffff008387eb8` (x1 = DT dict)
+- AppleARMIODevice allocator: `0xfffffff008387eb8` (both args forwarded to init; DT-registry arg role UNKNOWN pending caller trace)
 - IOService start dispatch: `0xfffffff00aada0e0` (+0x360 slot, callsite-proven)
 - 3s warmup; slide 0x20000000; canonical ascwrap DT
 

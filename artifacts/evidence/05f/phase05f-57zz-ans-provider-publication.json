@@ -1,15 +1,29 @@
 {
   "gate": "57ZZ_ANS_PROVIDER_PUBLICATION",
   "instrumentation_targets": {
-    "armio_allocator": "0xfffffff008387eb8 (AppleARMIODevice alloc, x1=DT dict)",
+    "armio_allocator": "0xfffffff008387eb8",
     "start_dispatch": "0xfffffff00aada0e0 (client->start(provider) blraa; proven +0x360 slot)"
+  },
+  "allocator_register_contract": {
+    "derived_from": "disassembly of 0xfffffff008387eb8 (AppleARMPlatform exec)",
+    "instructions": [
+      "0xfffffff008387ed0  mov x20, x1        ; save arg1",
+      "0xfffffff008387ed4  mov x21, x0        ; save arg0",
+      "0xfffffff008387f50  mov x1, x21        ; init arg1 <- caller arg0",
+      "0xfffffff008387f54  mov x2, x20        ; init arg2 <- caller arg1",
+      "0xfffffff008387f60  blraa x9, x17      ; OSMetaClass init virtual"
+    ],
+    "ARMIO_ALLOC_ARG0": "forwarded unchanged as init arg1; role UNKNOWN pending caller analysis",
+    "ARMIO_ALLOC_ARG1": "forwarded unchanged as init arg2; role UNKNOWN pending caller analysis",
+    "DT_REGISTRY_ENTRY_ARG": "UNKNOWN (both args forwarded; needs caller-of-allocator trace)"
   },
   "runs": {
     "p7-provider-v2": {
       "warmup_seconds": 3,
       "slide": 536870912,
-      "armio_allocator_hits": 55,
-      "start_dispatch_hits": 5,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 55",
+      "START_DISPATCH_HITS_OBSERVED": ">= 5",
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
       "start_client_vtables": [
         "other(fffffff007d2fd70)",
         "other(fffffff007f96c00)",
@@ -23,8 +37,9 @@
     "p7-provider-v3": {
       "warmup_seconds": 3,
       "slide": 536870912,
-      "armio_allocator_hits": 20,
-      "start_dispatch_hits": 40,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 20",
+      "START_DISPATCH_HITS_OBSERVED": ">= 40",
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
       "start_client_vtables": [
         "other(fffffff007d35038)",
         "other(fffffff007c91b80)",
