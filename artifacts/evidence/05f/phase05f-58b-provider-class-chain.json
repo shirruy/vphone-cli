@@ -1,0 +1,23 @@
+{
+  "gate": "58B_PROVIDER_CLASS_AND_ALLOCATOR_CHAIN",
+  "method": "hbreak at factory blraa site 0xfffffff008388140+slide; read x19 + vtable + slot",
+  "runtime_facts": {
+    "provider_x19": "0xffffffdfc5dd99c0",
+    "provider_vtable_runtime": "0xfffffff027fa9100",
+    "provider_vtable_static": "0xfffffff007fa9100",
+    "slot_598_runtime": "0xfffffff028387ea8",
+    "slot_598_static": "0xfffffff008387ea8",
+    "slot_360_start": "0xfffffff00aad531c",
+    "hits": "20/20 uniform (same provider, same slots)"
+  },
+  "slot_598_disassembly": [
+    "0xfffffff008387ea8: bti c",
+    "0xfffffff008387eac: mov x0, x1",
+    "0xfffffff008387eb0: mov x1, x2",
+    "0xfffffff008387eb4: b 0xfffffff008387eb8  # the established AppleARMIODevice allocator"
+  ],
+  "correction_of_prior_interim_claim": "The static AppleARMIO vtable slot +0x598 resolves to a null stub (0xfffffff00ab08ecc), but the RUNTIME provider is a different class (vtable 0xfffffff007fa9100) whose +0x598 IS the real allocator forwarder. The 103 observed allocations come from this slot. The 'factory returns null stub' interim interpretation is superseded by this runtime evidence.",
+  "consistent_model": "Platform-expert-class provider (vt 0xfffffff007fa9100, start 0xfffffff00aad531c) runs the child-nub loop; for each of 103 DT children it invokes +0x598 -> AppleARMIODevice allocator (0x...8387eb8, fixed kalloc 0x108) with x2=DT entry as init arg; allocator returns null for every child (cbz at 0x...8388144 always taken), so nub start (+0x360) never runs and 61/102 objects are freed/reused by walk time.",
+  "isolated_blocker": "AppleARMIODevice init(DT-entry) fails for every child inside the allocator path. The DT entries are live IORegistryEntry objects (allocator receives them), but init rejects them.",
+  "next_probe": "1) Resolve AppleARMIODevice init slot via class obj 0xfffffff00afef458 / vtable 0xfffffff007d336e0 (init is typically vtable+0x40 or the OSMetaClass-init target inside allocator 0x...8387eb8 after kalloc). 2) hbreak that init; capture x0 (fresh object) + x1 (DT entry) + return value w0. 3) Disassemble init to find the rejecting condition (plane mismatch, property requirement, or dtEntry type check)."
+}

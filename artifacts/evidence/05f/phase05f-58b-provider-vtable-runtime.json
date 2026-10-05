@@ -1,0 +1,146 @@
+{
+  "gate": "58B_PROVIDER_VTABLE_AT_FACTORY",
+  "callsite": "0xfffffff008388140",
+  "events": [
+    {
+      "n": 0,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 1,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 2,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 3,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 4,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 5,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 6,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 7,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 8,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 9,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 10,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 11,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 12,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 13,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 14,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 15,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 16,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 17,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 18,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    },
+    {
+      "n": 19,
+      "x19": "0xffffffdfc5dd99c0",
+      "vt_ptr_raw": "0xfffffff027fa9100",
+      "slot_598_direct": "0xfffffff028387ea8",
+      "slot_598_static": "0xfffffff008387ea8"
+    }
+  ]
+}
