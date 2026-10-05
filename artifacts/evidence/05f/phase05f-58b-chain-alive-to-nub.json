@@ -1,0 +1,37 @@
+{
+  "gate": "58B_FULL_CHAIN_ALIVE_DOWN_TO_A7IOPNUB",
+  "probes": {
+    "ascwrap_v6_alloc": {
+      "site": "0xfffffff0082f32dc",
+      "hits": 1
+    },
+    "ascwrap_v6_init": {
+      "site": "0xfffffff00ab078d0",
+      "hits": 1
+    },
+    "ascwrap_v6_attach_helper": {
+      "site": "0xfffffff00aad7c6c",
+      "hits": 1
+    },
+    "a7iopnub_store1": {
+      "site": "0xfffffff0082f78b4",
+      "hits": 1
+    },
+    "a7iopnub_store2": {
+      "site": "0xfffffff0082f79f8",
+      "hits": 1
+    }
+  },
+  "chain_status": "ASCWrapV6 alloc -> init -> attach helper -> A7IOPNub creation: ALL ALIVE (1 hit each per boot)",
+  "current_blocker": "The V6 open/handleOpen gate (vtable+0x428 -> 0xfffffff00aacf5e0) checks a global at 0xfffffff007cdbd0c (clock/power state) and performs allocations. Zero ANS MMIO reads means the chain dies inside this open path - most likely the clock/power gating state is not satisfied (no PMGR device in QEMU provides clock state) OR the nub's MMIO mapping in mapDeviceMemory fails.",
+  "fileset_entries_found": {
+    "A7IOP": "vm=0xfffffff00713c1f0 fo=0x1381f0",
+    "RTBuddy": "vm=0xfffffff00799f260 fo=0x99b260",
+    "IOSlaveProcessor": "vm=0xfffffff0078fad00 fo=0x8f6d00"
+  },
+  "next_probes": [
+    "1. Break at 0xfffffff00aacf728 (the open-gate cbz fail target) to confirm the open fails.",
+    "2. Read the global at 0xfffffff007cdbd0c at runtime to see the clock state.",
+    "3. If open fails on clock state: implement minimal PMGR clock-gate responses in QEMU for the ANS clock-ids (0x75/0x75 from DT clock-gates prop)."
+  ]
+}

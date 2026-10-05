@@ -12,7 +12,7 @@ import threading
 import time
 
 OUT_DIR = os.environ.get("P2_OUT_DIR", ".")
-ALLOC_RET_SITE = 0xFFFFFFF0082F32E0  # instr AFTER the V6 vtable store
+ALLOC_RET_SITE = 0xFFFFFFF0082F79F8  # A7IOPNub vtable store #2
 SLIDE = 0x20000000
 
 KNOWN_VTABLES = {
