@@ -27,6 +27,23 @@ def main():
     summary = cap.get("summary", {})
     verdicts = cap.get("verdicts", {})
 
+    # Derive unique/pointer-like x2 counts from raw events
+    thunk_events = [
+        e for e in cap.get("events", [])
+        if e.get("label") == "thunk_hit"
+    ]
+    x2_values = [
+        e.get("regs", {}).get("x2")
+        for e in thunk_events
+        if e.get("regs", {}).get("x2")
+    ]
+    unique_x2 = len(set(x2_values))
+    total_x2 = len(x2_values)
+    pointer_like_x2 = sum(
+        1 for v in x2_values
+        if int(v, 16) >= 0xFFFFFF0000000000
+    )
+
     artifact = {
         "gate": "57ZZ_RUNTIME_ALLOCATOR_THUNK_PAIRING",
         "method": "v8: thunk-only hbreak + double stepi chain proof (thunk -> thunk+4 -> allocator)",
@@ -59,8 +76,8 @@ def main():
             ),
             "OBSERVED_PAIR_COVERAGE": "%d/%d" % (summary.get("register_match", 0), summary.get("thunk_hits", 0)),
             "ALLOCATOR_ARG1_SOURCE_GLOBAL": "UNKNOWN_OUTSIDE_OBSERVED_WINDOW",
-            "THUNK_X2_DISTINCT_VALUES": "PROVEN (%d/40 unique)" % summary.get("thunk_hits", 0),
-            "THUNK_X2_POINTER_LIKE_VALUES": "OBSERVED",
+            "THUNK_X2_DISTINCT_VALUES": "PROVEN (%d/%d unique)" % (unique_x2, total_x2),
+            "THUNK_X2_POINTER_LIKE_VALUES": "PROVEN_OBSERVED (%d/%d)" % (pointer_like_x2, total_x2),
             "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate: ARMIO_THUNK_X2_PROVENANCE)",
             "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
             "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",

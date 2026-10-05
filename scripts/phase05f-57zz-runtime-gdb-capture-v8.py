@@ -43,6 +43,14 @@ notes = []
 T0 = time.time()
 _bootkc_cache = None
 
+# Initialize counters before any write_output call (fail-path safety)
+pair_count = 0
+control_flow_ok = 0
+control_flow_fail = 0
+register_match = 0
+register_mismatch = 0
+termination_reason = None
+
 
 def note(msg):
     line = "[%08.3f] %s" % (time.time() - T0, msg)
@@ -129,7 +137,8 @@ def write_output(classification, slide_info, extra=None):
         "total_events": len(events),
         "capture_termination_reason": (
             "PAIR_LIMIT" if pair_count >= MAX_PAIRS
-            else ("BUDGET_EXPIRED" if (time.time() - T0) >= BUDGET_SECONDS else "COMPLETED")
+            else (termination_reason if termination_reason
+                  else ("BUDGET_EXPIRED" if (time.time() - T0) >= BUDGET_SECONDS else "COMPLETED"))
         ),
         "slide": slide_info,
         "events": events,
@@ -182,21 +191,19 @@ except Exception as e:
     raise gdb.GdbError("hbreak failed")
 
 # Main loop: hit thunk, capture, stepi twice, capture allocator
-pair_count = 0
-control_flow_ok = 0
-control_flow_fail = 0
-register_match = 0
-register_mismatch = 0
+# (counters already initialized above for fail-path safety)
 
 while pair_count < MAX_PAIRS and (time.time() - T0) < BUDGET_SECONDS:
     try:
         gdb.execute("signal 0", to_string=True)
     except Exception as e:
+        termination_reason = "CONTINUE_ERROR"
         note("continue failed: %s" % e)
         break
 
     pc = get_reg("pc")
     if pc is None:
+        termination_reason = "PC_READ_FAILED"
         note("pc read failed")
         break
 
