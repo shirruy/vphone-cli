@@ -41,13 +41,14 @@ def main():
             allocs = [e for e in pc.get("events", []) if e.get("label") == "bp:candB"]
             starts = [e for e in pc.get("events", []) if e.get("label") == "bp:candA"]
             SLIDE = pc["slide"]["slide"] if pc.get("slide") else 0
-            known_vts = {
-                0xFFFFFFF007D131E0: "AppleASCWrapV6",
-                0xFFFFFFF007D14370: "AppleA7IOP",
-                0xFFFFFFF007D14960: "AppleA7IOPNub",
-                0xFFFFFFF007D139B8: "AppleASCWrapV6SEP",
-                0xFFFFFFF007D12A08: "AppleASCWrapV6SISP",
-            }
+            with open("artifacts/evidence/05f/phase05f-57zz-ascwrap-vtables.json", encoding="utf-8") as _vf:
+                _vart = json.load(_vf)
+            known_vts = {int(v["vtable_vm"], 16): k for k, v in _vart["vtables"].items()}
+            with open("artifacts/evidence/05f/phase05f-57zz-armiodevice-vtable.json", encoding="utf-8") as _af:
+                _aart = json.load(_af)
+            if _aart.get("verdict") != "PASS":
+                raise SystemExit("ARMIO artifact not PASS")
+            known_vts[int(_aart["vtable"], 16)] = "AppleARMIODevice"
             start_clients = []
             ascwrap_start = False
             for e in starts:
@@ -94,26 +95,34 @@ def main():
             "kernel_checkpoint_range": "[00:00:20] .. [00:01:06] kernel time observed in serial",
             "kernel_iokit_starts_in_window": len(iokit_starts_observed),
             "analysis": (
-                "Breakpoints were armed at ~8.03s wall-clock. The kernel IOKit "
-                "matching phase (CoreAnalyticsHub/OLYHAL/Backlight starts, kernel "
-                "timestamps [00:00:20+] = ~17-22s wall) occurred entirely within "
-                "the instrumented window. The boot reached idle within the window "
-                "(first watchdog stop at 30s GDB-time showed the idle-loop PC). "
-                "T2 < T3 is proven for the observed matching phase."
+                "Breakpoints were armed at ~8.03s wall-clock and generic IOKit "
+                "driver starts (kernel timestamps [00:00:20+]) occurred inside "
+                "the window. This proves GENERIC IOKit activity after arming "
+                "only; the ANS provider publication/matching event has never "
+                "been observed, so target-specific timing remains UNKNOWN."
             ),
             "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
             "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN",
         },
         "runtime_results": {
-            "APPLEASCWRAPV6_START": "NOT_OBSERVED",
-            "APPLEA7IOPNUB_START": "NOT_OBSERVED",
-            "APPLEA7IOPNUB_WITHREGISTRYENTRY": "NOT_OBSERVED",
+            "APPLEASCWRAPV6_START_FROM_P9": "UNKNOWN_INVALID_LEGACY_TARGET (instrumented +0x348, not start)",
+            "APPLEA7IOPNUB_START_FROM_P9": "UNKNOWN_INVALID_LEGACY_TARGET (instrumented +0x348, not start)",
+            "APPLEA7IOPNUB_WITHREGISTRYENTRY": "NOT_OBSERVED (valid target; this specific entry was armed and unhit)",
             "iokit_start_calls_of_other_drivers": len(iokit_starts_observed),
         },
         "provider_publication_runs": provider_runs,
         "verdicts": {
             "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
-            "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (3s warmup; allocations observed from t=0.057)",
+            "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": (
+                "PROVEN (earliest allocation t=%s post-attach, derived from provider runs)"
+                % min(
+                    (e["t"] for r in provider_runs.values()
+                     for e in json.load(open(r["serial_bytes_path"].replace("uart0.log", "gdb-capture.json"), encoding="utf-8-sig")).get("events", [])
+                     if e.get("label") == "bp:candB"),
+                    default="n/a",
+                )
+                if provider_runs else "NO_PROVIDER_RUNS"
+            ),
             "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS-specific alloc not yet identified among ARMIO allocations)",
             "ARMIO_ALLOCATIONS_OBSERVED": ">= %d" % max((r["ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT"] for r in provider_runs.values()), default=0),
             "IOKIT_START_DISPATCHES_OBSERVED": ">= %d" % max((r["START_DISPATCH_HITS_OBSERVED_COUNT"] for r in provider_runs.values()), default=0),

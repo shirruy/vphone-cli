@@ -24,14 +24,14 @@
     "arming_wall_clock": "~8.03s (slide derived 0.029s after attach; hbreaks 0.034s)",
     "kernel_checkpoint_range": "[00:00:20] .. [00:01:06] kernel time observed in serial",
     "kernel_iokit_starts_in_window": 14,
-    "analysis": "Breakpoints were armed at ~8.03s wall-clock. The kernel IOKit matching phase (CoreAnalyticsHub/OLYHAL/Backlight starts, kernel timestamps [00:00:20+] = ~17-22s wall) occurred entirely within the instrumented window. The boot reached idle within the window (first watchdog stop at 30s GDB-time showed the idle-loop PC). T2 < T3 is proven for the observed matching phase.",
+    "analysis": "Breakpoints were armed at ~8.03s wall-clock and generic IOKit driver starts (kernel timestamps [00:00:20+]) occurred inside the window. This proves GENERIC IOKit activity after arming only; the ANS provider publication/matching event has never been observed, so target-specific timing remains UNKNOWN.",
     "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
     "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN"
   },
   "runtime_results": {
-    "APPLEASCWRAPV6_START": "NOT_OBSERVED",
-    "APPLEA7IOPNUB_START": "NOT_OBSERVED",
-    "APPLEA7IOPNUB_WITHREGISTRYENTRY": "NOT_OBSERVED",
+    "APPLEASCWRAPV6_START_FROM_P9": "UNKNOWN_INVALID_LEGACY_TARGET (instrumented +0x348, not start)",
+    "APPLEA7IOPNUB_START_FROM_P9": "UNKNOWN_INVALID_LEGACY_TARGET (instrumented +0x348, not start)",
+    "APPLEA7IOPNUB_WITHREGISTRYENTRY": "NOT_OBSERVED (valid target; this specific entry was armed and unhit)",
     "iokit_start_calls_of_other_drivers": 14
   },
   "provider_publication_runs": {
@@ -107,7 +107,7 @@
   },
   "verdicts": {
     "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
-    "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (3s warmup; allocations observed from t=0.057)",
+    "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (earliest allocation t=0.057 post-attach, derived from provider runs)",
     "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS-specific alloc not yet identified among ARMIO allocations)",
     "ARMIO_ALLOCATIONS_OBSERVED": ">= 55",
     "IOKIT_START_DISPATCHES_OBSERVED": ">= 40",

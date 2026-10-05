@@ -57,6 +57,16 @@ def main():
             "note": "event cap 60 truncates counts; both phases observed",
         }
 
+    earliest_alloc = []
+    earliest_start = []
+    for rn in runs:
+        _cap = json.load(open(os.path.join("build", "phase05f-runtime", rn, "gdb-capture.json"), encoding="utf-8-sig"))
+        for _e in _cap.get("events", []):
+            if _e.get("label") == "bp:candB":
+                earliest_alloc.append(_e["t"])
+            elif _e.get("label") == "bp:candA":
+                earliest_start.append(_e["t"])
+
     artifact = {
         "gate": "57ZZ_ANS_PROVIDER_PUBLICATION",
         "instrumentation_targets": {
@@ -78,16 +88,28 @@ def main():
         },
         "runs": runs,
         "findings": {
-            "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (allocations from t=0.057 post-attach)",
-            "BREAKPOINT_ARMED_BEFORE_IOKIT_START_PHASE": "PROVEN (starts from t=0.388 post-attach)",
+            "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": (
+                "PROVEN (earliest allocation t=%s post-attach, derived from events)" % min(earliest_alloc)
+                if earliest_alloc else "NO_ALLOCATION_EVENTS_CAPTURED"
+            ),
+            "BREAKPOINT_ARMED_BEFORE_IOKIT_START_PHASE": (
+                "PROVEN (earliest start t=%s post-attach, derived from events)" % min(earliest_start)
+                if earliest_start else "NO_START_EVENTS_CAPTURED"
+            ),
             "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS alloc not identified among ARMIO allocations yet)",
-            "ARMIO_ALLOCATION_PHASE_ACTIVE": True,
-            "IOKIT_START_DISPATCH_ACTIVE": True,
-            "ASCWRAP_FAMILY_START_OBSERVED": False,
+            "ARMIO_ALLOCATION_PHASE_ACTIVE": bool(earliest_alloc),
+            "IOKIT_START_DISPATCH_ACTIVE": bool(earliest_start),
+            "ASCWRAP_FAMILY_START_OBSERVED": any(
+                r.get("ascwrap_family_start") for r in runs.values()
+            ),
         },
+
         "verdicts": {
             "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
-            "APPLEARMIODEVICE_ALLOCATED": "PROVEN_FOR_OTHER_NODES (55 observed; ANS-specific not identified)",
+            "APPLEARMIODEVICE_ALLOCATED": (
+                "PROVEN_FOR_OTHER_NODES (>=%d observed; ANS-specific not identified)"
+                % max(int(str(r.get("ARMIO_ALLOCATOR_HITS_OBSERVED", "0")).replace(">=", "")) for r in runs.values())
+            ),
             "APPLEARMIODEVICE_INITIALIZED": "UNKNOWN",
             "PROVIDER_ATTACHED": "UNKNOWN",
             "PROVIDER_PUBLICATION_RESULT": "PARTIAL: allocation + start phases observed; no ASCWrap-family start; ANS-specific identity unconfirmed",

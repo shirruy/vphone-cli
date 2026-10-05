@@ -87,8 +87,8 @@
     }
   },
   "findings": {
-    "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (allocations from t=0.057 post-attach)",
-    "BREAKPOINT_ARMED_BEFORE_IOKIT_START_PHASE": "PROVEN (starts from t=0.388 post-attach)",
+    "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (earliest allocation t=0.057 post-attach, derived from events)",
+    "BREAKPOINT_ARMED_BEFORE_IOKIT_START_PHASE": "PROVEN (earliest start t=0.388 post-attach, derived from events)",
     "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS alloc not identified among ARMIO allocations yet)",
     "ARMIO_ALLOCATION_PHASE_ACTIVE": true,
     "IOKIT_START_DISPATCH_ACTIVE": true,
@@ -96,7 +96,7 @@
   },
   "verdicts": {
     "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
-    "APPLEARMIODEVICE_ALLOCATED": "PROVEN_FOR_OTHER_NODES (55 observed; ANS-specific not identified)",
+    "APPLEARMIODEVICE_ALLOCATED": "PROVEN_FOR_OTHER_NODES (>=55 observed; ANS-specific not identified)",
     "APPLEARMIODEVICE_INITIALIZED": "UNKNOWN",
     "PROVIDER_ATTACHED": "UNKNOWN",
     "PROVIDER_PUBLICATION_RESULT": "PARTIAL: allocation + start phases observed; no ASCWrap-family start; ANS-specific identity unconfirmed",

@@ -10,7 +10,7 @@
 
 ```
 ANS_DT_ENTRY_CONSUMED: UNKNOWN
-APPLEARMIODEVICE_ALLOCATED: PROVEN_FOR_OTHER_NODES (55 observed; ANS-specific not identified)
+APPLEARMIODEVICE_ALLOCATED: PROVEN_FOR_OTHER_NODES (>=55 observed; ANS-specific not identified)
 APPLEARMIODEVICE_INITIALIZED: UNKNOWN
 PROVIDER_ATTACHED: UNKNOWN
 PROVIDER_PUBLICATION_RESULT: PARTIAL: allocation + start phases observed; no ASCWrap-family start; ANS-specific identity unconfirmed

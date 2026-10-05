@@ -11,6 +11,13 @@ inheritance by target comparison along the proven superclass chains.
 import json
 import struct
 
+import importlib.util as _ilu
+import os as _os
+_fixup_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "phase05f-57zz-fixup-index.py")
+_fixup_spec = _ilu.spec_from_file_location("phase05f_57zz_fixup_index", _fixup_path)
+fixup_index = _ilu.module_from_spec(_fixup_spec)
+_fixup_spec.loader.exec_module(fixup_index)
+
 import importlib.util
 
 DECODER = r"scripts/phase05f-57zz-bootkc-chain-decoder.py"
@@ -77,36 +84,8 @@ def owner(vm):
 
 
 def main():
-    data = open(BOOTKC, "rb").read()
-    chain = data[0x418C000 : 0x418C000 + 0x4A6]
-    starts_off = 0x1C
-    seg_count = struct.unpack_from("<I", chain, starts_off)[0]
-    offs = struct.unpack_from("<%dI" % seg_count, chain, starts_off + 4)
-    base = starts_off + offs[2]  # __DATA_CONST
-    size, page_size, pf = struct.unpack_from("<IHH", chain, base)
-    seg_off, mv = struct.unpack_from("<QI", chain, base + 8)
-    page_count = struct.unpack_from("<H", chain, base + 20)[0]
-    ps = struct.unpack_from("<%dH" % page_count, chain, base + 22)
-    dc_vm = 0xFFFFFFF007C18000
-    index = {}
-    for page_idx, pstart in enumerate(ps):
-        if pstart == 0xFFFF:
-            continue
-        page_fo = seg_off + page_idx * page_size
-        cur = pstart
-        seen = set()
-        while True:
-            if cur in seen:
-                break
-            seen.add(cur)
-            raw = struct.unpack_from("<Q", data, page_fo + cur)[0]
-            index[dc_vm + page_idx * page_size + cur] = KC_BASE + (raw & 0x3FFFFFFF)
-            nxt = (raw >> 51) & 0xFFF
-            if nxt == 0:
-                break
-            cur += nxt * 4
-
     raw_kc = open(BOOTKC, "rb").read()
+    index = fixup_index.build_fixup_index()
     VTABLES = {}
     derivation_report = {}
     for name, info in MOD_INITS.items():
@@ -148,13 +127,18 @@ def main():
     IOSERVICE_VTABLE = 0xFFFFFFF007C88580
     ioservice_start = index.get(IOSERVICE_VTABLE + START_SLOT)
 
-    # Superclass-chain anchors. A7IOP<->IOService is independently anchored
-    # above. The ASCWrapV6->A7IOP and Nub->A7IOP relations are proven by the
-    # mod_init GOT superclass chase (see the instantiator evidence); the
-    # SEP/SISP->ASCWrapV6 relations are assertion anchors from the shared
-    # registration block until independently rederived here.
+    # IMMEDIATE superclass of AppleA7IOP: its mod_init[0] passes x2 =
+    # 0xfffffff00afed638 (the AppleIOP class object) as the superclass
+    # argument to OSMetaClass registration. AppleIOP's registration fn
+    # (0xfffffff0082f9bf4) installs vtable 0xfffffff007d157f8.
+    APPLEIOP_VTABLE = 0xFFFFFFF007D157F8
+    appleiop_start = index.get(APPLEIOP_VTABLE + START_SLOT)
+
+    # Override attribution compares each class's +0x360 target against its
+    # IMMEDIATE parent's target (never against a distant base, which would
+    # credit intermediate overrides to the wrong class).
     PARENT_OF = {
-        "AppleA7IOP": ("__ioservice__", "PROVEN (independent vtable anchor)"),
+        "AppleA7IOP": ("__appleiop__", "PROVEN (mod_init[0] x2 superclass = AppleIOP class object)"),
         "AppleASCWrapV6": ("AppleA7IOP", "PROVEN (GOT superclass chase)"),
         "AppleASCWrapV6SEP": ("AppleASCWrapV6", "ASSERTION_ANCHOR (shared registration block)"),
         "AppleASCWrapV6SISP": ("AppleASCWrapV6", "ASSERTION_ANCHOR (shared registration block)"),
@@ -162,7 +146,12 @@ def main():
     }
     for name, (parent, basis) in PARENT_OF.items():
         own = out[name]["start_target"]
-        ref = ioservice_start if parent == "__ioservice__" else out[parent]["start_target"]
+        if parent == "__appleiop__":
+            ref = appleiop_start
+        elif parent == "__ioservice__":
+            ref = ioservice_start
+        else:
+            ref = out[parent]["start_target"]
         ref_str = (hex(ref) if isinstance(ref, int) else ref) if ref is not None else None
         if own is None or ref_str is None:
             cls = "UNRESOLVED"
@@ -205,6 +194,14 @@ def main():
                 "UNKNOWN. Prior breakpoints at the +4 function bodies were "
                 "never start instrumentation."
             ),
+        },
+        "immediate_superclass_chain": {
+            "AppleIOP_vtable": hex(APPLEIOP_VTABLE),
+            "AppleIOP_start_0x360": hex(appleiop_start) if appleiop_start else None,
+            "AppleIOP_start_source": "registration 0xfffffff0082f9bf4 x16 chain",
+            "IOService_vtable": hex(IOSERVICE_VTABLE),
+            "IOService_start_0x360": hex(ioservice_start) if ioservice_start else None,
+            "note": "A7IOP immediate parent is AppleIOP (not IOService directly); override attribution now uses the immediate parent",
         },
         "ioservice_anchor": {
             "registration_vm": "0xfffffff00aae5eec",

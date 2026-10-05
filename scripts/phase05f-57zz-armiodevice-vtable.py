@@ -7,10 +7,16 @@ chained-fixup decoder. Consumed by the provider-publication evidence so the
 ARMIO addresses have a single source of truth.
 """
 
+import importlib.util as _ilu
 import json
-import struct
+import os as _os
 
 import capstone
+
+_fixup_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "phase05f-57zz-fixup-index.py")
+_fixup_spec = _ilu.spec_from_file_location("phase05f_57zz_fixup_index", _fixup_path)
+fixup_index = _ilu.module_from_spec(_fixup_spec)
+_fixup_spec.loader.exec_module(fixup_index)
 
 BOOTKC = r"C:\Users\rbjos\vphone-private\phase05f-known-good\payloads-v3\bootkc.bin"
 OUT_JSON = "artifacts/evidence/05f/phase05f-57zz-armiodevice-vtable.json"
@@ -80,34 +86,8 @@ def derive():
         if ins.mnemonic == "bl" and ins.address > ALLOC_FN + 0x40:
             break
 
-    # --- vtable +0x360 resolution via chain decoder ---
-    chain = data[0x418C000 : 0x418C000 + 0x4A6]
-    starts_off = 0x1C
-    seg_count = struct.unpack_from("<I", chain, starts_off)[0]
-    offs = struct.unpack_from("<%dI" % seg_count, chain, starts_off + 4)
-    base = starts_off + offs[2]
-    size, page_size, pf = struct.unpack_from("<IHH", chain, base)
-    seg_off, mv = struct.unpack_from("<QI", chain, base + 8)
-    page_count = struct.unpack_from("<H", chain, base + 20)[0]
-    ps = struct.unpack_from("<%dH" % page_count, chain, base + 22)
-    DC_VM = 0xFFFFFFF007C18000
-    index = {}
-    for page_idx, pstart in enumerate(ps):
-        if pstart == 0xFFFF:
-            continue
-        page_fo = seg_off + page_idx * page_size
-        cur = pstart
-        seen = set()
-        while True:
-            if cur in seen:
-                break
-            seen.add(cur)
-            raw = struct.unpack_from("<Q", data, page_fo + cur)[0]
-            index[DC_VM + page_idx * page_size + cur] = KC + (raw & 0x3FFFFFFF)
-            nxt = (raw >> 51) & 0xFFF
-            if nxt == 0:
-                break
-            cur += nxt * 4
+    # --- vtable +0x360 resolution via the shared canonical decoder ---
+    index = fixup_index.build_fixup_index()
 
     start_target = index.get(vtable + 0x360) if vtable else None
 
@@ -129,6 +109,7 @@ def derive():
     ok = (
         class_obj == 0xFFFFFFF00AFEF458
         and vtable == 0xFFFFFFF007D336E0
+        and start_target is not None
     )
     artifact["verdict"] = "PASS" if ok else "FAIL"
     with open(OUT_JSON, "w", encoding="utf-8") as f:

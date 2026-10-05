@@ -513,8 +513,8 @@
         }
       },
       "start_classification": "OVERRIDES_START",
-      "superclass_start_target": "0xfffffff00aa4e744",
-      "superclass_relation_basis": "PROVEN (independent vtable anchor)"
+      "superclass_start_target": "0xfffffff008300420",
+      "superclass_relation_basis": "PROVEN (mod_init[0] x2 superclass = AppleIOP class object)"
     },
     "AppleASCWrapV6": {
       "vtable_vm": "0xfffffff007d131e0",
@@ -2509,6 +2509,14 @@
       "count": 0
     },
     "relationship": "candA (0xfffffff0082f4dec pad) and candB (0xfffffff0082f8048 pad) are vtable slot +0x348 targets. The proven start slot is +0x360; +0x348 is NOT start and its semantic identity is UNKNOWN. Prior breakpoints at the +4 function bodies were never start instrumentation."
+  },
+  "immediate_superclass_chain": {
+    "AppleIOP_vtable": "0xfffffff007d157f8",
+    "AppleIOP_start_0x360": "0xfffffff008300420",
+    "AppleIOP_start_source": "registration 0xfffffff0082f9bf4 x16 chain",
+    "IOService_vtable": "0xfffffff007c88580",
+    "IOService_start_0x360": "0xfffffff00aa4e744",
+    "note": "A7IOP immediate parent is AppleIOP (not IOService directly); override attribution now uses the immediate parent"
   },
   "ioservice_anchor": {
     "registration_vm": "0xfffffff00aae5eec",
