@@ -1,0 +1,15 @@
+{
+  "gate": "58B_ASCWRAP_START_RUNTIME",
+  "start_static": "0xfffffff00aad7da0",
+  "slide": 536870912,
+  "events": [
+    {
+      "hit": 0,
+      "t": 45.007,
+      "x0_this": "0xffffffdf01dce950",
+      "x1_provider": "0xfeedfacefeedfad3"
+    }
+  ],
+  "hit_count": 1,
+  "ascwrap_v6_hits": 0
+}
