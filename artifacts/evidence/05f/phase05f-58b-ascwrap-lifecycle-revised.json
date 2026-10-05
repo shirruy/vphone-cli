@@ -1,0 +1,24 @@
+{
+  "gate": "58B_ASCWRAP_V6_LIFECYCLE_REVISED",
+  "revision": "The prior 'zero ASCWrapV6 starts' conclusion was based on wrong addresses. With the corrected V6 stored-ptr slots:",
+  "probe_results": {
+    "v6_alloc_store_0x82f32dc": {
+      "hits": 1,
+      "note": "V6 vtable installed exactly once"
+    },
+    "v6_alloc_store2_0x82f3448": {
+      "hits": 1,
+      "note": "second V6 code path, also exactly once"
+    },
+    "v6_init_0xab078d0": {
+      "hits": 1,
+      "note": "V6 init reached"
+    },
+    "v6_start_area_0xaad7c6c": {
+      "hits": 1,
+      "note": "A7IOP-family attach helper reached (shared function; instance vtable read as 0xfffffff00ab14628 - another class sharing this helper, or PAC-masked V6)"
+    }
+  },
+  "conclusion": "The ASCWrapV6 instance goes through alloc, init, AND the A7IOP-family attach/start helper. The full personality chain is ALIVE. Yet zero ANS MMIO accesses occur. The blocker has moved BELOW ASCWrapV6 start: either the A7IOPNub creation (RTBuddy) fails, or the attach helper returns false at the virtual +0x428 call (w1=0xe0000100 option bits), preventing the MMIO-mapping phase.",
+  "next_probe": "1) Disassemble the +0x428 virtual target for the V6 vtable to identify the call and its failure mode. 2) Break at AppleA7IOPNub allocator (vtable 0xfffffff007d14960; find its vtable store in the A7IOP kext TEXT_EXEC) to see if any nub is created. 3) If no nub, the RTBuddy personality chain (RTBuddy64 <- AppleA7IOPNub) is the dead link."
+}
