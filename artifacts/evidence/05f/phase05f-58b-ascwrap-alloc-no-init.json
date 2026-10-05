@@ -1,0 +1,31 @@
+{
+  "gate": "58B_ASCWRAP_INSTANCE_CREATED_NOT_STARTED",
+  "evidence": {
+    "allocator_0xfffffff0082f34a8": {
+      "hits": 1,
+      "first_hit_t": 3.349,
+      "x2_at_hit": "0x40",
+      "interpretation": "OSMetaClass MetaClass::alloc instantiation - the ASCWrapV6 class instance WAS allocated at t=3.3s during early IOKit matching"
+    },
+    "init_0xfffffff0082f4108": {
+      "hits": 0,
+      "interpretation": "The allocated instance never reached init - the IOService matching chain stopped between allocation and initialization"
+    },
+    "start_0xfffffff00aad7da0": {
+      "hits": 0,
+      "interpretation": "Confirmed by the 57ZZ ascwrap-vtables artifact: ASCWrapV6 start_target is exactly this address (inherited A7IOP::start, owner=kernel). Never invoked."
+    }
+  },
+  "chain_status": {
+    "personality_match": "FIRED (allocation happened)",
+    "instance_allocation": "SUCCESS (1 instance at t=3.3s)",
+    "instance_init": "NEVER CALLED",
+    "instance_start": "NEVER CALLED"
+  },
+  "root_cause_candidates": [
+    "1. IOService matching allocated the instance but the probe/attach cycle rejected it (e.g. provider power state, plane attach failure) and released it without init.",
+    "2. The single allocation is the class-registration self-test, not a personality match - and the real personality match never fired. The x2=0x40 arg suggests an OSMetaClass internal call, not IOService matching.",
+    "3. The matching fired but was immediately cancelled."
+  ],
+  "decisive_next_probe": "Break at the CALLER of the ASCWrap allocator (capture LR at the allocator hit). If LR is in IOService matching code (kernel TEXT_EXEC), the personality match fired and failed downstream. If LR is in OSMetaClass registration code, the allocation was a class self-test and the personality never matched."
+}
