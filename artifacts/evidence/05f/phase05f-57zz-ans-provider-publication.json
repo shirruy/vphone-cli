@@ -23,6 +23,10 @@
       "slide": 536870912,
       "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 55",
       "START_DISPATCH_HITS_OBSERVED": ">= 5",
+      "captured_breakpoint_events": null,
+      "capture_event_limit": null,
+      "capture_termination_reason": null,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT_DERIVATION": "DERIVED (bp: event count vs known MAX_HITS=60; recorder field absent in legacy capture)",
       "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
       "start_client_vtables": [
         "other(fffffff007d2fd70)",
@@ -39,6 +43,10 @@
       "slide": 536870912,
       "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 20",
       "START_DISPATCH_HITS_OBSERVED": ">= 40",
+      "captured_breakpoint_events": null,
+      "capture_event_limit": null,
+      "capture_termination_reason": null,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT_DERIVATION": "DERIVED (bp: event count vs known MAX_HITS=60; recorder field absent in legacy capture)",
       "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
       "start_client_vtables": [
         "other(fffffff007d35038)",

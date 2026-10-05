@@ -1,0 +1,47 @@
+{
+  "gate": "57ZZ_CLOSURE_PROOFS",
+  "proof_1_non8_control": {
+    "result": "PASS",
+    "synthetic_format": 2,
+    "UNSUPPORTED_present": true,
+    "fixture_failed": true,
+    "canonical_unaffected": true
+  },
+  "proof_2_truncation_authority": {
+    "MAX_HITS_origin": "MAX_HITS = 60 in phase05f-57zz-runtime-gdb-capture-v3.py (line 47)",
+    "non_bp_events_count_toward_limit": false,
+    "nubwre_counts_toward_limit": true,
+    "recorder_fields_published": true,
+    "legacy_captures": "DERIVED fallback (bp: count >= 60); no recorder field present",
+    "future_captures": "AUTHORITATIVE (capture_termination_reason == BREAKPOINT_EVENT_LIMIT)"
+  },
+  "proof_3_output_regression": {
+    "before_sha256_0962712": "7BA9895601DEC47510223B68717E2F90D2535F084250AAD4037136D61FDBC9E7",
+    "after_sha256_current": "7BA9895601DEC47510223B68717E2F90D2535F084250AAD4037136D61FDBC9E7",
+    "BYTE_IDENTICAL": true
+  },
+  "proof_4_commit_manifest": {
+    "commit": "09627121c3c42210155b6b9d3b9c70c3cc512b4e",
+    "file_count": 4,
+    "files": [
+      {
+        "status": "M",
+        "path": "artifacts/evidence/05f/phase05f-57zz-ans-provider-publication.json"
+      },
+      {
+        "status": "M",
+        "path": "artifacts/evidence/05f/phase05f-57zz-bootkc-chained-fixups.json"
+      },
+      {
+        "status": "M",
+        "path": "scripts/phase05f-57zz-ans-provider-publication.py"
+      },
+      {
+        "status": "M",
+        "path": "scripts/phase05f-57zz-bootkc-chain-decoder.py"
+      }
+    ],
+    "prior_report_claim": "scoped commit (4 files)",
+    "claim_accurate": true
+  }
+}

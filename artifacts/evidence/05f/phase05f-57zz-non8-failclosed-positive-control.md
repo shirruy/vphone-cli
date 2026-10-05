@@ -1,0 +1,15 @@
+# 57ZZ — Non-8 Fail-Closed Positive Control
+
+```
+NEGATIVE_CONTROL_PASS: True
+CANONICAL_UNAFFECTED_PASS: True
+OVERALL: PASS
+```
+
+Synthetic fixture: __DATA_CONST pointer_format changed 8 -> 2.
+The reporting decoder must fail closed (UNSUPPORTED_POINTER_FORMAT +
+fixture_complete FAIL), and the untouched canonical must still PASS.
+
+Synthetic SHA256: `A67121FE855E64C633DAAE7A84B866C9633B28284421D927191EE1BF1562B7A7`
+Canonical SHA256: `C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800`
+

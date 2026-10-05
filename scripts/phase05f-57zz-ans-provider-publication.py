@@ -51,7 +51,19 @@ def main():
             "slide": slide,
             "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= %d" % len(allocs),
             "START_DISPATCH_HITS_OBSERVED": ">= %d" % len(starts),
-            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": sum(1 for e in c.get("events", []) if str(e.get("label", "")).startswith("bp:")) >= 60,
+            "captured_breakpoint_events": c.get("captured_breakpoint_events"),
+            "capture_event_limit": c.get("capture_event_limit"),
+            "capture_termination_reason": c.get("capture_termination_reason"),
+            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT_DERIVATION": (
+                "AUTHORITATIVE (capture_termination_reason == BREAKPOINT_EVENT_LIMIT)"
+                if c.get("capture_termination_reason") == "BREAKPOINT_EVENT_LIMIT"
+                else "DERIVED (bp: event count vs known MAX_HITS=60; recorder field absent in legacy capture)"
+            ),
+            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": (
+                c.get("capture_termination_reason") == "BREAKPOINT_EVENT_LIMIT"
+                if c.get("capture_termination_reason")
+                else sum(1 for e in c.get("events", []) if str(e.get("label", "")).startswith("bp:")) >= 60
+            ),
             "start_client_vtables": start_classes,
             "ascwrap_family_start": any(s != "other" and "ASCWrap" in s or s in ("AppleA7IOP", "AppleA7IOPNub") for s in start_classes),
             "note": "event cap 60 truncates counts; both phases observed",

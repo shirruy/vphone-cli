@@ -176,9 +176,16 @@ def capture_state(label, pc):
     return rec
 
 def write_output(classification, slide_info, extra=None):
+    bp_event_count = len([e for e in events if str(e.get("label", "")).startswith("bp:")])
     out = {
         "gate": "PART15B_RUNTIME_BREAKPOINT_CAPTURE",
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "capture_event_limit": MAX_HITS,
+        "capture_termination_reason": (
+            "BREAKPOINT_EVENT_LIMIT" if bp_event_count >= MAX_HITS
+            else ("BUDGET_EXPIRED" if (time.time() - T0) >= BUDGET_SECONDS else "CONTINUE_ERROR_OR_TARGET_EXIT")
+        ),
+        "captured_breakpoint_events": bp_event_count,
         "candidates_static": {
             "A": fmt(CAND_A_STATIC),
             "B": fmt(CAND_B_STATIC),
