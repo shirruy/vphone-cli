@@ -1,0 +1,124 @@
+{
+  "gate": "05F_58B_ASCWRAP_VTABLE",
+  "kext_name": "com.apple.driver.AppleA7IOP-ASCWrap-v6",
+  "class_name": "AppleASCWrapV6",
+  "bootkc": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+  "start_slot": "+0x360",
+  "fixup_decoder": "scripts/phase05f-57zz-fixup-index.py (shared canonical)",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "fileset_vm_base": "0xfffffff00713b720",
+  "fileset_file_offset": "0x137720",
+  "kext_segments": [
+    {
+      "name": "__TEXT",
+      "vm": "0xfffffff00713b720",
+      "size": "0xacc",
+      "fileoff": "0x137720"
+    },
+    {
+      "name": "__TEXT_EXEC",
+      "vm": "0xfffffff0082f2bf0",
+      "size": "0x20b4",
+      "fileoff": "0x12eebf0"
+    },
+    {
+      "name": "__DATA",
+      "vm": "0xfffffff00afed398",
+      "size": "0x150",
+      "fileoff": "0x3fe9398"
+    },
+    {
+      "name": "__DATA_CONST",
+      "vm": "0xfffffff007d12278",
+      "size": "0x1958",
+      "fileoff": "0xd0e278"
+    },
+    {
+      "name": "__LINKEDIT",
+      "vm": "0xfffffff00b124000",
+      "size": "0x68931",
+      "fileoff": "0x4120000"
+    }
+  ],
+  "mod_init_functions": [
+    {
+      "slot": "0xfffffff007d12278",
+      "target": "0xfffffff0082f3238"
+    },
+    {
+      "slot": "0xfffffff007d12280",
+      "target": "0xfffffff0082f42b4"
+    },
+    {
+      "slot": "0xfffffff007d12288",
+      "target": "0xfffffff0082f4800"
+    }
+  ],
+  "registration_function": "0xfffffff0082f42b4",
+  "class_object": "0xfffffff00afed498",
+  "vtable": "0xfffffff007d131e0",
+  "start_slot_0x360": "0xfffffff00aad7da0",
+  "allocator_function": "0xfffffff0082f34a8",
+  "allocator_installed_vtable": "0xfffffff007d12aa0",
+  "allocator_semantics": "PARTIAL: structurally derived (unique __text function that moves the class object 0xfffffff00afed498 into x1, calls the kext alloc stub, and installs vtable 0xfffffff007d12aa0 before pacda). The kernel-side target reached through the stub GOT and its runtime role (OSMetaClass allocation vs operator new) are NOT separately proven here.",
+  "superclass": {
+    "got_location": "0xfffffff007d13bc0",
+    "resolved": "0xfffffff00afed5c0"
+  },
+  "derivation_method": "fileset entry located by exact LC_FILESET_ENTRY bundle id; kext Mach-O parsed for __TEXT_EXEC,__text and __DATA_CONST,__mod_init_func; mod_init pointers decoded by the shared chained-fixup index; registration function identified as the init whose x1 adrp+add chain addresses the exact C-string 'AppleASCWrapV6' before a bl to the OSMetaClass registration stub; vtable read from that function's x16 adrp+add chain immediately before pacda; start slot resolved as index[vtable+0x360]; allocator derived as the unique __text function that moves the class object into x1, calls the alloc stub, and installs a fresh vtable via its own x16 chain before pacda",
+  "evidence": {
+    "registration_function_instructions": [
+      "0xfffffff0082f42b4  bti c",
+      "0xfffffff0082f42b8  pacibsp ",
+      "0xfffffff0082f42bc  stp x29, x30, [sp, #-0x10]!",
+      "0xfffffff0082f42c0  mov x29, sp",
+      "0xfffffff0082f42c4  adrp x0, #0xfffffff00afed000",
+      "0xfffffff0082f42c8  add x0, x0, #0x498",
+      "0xfffffff0082f42cc  adrp x1, #0xfffffff00713b000",
+      "0xfffffff0082f42d0  add x1, x1, #0xe72",
+      "0xfffffff0082f42d4  adrp x2, #0xfffffff007d13000",
+      "0xfffffff0082f42d8  ldr x2, [x2, #0xbc0]",
+      "0xfffffff0082f42dc  mov w3, #0x1b8",
+      "0xfffffff0082f42e0  bl #0xfffffff0082f4bd4",
+      "0xfffffff0082f42e4  adrp x16, #0xfffffff007d13000",
+      "0xfffffff0082f42e8  add x16, x16, #0x1d0",
+      "0xfffffff0082f42ec  add x16, x16, #0x10",
+      "0xfffffff0082f42f0  mov x17, x0",
+      "0xfffffff0082f42f4  movk x17, #0xcda1, lsl #48",
+      "0xfffffff0082f42f8  pacda x16, x17",
+      "0xfffffff0082f42fc  str x16, [x0]"
+    ],
+    "allocator_instructions": [
+      "0xfffffff0082f34a8  bti c",
+      "0xfffffff0082f34ac  pacibsp ",
+      "0xfffffff0082f34b0  stp x20, x19, [sp, #-0x20]!",
+      "0xfffffff0082f34b4  stp x29, x30, [sp, #0x10]",
+      "0xfffffff0082f34b8  add x29, sp, #0x10",
+      "0xfffffff0082f34bc  mov x19, x0",
+      "0xfffffff0082f34c0  adrp x20, #0xfffffff00afed000",
+      "0xfffffff0082f34c4  add x20, x20, #0x498",
+      "0xfffffff0082f34c8  mov x1, x20",
+      "0xfffffff0082f34cc  bl #0xfffffff0082f4bb4",
+      "0xfffffff0082f34d0  adrp x16, #0xfffffff007d12000",
+      "0xfffffff0082f34d4  add x16, x16, #0xa90",
+      "0xfffffff0082f34d8  add x16, x16, #0x10",
+      "0xfffffff0082f34dc  mov x17, x0",
+      "0xfffffff0082f34e0  movk x17, #0xcda1, lsl #48",
+      "0xfffffff0082f34e4  pacda x16, x17",
+      "0xfffffff0082f34e8  str x16, [x0]",
+      "0xfffffff0082f34ec  str wzr, [x0, #0x188]",
+      "0xfffffff0082f34f0  str xzr, [x0, #0x1a0]",
+      "0xfffffff0082f34f4  strh wzr, [x0, #0x1a8]"
+    ],
+    "start_slot_resolution": {
+      "slot_vm": "0xfffffff007d13540",
+      "decoded_target": "0xfffffff00aad7da0"
+    },
+    "class_string": {
+      "vm": "0xfffffff00713be72",
+      "value": "AppleASCWrapV6",
+      "check": "x1 adrp+add chain addresses the NUL-terminated C-string compared by exact match"
+    }
+  },
+  "verdict": "PASS"
+}
