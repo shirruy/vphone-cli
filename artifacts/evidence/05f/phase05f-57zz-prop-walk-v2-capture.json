@@ -1,0 +1,95 @@
+{
+  "gate": "DT_ENTRY_NAME_EXTRACTION",
+  "generated": "2026-10-05T01:51:14",
+  "capture_event_limit": 10,
+  "captured_breakpoint_events": 10,
+  "total_events": 10,
+  "capture_termination_reason": "BREAKPOINT_EVENT_LIMIT",
+  "slide": {
+    "slide": "0x0000000020000000"
+  },
+  "events": [
+    {
+      "label": "thunk_hit",
+      "t": 0.032,
+      "x2": "0xffffffe12c01e200",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.036,
+      "x2": "0xffffffe12c01c220",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.043,
+      "x2": "0xffffffe12c01d1c0",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.111,
+      "x2": "0xffffffe12c01d300",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.116,
+      "x2": "0xffffffe12c01e2a0",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.129,
+      "x2": "0xffffffe12c01f060",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.141,
+      "x2": "0xffffffe12c01d440",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.155,
+      "x2": "0xffffffe12c01d4e0",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.175,
+      "x2": "0xffffffe12c01f420",
+      "properties": []
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.183,
+      "x2": "0xffffffe12c01df80",
+      "properties": []
+    }
+  ],
+  "notes": [
+    "[0000.000] v11 compareName capture attached",
+    "[0000.014] slide=0x0000000020000000 thunk=0xfffffff028387eb0",
+    "[0000.014] hbreak THUNK @ 0xfffffff028387eb0 installed",
+    "[0000.032] hit #1: 0 props: []",
+    "[0000.036] hit #2: 0 props: []",
+    "[0000.043] hit #3: 0 props: []",
+    "[0000.112] hit #4: 0 props: []",
+    "[0000.116] hit #5: 0 props: []",
+    "[0000.129] hit #6: 0 props: []",
+    "[0000.141] hit #7: 0 props: []",
+    "[0000.155] hit #8: 0 props: []",
+    "[0000.175] hit #9: 0 props: []",
+    "[0000.184] hit #10: 0 props: []"
+  ],
+  "classification": "NO_NAMES",
+  "summary": {
+    "total_hits": 10,
+    "unique_names": [],
+    "total_unique_names": 0,
+    "ans_names": []
+  }
+}
