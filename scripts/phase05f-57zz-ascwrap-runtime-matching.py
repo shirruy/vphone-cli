@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """57ZZ P9-P12: ASCWrap runtime matching evidence consolidator.
 
-Consolidates the canonical-fixture runtime run (valid +0x348 vtable targets,
+INVALIDATED as start instrumentation), the valid provider v2/v3 runs
 early arming) with the chain-decoder and DT-builder results.
 """
 
@@ -79,10 +79,10 @@ def main():
             "classification": cap["classification"],
             "slide": cap["slide"]["slide"],
             "instrumented_targets": {
-                "ascwrap_start_entry": "0xfffffff0082f4dec + slide (vtable +0x348, bti c pad)",
-                "nub_start_entry": "0xfffffff0082f8048 + slide (vtable +0x348, bti c pad)",
+                "legacy_candA": "0xfffffff0082f4dec + slide (vtable +0x348 - NOT start; semantic identity UNKNOWN)",
                 "nub_withregistryentry": "0xfffffff0082f7b40 + slide",
             },
+            "legacy_instrumentation_validity": "INVALID_TARGET_FOR_START (start is +0x360 per callsite proof)",
             "arm_evidence": arm_lines,
             "serial_bytes": res["serial_bytes"],
             "serial_lines": serial_lines,
@@ -118,9 +118,10 @@ def main():
             "ARMIO_ALLOCATIONS_OBSERVED": ">= %d" % max((r["ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT"] for r in provider_runs.values()), default=0),
             "IOKIT_START_DISPATCHES_OBSERVED": ">= %d" % max((r["START_DISPATCH_HITS_OBSERVED_COUNT"] for r in provider_runs.values()), default=0),
             "ASCWRAP_FAMILY_START_OBSERVED": any(r["ascwrap_family_start_observed"] for r in provider_runs.values()),
-            "APPLEASCWRAPV6_START_HIT": "NO",
-            "APPLEA7IOPNUB_START_HIT": "NO",
-            "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_PROVIDER_PUBLICATION_INSTRUMENTATION",
+            "LEGACY_P9_START_INSTRUMENTATION": "INVALID_TARGET",
+            "APPLEASCWRAPV6_START_FROM_P9": "UNKNOWN (instrumented +0x348, not start)",
+            "APPLEA7IOPNUB_START_FROM_P9": "UNKNOWN (instrumented +0x348, not start)",
+            "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_ANS_NAME_CORRELATION",
             "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
             "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
             "58B_IMPLEMENTATION": "NONE",
@@ -134,20 +135,22 @@ def main():
     md = [
         "# 57ZZ — ASCWrap Runtime Matching (Valid Instrumentation)",
         "",
-        "## Setup",
+        "## Legacy P9 run (instrumentation later invalidated)",
         "",
-        "- Canonical ascwrap DT fixture (parent `iop,ascwrap-v6` + child `iop-nub,rtbuddy-v2`)",
-        "- Hardware breakpoints on the chain-decoder-derived vtable +0x348 entries",
-        "  (`0xfffffff0082f4dec`, `0xfffffff0082f8048`) and the nub factory (`0xfffffff0082f7b40`)",
-        "- 8s warmup; slide 0x20000000; full boot in window",
+        "- Canonical ascwrap DT fixture; breakpoints were at vtable +0x348 entries and the nub factory.",
+        "- The +0x348 slot is NOT start (start is +0x360 per callsite proof); the P9 NO_HIT says nothing about AppleASCWrapV6::start.",
         "",
-        "## Timing gate",
+        "## Valid provider runs (v2/v3)",
+        "",
+        "- ARMIO allocator hits and callsite-proven +0x360 start dispatches observed live; no ASCWrap-family vtable in any observed client start.",
+        "",
+        "## Timing",
         "",
         "```",
-        "BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING: PROVEN_FOR_OBSERVED_MATCHING_PHASE",
+        "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING: PROVEN",
+        "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING: UNKNOWN",
         "```",
         "",
-        artifact["timing_gate"]["analysis"],
         "",
         "## Result",
         "",
@@ -158,11 +161,10 @@ def main():
     md += [
         "```",
         "",
-        "All three instrumented entries remained unhit across the full boot,",
-        "while other drivers' start calls were observed in serial — proving the",
-        "matching pipeline was active in the window. The earliest failed stage",
-        "cannot be classified without provider-publication instrumentation",
-        "(AppleARMIODevice nub creation/registerService for /arm-io/ans).",
+        "The legacy P9 instrumentation did not target start. The valid v2/v3",
+        "provider runs observed the ARMIO allocation phase and client starts",
+        "live; no ASCWrap-family vtable appeared. The earliest failed stage",
+        "remains UNKNOWN pending ANS DT-name correlation.",
         "",
     ]
     with open(OUT_MD, "w", encoding="utf-8") as f:

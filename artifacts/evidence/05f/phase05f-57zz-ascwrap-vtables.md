@@ -9,7 +9,7 @@ IOSERVICE_START_VTABLE_SLOT: PROVEN_FROM_CALLSITE (+0x360)
 
 | Class | Vtable VM | +0x360 start target | Superclass target | Classification |
 |---|---|---|---|---|
-| AppleA7IOP | 0xfffffff007d14370 | 0xfffffff00aad7da0 | 0xfffffff00aad7da0 | INHERITS_START |
+| AppleA7IOP | 0xfffffff007d14370 | 0xfffffff00aad7da0 | 0xfffffff00aa4e744 | OVERRIDES_START |
 | AppleASCWrapV6 | 0xfffffff007d131e0 | 0xfffffff00aad7da0 | 0xfffffff00aad7da0 | INHERITS_START |
 | AppleASCWrapV6SEP | 0xfffffff007d139b8 | 0xfffffff00aac8a4c | 0xfffffff00aad7da0 | OVERRIDES_START |
 | AppleASCWrapV6SISP | 0xfffffff007d12a08 | 0xfffffff00aad7da0 | 0xfffffff00aad7da0 | INHERITS_START |

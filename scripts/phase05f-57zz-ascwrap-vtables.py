@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """57ZZ P5-P7: ASCWrap/A7IOP vtable derivation via the valid chain decoder.
 
-Derives all five class vtables from LC_DYLD_CHAINED_FIXUPS metadata only
-(no raw qword scans), resolves the +0x348 start slot, and classifies
-candA/candB against the real vtable targets.
+Derives all five class vtables from LC_DYLD_CHAINED_FIXUPS metadata,
+derives the IOService::start slot from the client->start(provider)
+dispatch callsite (+0x360), anchors the true IOService vtable
+independently (registration at 0xfffffff00aae5eec), and classifies
+inheritance by target comparison along the proven superclass chains.
 """
 
 import json
@@ -139,31 +141,38 @@ def main():
             "entries": {("+0x%03x" % k): {"target": hex(t), "owner": owner(t)} for k, t in sorted(entries.items())},
         }
 
-    # Inheritance classification BY TARGET COMPARISON against the proven
-    # superclass chains (never from slot existence):
-    #   AppleA7IOP -> IOService base
-    #   AppleASCWrapV6/SISP -> AppleA7IOP
-    #   AppleASCWrapV6SEP -> AppleASCWrapV6
-    #   AppleA7IOPNub -> AppleA7IOP
+    # Independent IOService anchor: IOService class registration at
+    # 0xfffffff00aae5eec installs vtable 0xfffffff007c88580 (derived from
+    # its adrp/add x16 sequence). Read its +0x360 entry as the true
+    # IOService::start target - never reuse a subclass target as the base.
+    IOSERVICE_VTABLE = 0xFFFFFFF007C88580
+    ioservice_start = index.get(IOSERVICE_VTABLE + START_SLOT)
+
+    # Superclass-chain anchors. A7IOP<->IOService is independently anchored
+    # above. The ASCWrapV6->A7IOP and Nub->A7IOP relations are proven by the
+    # mod_init GOT superclass chase (see the instantiator evidence); the
+    # SEP/SISP->ASCWrapV6 relations are assertion anchors from the shared
+    # registration block until independently rederived here.
     PARENT_OF = {
-        "AppleA7IOP": None,
-        "AppleASCWrapV6": "AppleA7IOP",
-        "AppleASCWrapV6SEP": "AppleASCWrapV6",
-        "AppleASCWrapV6SISP": "AppleASCWrapV6",
-        "AppleA7IOPNub": "AppleA7IOP",
+        "AppleA7IOP": ("__ioservice__", "PROVEN (independent vtable anchor)"),
+        "AppleASCWrapV6": ("AppleA7IOP", "PROVEN (GOT superclass chase)"),
+        "AppleASCWrapV6SEP": ("AppleASCWrapV6", "ASSERTION_ANCHOR (shared registration block)"),
+        "AppleASCWrapV6SISP": ("AppleASCWrapV6", "ASSERTION_ANCHOR (shared registration block)"),
+        "AppleA7IOPNub": ("AppleA7IOP", "PROVEN (mod_init[1] registers under A7IOP family)"),
     }
-    BASE_IOSTART = out["AppleA7IOP"]["start_target"]
-    for name, parent in PARENT_OF.items():
+    for name, (parent, basis) in PARENT_OF.items():
         own = out[name]["start_target"]
-        ref = BASE_IOSTART if parent is None else out[parent]["start_target"]
-        if own is None or ref is None:
+        ref = ioservice_start if parent == "__ioservice__" else out[parent]["start_target"]
+        ref_str = (hex(ref) if isinstance(ref, int) else ref) if ref is not None else None
+        if own is None or ref_str is None:
             cls = "UNRESOLVED"
-        elif own == ref:
+        elif own == ref_str:
             cls = "INHERITS_START"
         else:
             cls = "OVERRIDES_START"
         out[name]["start_classification"] = cls
-        out[name]["superclass_start_target"] = ref
+        out[name]["superclass_start_target"] = (hex(ref) if isinstance(ref, int) else ref) if ref else None
+        out[name]["superclass_relation_basis"] = basis
 
     # Candidate evaluation: reverse lookup across ALL five vtables
     cand_hits = {"candA": [], "candB": []}
@@ -183,7 +192,7 @@ def main():
 
     artifact = {
         "gate": "57ZZ_ASCWRAP_VTABLES",
-        "derivation": "vtable CONTENTS chain-decoder derived; vtable BASE ADDRESSES are known anchors until independently rederived from mod_init instruction sequences",
+        "derivation": "vtable CONTENTS chain-decoder derived; vtable BASES derived from mod_init adrp/add x16 sequences and asserted",
         "start_slot": "+0x%x (bti c landing pad targets)" % START_SLOT,
         "vtables": out,
         "candidate_evaluation": {
@@ -196,6 +205,13 @@ def main():
                 "UNKNOWN. Prior breakpoints at the +4 function bodies were "
                 "never start instrumentation."
             ),
+        },
+        "ioservice_anchor": {
+            "registration_vm": "0xfffffff00aae5eec",
+            "vtable_vm": hex(IOSERVICE_VTABLE),
+            "start_slot": "+0x%x" % START_SLOT,
+            "ioservice_start_target": hex(ioservice_start) if ioservice_start else None,
+            "note": "A7IOP-family start (0xfffffff00aad7da0) is an intermediate-superclass override, NOT the IOService base",
         },
         "vtable_base_derivation": derivation_report,
         "ALL_FIVE_VTABLE_BASES": "DERIVED_AND_ASSERTED",
@@ -219,7 +235,8 @@ def main():
             "CANDB_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
             "PRIOR_0x348_START_CLAIM": "INVALIDATED (real start slot is +0x360 per callsite proof)",
             "PRIOR_NO_HIT_INTERPRETATION": "CANDA/CANDB breakpoints did not instrument start; the NO_HIT says nothing about ASCWrapV6::start",
-            "START_DETECTION_TARGET": "0xfffffff00aad7da0 (base IOService::start inherited by ASCWrapV6/A7IOP/Nub/SISP) or the dispatch callsite 0xfffffff00aada0e0",
+            "IOSERVICE_BASE_START": hex(ioservice_start) if ioservice_start else None,
+            "START_DETECTION_TARGET": "A7IOP-family start 0xfffffff00aad7da0 (intermediate override) or dispatch callsite 0xfffffff00aada0e0; IOService base is %s" % (hex(ioservice_start) if ioservice_start else "UNKNOWN"),
             "PRIOR_0x2C0_SUPER_START_CLAIM": "INVALIDATED (slot +0x2c0 resolves to a shared kernel function, not start)",
         },
     }

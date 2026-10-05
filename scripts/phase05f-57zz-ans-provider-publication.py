@@ -8,11 +8,10 @@ RUNS = ["p7-provider-v2", "p7-provider-v3"]
 OUT_JSON = "artifacts/evidence/05f/phase05f-57zz-ans-provider-publication.json"
 OUT_MD = "artifacts/evidence/05f/phase05f-57zz-ans-provider-publication.md"
 
-# Single source of truth: consume the canonical derived-vtable artifact.
-# The static AppleARMIODevice vtable (0xfffffff007d336e0) is derived from its
-# mod_init adrp/add x16 sequence (registration at 0xfffffff008388bb0).
+# Single sources of truth: consume the canonical derived-vtable artifacts
+# for both the ASCWrap/A7IOP family and AppleARMIODevice.
 VTABLES_ARTIFACT = "artifacts/evidence/05f/phase05f-57zz-ascwrap-vtables.json"
-APPLEARMIODevice_VTABLE_STATIC = 0xFFFFFFF007D336E0  # mod_init-derived
+ARMIO_ARTIFACT = "artifacts/evidence/05f/phase05f-57zz-armiodevice-vtable.json"
 
 
 def load_known_vtables():
@@ -21,7 +20,11 @@ def load_known_vtables():
     out = {}
     for name, v in art["vtables"].items():
         out[int(v["vtable_vm"], 16)] = name
-    out[APPLEARMIODevice_VTABLE_STATIC] = "AppleARMIODevice"
+    with open(ARMIO_ARTIFACT, encoding="utf-8") as f:
+        armio = json.load(f)
+    if armio.get("verdict") != "PASS":
+        raise SystemExit("AppleARMIODevice vtable artifact is not PASS; regenerate it first")
+    out[int(armio["vtable"], 16)] = "AppleARMIODevice"
     return out
 
 

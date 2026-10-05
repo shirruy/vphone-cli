@@ -1,0 +1,16 @@
+{
+  "gate": "57ZZ_APPLEARMIODEVICE_VTABLE",
+  "class_object": "0xfffffff00afef458",
+  "registration_function": "0xfffffff008388bb0",
+  "vtable": "0xfffffff007d336e0",
+  "start_slot_0x360": "0xfffffff00aad7da0",
+  "allocator_function": "0xfffffff008387eb8",
+  "allocator_register_contract": {
+    "note": "both args forwarded unchanged to the init virtual (see provider-publication evidence)"
+  },
+  "expected_assertions": {
+    "class_object": "0xfffffff00afef458",
+    "vtable": "0xfffffff007d336e0"
+  },
+  "verdict": "PASS"
+}

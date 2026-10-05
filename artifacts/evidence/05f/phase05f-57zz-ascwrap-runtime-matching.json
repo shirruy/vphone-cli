@@ -6,10 +6,10 @@
     "classification": "NO_HIT",
     "slide": 536870912,
     "instrumented_targets": {
-      "ascwrap_start_entry": "0xfffffff0082f4dec + slide (vtable +0x348, bti c pad)",
-      "nub_start_entry": "0xfffffff0082f8048 + slide (vtable +0x348, bti c pad)",
+      "legacy_candA": "0xfffffff0082f4dec + slide (vtable +0x348 - NOT start; semantic identity UNKNOWN)",
       "nub_withregistryentry": "0xfffffff0082f7b40 + slide"
     },
+    "legacy_instrumentation_validity": "INVALID_TARGET_FOR_START (start is +0x360 per callsite proof)",
     "arm_evidence": [
       "CAPTURE [0000.033] hbreak candA @ 0xfffffff0282f4dec installed",
       "CAPTURE [0000.034] hbreak candB @ 0xfffffff0282f8048 installed",
@@ -112,9 +112,10 @@
     "ARMIO_ALLOCATIONS_OBSERVED": ">= 55",
     "IOKIT_START_DISPATCHES_OBSERVED": ">= 40",
     "ASCWRAP_FAMILY_START_OBSERVED": false,
-    "APPLEASCWRAPV6_START_HIT": "NO",
-    "APPLEA7IOPNUB_START_HIT": "NO",
-    "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_PROVIDER_PUBLICATION_INSTRUMENTATION",
+    "LEGACY_P9_START_INSTRUMENTATION": "INVALID_TARGET",
+    "APPLEASCWRAPV6_START_FROM_P9": "UNKNOWN (instrumented +0x348, not start)",
+    "APPLEA7IOPNUB_START_FROM_P9": "UNKNOWN (instrumented +0x348, not start)",
+    "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_ANS_NAME_CORRELATION",
     "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
     "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
     "58B_IMPLEMENTATION": "NONE"

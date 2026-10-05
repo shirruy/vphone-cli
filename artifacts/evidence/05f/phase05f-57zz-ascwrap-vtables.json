@@ -1,6 +1,6 @@
 {
   "gate": "57ZZ_ASCWRAP_VTABLES",
-  "derivation": "vtable CONTENTS chain-decoder derived; vtable BASE ADDRESSES are known anchors until independently rederived from mod_init instruction sequences",
+  "derivation": "vtable CONTENTS chain-decoder derived; vtable BASES derived from mod_init adrp/add x16 sequences and asserted",
   "start_slot": "+0x360 (bti c landing pad targets)",
   "vtables": {
     "AppleA7IOP": {
@@ -512,8 +512,9 @@
           "owner": "kernel"
         }
       },
-      "start_classification": "INHERITS_START",
-      "superclass_start_target": "0xfffffff00aad7da0"
+      "start_classification": "OVERRIDES_START",
+      "superclass_start_target": "0xfffffff00aa4e744",
+      "superclass_relation_basis": "PROVEN (independent vtable anchor)"
     },
     "AppleASCWrapV6": {
       "vtable_vm": "0xfffffff007d131e0",
@@ -1025,7 +1026,8 @@
         }
       },
       "start_classification": "INHERITS_START",
-      "superclass_start_target": "0xfffffff00aad7da0"
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "PROVEN (GOT superclass chase)"
     },
     "AppleASCWrapV6SEP": {
       "vtable_vm": "0xfffffff007d139b8",
@@ -1465,7 +1467,8 @@
         }
       },
       "start_classification": "OVERRIDES_START",
-      "superclass_start_target": "0xfffffff00aad7da0"
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "ASSERTION_ANCHOR (shared registration block)"
     },
     "AppleASCWrapV6SISP": {
       "vtable_vm": "0xfffffff007d12a08",
@@ -1977,7 +1980,8 @@
         }
       },
       "start_classification": "INHERITS_START",
-      "superclass_start_target": "0xfffffff00aad7da0"
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "ASSERTION_ANCHOR (shared registration block)"
     },
     "AppleA7IOPNub": {
       "vtable_vm": "0xfffffff007d14960",
@@ -2489,7 +2493,8 @@
         }
       },
       "start_classification": "INHERITS_START",
-      "superclass_start_target": "0xfffffff00aad7da0"
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "PROVEN (mod_init[1] registers under A7IOP family)"
     }
   },
   "candidate_evaluation": {
@@ -2504,6 +2509,13 @@
       "count": 0
     },
     "relationship": "candA (0xfffffff0082f4dec pad) and candB (0xfffffff0082f8048 pad) are vtable slot +0x348 targets. The proven start slot is +0x360; +0x348 is NOT start and its semantic identity is UNKNOWN. Prior breakpoints at the +4 function bodies were never start instrumentation."
+  },
+  "ioservice_anchor": {
+    "registration_vm": "0xfffffff00aae5eec",
+    "vtable_vm": "0xfffffff007c88580",
+    "start_slot": "+0x360",
+    "ioservice_start_target": "0xfffffff00aa4e744",
+    "note": "A7IOP-family start (0xfffffff00aad7da0) is an intermediate-superclass override, NOT the IOService base"
   },
   "vtable_base_derivation": {
     "AppleA7IOP": {
@@ -2558,7 +2570,8 @@
     "CANDB_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
     "PRIOR_0x348_START_CLAIM": "INVALIDATED (real start slot is +0x360 per callsite proof)",
     "PRIOR_NO_HIT_INTERPRETATION": "CANDA/CANDB breakpoints did not instrument start; the NO_HIT says nothing about ASCWrapV6::start",
-    "START_DETECTION_TARGET": "0xfffffff00aad7da0 (base IOService::start inherited by ASCWrapV6/A7IOP/Nub/SISP) or the dispatch callsite 0xfffffff00aada0e0",
+    "IOSERVICE_BASE_START": "0xfffffff00aa4e744",
+    "START_DETECTION_TARGET": "A7IOP-family start 0xfffffff00aad7da0 (intermediate override) or dispatch callsite 0xfffffff00aada0e0; IOService base is 0xfffffff00aa4e744",
     "PRIOR_0x2C0_SUPER_START_CLAIM": "INVALIDATED (slot +0x2c0 resolves to a shared kernel function, not start)"
   }
 }
