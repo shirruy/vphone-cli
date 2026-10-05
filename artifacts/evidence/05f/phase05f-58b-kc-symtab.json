@@ -1,0 +1,234 @@
+{
+  "gate": "05F_58B_KC_SYMTAB",
+  "bootkc": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "linkedit_segment": {
+    "vm": "0xfffffff00b0d8000",
+    "vm_size": "0xbc000",
+    "fileoff": "0x40d4000",
+    "filesize": "0xbc000"
+  },
+  "format": {
+    "container": "Apple binary plist at __LINKEDIT head (bplist00)",
+    "plist_file_start": "0x40d4000",
+    "plist_file_end": "0x411cd28",
+    "length": 298280,
+    "trailer": {
+      "file_offset": "0x411cd08",
+      "offset_int_size": 4,
+      "object_ref_size": 2,
+      "num_objects": 12446,
+      "top_object": 0,
+      "offset_table_offset": "0x3ca90"
+    },
+    "object_marker_census": {
+      "0x5": 6248,
+      "0xa": 10,
+      "0xd": 6188
+    },
+    "census_interpretation": "0x5=ASCII strings, 0xA=arrays, 0xD=dicts. ZERO integer (0x2/0x3) and ZERO UID (0x8) objects exist in the container.",
+    "encoding": "Names are plist string objects (5f 10 LL / 5n / 5f-int-ext markers). The observed 'd1 00 04 XX YY' after each name is a dict marker (0xd1 = dict with 1 pair) whose refs decode to {'SymbolName': <next name>}; it is NOT a ULEB address delta.",
+    "name_count_distinct": 6248,
+    "delta_hypothesis": "REJECTED by decode: anchor-following bytes d1 00 04 20 b9 decode as dict{4:'__ZTV5IORTC'} (key object 4 = string 'SymbolName').",
+    "address_availability": "NOT AVAILABLE: container stores symbol NAMES only (symbol-name sets per kext / weak-ref sets). No address values of any width are encoded."
+  },
+  "calibration": {
+    "requested_anchor": {
+      "name": "__ZTV16IOPlatformDevice",
+      "claimed_address": "0xfffffff007cc90f8",
+      "name_present": true,
+      "address_reproducible_from_container": false,
+      "anchor_following_bytes": "5f 10 17 5f 5f 5a 54 56 31 36 49 4f 50 6c 61 74 66 6f 72 6d 44 65 76 69 63 65 d1 00 04 20 b9 5b",
+      "anchor_following_decode": {
+        "marker": "0xd1 dict count=1",
+        "key_ref": 4,
+        "key_decoded": "SymbolName",
+        "value_ref": 8377,
+        "value_decoded": "__ZTV5IORTC"
+      },
+      "result": "FAIL_CLOSED: name decoded; address cannot be derived from this container; claimed address has no supporting encoding here."
+    },
+    "verdict": "CALIBRATION FAILED \u2014 the premise that this region encodes addresses is disproven by the complete object-marker census."
+  },
+  "resolved_targets": [
+    {
+      "name": "__ZNK15IORegistryEntry12compareNamesEP8OSObjectPP8OSString",
+      "name_present": true,
+      "name_object_index": 5644,
+      "name_file_offset": "0x40f1b4c",
+      "address": null,
+      "address_status": "NOT_ENCODED_IN_CONTAINER"
+    },
+    {
+      "name": "__ZNK15IORegistryEntry11compareNameEP8OSStringPS1_",
+      "name_present": true,
+      "name_object_index": 5626,
+      "name_file_offset": "0x40f1914",
+      "address": null,
+      "address_status": "NOT_ENCODED_IN_CONTAINER"
+    },
+    {
+      "name": "__ZTV15IORegistryEntry",
+      "name_present": true,
+      "name_object_index": 5958,
+      "name_file_offset": "0x40f3ac6",
+      "address": null,
+      "address_status": "NOT_ENCODED_IN_CONTAINER"
+    },
+    {
+      "name": "__ZTV9IOService",
+      "name_present": true,
+      "name_object_index": 6038,
+      "name_file_offset": "0x40f4005",
+      "address": null,
+      "address_status": "NOT_ENCODED_IN_CONTAINER"
+    },
+    {
+      "name": "__ZTV16IOPlatformDevice",
+      "name_present": true,
+      "name_object_index": 8375,
+      "name_file_offset": "0x40fe9c9",
+      "address": null,
+      "address_status": "NOT_ENCODED_IN_CONTAINER"
+    }
+  ],
+  "pattern_targets": [
+    {
+      "pattern": "IOService+match",
+      "count": 37,
+      "names": [
+        "__ZN16IOPlatformDevice13matchLocationEP9IOService",
+        "__ZN9IOService12nameMatchingEPK8OSString11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService12nameMatchingEPK8OSStringP12OSDictionary",
+        "__ZN9IOService12nameMatchingEPKc11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService12nameMatchingEPKcP12OSDictionary",
+        "__ZN9IOService12passiveMatchEP12OSDictionaryb",
+        "__ZN9IOService13matchLocationEPS_",
+        "__ZN9IOService13startMatchingEj",
+        "__ZN9IOService13waitMatchIdleEj",
+        "__ZN9IOService14doServiceMatchEj",
+        "__ZN9IOService15serviceMatchingEPK8OSString11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService15serviceMatchingEPK8OSStringP12OSDictionary",
+        "__ZN9IOService15serviceMatchingEPKc11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService15serviceMatchingEPKcP12OSDictionary",
+        "__ZN9IOService16propertyMatchingEPK8OSSymbolPK8OSObject11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService16propertyMatchingEPK8OSSymbolPK8OSObjectP12OSDictionary",
+        "__ZN9IOService16resourceMatchingEPK8OSString11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService16resourceMatchingEPK8OSStringP12OSDictionary",
+        "__ZN9IOService16resourceMatchingEPKc11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService16resourceMatchingEPKcP12OSDictionary",
+        "__ZN9IOService18matchPropertyTableEP12OSDictionary",
+        "__ZN9IOService18matchPropertyTableEP12OSDictionaryPi",
+        "__ZN9IOService19copyMatchingServiceEP12OSDictionary",
+        "__ZN9IOService19getMatchingServicesEP12OSDictionary",
+        "__ZN9IOService22waitForMatchingServiceEP12OSDictionaryy",
+        "__ZN9IOService23addMatchingNotificationEPK8OSSymbolP12OSDictionaryPFbPvS5_PS_P10IONotifierES5_S5_i",
+        "__ZN9IOService23addMatchingNotificationEPK8OSSymbolP12OSDictionaryiU13block_pointerFbPS_P10IONotifierE",
+        "__ZN9IOService23registryEntryIDMatchingEy11OSSharedPtrI12OSDictionaryE",
+        "__ZN9IOService23registryEntryIDMatchingEyP12OSDictionary",
+        "__ZN9IOService28CreateNameMatchingDictionaryEP8OSStringP12OSDictionary",
+        "__ZN9IOService28CreateNameMatchingDictionaryEPKcP12OSDictionary",
+        "__ZN9IOService32CreatePropertyMatchingDictionaryEPKcP8OSObjectP12OSDictionary",
+        "__ZN9IOService32CreatePropertyMatchingDictionaryEPKcS1_P12OSDictionary",
+        "__ZN9IOService33CreateUserClassMatchingDictionaryEP8OSStringP12OSDictionary",
+        "__ZN9IOService33CreateUserClassMatchingDictionaryEPKcP12OSDictionary",
+        "__ZN9IOService35CreateKernelClassMatchingDictionaryEP8OSStringP12OSDictionary",
+        "__ZN9IOService35CreateKernelClassMatchingDictionaryEPKcP12OSDictionary"
+      ],
+      "addresses": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "pattern": "IOCatalogue",
+      "count": 12,
+      "names": [
+        "__ZN11IOCatalogue10gMetaClassE",
+        "__ZN11IOCatalogue10superClassE",
+        "__ZN11IOCatalogue11findDriversEP12OSDictionaryPi",
+        "__ZN11IOCatalogue11findDriversEP9IOServicePi",
+        "__ZNK11IOCatalogue12getMetaClassEv",
+        "__ZNK11IOCatalogue12unloadModuleEP8OSString",
+        "__ZNK11IOCatalogue18getGenerationCountEv",
+        "__ZNK11IOCatalogue9MetaClass5allocEv",
+        "__ZNK11IOCatalogue9serializeEP11OSSerialize",
+        "__ZTV11IOCatalogue",
+        "__ZTVN11IOCatalogue9MetaClassE",
+        "_gIOCatalogue"
+      ],
+      "addresses": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "pattern": "IODTCompare",
+      "count": 2,
+      "names": [
+        "__Z18IODTCompareNubNamePK15IORegistryEntryP8OSStringPS3_",
+        "__Z18IODTCompareNubNamePK15IORegistryEntryP8OSStringR11OSSharedPtrIS2_E"
+      ],
+      "addresses": [
+        null,
+        null
+      ]
+    }
+  ],
+  "fail_closed": [
+    "compareNames/compareName/__ZTV15IORegistryEntry/__ZTV9IOService: names PRESENT (see resolved_targets); addresses NOT RESOLVABLE from this format.",
+    "IOService+match / IOCatalogue / IODTCompare: see pattern_targets for presence lists; addresses NOT RESOLVABLE from this format.",
+    "Any prior address claim tied to 'd1 00 04' deltas must be re-derived from the real symbol value source (e.g., fileset-entry symtab/strtab or LC_SYMTAB of embedded MH_FILESET kernels), not this plist."
+  ],
+  "SYMTAB_NAME_DECODE": "PASS",
+  "ADDRESS_RESOLUTION": "NOT_CERTIFIED (addresses not encoded in this container)",
+  "notes": [
+    "Static decode only; no runtime claim.",
+    "All offsets are file offsets into bootkc.bin."
+  ]
+}
