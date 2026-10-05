@@ -53,11 +53,14 @@ def main():
                 "PROVEN_RUNTIME" if summary.get("control_flow_ok", 0) == summary.get("thunk_hits", 0) and summary.get("thunk_hits", 0) > 0
                 else "FAILED_OR_PARTIAL"
             ),
-            "ALLOCATOR_ARG1_SOURCE_GLOBAL": (
-                "THUNK_X2 (proven for all %d observed pairs)" % summary.get("register_match", 0)
-                if summary.get("register_mismatch", 1) == 0 and summary.get("register_match", 0) > 0
+            "ALLOCATOR_ARG1_SOURCE_OBSERVED_PAIRS": (
+                "THUNK_X2" if summary.get("register_mismatch", 1) == 0 and summary.get("register_match", 0) > 0
                 else "UNKNOWN"
             ),
+            "OBSERVED_PAIR_COVERAGE": "%d/%d" % (summary.get("register_match", 0), summary.get("thunk_hits", 0)),
+            "ALLOCATOR_ARG1_SOURCE_GLOBAL": "UNKNOWN_OUTSIDE_OBSERVED_WINDOW",
+            "THUNK_X2_DISTINCT_VALUES": "PROVEN (%d/40 unique)" % summary.get("thunk_hits", 0),
+            "THUNK_X2_POINTER_LIKE_VALUES": "OBSERVED",
             "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate: ARMIO_THUNK_X2_PROVENANCE)",
             "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
             "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",

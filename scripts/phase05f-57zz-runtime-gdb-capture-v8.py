@@ -122,12 +122,15 @@ def write_output(classification, slide_info, extra=None):
     out = {
         "gate": "RUNTIME_ALLOCATOR_THUNK_PAIRING_V8",
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        "capture_event_limit": MAX_PAIRS,
+        "capture_pair_limit": MAX_PAIRS,
+        "captured_pairs": pair_count,
+        "captured_breakpoint_events": pair_count,
+        "allocator_step_captures": control_flow_ok,
+        "total_events": len(events),
         "capture_termination_reason": (
-            "BREAKPOINT_EVENT_LIMIT" if len(events) >= MAX_PAIRS
+            "PAIR_LIMIT" if pair_count >= MAX_PAIRS
             else ("BUDGET_EXPIRED" if (time.time() - T0) >= BUDGET_SECONDS else "COMPLETED")
         ),
-        "captured_breakpoint_events": len(events),
         "slide": slide_info,
         "events": events,
         "notes": notes,
