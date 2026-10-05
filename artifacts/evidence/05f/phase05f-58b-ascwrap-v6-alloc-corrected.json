@@ -1,0 +1,24 @@
+{
+  "gate": "58B_ASCWRAP_V6_INSTANCE_ALLOCATION_CORRECTED",
+  "correction": "The prior allocator identification was WRONG. The function at 0xfffffff0082f34a8 installs vtable 0xfffffff007d12aa0 = AppleASCWrapV6SISP, NOT V6. The 2 hits previously recorded were SISP instances.",
+  "true_v6_store_sites": [
+    "0xfffffff0082f32dc (V6 vtable 0xfffffff007d131e0 install)",
+    "0xfffffff0082f3448 (V6 vtable install, second variant)",
+    "0xfffffff0082f42fc (V6, registration-adjacent)"
+  ],
+  "probe_results": {
+    "v6_store_site_0xfffffff0082f32dc": {
+      "hits": 1,
+      "instance_ptr": "0xffffffe2c3f30b10",
+      "vtable_read": "none (PAC-signed or pre-store timing)"
+    },
+    "post_store_0xfffffff0082f32e0": {
+      "hits": 1,
+      "instance_ptr": "0xffffffdfe7bf8380",
+      "vtable_read": "none"
+    }
+  },
+  "conclusion": "An AppleASCWrapV6 instance IS allocated during boot (exactly one). The personality matching FIRES and creates the V6 instance. The blocker is downstream of allocation: init/start of this single instance.",
+  "note": "Instance pointers differ between runs due to KASLR/heap variation; both runs show exactly 1 hit at the V6-specific site, confirming a single V6 instantiation per boot.",
+  "next": "Trace the single V6 instance lifecycle: set a hardware watchpoint on the instance memory after the store, or break at the V6 init slot and the V6 start (0xfffffff00aad7da0) to see which stage kills it."
+}
