@@ -87,8 +87,9 @@
     }
   },
   "findings": {
-    "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": "PROVEN (earliest allocation t=0.057 post-attach, derived from events)",
-    "BREAKPOINT_ARMED_BEFORE_IOKIT_START_PHASE": "PROVEN (earliest start t=0.388 post-attach, derived from events)",
+    "ARMIO_ALLOCATION_OBSERVED_AFTER_ARMING": "PROVEN (earliest allocation t=0.057 post-attach, derived from events)",
+    "IOKIT_START_DISPATCH_OBSERVED_AFTER_ARMING": "PROVEN (earliest start t=0.388 post-attach, derived from events)",
+    "BREAKPOINT_ARMED_BEFORE_FIRST_ARMIO_ALLOCATION": "UNKNOWN (earlier pre-attach allocations possible)",
     "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS alloc not identified among ARMIO allocations yet)",
     "ARMIO_ALLOCATION_PHASE_ACTIVE": true,
     "IOKIT_START_DISPATCH_ACTIVE": true,

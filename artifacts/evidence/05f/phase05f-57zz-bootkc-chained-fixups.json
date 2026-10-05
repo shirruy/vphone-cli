@@ -23,8 +23,10 @@
       "single_start_pages": 334,
       "multi_start_pages": 0,
       "none_pages": 18,
-      "total_chain_heads": 334,
+      "single_start_pages_exact": 334,
       "segment_offset": "0xc14000",
+      "total_chain_heads_lower_bound": 334,
+      "total_chain_heads_note": "exact (zero MULTI pages)",
       "has_chain": true
     },
     {
@@ -35,8 +37,10 @@
       "single_start_pages": 0,
       "multi_start_pages": 0,
       "none_pages": 19,
-      "total_chain_heads": 0,
+      "single_start_pages_exact": 0,
       "segment_offset": "0x1194000",
+      "total_chain_heads_lower_bound": 0,
+      "total_chain_heads_note": "exact (zero MULTI pages)",
       "has_chain": true
     },
     {
@@ -59,8 +63,10 @@
       "single_start_pages": 52,
       "multi_start_pages": 0,
       "none_pages": 100,
-      "total_chain_heads": 52,
+      "single_start_pages_exact": 52,
       "segment_offset": "0x3e74000",
+      "total_chain_heads_lower_bound": 52,
+      "total_chain_heads_note": "exact (zero MULTI pages)",
       "has_chain": true
     },
     {

@@ -53,8 +53,13 @@ def segment_metadata(data, segment_name):
         "segment": segment_name, "pointer_format": pointer_format,
         "page_size": hex(page_size), "page_count": page_count,
         "single_start_pages": single, "multi_start_pages": multi,
-        "none_pages": none, "total_chain_heads": single + multi,
+        "none_pages": none, "single_start_pages_exact": single, "multi_start_pages": multi,
         "segment_offset": hex(segment_offset),
+        "total_chain_heads_lower_bound": single + multi,
+        "total_chain_heads_note": (
+            "exact (zero MULTI pages)" if multi == 0 else
+            "lower bound (single + MULTI pages; per-overflow-entry head count requires decoder metadata)"
+        ),
     }
 
 
@@ -87,16 +92,14 @@ def main():
             segments_out.append({"segment": seg_name, "has_chain": False})
             continue
         meta["has_chain"] = True
+        if meta["pointer_format"] != 8:
+            meta["error"] = "UNSUPPORTED_POINTER_FORMAT %d (only 8 = 64_KERNEL_CACHE decoded)" % meta["pointer_format"]
+            segments_out.append(meta)
+            continue
         segments_out.append(meta)
         multi_total += meta["multi_start_pages"]
-        if meta["pointer_format"] == 8:
-            idx = fixup_module.build_fixup_index(segment_name=seg_name)
-            fixup_index.update(idx)
-            # cacheLevel counts for reporting
-            owner = next(s for s in segs_meta if s["fileoff"] <= int(meta["segment_offset"], 16) < s["fileoff"] + s["filesize"])
-            seg_vm = owner["vm"] + (int(meta["segment_offset"], 16) - owner["fileoff"])
-            for loc in idx:
-                pass  # levels validated by the module (fails closed on nonzero)
+        idx = fixup_module.build_fixup_index(segment_name=seg_name)
+        fixup_index.update(idx)
 
     starts_bound = seg_count == len(all_segs)
 

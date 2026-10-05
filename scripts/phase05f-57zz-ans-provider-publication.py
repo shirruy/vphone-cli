@@ -51,7 +51,7 @@ def main():
             "slide": slide,
             "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= %d" % len(allocs),
             "START_DISPATCH_HITS_OBSERVED": ">= %d" % len(starts),
-            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": len(allocs) + len(starts) >= 60,
+            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": sum(1 for e in c.get("events", []) if str(e.get("label", "")).startswith("bp:")) >= 60,
             "start_client_vtables": start_classes,
             "ascwrap_family_start": any(s != "other" and "ASCWrap" in s or s in ("AppleA7IOP", "AppleA7IOPNub") for s in start_classes),
             "note": "event cap 60 truncates counts; both phases observed",
@@ -88,14 +88,15 @@ def main():
         },
         "runs": runs,
         "findings": {
-            "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": (
+            "ARMIO_ALLOCATION_OBSERVED_AFTER_ARMING": (
                 "PROVEN (earliest allocation t=%s post-attach, derived from events)" % min(earliest_alloc)
                 if earliest_alloc else "NO_ALLOCATION_EVENTS_CAPTURED"
             ),
-            "BREAKPOINT_ARMED_BEFORE_IOKIT_START_PHASE": (
+            "IOKIT_START_DISPATCH_OBSERVED_AFTER_ARMING": (
                 "PROVEN (earliest start t=%s post-attach, derived from events)" % min(earliest_start)
                 if earliest_start else "NO_START_EVENTS_CAPTURED"
             ),
+            "BREAKPOINT_ARMED_BEFORE_FIRST_ARMIO_ALLOCATION": "UNKNOWN (earlier pre-attach allocations possible)",
             "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS alloc not identified among ARMIO allocations yet)",
             "ARMIO_ALLOCATION_PHASE_ACTIVE": bool(earliest_alloc),
             "IOKIT_START_DISPATCH_ACTIVE": bool(earliest_start),
