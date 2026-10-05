@@ -55,35 +55,55 @@ def main():
 
     artifact = {
         "gate": "57ZZ_ANS_DT_NAME_CORRELATION",
-        "method": "GDB memory search for 'ans\\0' and 'iop,ascwrap' in ±1MB window around each AppleARMIODevice allocator x1 dictionary",
+        "method": "GDB memory search for 'ans\\0' and 'iop,ascwrap' in memory near each AppleARMIODevice allocator arg1 object (semantic role of arg1 is UNKNOWN per the canonical register contract)",
         "runs": runs,
         "findings": {
-            "ARMIO_ALLOCATIONS_OBSERVED": ">= %d (across runs, event-cap truncated)" % total_allocs,
+            "ALLOCATOR_OBSERVATIONS_ACROSS_RUNS": ">= %d (across separate boots; may overlap same DT population)" % total_allocs,
             "ANS_STRING_FOUND_NEAR_ANY_ALLOC": total_ans > 0,
             "ASCCWRAP_COMPAT_FOUND_NEAR_ANY_ALLOC": total_asc > 0,
             "ANS_SPECIFIC_ALLOCATION_IDENTIFIED": False,
             "negative_result_interpretation": (
-                "Neither 'ans\\0' nor 'iop,ascwrap' was found within ±1MB of any "
-                "observed ARMIO allocator dictionary. Three hypotheses remain: "
-                "(a) the ANS DT node's allocation was outside the truncated capture "
-                "window; (b) DT entry name strings are stored in a different kernel "
-                "heap zone than the property dictionaries; (c) the property "
-                "dictionary passed at allocation time does not contain the DT name "
-                "property at all (the name is set later or via a different path). "
-                "This does NOT prove the ANS node was not allocated."
+                "Neither 'ans\\0' nor 'iop,ascwrap' was found in the searched "
+                "windows near the observed ARMIO allocator arg1 objects. The v6 "
+                "run searched ±64KB (55/55 successful searches); the v7 run "
+                "searched ±1MB (27/27 successful searches). Zero search errors. "
+                "The semantic role of arg1 is UNKNOWN, so this proves absence "
+                "in searched memory near arg1 objects only - it does not prove "
+                "anything about DT property dictionaries specifically. These are "
+                "separate boots, so the observations may overlap the same DT "
+                "population; do not sum them as unique allocations. "
+                "Proximity-based search cannot serve as final identity-correlation "
+                "proof even if a hit were found."
             ),
         },
         "verdicts": {
             "ARMIO_ALLOCATION_PHASE_ACTIVE": "PROVEN",
-            "ANS_STRING_SEARCH_NEGATIVE": "PROVEN (no hits in ±1MB of observed dicts)",
+            "ANS_STRING_SEARCH_NEGATIVE": "PROVEN_IN_SEARCHED_WINDOWS (v6: 0/55 at ±64KB; v7: 0/27 at ±1MB; 0 errors)",
             "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
             "ANS_SPECIFIC_ARMIO_ALLOCATION": "UNKNOWN (not found in observed subset; search method has structural limits)",
             "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN (cannot classify without ANS allocation identity)",
             "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
             "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
         },
+        "allocator_caller_static_analysis": {
+            "allocator_vm": "0xfffffff008387eb8",
+            "thunk_entry": "0xfffffff008387eb0 (mov x1,x2; b allocator)",
+            "direct_BL_callers_in_AppleARMPlatform_exec": [],
+            "direct_BL_callers_in_kernel_exec": [],
+            "fixup_references_to_allocator": [],
+            "fixup_references_to_thunk": [],
+            "xrefs_to_ARMIO_class_object": "registration/allocator thunks only (no external creation-path caller in AppleARMPlatform exec)",
+            "conclusion": (
+                "The allocator has no direct BL/B callers and no vtable/fixup "
+                "references. It is invoked via the OSMetaClass metaclass "
+                "dispatch mechanism (kernel generic allocClassWithName path). "
+                "The caller is kernel-side IOService/IORegistryEntry code, not "
+                "AppleARMPlatform code. Next: instrument the OSMetaClass alloc "
+                "or IORegistryEntry name accessor from the kernel side."
+            ),
+        },
         "next_approaches": [
-            "1. Un-truncated allocator-only run (remove the 60-event cap; capture all ~102 DT allocations, search each)",
+            "1. STATIC: derive caller-of-ARMIO-allocator argument semantics (which arg is IORegistryEntry/OSDictionary/DT node)",
             "2. Instrument the DT plane name accessor (IORegistryEntry::getName / compareName) with an ANS filter",
             "3. Search the kernel OSSymbol table for the interned 'ans' symbol and trace its reference to the owning DT entry",
             "4. Instrument the registerService() path with a provider-name check (ARMIODevice store the name early)",
