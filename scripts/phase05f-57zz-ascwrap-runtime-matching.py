@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """57ZZ P9-P12: ASCWrap runtime matching evidence consolidator.
 
+Consolidates the legacy P9 run (whose +0x348 instrumentation was later
 INVALIDATED as start instrumentation), the valid provider v2/v3 runs
-early arming) with the chain-decoder and DT-builder results.
+(callsite-proven +0x360 start dispatch + ARMIO allocator), and the
+chain-decoder/DT-builder results.
 """
 
 import json
@@ -51,6 +53,13 @@ def main():
             known_vts[int(_aart["vtable"], 16)] = "AppleARMIODevice"
             start_clients = []
             ascwrap_start = False
+            ASCWRAP_FAMILY = {
+                "AppleASCWrapV6",
+                "AppleASCWrapV6SEP",
+                "AppleASCWrapV6SISP",
+                "AppleA7IOP",
+                "AppleA7IOPNub",
+            }
             for e in starts:
                 vt_hex = (e.get("mem_x0") or {}).get("+00")
                 if not vt_hex:
@@ -58,14 +67,14 @@ def main():
                 vt_static = int(vt_hex, 16) - SLIDE
                 cls = known_vts.get(vt_static, "other")
                 start_clients.append(cls)
-                if cls != "other":
+                if cls in ASCWRAP_FAMILY:
                     ascwrap_start = True
             provider_runs[run_name] = {
                 "classification": pc.get("classification"),
                 "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= %d" % len(allocs),
                 "START_DISPATCH_HITS_OBSERVED": ">= %d" % len(starts),
                 "START_DISPATCH_HITS_OBSERVED_COUNT": len(starts),
-                "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": len(allocs) + len(starts) >= 60,
+                "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": sum(1 for e in pc.get("events", []) if str(e.get("label", "")).startswith("bp:")) >= 60,
                 "ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT": len(allocs),
                 "start_client_classes": start_clients,
                 "ascwrap_family_start_observed": ascwrap_start,
@@ -113,7 +122,7 @@ def main():
         "provider_publication_runs": provider_runs,
         "verdicts": {
             "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
-            "BREAKPOINT_ARMED_BEFORE_ARMIO_ALLOCATION_PHASE": (
+            "ARMIO_ALLOCATION_OBSERVED_AFTER_ARMING": (
                 "PROVEN (earliest allocation t=%s post-attach, derived from provider runs)"
                 % min(
                     (e["t"] for r in provider_runs.values()
@@ -123,6 +132,7 @@ def main():
                 )
                 if provider_runs else "NO_PROVIDER_RUNS"
             ),
+            "BREAKPOINT_ARMED_BEFORE_FIRST_ARMIO_ALLOCATION": "UNKNOWN (earlier pre-attach allocations possible)",
             "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS-specific alloc not yet identified among ARMIO allocations)",
             "ARMIO_ALLOCATIONS_OBSERVED": ">= %d" % max((r["ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT"] for r in provider_runs.values()), default=0),
             "IOKIT_START_DISPATCHES_OBSERVED": ">= %d" % max((r["START_DISPATCH_HITS_OBSERVED_COUNT"] for r in provider_runs.values()), default=0),

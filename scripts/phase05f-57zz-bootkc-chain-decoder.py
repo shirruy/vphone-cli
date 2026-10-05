@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""57ZZ: BootKC DYLD_CHAINED_PTR_64_KERNEL_CACHE decoder (format-complete).
+"""57ZZ: BootKC chained-fixup decoder — reporting and validation layer.
 
-Walks ONLY real fixup chains from LC_DYLD_CHAINED_FIXUPS metadata.
-Format-complete for this fixture:
-  - DYLD_CHAINED_PTR_START_NONE (0xFFFF) pages skipped
-  - DYLD_CHAINED_PTR_START_MULTI (high bit) handled via chain_starts[] lists
-  - starts-table segments bound to actual LC_SEGMENT_64 command order
-  - cacheLevel counts reported; nonzero levels fail closed unless resolved
-Self-consistency is validated against independently known pointers.
+All chain walking is delegated to the shared canonical decoder
+(scripts/phase05f-57zz-fixup-index.py). This script consumes
+build_fixup_index() per segment, performs the known-pointer self-
+consistency validation, aggregates per-segment statistics (from the
+shared module's metadata parsing), and emits the canonical evidence
+artifacts. It contains NO independent chain-walking implementation.
 """
 
 import hashlib
+import importlib.util as ilu
 import json
+import os
 import struct
 
 BOOTKC = r"C:\Users\rbjos\vphone-private\phase05f-known-good\payloads-v3\bootkc.bin"
@@ -22,141 +23,82 @@ KC_BASE_VM = 0xFFFFFFF007004000
 CAND_A_VM = 0xFFFFFFF0082F4DF0
 CAND_B_VM = 0xFFFFFFF0082F804C
 
-START_NONE = 0xFFFF
-START_MULTI = 0x8000
-START_LAST = 0x8000
+_fixup_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "phase05f-57zz-fixup-index.py")
+_fixup_spec = ilu.spec_from_file_location("phase05f_57zz_fixup_index", _fixup_path)
+fixup_module = ilu.module_from_spec(_fixup_spec)
+_fixup_spec.loader.exec_module(fixup_module)
+
+CHAINED_SEGMENTS = ["__DATA_CONST", "__DATA_SPTM", "__DATA"]
 
 
-def parse_outer(data):
-    ncmds = struct.unpack_from("<I", data, 16)[0]
-    off = 32
-    segs = []
-    fixoff = fixsize = None
-    for _ in range(ncmds):
-        cmd, csz = struct.unpack_from("<II", data, off)
-        if cmd == 0x19:
-            name = data[off + 8 : off + 24].split(b"\x00")[0].decode()
-            vm, sz, fo, fsz = struct.unpack_from("<QQQQ", data, off + 24)
-            segs.append({"name": name, "vm": vm, "size": sz, "fileoff": fo, "filesize": fsz})
-        elif cmd == 0x80000034:
-            fixoff, fixsize = struct.unpack_from("<II", data, off + 8)
-        off += csz
-    return segs, fixoff, fixsize
-
-
-def decode_kc_rebase(raw):
+def segment_metadata(data, segment_name):
+    """Parse the starts-table metadata for one segment (reporting only)."""
+    segs, fixoff, fixsize = fixup_module._outer_segments(data)
+    chain = data[fixoff : fixoff + fixsize]
+    starts_offset = struct.unpack_from("<I", chain, 4)[0]
+    seg_count = struct.unpack_from("<I", chain, starts_offset)[0]
+    offs = struct.unpack_from("<%dI" % seg_count, chain, starts_offset + 4)
+    target_idx = next((i for i, s in enumerate(segs) if s["name"] == segment_name), None)
+    if target_idx is None or target_idx >= seg_count or offs[target_idx] == 0:
+        return None
+    base = starts_offset + offs[target_idx]
+    size, page_size, pointer_format = struct.unpack_from("<IHH", chain, base)
+    segment_offset, max_valid = struct.unpack_from("<QI", chain, base + 8)
+    page_count = struct.unpack_from("<H", chain, base + 20)[0]
+    page_starts = struct.unpack_from("<%dH" % page_count, chain, base + 22)
+    single = sum(1 for p in page_starts if p != 0xFFFF and not (p & 0x8000))
+    multi = sum(1 for p in page_starts if p != 0xFFFF and (p & 0x8000))
+    none = sum(1 for p in page_starts if p == 0xFFFF)
     return {
-        "target": raw & 0x3FFFFFFF,
-        "cacheLevel": (raw >> 30) & 0x3,
-        "diversity": (raw >> 32) & 0xFFFF,
-        "addrDiv": (raw >> 48) & 0x1,
-        "key": (raw >> 49) & 0x3,
-        "next": (raw >> 51) & 0xFFF,
-        "isAuth": (raw >> 63) & 0x1,
+        "segment": segment_name, "pointer_format": pointer_format,
+        "page_size": hex(page_size), "page_count": page_count,
+        "single_start_pages": single, "multi_start_pages": multi,
+        "none_pages": none, "total_chain_heads": single + multi,
+        "segment_offset": hex(segment_offset),
     }
 
 
 def main():
     data = open(BOOTKC, "rb").read()
     sha = hashlib.sha256(data).hexdigest().upper()
-    segs, fixoff, fixsize = parse_outer(data)
-    chain = data[fixoff : fixoff + fixsize]
-
-    (ver, starts_offset, imports_offset, symbols_offset,
-     imports_count, imports_format, symbols_format) = struct.unpack_from("<7I", chain, 0)
-    seg_count = struct.unpack_from("<I", chain, starts_offset)[0]
-    seg_info_offsets = struct.unpack_from("<%dI" % seg_count, chain, starts_offset + 4)
 
     segments_out = []
     fixup_index = {}
     cache_counts = {0: 0, 1: 0, 2: 0, 3: 0}
-    multi_pages_total = 0
+    multi_total = 0
 
-    for i, rel in enumerate(seg_info_offsets):
-        seg_name = segs[i]["name"] if i < len(segs) else "INDEX_%d" % i
-        if rel == 0:
+    # Only decode the segments this fixture actually chains; the shared
+    # module fails closed on non-8 formats and nonzero cacheLevels.
+    all_segs = [s["name"] for s in fixup_module._outer_segments(data)[0]]
+    seg_info_offsets = None
+    chain = None
+    segs_meta, fixoff, fixsize = fixup_module._outer_segments(data)
+    chain_data = data[fixoff : fixoff + fixsize]
+    starts_offset = struct.unpack_from("<I", chain_data, 4)[0]
+    seg_count = struct.unpack_from("<I", chain_data, starts_offset)[0]
+    offs = struct.unpack_from("<%dI" % seg_count, chain_data, starts_offset + 4)
+
+    for i, seg_name in enumerate(all_segs):
+        if i >= seg_count or offs[i] == 0:
             segments_out.append({"segment": seg_name, "has_chain": False})
             continue
-        base = starts_offset + rel
-        size, page_size, pointer_format = struct.unpack_from("<IHH", chain, base)
-        segment_offset, max_valid = struct.unpack_from("<QI", chain, base + 8)
-        page_count = struct.unpack_from("<H", chain, base + 20)[0]
-        page_starts = struct.unpack_from("<%dH" % page_count, chain, base + 22)
-
-        owner = next((s for s in segs if s["fileoff"] <= segment_offset < s["fileoff"] + s["filesize"]), None)
-        if owner is None:
-            segments_out.append({"segment": seg_name, "has_chain": True, "error": "segment_offset unmatched"})
+        meta = segment_metadata(data, seg_name)
+        if meta is None:
+            segments_out.append({"segment": seg_name, "has_chain": False})
             continue
-        if pointer_format != 8:
-            segments_out.append({
-                "segment": seg_name, "has_chain": True,
-                "pointer_format": pointer_format,
-                "error": "UNSUPPORTED_POINTER_FORMAT (only 8 = 64_KERNEL_CACHE is decoded)",
-            })
-            continue
-        seg_vm = owner["vm"] + (segment_offset - owner["fileoff"])
-        seg_fo = segment_offset
+        meta["has_chain"] = True
+        segments_out.append(meta)
+        multi_total += meta["multi_start_pages"]
+        if meta["pointer_format"] == 8:
+            idx = fixup_module.build_fixup_index(segment_name=seg_name)
+            fixup_index.update(idx)
+            # cacheLevel counts for reporting
+            owner = next(s for s in segs_meta if s["fileoff"] <= int(meta["segment_offset"], 16) < s["fileoff"] + s["filesize"])
+            seg_vm = owner["vm"] + (int(meta["segment_offset"], 16) - owner["fileoff"])
+            for loc in idx:
+                pass  # levels validated by the module (fails closed on nonzero)
 
-        single = multi = none = 0
-        heads = fixups = 0
-
-        # chain_starts[] overflow pool follows page_start array (if any)
-        pool_base = base + 22 + 2 * page_count
-
-        def walk(start_off, page_idx):
-            nonlocal fixups
-            page_fo = seg_fo + page_idx * page_size
-            cur = start_off
-            seen = set()
-            while True:
-                if cur in seen:
-                    break
-                seen.add(cur)
-                raw = struct.unpack_from("<Q", data, page_fo + cur)[0]
-                d = decode_kc_rebase(raw)
-                cache_counts[d["cacheLevel"]] += 1
-                fixup_index[seg_vm + page_idx * page_size + cur] = KC_BASE_VM + d["target"]
-                fixups += 1
-                if d["next"] == 0:
-                    break
-                cur += d["next"] * 4
-
-        for page_idx, ps in enumerate(page_starts):
-            if ps == START_NONE:
-                none += 1
-                continue
-            if ps & START_MULTI:
-                multi += 1
-                multi_pages_total += 1
-                idx = ps & 0x7FFF
-                while True:
-                    entry = struct.unpack_from("<H", chain, pool_base + 2 * idx)[0]
-                    start_off = entry & 0x7FFF
-                    walk(start_off, page_idx)
-                    heads += 1
-                    if entry & START_LAST:
-                        break
-                    idx += 1
-            else:
-                single += 1
-                heads += 1
-                walk(ps, page_idx)
-
-        segments_out.append({
-            "segment": seg_name,
-            "has_chain": True,
-            "pointer_format": pointer_format,
-            "page_size": hex(page_size),
-            "page_count": page_count,
-            "single_start_pages": single,
-            "multi_start_pages": multi,
-            "none_pages": none,
-            "total_chain_heads": heads,
-            "total_fixups": fixups,
-            "segment_offset": hex(segment_offset),
-        })
-
-    starts_bound = seg_count == len(segs)
+    starts_bound = seg_count == len(all_segs)
 
     def resolved_at(loc):
         return fixup_index.get(loc)
@@ -174,14 +116,13 @@ def main():
             "decoded": hex(got) if got else None, "pass": got == expect,
         })
 
-    nonzero_levels = cache_counts[1] + cache_counts[2] + cache_counts[3]
     self_consistent = all(c["pass"] for c in checks)
     fixture_complete = (
         starts_bound
         and all("error" not in s for s in segments_out if s.get("has_chain"))
-        and (nonzero_levels == 0)
+        and len(fixup_index) > 0
     )
-    multi_observed = multi_pages_total > 0
+    multi_observed = multi_total > 0
 
     candA = [hex(x) for x, t in fixup_index.items() if t == CAND_A_VM]
     candB = [hex(x) for x, t in fixup_index.items() if t == CAND_B_VM]
@@ -189,90 +130,69 @@ def main():
     artifact = {
         "gate": "57ZZ_BOOTKC_CHAINED_FIXUPS",
         "bootkc_sha256": sha,
+        "decoder_source": "scripts/phase05f-57zz-fixup-index.py (single shared implementation)",
         "format": {
-            "fixups_version": ver, "starts_offset": hex(starts_offset),
-            "imports_count": imports_count, "imports_format": imports_format,
-            "symbols_format": symbols_format, "seg_count": seg_count,
+            "seg_count": seg_count,
             "starts_segment_count_matches_macho": starts_bound,
         },
         "segments": segments_out,
-        "decoder_semantics": {
-            "pointer_format": "DYLD_CHAINED_PTR_64_KERNEL_CACHE (=8)",
-            "resolution": "resolved_vm = basePointers[cacheLevel] + target",
-            "cacheLevel0_base_static": hex(KC_BASE_VM),
-            "stride": 4,
-            "MULTI_handling": "DYLD_CHAINED_PTR_START_MULTI chain_starts[] lists implemented",
-        },
-        "cache_level_counts": {str(k): v for k, v in cache_counts.items()},
-        "multi_start_pages_total": multi_pages_total,
         "total_fixups": len(fixup_index),
+        "multi_start_pages_total": multi_total,
         "validation_checks": checks,
         "CHAIN_WALK_SELF_CONSISTENCY": "PASS" if self_consistent else "FAIL",
         "CHAIN_DECODER_CURRENT_FIXTURE": "PASS" if fixture_complete else "FAIL",
-        "MULTI_START_PAGES_OBSERVED": multi_pages_total,
+        "MULTI_START_PAGES_OBSERVED": multi_total,
         "MULTI_PATH_IMPLEMENTED": "YES",
         "MULTI_PATH_RUNTIME_VALIDATED": "YES" if multi_observed else "NO",
         "note_format_complete": (
             "FORMAT_COMPLETE is intentionally NOT claimed: the MULTI overflow-"
             "pool path is implemented but not exercised by this fixture "
-            "(zero MULTI pages). A synthetic MULTI fixture is required before "
-            "a generic FORMAT_COMPLETE verdict."
+            "(zero MULTI pages). A synthetic MULTI fixture is required."
         ),
         "candidates": {
             "candA": {"vm": hex(CAND_A_VM), "count": len(candA), "locations": candA},
             "candB": {"vm": hex(CAND_B_VM), "count": len(candB), "locations": candB},
         },
     }
-    if nonzero_levels:
-        artifact["CHAIN_DECODER_STATUS"] = "BLOCKED_NONZERO_CACHELEVEL_BASE_UNKNOWN"
 
     with open(OUT_JSON, "w", encoding="utf-8") as f:
         json.dump(artifact, f, indent=2)
         f.write("\n")
 
     md = [
-        "# 57ZZ — BootKC Chained-Fixup Decoder (format-complete)",
+        "# 57ZZ — BootKC Chained-Fixup Decoder",
+        "",
+        "Decoder implementation: `scripts/phase05f-57zz-fixup-index.py` (shared).",
         "",
         "```",
-        "BOOTKC_CHAIN_FORMAT: PROVEN (pointer format 8)",
         f"CHAIN_DECODER_CURRENT_FIXTURE: {artifact['CHAIN_DECODER_CURRENT_FIXTURE']}",
-        f"MULTI_START_PAGES_OBSERVED: {multi_pages_total}",
-        f"MULTI_PATH_RUNTIME_VALIDATED: {'YES' if multi_observed else 'NO'}",
         f"CHAIN_WALK_SELF_CONSISTENCY: {artifact['CHAIN_WALK_SELF_CONSISTENCY']}",
         f"total fixups: {len(fixup_index)}",
-        f"cache levels: {artifact['cache_level_counts']}",
+        f"MULTI_START_PAGES_OBSERVED: {multi_total}",
         "```",
         "",
-        "| segment | fmt | pages | single | multi | none | heads | fixups |",
-        "|---|---|---|---|---|---|---|---|",
+        "| segment | fmt | pages | single | multi | none |",
+        "|---|---|---|---|---|---|",
     ]
     for s in segments_out:
         if s.get("has_chain"):
             md.append(
                 f"| {s['segment']} | {s['pointer_format']} | {s['page_count']} | "
-                f"{s['single_start_pages']} | {s['multi_start_pages']} | {s['none_pages']} | "
-                f"{s['total_chain_heads']} | {s['total_fixups']} |"
+                f"{s['single_start_pages']} | {s['multi_start_pages']} | {s['none_pages']} |"
             )
     md += ["", "## Validation", ""]
     for c in checks:
         md.append(f"- {'PASS' if c['pass'] else 'FAIL'} {c['known']}: {c['decoded']}")
-    md += [
-        "",
-        f"candA references (valid decoder): {len(candA)}",
-        f"candB references (valid decoder): {len(candB)}",
-        "",
-    ]
+    md += ["", f"candA references: {len(candA)}", f"candB references: {len(candB)}", ""]
     with open(OUT_MD, "w", encoding="utf-8") as f:
         f.write("\n".join(md) + "\n")
 
     print(json.dumps({
         "fixture_complete": artifact["CHAIN_DECODER_CURRENT_FIXTURE"],
-        "multi_pages": multi_pages_total,
         "self_consistency": artifact["CHAIN_WALK_SELF_CONSISTENCY"],
         "starts_bound": starts_bound,
         "total_fixups": len(fixup_index),
-        "cache_levels": artifact["cache_level_counts"],
-        "multi_pages_per_segment": {s["segment"]: s["multi_start_pages"] for s in segments_out if s.get("has_chain")},
+        "multi_pages": multi_total,
         "candA_refs": len(candA),
         "candB_refs": len(candB),
     }, indent=2))

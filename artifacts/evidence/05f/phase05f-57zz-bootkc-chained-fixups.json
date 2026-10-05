@@ -1,12 +1,8 @@
 {
   "gate": "57ZZ_BOOTKC_CHAINED_FIXUPS",
   "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "decoder_source": "scripts/phase05f-57zz-fixup-index.py (single shared implementation)",
   "format": {
-    "fixups_version": 0,
-    "starts_offset": "0x1c",
-    "imports_count": 0,
-    "imports_format": 1,
-    "symbols_format": 0,
     "seg_count": 9,
     "starts_segment_count_matches_macho": true
   },
@@ -21,7 +17,6 @@
     },
     {
       "segment": "__DATA_CONST",
-      "has_chain": true,
       "pointer_format": 8,
       "page_size": "0x4000",
       "page_count": 352,
@@ -29,12 +24,11 @@
       "multi_start_pages": 0,
       "none_pages": 18,
       "total_chain_heads": 334,
-      "total_fixups": 516451,
-      "segment_offset": "0xc14000"
+      "segment_offset": "0xc14000",
+      "has_chain": true
     },
     {
       "segment": "__DATA_SPTM",
-      "has_chain": true,
       "pointer_format": 8,
       "page_size": "0x4000",
       "page_count": 19,
@@ -42,8 +36,8 @@
       "multi_start_pages": 0,
       "none_pages": 19,
       "total_chain_heads": 0,
-      "total_fixups": 0,
-      "segment_offset": "0x1194000"
+      "segment_offset": "0x1194000",
+      "has_chain": true
     },
     {
       "segment": "__TEXT_EXEC",
@@ -59,7 +53,6 @@
     },
     {
       "segment": "__DATA",
-      "has_chain": true,
       "pointer_format": 8,
       "page_size": "0x4000",
       "page_count": 152,
@@ -67,29 +60,16 @@
       "multi_start_pages": 0,
       "none_pages": 100,
       "total_chain_heads": 52,
-      "total_fixups": 15723,
-      "segment_offset": "0x3e74000"
+      "segment_offset": "0x3e74000",
+      "has_chain": true
     },
     {
       "segment": "__LINKEDIT",
       "has_chain": false
     }
   ],
-  "decoder_semantics": {
-    "pointer_format": "DYLD_CHAINED_PTR_64_KERNEL_CACHE (=8)",
-    "resolution": "resolved_vm = basePointers[cacheLevel] + target",
-    "cacheLevel0_base_static": "0xfffffff007004000",
-    "stride": 4,
-    "MULTI_handling": "DYLD_CHAINED_PTR_START_MULTI chain_starts[] lists implemented"
-  },
-  "cache_level_counts": {
-    "0": 532174,
-    "1": 0,
-    "2": 0,
-    "3": 0
-  },
-  "multi_start_pages_total": 0,
   "total_fixups": 532174,
+  "multi_start_pages_total": 0,
   "validation_checks": [
     {
       "known": "ASCWrap GOT superclass -> AppleA7IOP class object",
@@ -125,7 +105,7 @@
   "MULTI_START_PAGES_OBSERVED": 0,
   "MULTI_PATH_IMPLEMENTED": "YES",
   "MULTI_PATH_RUNTIME_VALIDATED": "NO",
-  "note_format_complete": "FORMAT_COMPLETE is intentionally NOT claimed: the MULTI overflow-pool path is implemented but not exercised by this fixture (zero MULTI pages). A synthetic MULTI fixture is required before a generic FORMAT_COMPLETE verdict.",
+  "note_format_complete": "FORMAT_COMPLETE is intentionally NOT claimed: the MULTI overflow-pool path is implemented but not exercised by this fixture (zero MULTI pages). A synthetic MULTI fixture is required.",
   "candidates": {
     "candA": {
       "vm": "0xfffffff0082f4df0",

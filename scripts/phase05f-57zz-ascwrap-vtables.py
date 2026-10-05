@@ -43,6 +43,31 @@ MOD_INITS = {
 }
 
 
+def _derive_x2(data, fn_vm):
+    """Derive the x2 adrp+add value from a function's prologue."""
+    import capstone as _cs
+    md = _cs.Cs(_cs.CS_ARCH_ARM64, _cs.CS_MODE_LITTLE_ENDIAN)
+    fo = 0x11E0000 + (fn_vm - 0xFFFFFFF0081E4000)
+    insns = list(md.disasm(data[fo : fo + 0x30], fn_vm))
+    x2 = None
+    for ins in insns:
+        if ins.mnemonic == "adrp" and ins.op_str.startswith("x2,"):
+            try:
+                x2 = int(ins.op_str.split("#")[1], 16)
+            except Exception:
+                pass
+        elif ins.mnemonic == "add" and ins.op_str.startswith("x2,"):
+            parts = [q.strip() for q in ins.op_str.split(",")]
+            if len(parts) == 3 and x2 is not None:
+                try:
+                    x2 += int(parts[2].replace("#", "").replace("0x", ""), 16)
+                except Exception:
+                    pass
+        if ins.mnemonic == "bl":
+            break
+    return x2
+
+
 def derive_vtable_from_mod_init(data, mod_init_vm):
     """Parse adrp/add x16 chain in a mod_init to find the vtable address
     it installs (the final x16 value before pacda/str)."""
@@ -127,11 +152,25 @@ def main():
     IOSERVICE_VTABLE = 0xFFFFFFF007C88580
     ioservice_start = index.get(IOSERVICE_VTABLE + START_SLOT)
 
-    # IMMEDIATE superclass of AppleA7IOP: its mod_init[0] passes x2 =
-    # 0xfffffff00afed638 (the AppleIOP class object) as the superclass
-    # argument to OSMetaClass registration. AppleIOP's registration fn
-    # (0xfffffff0082f9bf4) installs vtable 0xfffffff007d157f8.
-    APPLEIOP_VTABLE = 0xFFFFFFF007D157F8
+    # IMMEDIATE superclass of AppleA7IOP — fully derived in this generator:
+    # 1. A7IOP mod_init[0] (0xfffffff0082f7798) sets x2 (superclass arg) via
+    #    adrp x2,#0xfffffff00afed000; add x2,x2,#0x638 => 0xfffffff00afed638.
+    A7IOP_SUPERCLASS_CLASS_OBJECT = _derive_x2(raw_kc, 0xFFFFFFF0082F7798)
+    # 2. AppleIOP's own registration (0xfffffff0082f9bf4) registers x0 =
+    #    that same class object, and its x16 chain installs the vtable.
+    APPLEIOP_REG = 0xFFFFFFF0082F9BF4
+    APPLEIOP_VTABLE = derive_vtable_from_mod_init(raw_kc, APPLEIOP_REG)
+    # Assertions (fail closed)
+    if A7IOP_SUPERCLASS_CLASS_OBJECT != 0xFFFFFFF00AFED638:
+        raise SystemExit(
+            "A7IOP superclass derivation mismatch: %s != 0xfffffff00afed638"
+            % (hex(A7IOP_SUPERCLASS_CLASS_OBJECT) if A7IOP_SUPERCLASS_CLASS_OBJECT else None)
+        )
+    if APPLEIOP_VTABLE != 0xFFFFFFF007D157F8:
+        raise SystemExit(
+            "AppleIOP vtable derivation mismatch: %s != 0xfffffff007d157f8"
+            % (hex(APPLEIOP_VTABLE) if APPLEIOP_VTABLE else None)
+        )
     appleiop_start = index.get(APPLEIOP_VTABLE + START_SLOT)
 
     # Override attribution compares each class's +0x360 target against its
