@@ -1,0 +1,3058 @@
+{
+  "gate": "ANS_DT_NAME_SEARCH",
+  "generated": "2026-10-05T00:01:16",
+  "capture_event_limit": 60,
+  "capture_termination_reason": "BREAKPOINT_EVENT_LIMIT",
+  "captured_breakpoint_events": 60,
+  "candidates_static": {
+    "A": "0xfffffff00aada0e0",
+    "B": "0xfffffff008387eb8",
+    "nubWRE": "0xfffffff0082f7b40"
+  },
+  "slide": {
+    "slide": 536870912,
+    "runtime_pc": 18446744005700316476,
+    "static_vm": 18446744005163445564,
+    "match_window": 64,
+    "nub_runtime": 18446744005664275264,
+    "nub_bytes": "7f2303d5ff4301d1f65702a9f44f03a9fd7b04a9fd030191f40301aaf50300aa",
+    "pc_anchor_hex_first16": "0bdd40f96b2d40f97f0109eb61ffff54",
+    "tried_windows": [
+      {
+        "window": 16,
+        "result": "not_unique"
+      },
+      {
+        "window": 32,
+        "result": "not_unique"
+      }
+    ]
+  },
+  "events": [
+    {
+      "label": "bp:candB",
+      "t": 0.119,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0f7740",
+        "x2": "0xffffffe30c0f7740",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000150016",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140066160",
+        "+18": "0xffffffe3f2032958",
+        "+20": "0xffffffe3f2030180",
+        "+28": "0xffffffe3f2139bc0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0e7000-0xffffffe30c107000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.135,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0f77e0",
+        "x2": "0xffffffe30c0f77e0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000160017",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140066040",
+        "+18": "0xffffffe3f2030e78",
+        "+20": "0xffffffe3f2032ea8",
+        "+28": "0xffffffe3f213b970",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0e7000-0xffffffe30c107000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.152,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0f5260",
+        "x2": "0xffffffe30c0f5260",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000170018",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140066ec0",
+        "+18": "0xffffffe3f2032cc8",
+        "+20": "0xffffffe3f2031cb0",
+        "+28": "0xffffffe3f213ab60",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0e5000-0xffffffe30c105000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.168,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fda80",
+        "x2": "0xffffffe30c0fda80",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000180019",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000050005",
+        "+10": "0xffffffe140064de0",
+        "+18": "0xffffffe3f2031058",
+        "+20": "0xffffffe3f20335d8",
+        "+28": "0xffffffe3f213af70",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.184,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fcf40",
+        "x2": "0xffffffe30c0fcf40",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x000000000019001a",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065b40",
+        "+18": "0xffffffe3f2033538",
+        "+20": "0xffffffe3f2031620",
+        "+28": "0xffffffe3f2138270",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.202,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fdb20",
+        "x2": "0xffffffe30c0fdb20",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000001a001b",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140065dc0",
+        "+18": "0xffffffe3f2030928",
+        "+20": "0xffffffe3f20331a0",
+        "+28": "0xffffffe3f213bf10",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.218,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fed40",
+        "x2": "0xffffffe30c0fed40",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000001b001c",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065340",
+        "+18": "0xffffffe3f20334e8",
+        "+20": "0xffffffe3f2031e90",
+        "+28": "0xffffffe3f213a520",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.231,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe480",
+        "x2": "0xffffffe30c0fe480",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000001c001d",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140066540",
+        "+18": "0xffffffe3f2033bf0",
+        "+20": "0xffffffe3f20321b0",
+        "+28": "0xffffffe3f213a0c0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.243,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fc540",
+        "x2": "0xffffffe30c0fc540",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000001d001e",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe1400659e0",
+        "+18": "0xffffffe3f20304a0",
+        "+20": "0xffffffe3f20301d0",
+        "+28": "0xffffffe3f213a160",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.256,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fc0e0",
+        "x2": "0xffffffe30c0fc0e0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000001e001f",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065a00",
+        "+18": "0xffffffe3f2030ce8",
+        "+20": "0xffffffe3f20306d0",
+        "+28": "0xffffffe3f213b650",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candA",
+      "t": 0.28,
+      "regs": {
+        "pc": "0xfffffff02aada0e0",
+        "lr": "0xfffffff02aada0bc",
+        "sp": "0xffffffeec238bcc0",
+        "x0": "0xffffffe225eaa800",
+        "x1": "0xffffffe4d8033c80",
+        "x2": "0x0000000000092379",
+        "x3": "0x0000000000000000",
+        "x19": "0xcda1ffe3f2129490",
+        "x20": "0xcda1ffe3f1fee6b0"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027d12aa0",
+        "+08": "0x0000000000000001",
+        "+10": "0xffffffe1401b1e20",
+        "+18": "0xffffffe3f201ebb0",
+        "+20": "0xffffffe3f1fee6b0",
+        "+28": "0xffffffe225e31530",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027d33120",
+        "+08": "0x0000000000040006",
+        "+10": "0xffffffe1401b1520",
+        "+18": "0xffffffe3f1fedc60",
+        "+20": "0xffffffe3f1fefc40",
+        "+28": "0xffffffe225e30310",
+        "+30": "0xffffffe4d8036f20",
+        "+38": "0x0000000000000001",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": []
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.288,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ff420",
+        "x2": "0xffffffe30c0ff420",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000001f0020",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065360",
+        "+18": "0xffffffe3f2030b80",
+        "+20": "0xffffffe3f2032318",
+        "+28": "0xffffffe3f213b600",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.306,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fcea0",
+        "x2": "0xffffffe30c0fcea0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000200021",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140067a20",
+        "+18": "0xffffffe3f20306f8",
+        "+20": "0xffffffe3f2032688",
+        "+28": "0xffffffe3f2138680",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.321,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fcfe0",
+        "x2": "0xffffffe30c0fcfe0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000210022",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140067a60",
+        "+18": "0xffffffe3f2032408",
+        "+20": "0xffffffe3f2030220",
+        "+28": "0xffffffe3f2138360",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.338,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fc860",
+        "x2": "0xffffffe30c0fc860",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000220023",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe1400667a0",
+        "+18": "0xffffffe3f2032f70",
+        "+20": "0xffffffe3f2032750",
+        "+28": "0xffffffe3f21386d0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.355,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe520",
+        "x2": "0xffffffe30c0fe520",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000230024",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140066b40",
+        "+18": "0xffffffe3f2030270",
+        "+20": "0xffffffe3f2032fc0",
+        "+28": "0xffffffe3f2139d50",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.374,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ff2e0",
+        "x2": "0xffffffe30c0ff2e0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000240025",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140064300",
+        "+18": "0xffffffe3f2033f10",
+        "+20": "0xffffffe3f20323e0",
+        "+28": "0xffffffe3f213acf0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.393,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe5c0",
+        "x2": "0xffffffe30c0fe5c0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000250026",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140067ce0",
+        "+18": "0xffffffe3f2031788",
+        "+20": "0xffffffe3f20312d8",
+        "+28": "0xffffffe3f2138220",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.411,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fcae0",
+        "x2": "0xffffffe30c0fcae0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000260027",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140064c60",
+        "+18": "0xffffffe3f2030680",
+        "+20": "0xffffffe3f2032700",
+        "+28": "0xffffffe3f213a570",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.427,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fca40",
+        "x2": "0xffffffe30c0fca40",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000270028",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe1400664a0",
+        "+18": "0xffffffe3f2031dc8",
+        "+20": "0xffffffe3f2030298",
+        "+28": "0xffffffe3f2139800",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.447,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fd580",
+        "x2": "0xffffffe30c0fd580",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000280029",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000050005",
+        "+10": "0xffffffe140066f60",
+        "+18": "0xffffffe3f2031350",
+        "+20": "0xffffffe3f2033768",
+        "+28": "0xffffffe3f213a660",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.466,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe840",
+        "x2": "0xffffffe30c0fe840",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x000000000029002a",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000050005",
+        "+10": "0xffffffe140065d20",
+        "+18": "0xffffffe3f20331c8",
+        "+20": "0xffffffe3f2030ba8",
+        "+28": "0xffffffe3f2139670",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.482,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fde40",
+        "x2": "0xffffffe30c0fde40",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000002a002b",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000070007",
+        "+10": "0xffffffe1400641a0",
+        "+18": "0xffffffe3f2033240",
+        "+20": "0xffffffe3f2032728",
+        "+28": "0xffffffe3f2139620",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.504,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fcb80",
+        "x2": "0xffffffe30c0fcb80",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000002b002c",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000060006",
+        "+10": "0xffffffe140066e60",
+        "+18": "0xffffffe3f2033d80",
+        "+20": "0xffffffe3f2032ca0",
+        "+28": "0xffffffe3f213a930",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.529,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fdbc0",
+        "x2": "0xffffffe30c0fdbc0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000002c002d",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe1400649c0",
+        "+18": "0xffffffe3f2031f80",
+        "+20": "0xffffffe3f2030d38",
+        "+28": "0xffffffe3f2139300",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.549,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe980",
+        "x2": "0xffffffe30c0fe980",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000002d002e",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000040004",
+        "+10": "0xffffffe1400679a0",
+        "+18": "0xffffffe3f2031170",
+        "+20": "0xffffffe3f2032b88",
+        "+28": "0xffffffe3f2139120",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.565,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fc180",
+        "x2": "0xffffffe30c0fc180",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000002e002f",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065380",
+        "+18": "0xffffffe3f2033880",
+        "+20": "0xffffffe3f20329f8",
+        "+28": "0xffffffe3f2139cb0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.618,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ffb00",
+        "x2": "0xffffffe30c0ffb00",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000002f0030",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140067ee0",
+        "+18": "0xffffffe3f2033c68",
+        "+20": "0xffffffe3f2031b98",
+        "+28": "0xffffffe3f2139d00",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.634,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ff560",
+        "x2": "0xffffffe30c0ff560",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000300031",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140064880",
+        "+18": "0xffffffe3f2032200",
+        "+20": "0xffffffe3f2030860",
+        "+28": "0xffffffe3f2139940",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.649,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fd800",
+        "x2": "0xffffffe30c0fd800",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000310032",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140066be0",
+        "+18": "0xffffffe3f2033ad8",
+        "+20": "0xffffffe3f20332b8",
+        "+28": "0xffffffe3f213aa20",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.665,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fea20",
+        "x2": "0xffffffe30c0fea20",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000320033",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe1400657e0",
+        "+18": "0xffffffe3f2030a18",
+        "+20": "0xffffffe3f20332e0",
+        "+28": "0xffffffe3f213bc40",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.681,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ff740",
+        "x2": "0xffffffe30c0ff740",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000330034",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000040004",
+        "+10": "0xffffffe140065b60",
+        "+18": "0xffffffe3f2033650",
+        "+20": "0xffffffe3f20327a0",
+        "+28": "0xffffffe3f213abb0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.697,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fd3a0",
+        "x2": "0xffffffe30c0fd3a0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000340035",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe1400667e0",
+        "+18": "0xffffffe3f2032908",
+        "+20": "0xffffffe3f2031d28",
+        "+28": "0xffffffe3f2139170",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.714,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fc400",
+        "x2": "0xffffffe30c0fc400",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000350036",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe1400672c0",
+        "+18": "0xffffffe3f20337e0",
+        "+20": "0xffffffe3f2031440",
+        "+28": "0xffffffe3f213b290",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.73,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fcc20",
+        "x2": "0xffffffe30c0fcc20",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000360037",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140065260",
+        "+18": "0xffffffe3f20322a0",
+        "+20": "0xffffffe3f2031418",
+        "+28": "0xffffffe3f2139260",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.745,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fd120",
+        "x2": "0xffffffe30c0fd120",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000370038",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe1400679c0",
+        "+18": "0xffffffe3f2030a68",
+        "+20": "0xffffffe3f20338a8",
+        "+28": "0xffffffe3f21392b0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.76,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ff880",
+        "x2": "0xffffffe30c0ff880",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000380039",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065e60",
+        "+18": "0xffffffe3f20338d0",
+        "+20": "0xffffffe3f2031940",
+        "+28": "0xffffffe3f2139710",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.777,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fd1c0",
+        "x2": "0xffffffe30c0fd1c0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x000000000039003a",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065de0",
+        "+18": "0xffffffe3f2033b00",
+        "+20": "0xffffffe3f2031260",
+        "+28": "0xffffffe3f213ae80",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candA",
+      "t": 0.837,
+      "regs": {
+        "pc": "0xfffffff02aada0e0",
+        "lr": "0xfffffff02aada0bc",
+        "sp": "0xffffffed844fbcc0",
+        "x0": "0xffffffe4d8036bc0",
+        "x1": "0xffffffe4d80358a0",
+        "x2": "0x0000000000092309",
+        "x3": "0x0000000000000000",
+        "x19": "0xcda1ffe3f21291c0",
+        "x20": "0xcda1ffe3f1fedcb0"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027ff4440",
+        "+08": "0x0000000000000001",
+        "+10": "0xffffffe1401b0b20",
+        "+18": "0xffffffe3f1feea98",
+        "+20": "0xffffffe3f1fedcb0",
+        "+28": "0xffffffe225e30770",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027d33120",
+        "+08": "0x0000000000030005",
+        "+10": "0xffffffe1401b2200",
+        "+18": "0xffffffe3f1fedf80",
+        "+20": "0xffffffe3f1fec180",
+        "+28": "0xffffffe225e33bf0",
+        "+30": "0xffffffe4d8036f20",
+        "+38": "0x0000000000000001",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": []
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.847,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe020",
+        "x2": "0xffffffe30c0fe020",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000003a003b",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000040004",
+        "+10": "0xffffffe140064040",
+        "+18": "0xffffffe3f2031c60",
+        "+20": "0xffffffe3f2031be8",
+        "+28": "0xffffffe3f213bc90",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.862,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fd6c0",
+        "x2": "0xffffffe30c0fd6c0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000003b003c",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140067f60",
+        "+18": "0xffffffe3f2032390",
+        "+20": "0xffffffe3f2033c18",
+        "+28": "0xffffffe3f2139440",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 0.878,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fdd00",
+        "x2": "0xffffffe30c0fdd00",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000003c003d",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140065a80",
+        "+18": "0xffffffe3f2032430",
+        "+20": "0xffffffe3f2033970",
+        "+28": "0xffffffe3f213b380",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candA",
+      "t": 0.907,
+      "regs": {
+        "pc": "0xfffffff02aada0e0",
+        "lr": "0xfffffff02aada0bc",
+        "sp": "0xffffffed844fbcc0",
+        "x0": "0xffffffe4d8034340",
+        "x1": "0xffffffe4d8037a60",
+        "x2": "0x0000000000092302",
+        "x3": "0x0000000000000000",
+        "x19": "0xcda1ffe3f21287c0",
+        "x20": "0xcda1ffe3f1fed080"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027ff3df8",
+        "+08": "0x0000000000000001",
+        "+10": "0xffffffe1401b2960",
+        "+18": "0xffffffe3f1fedcd8",
+        "+20": "0xffffffe3f1fed080",
+        "+28": "0xffffffe225e31210",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027d33120",
+        "+08": "0x0000000000030005",
+        "+10": "0xffffffe1401b37e0",
+        "+18": "0xffffffe3f1fef178",
+        "+20": "0xffffffe3f1fed788",
+        "+28": "0xffffffe225e32570",
+        "+30": "0xffffffe4d8036f20",
+        "+38": "0x0000000000000001",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": []
+    },
+    {
+      "label": "bp:candA",
+      "t": 1.03,
+      "regs": {
+        "pc": "0xfffffff02aada0e0",
+        "lr": "0xfffffff02aada0bc",
+        "sp": "0xffffffefffedbcc0",
+        "x0": "0xffffffe30c0f7a60",
+        "x1": "0xffffffe4d8035c00",
+        "x2": "0x000000000009236f",
+        "x3": "0x0000000000000000",
+        "x19": "0xcda1ffe3f212ac00",
+        "x20": "0xcda1ffe3f1fef0b0"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027f96c00",
+        "+08": "0x0000000000000001",
+        "+10": "0xffffffe1401b2ec0",
+        "+18": "0xffffffe3f1fecef0",
+        "+20": "0xffffffe3f1fef0b0",
+        "+28": "0xffffffe225e30b80",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027d33120",
+        "+08": "0x0000000000040006",
+        "+10": "0xffffffe1401b3b80",
+        "+18": "0xffffffe3f1fed1e8",
+        "+20": "0xffffffe3f1fee9d0",
+        "+28": "0xffffffe225e33330",
+        "+30": "0xffffffe4d8036f20",
+        "+38": "0x0000000000000001",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": []
+    },
+    {
+      "label": "bp:candA",
+      "t": 1.036,
+      "regs": {
+        "pc": "0xfffffff02aada0e0",
+        "lr": "0xfffffff02aada0bc",
+        "sp": "0xffffffefffedbcc0",
+        "x0": "0xffffffe3f21af3d0",
+        "x1": "0xffffffe4d8035c00",
+        "x2": "0x000000000009236f",
+        "x3": "0x0000000000000000",
+        "x19": "0xcda1ffe3f212ac00",
+        "x20": "0xcda1ffe3f1fed8f0"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027f963f0",
+        "+08": "0x0000000000000001",
+        "+10": "0xffffffe1401b0400",
+        "+18": "0xffffffe3f1fef470",
+        "+20": "0xffffffe3f1fed8f0",
+        "+28": "0xffffffe225e30bd0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027d33120",
+        "+08": "0x0000000000040006",
+        "+10": "0xffffffe1401b3b80",
+        "+18": "0xffffffe3f1fed1e8",
+        "+20": "0xffffffe3f1fee9d0",
+        "+28": "0xffffffe225e33330",
+        "+30": "0xffffffe4d8036f20",
+        "+38": "0x0000000000000001",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": []
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.066,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fc900",
+        "x2": "0xffffffe30c0fc900",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000003d003e",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000040004",
+        "+10": "0xffffffe1400641e0",
+        "+18": "0xffffffe3f20324a8",
+        "+20": "0xffffffe3f2033c40",
+        "+28": "0xffffffe3f21399e0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.085,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ff600",
+        "x2": "0xffffffe30c0ff600",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000003e003f",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140064d00",
+        "+18": "0xffffffe3f2032890",
+        "+20": "0xffffffe3f2032840",
+        "+28": "0xffffffe3f2139490",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.145,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ff920",
+        "x2": "0xffffffe30c0ff920",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000003f0040",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140066ea0",
+        "+18": "0xffffffe3f20328e0",
+        "+20": "0xffffffe3f20328b8",
+        "+28": "0xffffffe3f2139da0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.161,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fc220",
+        "x2": "0xffffffe30c0fc220",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000400041",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140067a80",
+        "+18": "0xffffffe3f2032a70",
+        "+20": "0xffffffe3f2032a48",
+        "+28": "0xffffffe3f213b6a0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.181,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ffba0",
+        "x2": "0xffffffe30c0ffba0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000410042",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140064760",
+        "+18": "0xffffffe3f201c4a0",
+        "+20": "0xffffffe3f201f3f8",
+        "+28": "0xffffffe3f213b6f0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.203,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe340",
+        "x2": "0xffffffe30c0fe340",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000420043",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140067f80",
+        "+18": "0xffffffe3f201c928",
+        "+20": "0xffffffe3f201e7a0",
+        "+28": "0xffffffe3f213b880",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.22,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0fe3e0",
+        "x2": "0xffffffe30c0fe3e0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000430044",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065e00",
+        "+18": "0xffffffe3f201f9c0",
+        "+20": "0xffffffe3f201e1d8",
+        "+28": "0xffffffe3f2138400",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.237,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0e9120",
+        "x2": "0xffffffe30c0e9120",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000440045",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140065e20",
+        "+18": "0xffffffe3f201c6f8",
+        "+20": "0xffffffe3f201ede0",
+        "+28": "0xffffffe3f2137a60",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0d9000-0xffffffe30c0f9000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.268,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0e9440",
+        "x2": "0xffffffe30c0e9440",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000450046",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140064360",
+        "+18": "0xffffffe3f201c8d8",
+        "+20": "0xffffffe3f201ea48",
+        "+28": "0xffffffe3f21340e0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0d9000-0xffffffe30c0f9000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.284,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0eb560",
+        "x2": "0xffffffe30c0eb560",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000460047",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe1400664e0",
+        "+18": "0xffffffe3f201c518",
+        "+20": "0xffffffe3f201c310",
+        "+28": "0xffffffe3f2134680",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0db000-0xffffffe30c0fb000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.299,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0e89a0",
+        "x2": "0xffffffe30c0e89a0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000470048",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000050005",
+        "+10": "0xffffffe140065840",
+        "+18": "0xffffffe3f201ff38",
+        "+20": "0xffffffe3f201d738",
+        "+28": "0xffffffe3f2134180",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0d8000-0xffffffe30c0f8000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.315,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ebba0",
+        "x2": "0xffffffe30c0ebba0",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x0000000000480049",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140065800",
+        "+18": "0xffffffe3f201e688",
+        "+20": "0xffffffe3f201cc20",
+        "+28": "0xffffffe3f2134e00",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0db000-0xffffffe30c0fb000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.33,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ea840",
+        "x2": "0xffffffe30c0ea840",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x000000000049004a",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe1400671e0",
+        "+18": "0xffffffe3f201d918",
+        "+20": "0xffffffe3f201f880",
+        "+28": "0xffffffe3f2136520",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0da000-0xffffffe30c0fa000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.347,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0eb600",
+        "x2": "0xffffffe30c0eb600",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000004a004b",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000020002",
+        "+10": "0xffffffe140065860",
+        "+18": "0xffffffe3f201f088",
+        "+20": "0xffffffe3f201d440",
+        "+28": "0xffffffe3f21346d0",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0db000-0xffffffe30c0fb000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    },
+    {
+      "label": "bp:candB",
+      "t": 1.362,
+      "regs": {
+        "pc": "0xfffffff028387eb8",
+        "lr": "0xfffffff028388144",
+        "sp": "0xffffffeec237bba0",
+        "x0": "0xffffffe4d8036f20",
+        "x1": "0xffffffe30c0ebc40",
+        "x2": "0xffffffe30c0ebc40",
+        "x3": "0x0000000000000000",
+        "x19": "0xffffffe4d8036f20",
+        "x20": "0xffffffe30bee9030"
+      },
+      "mem_x0": {
+        "+00": "0xfffffff027fa9100",
+        "+08": "0x00000000004b004c",
+        "+10": "0xffffffe1401b05a0",
+        "+18": "0xffffffe3f1fee250",
+        "+20": "0xffffffe3f1feec00",
+        "+28": "0xffffffe225e327a0",
+        "+30": "0xffffffe30c0f7ce0",
+        "+38": "0x0000000000000003",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x0": [],
+      "mem_x1": {
+        "+00": "0xfffffff027cc90f8",
+        "+08": "0x0000000000030003",
+        "+10": "0xffffffe140064460",
+        "+18": "0xffffffe3f201ed90",
+        "+20": "0xffffffe3f201d3a0",
+        "+28": "0xffffffe3f2134400",
+        "+30": "0x0000000000000000",
+        "+38": "0x0000000000000000",
+        "+40": "0x0000000000000000",
+        "+f8": "0x0000000000000000"
+      },
+      "strings_x1": [],
+      "ans_string_search": {
+        "range": "0xffffffe30c0db000-0xffffffe30c0fb000",
+        "hits": [],
+        "count": 0
+      },
+      "ascwrap_compat_search": {
+        "hits": [],
+        "count": 0
+      }
+    }
+  ],
+  "notes": [
+    "[0000.000] attached",
+    "[0000.000] initial pc=0xfffffff02a556d3c",
+    "[0000.028] slide=0x0000000020000000 static_anchor=0xfffffff00a556d3c runtime_pc=0xfffffff02a556d3c attempts=1",
+    "[0000.028] candA=0xfffffff02aada0e0 candB=0xfffffff028387eb8 nubWRE=0xfffffff0282f7b40",
+    "[0000.029] hbreak candA @ 0xfffffff02aada0e0 installed",
+    "[0000.029] hbreak candB @ 0xfffffff028387eb8 installed",
+    "[0000.029] hbreak nubWRE @ 0xfffffff0282f7b40 installed",
+    "[0000.120] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0f7740",
+    "[0000.136] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0f77e0",
+    "[0000.154] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0f5260",
+    "[0000.169] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fda80",
+    "[0000.185] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fcf40",
+    "[0000.204] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fdb20",
+    "[0000.219] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fed40",
+    "[0000.232] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe480",
+    "[0000.244] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fc540",
+    "[0000.259] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fc0e0",
+    "[0000.283] hit bp:candA pc=0xfffffff02aada0e0 x0=0xffffffe225eaa800 x1=0xffffffe4d8033c80",
+    "[0000.291] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ff420",
+    "[0000.307] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fcea0",
+    "[0000.323] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fcfe0",
+    "[0000.341] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fc860",
+    "[0000.357] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe520",
+    "[0000.377] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ff2e0",
+    "[0000.396] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe5c0",
+    "[0000.412] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fcae0",
+    "[0000.428] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fca40",
+    "[0000.450] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fd580",
+    "[0000.468] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe840",
+    "[0000.486] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fde40",
+    "[0000.510] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fcb80",
+    "[0000.532] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fdbc0",
+    "[0000.551] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe980",
+    "[0000.568] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fc180",
+    "[0000.620] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ffb00",
+    "[0000.635] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ff560",
+    "[0000.650] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fd800",
+    "[0000.667] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fea20",
+    "[0000.682] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ff740",
+    "[0000.698] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fd3a0",
+    "[0000.716] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fc400",
+    "[0000.732] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fcc20",
+    "[0000.746] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fd120",
+    "[0000.761] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ff880",
+    "[0000.779] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fd1c0",
+    "[0000.841] hit bp:candA pc=0xfffffff02aada0e0 x0=0xffffffe4d8036bc0 x1=0xffffffe4d80358a0",
+    "[0000.848] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe020",
+    "[0000.864] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fd6c0",
+    "[0000.879] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fdd00",
+    "[0000.910] hit bp:candA pc=0xfffffff02aada0e0 x0=0xffffffe4d8034340 x1=0xffffffe4d8037a60",
+    "[0001.031] hit bp:candA pc=0xfffffff02aada0e0 x0=0xffffffe30c0f7a60 x1=0xffffffe4d8035c00",
+    "[0001.038] hit bp:candA pc=0xfffffff02aada0e0 x0=0xffffffe3f21af3d0 x1=0xffffffe4d8035c00",
+    "[0001.069] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fc900",
+    "[0001.086] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ff600",
+    "[0001.147] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ff920",
+    "[0001.164] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fc220",
+    "[0001.182] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ffba0",
+    "[0001.205] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe340",
+    "[0001.222] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0fe3e0",
+    "[0001.237] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0e9120",
+    "[0001.269] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0e9440",
+    "[0001.286] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0eb560",
+    "[0001.301] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0e89a0",
+    "[0001.316] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ebba0",
+    "[0001.331] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ea840",
+    "[0001.348] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0eb600",
+    "[0001.364] hit bp:candB pc=0xfffffff028387eb8 x0=0xffffffe4d8036f20 x1=0xffffffe30c0ebc40"
+  ],
+  "classification": "BOTH_WITH_DISTINCT_RECEIVERS"
+}

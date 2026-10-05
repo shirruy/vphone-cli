@@ -1,0 +1,107 @@
+{
+  "gate": "57ZZ_ANS_DT_NAME_CORRELATION",
+  "method": "GDB memory search for 'ans\\0' and 'iop,ascwrap' in \u00b11MB window around each AppleARMIODevice allocator x1 dictionary",
+  "runs": {
+    "ans-name-v6": {
+      "ARMIO_ALLOCATIONS_OBSERVED": ">= 55",
+      "START_DISPATCHES_OBSERVED": ">= 5",
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "ans_string_hits": 0,
+      "ascwrap_compat_hits": 0,
+      "search_ranges": [
+        "0xffffffe30c0d9000-0xffffffe30c0f9000",
+        "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "0xffffffe30c0e5000-0xffffffe30c105000",
+        "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "0xffffffe30c0e7000-0xffffffe30c107000",
+        "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "0xffffffe30c0db000-0xffffffe30c0fb000",
+        "0xffffffe30c0da000-0xffffffe30c0fa000",
+        "0xffffffe30c0d8000-0xffffffe30c0f8000"
+      ],
+      "search_window": "\u00b11MB around each allocator x1 (v7) / \u00b164KB (v6)",
+      "start_client_classes": [
+        "other",
+        "other",
+        "other",
+        "other",
+        "other"
+      ]
+    },
+    "ans-name-v7": {
+      "ARMIO_ALLOCATIONS_OBSERVED": ">= 27",
+      "START_DISPATCHES_OBSERVED": ">= 33",
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "ans_string_hits": 0,
+      "ascwrap_compat_hits": 0,
+      "search_ranges": [
+        "0xffffffde1bea4000-0xffffffde1c0a4000",
+        "0xffffffde1bea7000-0xffffffde1c0a7000",
+        "0xffffffde1be98000-0xffffffde1c098000",
+        "0xffffffde1be9a000-0xffffffde1c09a000",
+        "0xffffffde1bea5000-0xffffffde1c0a5000",
+        "0xffffffde1bea6000-0xffffffde1c0a6000",
+        "0xffffffde1be99000-0xffffffde1c099000"
+      ],
+      "search_window": "\u00b11MB around each allocator x1 (v7) / \u00b164KB (v6)",
+      "start_client_classes": [
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other"
+      ]
+    }
+  },
+  "findings": {
+    "ARMIO_ALLOCATIONS_OBSERVED": ">= 82 (across runs, event-cap truncated)",
+    "ANS_STRING_FOUND_NEAR_ANY_ALLOC": false,
+    "ASCCWRAP_COMPAT_FOUND_NEAR_ANY_ALLOC": false,
+    "ANS_SPECIFIC_ALLOCATION_IDENTIFIED": false,
+    "negative_result_interpretation": "Neither 'ans\\0' nor 'iop,ascwrap' was found within \u00b11MB of any observed ARMIO allocator dictionary. Three hypotheses remain: (a) the ANS DT node's allocation was outside the truncated capture window; (b) DT entry name strings are stored in a different kernel heap zone than the property dictionaries; (c) the property dictionary passed at allocation time does not contain the DT name property at all (the name is set later or via a different path). This does NOT prove the ANS node was not allocated."
+  },
+  "verdicts": {
+    "ARMIO_ALLOCATION_PHASE_ACTIVE": "PROVEN",
+    "ANS_STRING_SEARCH_NEGATIVE": "PROVEN (no hits in \u00b11MB of observed dicts)",
+    "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
+    "ANS_SPECIFIC_ARMIO_ALLOCATION": "UNKNOWN (not found in observed subset; search method has structural limits)",
+    "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN (cannot classify without ANS allocation identity)",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE"
+  },
+  "next_approaches": [
+    "1. Un-truncated allocator-only run (remove the 60-event cap; capture all ~102 DT allocations, search each)",
+    "2. Instrument the DT plane name accessor (IORegistryEntry::getName / compareName) with an ANS filter",
+    "3. Search the kernel OSSymbol table for the interned 'ans' symbol and trace its reference to the owning DT entry",
+    "4. Instrument the registerService() path with a provider-name check (ARMIODevice store the name early)"
+  ]
+}
