@@ -12,7 +12,7 @@ import threading
 import time
 
 OUT_DIR = os.environ.get("P2_OUT_DIR", ".")
-ALLOC_RET_SITE = 0xFFFFFFF0082F79F8  # A7IOPNub vtable store #2
+ALLOC_RET_SITE = 0xFFFFFFF00AAC6EB4  # after getParent call; capture x0 result
 SLIDE = 0x20000000
 
 KNOWN_VTABLES = {
