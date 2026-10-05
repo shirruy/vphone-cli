@@ -1,0 +1,21 @@
+{
+  "gate": "58B_ASCWRAP_ALLOC_CALLER_IDENTIFIED",
+  "lr_runtime": "0xfffffff02aa50cd8",
+  "lr_static": "0xfffffff00aa50cd8",
+  "caller_context_disassembly": [
+    "0x...aa50cb8: ldr x16,[x0]; autda; ldr x8,[x16,#0x68]!  # MetaClass vtable+0x68 = alloc virtual",
+    "0x...aa50cd4: blraa x8,x16                              # THE allocator call",
+    "0x...aa50cd8: ldr x8,[x19,#8]; ldadd w9,w8,[x8+0x10]    # retain (atomic +1) - LR lands here",
+    "nearby: casl spinlock guards (0x...aa50cac), b.ne retry -> concurrent IOService matching dispatch",
+    "0x...aa50cec-0x...aa50d08: failure path returns null after releasing the lock"
+  ],
+  "interpretation": "The caller is kernel IOService matching dispatch code (concurrent, lock-guarded, MetaClass virtual alloc + retain). This is NOT a class-registration self-test. The ASCWrapV6 personality match FIRED and the matching machinery allocated an instance.",
+  "updated_chain": {
+    "personality_match": "PROVEN FIRED (caller is matching dispatch)",
+    "allocation": "SUCCESS (1 instance, t~3.3s)",
+    "init": "NOT REACHED",
+    "start": "NOT REACHED"
+  },
+  "remaining_gap": "The matching dispatch allocated the instance but never invoked init. The retain immediately after alloc, then no init, indicates the instance was created and either (a) stored for later init that never came, or (b) the matching cycle was interrupted/restarted (the casl retry loop hints at concurrent matching cancellation).",
+  "next_probe": "Capture x19 (the allocated instance pointer) at the LR site and set a watchpoint on its vtable slot or lifecycle state to see whether it is released without init. Alternatively break at OSMetaClass::release / free for the ASCWrap class to catch the premature teardown."
+}

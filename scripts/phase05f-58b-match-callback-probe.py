@@ -13,7 +13,7 @@ import time
 
 OUT_DIR = os.environ.get("P2_OUT_DIR", ".")
 
-CALLBACK_STATIC = 0xFFFFFFF00AAD7C6C  # ASCWrapV6 real start (stored-ptr +0x360)
+CALLBACK_STATIC = 0xFFFFFFF0082F34A8  # ASCWrap allocator: capture LR caller
 CALLSITE_STATIC = 0xFFFFFFF00AAD7EFC
 SLIDE = 0x20000000
 MAX_HITS = 200
@@ -94,8 +94,26 @@ class MatchCallbackProbe(gdb.Command):
             except gdb.error as e:
                 gdb.write(f"probe58e: continue error: {e}\n")
                 break
-            x0 = int(gdb.parse_and_eval("$x0")) & 0xFFFFFFFFFFFFFFFF
-            rec = {"n": n, "t": round(time.time() - t0, 3), "x0": f"0x{x0:x}"}
+            try:
+                x0 = int(gdb.parse_and_eval("$x0")) & 0xFFFFFFFFFFFFFFFF
+            except (gdb.error, TypeError):
+                x0 = 0
+            try:
+                x2 = int(gdb.parse_and_eval("$x2")) & 0xFFFFFFFFFFFFFFFF
+            except (gdb.error, TypeError):
+                x2 = 0
+            try:
+                lr = int(gdb.parse_and_eval("$lr")) & 0xFFFFFFFFFFFFFFFF
+            except (gdb.error, TypeError):
+                lr = 0
+            rec = {"n": n, "t": round(time.time() - t0, 3), "x0": f"0x{x0:x}",
+                   "x2_arg": f"0x{x2:x}", "lr": f"0x{lr:x}",
+                   "lr_static": f"0x{lr - SLIDE:x}" if lr > SLIDE else None}
+            events.append(rec)
+            gdb.write(f"probe58e: n={n} lr=0x{lr:x}\n")
+            hits += 1
+            n += 1
+            continue
             vt = read_u64(x0)
             if vt:
                 rec["vt_static"] = f"0x{vt - SLIDE:x}"
