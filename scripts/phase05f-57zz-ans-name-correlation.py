@@ -89,9 +89,9 @@ def main():
             "ANS_SPECIFIC_ALLOCATION_IDENTIFIED": False,
             "negative_result_interpretation": (
                 "Neither 'ans\\0' nor 'iop,ascwrap' was found in the searched "
-                "windows near the observed ARMIO allocator arg1 objects. The v6 "
-                "run searched ±64KB (55/55 successful searches); the v7 run "
-                "searched ±1MB (27/27 successful searches). Zero search errors. "
+                "windows near the observed ARMIO allocator arg1 objects. "
+                "Per-run search results are derived from the runs data above; "
+                "total ANS search errors: %d; total ASCWrap search errors: %d. " % (total_ans_errors, total_asc_errors) +
                 "The semantic role of arg1 is UNKNOWN, so this proves absence "
                 "in searched memory near arg1 objects only - it does not prove "
                 "anything about DT property dictionaries specifically. These are "
@@ -103,10 +103,19 @@ def main():
         },
         "verdicts": {
             "ARMIO_ALLOCATION_PHASE_ACTIVE": "PROVEN",
-            "ANS_STRING_SEARCH_NEGATIVE": (
-                "PROVEN_IN_SEARCHED_WINDOWS" if total_ans_errors == 0 and total_asc_errors == 0 and total_ans == 0 and total_asc == 0
-                else "FAIL_SEARCH_ERRORS_PRESENT" if total_ans_errors > 0 or total_asc_errors > 0
-                else "FAIL_HITS_PRESENT"
+            "ANS_STRING_SEARCH_RESULT": (
+                "NEGATIVE_IN_SEARCHED_WINDOWS" if total_ans_errors == 0 and total_ans == 0
+                else "FAIL_SEARCH_ERRORS_PRESENT" if total_ans_errors > 0
+                else "HITS_PRESENT"
+            ),
+            "ASCWRAP_COMPAT_SEARCH_RESULT": (
+                "NEGATIVE_IN_SEARCHED_WINDOWS" if total_asc_errors == 0 and total_asc == 0
+                else "FAIL_SEARCH_ERRORS_PRESENT" if total_asc_errors > 0
+                else "HITS_PRESENT"
+            ),
+            "PROXIMITY_SEARCH_COMBINED_RESULT": (
+                "BOTH_NEGATIVE" if total_ans == 0 and total_asc == 0 and total_ans_errors == 0 and total_asc_errors == 0
+                else "MIXED_OR_ERRORS"
             ),
             "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
             "ANS_SPECIFIC_ARMIO_ALLOCATION": "UNKNOWN (not found in observed subset; search method has structural limits)",
@@ -138,7 +147,7 @@ def main():
         "",
         "GDB hardware breakpoints on the AppleARMIODevice allocator and the",
         "callsite-proven +0x360 start dispatch. At each allocator hit, searched",
-        "±1MB around the x1 dictionary for 'ans\\0' and 'iop,ascwrap'.",
+        "memory near allocator arg1 objects (semantic role UNKNOWN) for 'ans\\0' and 'iop,ascwrap'.",
         "",
         "## Result",
         "",

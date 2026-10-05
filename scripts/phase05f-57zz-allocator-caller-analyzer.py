@@ -81,29 +81,41 @@ def find_fixup_refs(index, target_vm):
 
 
 def find_class_xrefs(data, class_vm):
-    """Scan AppleARMPlatform exec for adrp+add pairs targeting the class object."""
+    """Scan __TEXT_EXEC (chunked) for adrp+add pairs targeting the class object.
+
+    Chunked disassembly (4KB pages, skip all-zero) avoids the single-stream
+    disasm failure mode across the ~42MB segment.
+    """
     md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
-    seg = EXEC_SEGMENTS[0]  # single __TEXT_EXEC covers all exec code
-    insns = list(md.disasm(data[seg["fo"] : seg["fo"] + seg["size"]], seg["vm"]))
-    pages = {}
+    seg = EXEC_SEGMENTS[0]
     hits = []
-    for ins in insns:
-        if ins.mnemonic == "adrp":
-            parts = [p.strip() for p in ins.op_str.split(",")]
-            try:
-                pages[parts[0]] = int(parts[1].replace("#", ""), 16)
-            except Exception:
-                pass
-        elif ins.mnemonic == "add":
-            parts = [p.strip() for p in ins.op_str.split(",")]
-            if len(parts) == 3 and parts[0] == parts[1] and parts[0] in pages:
+    CHUNK = 0x1000
+    for b in range(0, seg["size"], CHUNK):
+        chunk = data[seg["fo"] + b : seg["fo"] + b + CHUNK]
+        if chunk.count(0) == len(chunk):
+            continue
+        try:
+            insns = list(md.disasm(chunk, seg["vm"] + b))
+        except Exception:
+            continue
+        pages = {}
+        for ins in insns:
+            if ins.mnemonic == "adrp":
+                parts = [q.strip() for q in ins.op_str.split(",")]
                 try:
-                    if pages[parts[0]] + int(parts[2].replace("#", "").replace("0x", ""), 16) == class_vm:
-                        hits.append(hex(ins.address))
+                    pages[parts[0]] = int(parts[1].replace("#", ""), 16)
                 except Exception:
                     pass
-        if ins.mnemonic in ("bl", "blr", "br", "ret", "b"):
-            pages = {}
+            elif ins.mnemonic == "add":
+                parts = [q.strip() for q in ins.op_str.split(",")]
+                if len(parts) == 3 and parts[0] == parts[1] and parts[0] in pages:
+                    try:
+                        if pages[parts[0]] + int(parts[2].replace("#", "").replace("0x", ""), 16) == class_vm:
+                            hits.append(hex(ins.address))
+                    except Exception:
+                        pass
+            if ins.mnemonic in ("bl", "blr", "br", "ret", "b"):
+                pages = {}
     return hits
 
 
@@ -139,6 +151,20 @@ def main():
     alloc_fixup = find_fixup_refs(all_fixups, ALLOCATOR_VM)
     thunk_fixup = find_fixup_refs(all_fixups, THUNK_VM)
     class_xrefs = find_class_xrefs(data, ARMIO_CLASS_OBJECT)
+
+    # Fail-closed anchor assertion: the seven previously established xrefs
+    # must still be present. If any disappears, the scanner regressed.
+    EXPECTED_XREFS = {
+        "0xfffffff008387ef0", "0xfffffff008388ce8", "0xfffffff008388d68",
+        "0xfffffff008388dd8", "0xfffffff008388e34", "0xfffffff00838a1b4",
+        "0xfffffff00838a208",
+    }
+    missing = EXPECTED_XREFS - set(class_xrefs)
+    if missing:
+        raise SystemExit(
+            "CLASS_XREF_ANCHOR_REGRESSION: %d expected xrefs missing: %s"
+            % (len(missing), sorted(missing))
+        )
     thunk_insns = analyze_thunk(data)
 
     # Fail-closed thunk register-flow assertion
@@ -182,7 +208,9 @@ def main():
             "FIXUP_REFERENCE_TO_THUNK": "NOT_OBSERVED" if not thunk_fixup else "OBSERVED",
             "INDIRECT_CALL_MECHANISM": "UNKNOWN",
             "OSMETACLASS_DISPATCH": "SUPPORTED_HYPOTHESIS_ONLY (not proven)",
-            "ALLOCATOR_ARG1_SOURCE": "PROVEN_THUNK_INPUT_X2 (fail-closed assertion passed)",
+            "THUNK_X2_TO_ALLOCATOR_X1": "PROVEN_STATIC (fail-closed assertion passed)",
+            "RUNTIME_ALLOCATOR_ENTRY_VIA_THUNK": "UNKNOWN (not yet proven; indirect entry bypassing thunk is possible)",
+            "ALLOCATOR_ARG1_SOURCE_GLOBAL": "UNKNOWN (depends on runtime entry path)",
             "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate target)",
         },
     }

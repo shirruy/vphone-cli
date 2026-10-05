@@ -16,16 +16,16 @@
       "asc_search_errors": 0,
       "ascwrap_compat_hits": 0,
       "search_ranges": [
-        "0xffffffe30c0d9000-0xffffffe30c0f9000",
-        "0xffffffe30c0d8000-0xffffffe30c0f8000",
-        "0xffffffe30c0ed000-0xffffffe30c10d000",
-        "0xffffffe30c0da000-0xffffffe30c0fa000",
-        "0xffffffe30c0db000-0xffffffe30c0fb000",
-        "0xffffffe30c0ee000-0xffffffe30c10e000",
-        "0xffffffe30c0ec000-0xffffffe30c10c000",
         "0xffffffe30c0ef000-0xffffffe30c10f000",
+        "0xffffffe30c0ec000-0xffffffe30c10c000",
+        "0xffffffe30c0e7000-0xffffffe30c107000",
+        "0xffffffe30c0ee000-0xffffffe30c10e000",
+        "0xffffffe30c0ed000-0xffffffe30c10d000",
+        "0xffffffe30c0d8000-0xffffffe30c0f8000",
         "0xffffffe30c0e5000-0xffffffe30c105000",
-        "0xffffffe30c0e7000-0xffffffe30c107000"
+        "0xffffffe30c0db000-0xffffffe30c0fb000",
+        "0xffffffe30c0da000-0xffffffe30c0fa000",
+        "0xffffffe30c0d9000-0xffffffe30c0f9000"
       ],
       "search_window": "\u00b11MB around each allocator x1 (v7) / \u00b164KB (v6)",
       "start_client_classes": [
@@ -50,13 +50,13 @@
       "asc_search_errors": 0,
       "ascwrap_compat_hits": 0,
       "search_ranges": [
-        "0xffffffde1bea6000-0xffffffde1c0a6000",
-        "0xffffffde1be98000-0xffffffde1c098000",
+        "0xffffffde1bea4000-0xffffffde1c0a4000",
+        "0xffffffde1bea5000-0xffffffde1c0a5000",
         "0xffffffde1bea7000-0xffffffde1c0a7000",
         "0xffffffde1be99000-0xffffffde1c099000",
-        "0xffffffde1bea5000-0xffffffde1c0a5000",
-        "0xffffffde1bea4000-0xffffffde1c0a4000",
-        "0xffffffde1be9a000-0xffffffde1c09a000"
+        "0xffffffde1be9a000-0xffffffde1c09a000",
+        "0xffffffde1be98000-0xffffffde1c098000",
+        "0xffffffde1bea6000-0xffffffde1c0a6000"
       ],
       "search_window": "\u00b11MB around each allocator x1 (v7) / \u00b164KB (v6)",
       "start_client_classes": [
@@ -102,11 +102,13 @@
     "TOTAL_SEARCH_ERRORS": 0,
     "ASCCWRAP_COMPAT_FOUND_NEAR_ANY_ALLOC": false,
     "ANS_SPECIFIC_ALLOCATION_IDENTIFIED": false,
-    "negative_result_interpretation": "Neither 'ans\\0' nor 'iop,ascwrap' was found in the searched windows near the observed ARMIO allocator arg1 objects. The v6 run searched \u00b164KB (55/55 successful searches); the v7 run searched \u00b11MB (27/27 successful searches). Zero search errors. The semantic role of arg1 is UNKNOWN, so this proves absence in searched memory near arg1 objects only - it does not prove anything about DT property dictionaries specifically. These are separate boots, so the observations may overlap the same DT population; do not sum them as unique allocations. Proximity-based search cannot serve as final identity-correlation proof even if a hit were found."
+    "negative_result_interpretation": "Neither 'ans\\0' nor 'iop,ascwrap' was found in the searched windows near the observed ARMIO allocator arg1 objects. Per-run search results are derived from the runs data above; total ANS search errors: 0; total ASCWrap search errors: 0. The semantic role of arg1 is UNKNOWN, so this proves absence in searched memory near arg1 objects only - it does not prove anything about DT property dictionaries specifically. These are separate boots, so the observations may overlap the same DT population; do not sum them as unique allocations. Proximity-based search cannot serve as final identity-correlation proof even if a hit were found."
   },
   "verdicts": {
     "ARMIO_ALLOCATION_PHASE_ACTIVE": "PROVEN",
-    "ANS_STRING_SEARCH_NEGATIVE": "PROVEN_IN_SEARCHED_WINDOWS",
+    "ANS_STRING_SEARCH_RESULT": "NEGATIVE_IN_SEARCHED_WINDOWS",
+    "ASCWRAP_COMPAT_SEARCH_RESULT": "NEGATIVE_IN_SEARCHED_WINDOWS",
+    "PROXIMITY_SEARCH_COMBINED_RESULT": "BOTH_NEGATIVE",
     "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
     "ANS_SPECIFIC_ARMIO_ALLOCATION": "UNKNOWN (not found in observed subset; search method has structural limits)",
     "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN (cannot classify without ANS allocation identity)",
@@ -159,7 +161,15 @@
     },
     "armio_class_object": {
       "vm": "0xfffffff00afef458",
-      "xrefs_in_BootKC_TEXT_EXEC": []
+      "xrefs_in_BootKC_TEXT_EXEC": [
+        "0xfffffff008387ef0",
+        "0xfffffff008388ce8",
+        "0xfffffff008388d68",
+        "0xfffffff008388dd8",
+        "0xfffffff008388e34",
+        "0xfffffff00838a1b4",
+        "0xfffffff00838a208"
+      ]
     },
     "verdicts": {
       "DIRECT_CALLER_TO_ALLOCATOR": "NOT_OBSERVED",
@@ -168,7 +178,9 @@
       "FIXUP_REFERENCE_TO_THUNK": "NOT_OBSERVED",
       "INDIRECT_CALL_MECHANISM": "UNKNOWN",
       "OSMETACLASS_DISPATCH": "SUPPORTED_HYPOTHESIS_ONLY (not proven)",
-      "ALLOCATOR_ARG1_SOURCE": "PROVEN_THUNK_INPUT_X2 (fail-closed assertion passed)",
+      "THUNK_X2_TO_ALLOCATOR_X1": "PROVEN_STATIC (fail-closed assertion passed)",
+      "RUNTIME_ALLOCATOR_ENTRY_VIA_THUNK": "UNKNOWN (not yet proven; indirect entry bypassing thunk is possible)",
+      "ALLOCATOR_ARG1_SOURCE_GLOBAL": "UNKNOWN (depends on runtime entry path)",
       "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate target)"
     }
   },
