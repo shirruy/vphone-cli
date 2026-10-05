@@ -13,7 +13,7 @@ import time
 
 OUT_DIR = os.environ.get("P2_OUT_DIR", ".")
 
-CALLBACK_STATIC = 0xFFFFFFF00AAD7DA0  # AppleARMIO::start itself (shared)
+CALLBACK_STATIC = 0xFFFFFFF00AAD7C6C  # ASCWrapV6 real start (stored-ptr +0x360)
 CALLSITE_STATIC = 0xFFFFFFF00AAD7EFC
 SLIDE = 0x20000000
 MAX_HITS = 200

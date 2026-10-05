@@ -1,0 +1,39 @@
+{
+  "gate": "58B_FULL_NUB_LIFECYCLE_PROVEN",
+  "summary": "The AppleARMIODevice nub lifecycle is FULLY FUNCTIONAL: 103 nubs allocated, 102/102 non-null nubs init OK, 103/103 start OK, registerService called for all. 71 of them carry the AppleARMIODevice stored vtable pointer (0xfffffff007d33120) at the shared start dispatcher.",
+  "probes": {
+    "init_return": {
+      "site": "0xfffffff008387f64",
+      "result": "102/102 init_ok=true (parsed from gdb-session.log; json write blocked by SIGINT exception)"
+    },
+    "post_start": {
+      "site": "0xfffffff008388174",
+      "result": "103/103 start_ok=true (1 null terminator event)"
+    },
+    "register_return": {
+      "site": "0xfffffff0083881f0",
+      "result": "all nubs reached registerService (void return; raw w0 values are residual)"
+    },
+    "start_dispatcher_vtables": {
+      "site": "0xfffffff00aad531c",
+      "result": "200 hits; 71 with AppleARMIODevice stored vtable 0xfffffff007d33120; others include IOPlatformDevice-family and kext classes"
+    }
+  },
+  "ascwrap_start_probe": {
+    "address": "0xfffffff00aad7c6c",
+    "address_derivation": "ASCWrap vtable 0xfffffff007d131e0 stored ptr 0xfffffff007d131f0 + slot 0x360; fixup-resolved target",
+    "result": "ZERO legitimate hits across a full boot (single event was SIGINT artifact)",
+    "interpretation": "AppleASCWrapV6 instances are never created: the IONameMatch(iop,ascwrap-v6) -> compatible matching never fires despite 71 registered AppleARMIODevice nubs and the compatible string being physically present in DRAM"
+  },
+  "isolated_blocker": "IOService personality matching between the ASCWrapV6 personality (IOProviderClass=AppleARMIODevice, IONameMatch=[iop,ascwrap-v6,v7]) and the registered AppleARMIODevice nubs. Nub creation, init, start, and registration are all proven working.",
+  "candidate_causes": [
+    "1. The compatible property is not reaching the nub property table in a form IOService::matchInternal can read (OSData encoding issue).",
+    "2. The IOCatalogue did not load the A7IOP-ASCWrap-v6 personalities (kext bundle filtered/not registered).",
+    "3. The nubs register under a different plane/name that IONameMatch does not compare against."
+  ],
+  "next_probes": [
+    "A. Verify IOCatalogue personality presence: hbreak IOService::matchInternal or compareNames; filter for a personality dict containing iop,ascwrap-v6.",
+    "B. Dump a live nub property table via physical memory (translate a nub VA using its physical address from the allocation site) to check the compatible OSData.",
+    "C. Check whether the boot reaches IOCatalogue::addDrivers for the ASCWrap bundle (prelink kmod load)."
+  ]
+}
