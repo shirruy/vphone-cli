@@ -87,7 +87,7 @@ def derive():
             break
 
     # --- vtable +0x360 resolution via the shared canonical decoder ---
-    index = fixup_index.build_fixup_index()
+    index = fixup_index.build_fixup_index(path=BOOTKC)
 
     start_target = index.get(vtable + 0x360) if vtable else None
 

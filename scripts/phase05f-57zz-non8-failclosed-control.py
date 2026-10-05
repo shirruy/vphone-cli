@@ -96,6 +96,21 @@ def main():
     with open(synthetic_path, "wb") as f:
         f.write(bytes(data))
 
+    # --- direct shared-decoder synthetic test ---
+    # Prove the shared build_fixup_index itself receives and rejects the
+    # synthetic BootKC (not just the reporting layer's metadata check).
+    fixup_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "phase05f-57zz-fixup-index.py")
+    spec = ilu.spec_from_file_location("fixidx_test", fixup_path)
+    fixidx = ilu.module_from_spec(spec)
+    spec.loader.exec_module(fixidx)
+    shared_decoder_rejected = False
+    shared_decoder_error = None
+    try:
+        fixidx.build_fixup_index(path=synthetic_path)
+    except SystemExit as e:
+        shared_decoder_rejected = True
+        shared_decoder_error = str(e)
+
     # --- run decoder on synthetic ---
     syn_out = os.path.join(tmpdir, "syn-result.json")
     syn_md = os.path.join(tmpdir, "syn-result.md")
@@ -130,12 +145,18 @@ def main():
             "fixture_complete": syn_artifact.get("CHAIN_DECODER_CURRENT_FIXTURE") if syn_artifact else "SCRIPT_ERROR",
             "self_consistency": syn_artifact.get("CHAIN_WALK_SELF_CONSISTENCY") if syn_artifact else "SCRIPT_ERROR",
         },
+        "shared_decoder_direct_test": {
+            "synthetic_path_passed_to_build_fixup_index": True,
+            "build_fixup_index_rejected_synthetic": shared_decoder_rejected,
+            "rejection_message": shared_decoder_error,
+        },
+        "END_TO_END_SAME_FIXTURE_PROVENANCE": "PASS" if shared_decoder_rejected else "FAIL",
         "canonical_rerun_result": {
             "fixture_complete": can_artifact.get("CHAIN_DECODER_CURRENT_FIXTURE") if can_artifact else "SCRIPT_ERROR",
         },
         "NEGATIVE_CONTROL_PASS": bool(has_unsupported and fixture_fail),
         "CANONICAL_UNAFFECTED_PASS": bool(canonical_pass),
-        "OVERALL": "PASS" if (has_unsupported and fixture_fail and canonical_pass) else "FAIL",
+        "OVERALL": "PASS" if (has_unsupported and fixture_fail and canonical_pass and shared_decoder_rejected) else "FAIL",
     }
 
     with open(OUT_JSON, "w", encoding="utf-8") as f:

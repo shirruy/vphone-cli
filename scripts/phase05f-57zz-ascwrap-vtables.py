@@ -110,7 +110,7 @@ def owner(vm):
 
 def main():
     raw_kc = open(BOOTKC, "rb").read()
-    index = fixup_index.build_fixup_index()
+    index = fixup_index.build_fixup_index(path=BOOTKC)
     VTABLES = {}
     derivation_report = {}
     for name, info in MOD_INITS.items():

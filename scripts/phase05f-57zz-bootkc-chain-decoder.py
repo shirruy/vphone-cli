@@ -98,7 +98,7 @@ def main():
             continue
         segments_out.append(meta)
         multi_total += meta["multi_start_pages"]
-        idx = fixup_module.build_fixup_index(segment_name=seg_name)
+        idx = fixup_module.build_fixup_index(path=BOOTKC, segment_name=seg_name)
         fixup_index.update(idx)
 
     starts_bound = seg_count == len(all_segs)

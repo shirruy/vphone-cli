@@ -11,6 +11,12 @@
     "fixture_complete": "FAIL",
     "self_consistency": "FAIL"
   },
+  "shared_decoder_direct_test": {
+    "synthetic_path_passed_to_build_fixup_index": true,
+    "build_fixup_index_rejected_synthetic": true,
+    "rejection_message": "segment __DATA_CONST uses pointer_format 2 (only 8 = 64_KERNEL_CACHE supported)"
+  },
+  "END_TO_END_SAME_FIXTURE_PROVENANCE": "PASS",
   "canonical_rerun_result": {
     "fixture_complete": "PASS"
   },

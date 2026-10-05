@@ -23,7 +23,7 @@ import time
 
 # PROVEN targets (callsite-derived + chain-decoder-derived):
 START_DISPATCH_VM = 0xFFFFFFF00AADA0E0   # client->start(provider) blraa callsite
-ARMIO_ALLOC_VM = 0xFFFFFFF008387EB8     # AppleARMIODevice allocator (x0=DT dict)
+ARMIO_ALLOC_VM = 0xFFFFFFF008387EB8     # AppleARMIODevice allocator (arg roles UNKNOWN; see register contract)
 CAND_A_STATIC = START_DISPATCH_VM       # primary: start dispatch
 CAND_B_STATIC = ARMIO_ALLOC_VM          # secondary: ARMIO allocation
 NUB_WRE_STATIC = 0xFFFFFFF0082F7B40     # nub factory (proven static)
