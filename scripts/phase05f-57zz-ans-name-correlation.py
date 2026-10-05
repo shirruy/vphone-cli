@@ -24,6 +24,17 @@ def main():
         starts = [e for e in c.get("events", []) if e.get("label") == "bp:candA"]
         ans_hits = sum(1 for e in allocs if e.get("ans_string_search", {}).get("count", 0) > 0)
         asc_hits = sum(1 for e in allocs if e.get("ascwrap_compat_search", {}).get("count", 0) > 0)
+        # Derive search errors: missing search dict OR error field present
+        ans_search_errors = sum(
+            1 for e in allocs
+            if "ans_string_search" not in e or e.get("ans_string_search", {}).get("error") is not None
+        )
+        asc_search_errors = sum(
+            1 for e in allocs
+            if "ascwrap_compat_search" not in e or e.get("ascwrap_compat_search", {}).get("error") is not None
+        )
+        ans_search_ok = sum(1 for e in allocs if "ans_string_search" in e and e.get("ans_string_search", {}).get("error") is None)
+        asc_search_ok = sum(1 for e in allocs if "ascwrap_compat_search" in e and e.get("ascwrap_compat_search", {}).get("error") is None)
         # Collect search ranges
         ranges = list({e.get("ans_string_search", {}).get("range", "") for e in allocs if e.get("ans_string_search", {}).get("range")})
         # Collect start vtable classifications
@@ -41,8 +52,19 @@ def main():
         runs[run] = {
             "ARMIO_ALLOCATIONS_OBSERVED": ">= %d" % len(allocs),
             "START_DISPATCHES_OBSERVED": ">= %d" % len(starts),
-            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": len(allocs) + len(starts) >= 60,
+            "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": (
+                c.get("capture_termination_reason") == "BREAKPOINT_EVENT_LIMIT"
+                if c.get("capture_termination_reason")
+                else sum(1 for e in c.get("events", []) if str(e.get("label", "")).startswith("bp:")) >= 60
+            ),
+            "captured_breakpoint_events": c.get("captured_breakpoint_events"),
+            "capture_event_limit": c.get("capture_event_limit"),
+            "capture_termination_reason": c.get("capture_termination_reason"),
             "ans_string_hits": ans_hits,
+            "ans_search_ok": ans_search_ok,
+            "ans_search_errors": ans_search_errors,
+            "asc_search_ok": asc_search_ok,
+            "asc_search_errors": asc_search_errors,
             "ascwrap_compat_hits": asc_hits,
             "search_ranges": ranges,
             "search_window": "±1MB around each allocator x1 (v7) / ±64KB (v6)",
@@ -52,6 +74,8 @@ def main():
     total_allocs = sum(int(str(r["ARMIO_ALLOCATIONS_OBSERVED"]).replace(">=", "").strip()) for r in runs.values())
     total_ans = sum(r["ans_string_hits"] for r in runs.values())
     total_asc = sum(r["ascwrap_compat_hits"] for r in runs.values())
+    total_ans_errors = sum(r.get("ans_search_errors", 0) for r in runs.values())
+    total_asc_errors = sum(r.get("asc_search_errors", 0) for r in runs.values())
 
     artifact = {
         "gate": "57ZZ_ANS_DT_NAME_CORRELATION",
@@ -60,6 +84,7 @@ def main():
         "findings": {
             "ALLOCATOR_OBSERVATIONS_ACROSS_RUNS": ">= %d (across separate boots; may overlap same DT population)" % total_allocs,
             "ANS_STRING_FOUND_NEAR_ANY_ALLOC": total_ans > 0,
+            "TOTAL_SEARCH_ERRORS": total_ans_errors + total_asc_errors,
             "ASCCWRAP_COMPAT_FOUND_NEAR_ANY_ALLOC": total_asc > 0,
             "ANS_SPECIFIC_ALLOCATION_IDENTIFIED": False,
             "negative_result_interpretation": (
@@ -78,7 +103,11 @@ def main():
         },
         "verdicts": {
             "ARMIO_ALLOCATION_PHASE_ACTIVE": "PROVEN",
-            "ANS_STRING_SEARCH_NEGATIVE": "PROVEN_IN_SEARCHED_WINDOWS (v6: 0/55 at ±64KB; v7: 0/27 at ±1MB; 0 errors)",
+            "ANS_STRING_SEARCH_NEGATIVE": (
+                "PROVEN_IN_SEARCHED_WINDOWS" if total_ans_errors == 0 and total_asc_errors == 0 and total_ans == 0 and total_asc == 0
+                else "FAIL_SEARCH_ERRORS_PRESENT" if total_ans_errors > 0 or total_asc_errors > 0
+                else "FAIL_HITS_PRESENT"
+            ),
             "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
             "ANS_SPECIFIC_ARMIO_ALLOCATION": "UNKNOWN (not found in observed subset; search method has structural limits)",
             "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN (cannot classify without ANS allocation identity)",

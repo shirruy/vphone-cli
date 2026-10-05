@@ -1,5 +1,6 @@
 {
   "gate": "57ZZ_ALLOCATOR_CALLER_ANALYSIS",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
   "method": "executable: canonical fixup decoder + Capstone BL/B scan + adrp/add xref scan",
   "fixup_decoder": "scripts/phase05f-57zz-fixup-index.py (shared canonical)",
   "chained_segments_searched": [
@@ -43,15 +44,7 @@
   },
   "armio_class_object": {
     "vm": "0xfffffff00afef458",
-    "xrefs_in_AppleARMPlatform_exec": [
-      "0xfffffff008387ef0",
-      "0xfffffff008388ce8",
-      "0xfffffff008388d68",
-      "0xfffffff008388dd8",
-      "0xfffffff008388e34",
-      "0xfffffff00838a1b4",
-      "0xfffffff00838a208"
-    ]
+    "xrefs_in_BootKC_TEXT_EXEC": []
   },
   "verdicts": {
     "DIRECT_CALLER_TO_ALLOCATOR": "NOT_OBSERVED",
@@ -60,7 +53,7 @@
     "FIXUP_REFERENCE_TO_THUNK": "NOT_OBSERVED",
     "INDIRECT_CALL_MECHANISM": "UNKNOWN",
     "OSMETACLASS_DISPATCH": "SUPPORTED_HYPOTHESIS_ONLY (not proven)",
-    "ALLOCATOR_ARG1_SOURCE": "THUNK_INPUT_X2 (derived from thunk instruction)",
+    "ALLOCATOR_ARG1_SOURCE": "PROVEN_THUNK_INPUT_X2 (fail-closed assertion passed)",
     "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate target)"
   }
 }

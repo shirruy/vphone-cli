@@ -17,6 +17,10 @@ import struct
 import capstone
 
 BOOTKC = r"C:\Users\rbjos\vphone-private\phase05f-known-good\payloads-v3\bootkc.bin"
+EXPECTED_BOOTKC_SHA256 = (
+    "C01B133237EB9C5AA6C7ED38F54ED5DB"
+    "924B4BA2E6465CD51F0245B4C823E800"
+)
 OUT_JSON = "artifacts/evidence/05f/phase05f-57zz-allocator-caller-analysis.json"
 
 _fixup_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "phase05f-57zz-fixup-index.py")
@@ -29,9 +33,12 @@ THUNK_VM = 0xFFFFFFF008387EB0
 ARMIO_CLASS_OBJECT = 0xFFFFFFF00AFEF458
 
 # Exec segments to scan for BL/B instructions
+# Derived from the outer BootKC Mach-O LC_SEGMENT_64 commands; the single
+# __TEXT_EXEC segment covers all kernel-cache executable code (fileset
+# entries are mapped within it), so scanning it once is exhaustive and
+# non-overlapping.
 EXEC_SEGMENTS = [
-    {"name": "kernel", "vm": 0xFFFFFFF0081E4000, "fo": 0x11E0000, "size": 0x2A44000},
-    {"name": "AppleARMPlatform", "vm": 0xFFFFFFF00837BEE0, "fo": 0x1377EE0, "size": 0x60000},
+    {"name": "BootKC __TEXT_EXEC", "vm": 0xFFFFFFF0081E4000, "fo": 0x11E0000, "size": 0x2A44000},
 ]
 
 # Chained segments to search for fixup references
@@ -76,7 +83,7 @@ def find_fixup_refs(index, target_vm):
 def find_class_xrefs(data, class_vm):
     """Scan AppleARMPlatform exec for adrp+add pairs targeting the class object."""
     md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
-    seg = EXEC_SEGMENTS[1]
+    seg = EXEC_SEGMENTS[0]  # single __TEXT_EXEC covers all exec code
     insns = list(md.disasm(data[seg["fo"] : seg["fo"] + seg["size"]], seg["vm"]))
     pages = {}
     hits = []
@@ -103,7 +110,7 @@ def find_class_xrefs(data, class_vm):
 def analyze_thunk(data):
     """Disassemble the thunk and derive the register transformation."""
     md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_LITTLE_ENDIAN)
-    seg = EXEC_SEGMENTS[1]
+    seg = EXEC_SEGMENTS[0]  # single __TEXT_EXEC covers all exec code
     fo = seg["fo"] + (THUNK_VM - seg["vm"])
     insns = list(md.disasm(data[fo : fo + 0x10], THUNK_VM))
     result = []
@@ -114,6 +121,12 @@ def analyze_thunk(data):
 
 def main():
     data = open(BOOTKC, "rb").read()
+    import hashlib as _hl
+    _sha = _hl.sha256(data).hexdigest().upper()
+    if _sha != EXPECTED_BOOTKC_SHA256:
+        raise SystemExit(
+            "BOOTKC_SHA_MISMATCH: got %s expected %s" % (_sha, EXPECTED_BOOTKC_SHA256)
+        )
 
     # Build fixup indices for all chained segments
     all_fixups = {}
@@ -128,8 +141,20 @@ def main():
     class_xrefs = find_class_xrefs(data, ARMIO_CLASS_OBJECT)
     thunk_insns = analyze_thunk(data)
 
+    # Fail-closed thunk register-flow assertion
+    _thunk_flow_ok = (
+        len(thunk_insns) >= 2
+        and thunk_insns[0]["mnemonic"] == "mov"
+        and thunk_insns[0]["operands"].replace(" ", "") == "x1,x2"
+        and thunk_insns[1]["mnemonic"] == "b"
+        and int(thunk_insns[1]["operands"].lstrip("#").replace(" ", ""), 16) == ALLOCATOR_VM
+    )
+    if not _thunk_flow_ok:
+        raise SystemExit("THUNK_REGISTER_FLOW_MISMATCH: expected mov x1,x2; b allocator, got %s" % thunk_insns)
+
     artifact = {
         "gate": "57ZZ_ALLOCATOR_CALLER_ANALYSIS",
+        "bootkc_sha256": EXPECTED_BOOTKC_SHA256,
         "method": "executable: canonical fixup decoder + Capstone BL/B scan + adrp/add xref scan",
         "fixup_decoder": "scripts/phase05f-57zz-fixup-index.py (shared canonical)",
         "chained_segments_searched": CHAINED_SEGMENTS,
@@ -148,7 +173,7 @@ def main():
         },
         "armio_class_object": {
             "vm": hex(ARMIO_CLASS_OBJECT),
-            "xrefs_in_AppleARMPlatform_exec": class_xrefs,
+            "xrefs_in_BootKC_TEXT_EXEC": class_xrefs,
         },
         "verdicts": {
             "DIRECT_CALLER_TO_ALLOCATOR": "NOT_OBSERVED" if not alloc_bl else "OBSERVED",
@@ -157,7 +182,7 @@ def main():
             "FIXUP_REFERENCE_TO_THUNK": "NOT_OBSERVED" if not thunk_fixup else "OBSERVED",
             "INDIRECT_CALL_MECHANISM": "UNKNOWN",
             "OSMETACLASS_DISPATCH": "SUPPORTED_HYPOTHESIS_ONLY (not proven)",
-            "ALLOCATOR_ARG1_SOURCE": "THUNK_INPUT_X2 (derived from thunk instruction)",
+            "ALLOCATOR_ARG1_SOURCE": "PROVEN_THUNK_INPUT_X2 (fail-closed assertion passed)",
             "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate target)",
         },
     }

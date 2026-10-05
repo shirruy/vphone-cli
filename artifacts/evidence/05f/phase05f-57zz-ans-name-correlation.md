@@ -10,7 +10,7 @@ callsite-proven +0x360 start dispatch. At each allocator hit, searched
 
 ```
 ARMIO_ALLOCATION_PHASE_ACTIVE: PROVEN
-ANS_STRING_SEARCH_NEGATIVE: PROVEN_IN_SEARCHED_WINDOWS (v6: 0/55 at ±64KB; v7: 0/27 at ±1MB; 0 errors)
+ANS_STRING_SEARCH_NEGATIVE: PROVEN_IN_SEARCHED_WINDOWS
 ANS_DT_ENTRY_CONSUMED: UNKNOWN
 ANS_SPECIFIC_ARMIO_ALLOCATION: UNKNOWN (not found in observed subset; search method has structural limits)
 MATCHING_STAGE_CLASSIFICATION: UNKNOWN (cannot classify without ANS allocation identity)
