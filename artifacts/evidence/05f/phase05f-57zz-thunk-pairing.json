@@ -1,0 +1,30 @@
+{
+  "gate": "57ZZ_RUNTIME_ALLOCATOR_THUNK_PAIRING",
+  "run": "build/phase05f-runtime/thunk-pair-v1",
+  "instrumented": {
+    "thunk_entry": "0xfffffff008387eb0",
+    "allocator_entry": "0xfffffff008387eb8",
+    "start_dispatch": "0xfffffff00aada0e0"
+  },
+  "results": {
+    "thunk_hits": 39,
+    "allocator_hits": 0,
+    "start_dispatch_hits": 21,
+    "x1_eq_x2_at_thunk": 39,
+    "x1_ne_x2_at_thunk": 0,
+    "distinct_thunk_x2_values": 39
+  },
+  "analysis": "39 thunk entry hits observed (bp at 0x...87eb0), 0 allocator entry hits (bp at 0x...87eb8). The 8-byte gap between the two hardware breakpoints likely caused a conflict in the QEMU gdbstub's limited hardware debug registers, preventing the allocator breakpoint from triggering. However, at every thunk hit x1 already equals x2 (39/39), consistent with the statically proven 'mov x1, x2' thunk instruction being either a no-op (caller already set x1==x2) or the values having been synchronized by a prior mechanism. The x2 values are distinct across hits (distinct per-device objects). The 60-event cap truncated the capture.",
+  "verdicts": {
+    "THUNK_ENTRY_RUNTIME": "PROVEN (39 hits observed)",
+    "ALLOCATOR_ENTRY_RUNTIME": "NOT_OBSERVED (breakpoint conflict suspected; 8-byte gap)",
+    "THUNK_X2_DISTINCT_PER_DEVICE": "PROVEN (39 distinct values)",
+    "X1_EQ_X2_AT_THUNK_ENTRY": "PROVEN (39/39)",
+    "RUNTIME_ALLOCATOR_ENTRY_VIA_THUNK": "SUPPORTED (thunk hit + static mov x1,x2 + branch to allocator; but allocator bp not observed so pairing not directly confirmed)",
+    "RUNTIME_ALLOCATOR_ENTRY_VIA_THUNK_STRICT": "UNKNOWN (requires allocator bp hit or single-bp thunk-only run)",
+    "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate: trace x2 producer)",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE"
+  },
+  "next": "Option A: single-bp run (thunk only, no allocator bp) to avoid the register conflict, confirm allocator is reached via single-step from thunk. Option B: proceed directly to ARMIO_THUNK_X2_PROVENANCE since thunk.x2 is now captured for 39 per-device objects and the static mov x1,x2 + b allocator chain is already proven."
+}
