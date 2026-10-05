@@ -12,7 +12,7 @@ import threading
 import time
 
 OUT_DIR = os.environ.get("P2_OUT_DIR", ".")
-ALLOC_RET_SITE = 0xFFFFFFF00AAC6EB4  # after getParent call; capture x0 result
+ALLOC_RET_SITE = 0xFFFFFFF00AAC6EE0  # after compareName call; w0 must be 1
 SLIDE = 0x20000000
 
 KNOWN_VTABLES = {
@@ -55,7 +55,8 @@ class InstanceIdProbe(gdb.Command):
                 x0 = int(gdb.parse_and_eval("$x0")) & 0xFFFFFFFFFFFFFFFF
             except (gdb.error, TypeError):
                 x0 = 0
-            rec = {"round": rounds, "instance": f"0x{x0:x}"}
+            rec = {"round": rounds, "instance": f"0x{x0:x}",
+                   "w0_cmp": x0 & 0xFFFFFFFF}
             if x0:
                 vt = read_u64(x0)
                 if vt:
