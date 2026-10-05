@@ -1,0 +1,1312 @@
+{
+  "gate": "ARMIO_THUNK_X2_NAME_EXTRACTION",
+  "generated": "2026-10-05T01:19:24",
+  "capture_pair_limit": 40,
+  "captured_pairs": 40,
+  "captured_breakpoint_events": 40,
+  "total_events": 40,
+  "capture_termination_reason": "PAIR_LIMIT",
+  "slide": {
+    "slide": "0x0000000020000000"
+  },
+  "events": [
+    {
+      "label": "thunk_hit",
+      "t": 2.016,
+      "x2": "0xffffffe66a0777e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027d80",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a5e8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199260",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2340",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.07,
+      "x2": "0xffffffe66a0758a0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e025980",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe5841995a8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419bcb8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2fc0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.086,
+      "x2": "0xffffffe66a077880",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e0255a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419be98",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419b3d0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b17b0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.107,
+      "x2": "0xffffffe66a076700",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024ae0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419aa48",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198db0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2de0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.125,
+      "x2": "0xffffffe66a0745e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024540",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584198428",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198180",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2430",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.144,
+      "x2": "0xffffffe66a077b00",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026460",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419ab88",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199508",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3600",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.161,
+      "x2": "0xffffffe66a0765c0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024b80",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419af70",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198fe0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1670",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.183,
+      "x2": "0xffffffe66a074900",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026ba0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419ad18",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198bf8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3380",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.203,
+      "x2": "0xffffffe66a076340",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026660",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a2f0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198ae0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b22a0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.224,
+      "x2": "0xffffffe66a075c60",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024b00",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe5841984c8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419a340",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3650",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.276,
+      "x2": "0xffffffe66a077c40",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e025a60",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419ba10",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199b48",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2cf0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.301,
+      "x2": "0xffffffe66a075ee0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e0279c0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a048",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199b70",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2f70",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.323,
+      "x2": "0xffffffe66a077740",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026040",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584199530",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419b8a8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b07c0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.346,
+      "x2": "0xffffffe66a076e80",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027b40",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584199238",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe5841991c0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1850",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.373,
+      "x2": "0xffffffe66a076b60",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027e60",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe5841981f8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419b7b8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b0e50",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.414,
+      "x2": "0xffffffe66a0742c0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e025e60",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584198388",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419a700",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2480",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.448,
+      "x2": "0xffffffe66a076c00",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026d20",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a840",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199490",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1e40",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.486,
+      "x2": "0xffffffe66a074040",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027160",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a778",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe5841988d8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1300",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 2.51,
+      "x2": "0xffffffe66a076f20",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024820",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a7a0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198b80",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b2070",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.065,
+      "x2": "0xffffffe66a074680",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024560",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584199620",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419afe8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1530",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.091,
+      "x2": "0xffffffe66a076fc0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e025540",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419b100",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419acf0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b15d0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.116,
+      "x2": "0xffffffe66a0776a0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e025000",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a7c8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419a318",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b31f0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.14,
+      "x2": "0xffffffe66a075940",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e0252a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe5841992d8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198a90",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b0360",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.163,
+      "x2": "0xffffffe66a06c2c0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024aa0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419bd30",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199918",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1940",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.181,
+      "x2": "0xffffffe66a06df80",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024080",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584199030",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe5841984f0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b11c0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.235,
+      "x2": "0xffffffe66a06c680",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024d20",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a7f0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419a0e8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1a30",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.249,
+      "x2": "0xffffffe66a06d6c0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027720",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419aae8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198e50",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3790",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.266,
+      "x2": "0xffffffe66a06d800",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027fe0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584198978",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419bd58",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b0f40",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.285,
+      "x2": "0xffffffe66a06f060",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026cc0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a188",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199f30",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1e90",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.305,
+      "x2": "0xffffffe66a06f4c0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026080",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe5841997d8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198f40",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1210",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.323,
+      "x2": "0xffffffe66a06c400",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027900",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584199c10",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419bfb0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1ad0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.342,
+      "x2": "0xffffffe66a06e160",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e027be0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419b038",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199d00",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b34c0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.363,
+      "x2": "0xffffffe66a06f420",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e026200",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584199698",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419bfd8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3f10",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.384,
+      "x2": "0xffffffe66a06f560",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024000",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584198018",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199cb0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3100",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.424,
+      "x2": "0xffffffe66a06e840",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024640",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe5841986f8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198068",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3fb0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.446,
+      "x2": "0xffffffe66a06db20",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024840",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419a250",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198590",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b08b0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.467,
+      "x2": "0xffffffe66a06f240",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e0245a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584199940",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584198e00",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b3880",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.484,
+      "x2": "0xffffffe66a06fa60",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e024360",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584198720",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419af20",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b03b0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.501,
+      "x2": "0xffffffe66a06f2e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e0246a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe584198090",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe58419ab10",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b1fd0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 3.548,
+      "x2": "0xffffffe66a06c5e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffe49e0275a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffe58419b948",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffe584199da0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffe5841b25c0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "count": 0,
+        "hits": []
+      }
+    }
+  ],
+  "notes": [
+    "[0000.000] v10 x2 name extraction attached",
+    "[0000.017] slide=0x0000000020000000 thunk=0xfffffff028387eb0",
+    "[0000.018] hbreak THUNK @ 0xfffffff028387eb0 installed",
+    "[0002.016] hit #1: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.070] hit #2: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.086] hit #3: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.107] hit #4: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.125] hit #5: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.144] hit #6: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.161] hit #7: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.183] hit #8: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.203] hit #9: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.224] hit #10: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.276] hit #11: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.301] hit #12: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.323] hit #13: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.346] hit #14: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.373] hit #15: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.414] hit #16: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.448] hit #17: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.486] hit #18: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0002.510] hit #19: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.065] hit #20: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.091] hit #21: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.116] hit #22: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.140] hit #23: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.163] hit #24: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.181] hit #25: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.235] hit #26: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.249] hit #27: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.266] hit #28: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.285] hit #29: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.305] hit #30: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.323] hit #31: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.342] hit #32: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.363] hit #33: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.384] hit #34: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.424] hit #35: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.446] hit #36: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.467] hit #37: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.484] hit #38: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.501] hit #39: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0003.548] hit #40: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']"
+  ],
+  "classification": "NO_ANS_IN_GRAPH",
+  "summary": {
+    "total_hits": 40,
+    "all_unique_strings": [
+      "\u0001",
+      "\u0003",
+      "\n\u0001",
+      "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+    ],
+    "total_unique_strings": 4,
+    "ans_hits": [],
+    "ans_found": false
+  }
+}
