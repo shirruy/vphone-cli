@@ -1,0 +1,32 @@
+{
+  "gate": "58B_ENUMERATION_LOOP_DISASSEMBLY",
+  "source": "bootkc static disasm + init-arg runtime probe",
+  "loop_location": {
+    "lr_site": "0xfffffff008388144",
+    "caller_function_region": "0xfffffff008388044-0xfffffff008388254 (AppleARMPlatform fileset)",
+    "file_offset_base": "EVM=0xfffffff00837BEE0 EFO=0x1377EE0"
+  },
+  "loop_structure": {
+    "iterator_creation": "0x...83880dc-0x...83880e8: mov x2,x0; mov x0,x20; mov w1,#2; bl 0xfffffff0083d2c9c (OSCollection/getMatching iterator)",
+    "get_next": "0x...838810c-0x...8388114: vtable+0x88 virtual = getNextObject",
+    "null_check": "0x...8388118: cbz x0 -> loop exit at 0x...8388210",
+    "factory_call": "0x...8388120-0x...8388140: x19 vtable+0x598 blraa with x2=DT entry, x0=x19, x1=x19",
+    "factory_return_check": "0x...8388144: cbz x0, 0x...83881f0 (null -> release entry at vtable+0x28, continue)",
+    "success_path": "0x...8388148-0x...8388170: capture nub (x21=x0), call nub vtable+0x360 (IOService::start!) with x1=x19 provider",
+    "attach": "0x...8388194-0x...83881ac: provider vtable+0x5a0 call with (provider, nub)",
+    "register": "0x...83881d4-0x...83881ec: nub vtable+0x2a0 registerService(0)"
+  },
+  "runtime_probe": {
+    "runs": 103,
+    "lr_uniform": "all 103 hits return to 0xfffffff008388144",
+    "interpretation": "103 DT entries reach the factory call; every single one takes the cbz (null-return) path because ARMIO::start is never invoked and no nub survives registration"
+  },
+  "factory_slot_resolution": {
+    "applearmio_vtable_0xfffffff007d33088_plus_0x598": "0xfffffff00ab08ecc",
+    "applearmiodevice_vtable_0xfffffff007d336e0_plus_0x598": "0xfffffff00ab08ecc",
+    "target_disassembly": "bti c; mov w0,#0; ret -> returns NULL unconditionally",
+    "interpretation": "The base-class slot is a null stub. A derived class must override vtable+0x598 to actually create nubs. In this boot, either the derived class is not the x19 provider, or the override is absent."
+  },
+  "conclusion": "The ARMIO nub-creation factory (x19 vtable+0x598) returns null for all 103 DT child entries. The IOService::start success path (visible at 0x...838815c: slot +0x360) is therefore never reached. The blocker is now pinned to a single virtual call: why the runtime x19 provider's +0x598 override yields null.",
+  "next_probe": "Capture x19's vtable pointer at the factory call site (hbreak 0xfffffff008388140+slide, read x19 then *(x19)). Compare against 0xfffffff007d33088/0xfffffff007d336e0+slide to identify the actual provider class, then resolve ITS +0x598 override."
+}

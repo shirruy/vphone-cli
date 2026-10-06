@@ -1,0 +1,35 @@
+{
+  "phase": "05G-prep",
+  "test_output": [
+    "case latekey_ok: reaches Library (positive)",
+    "case levelskip: FSTREE node level mismatch (expected exact descent) — rejected",
+    "case noflag: FSTREE level-0 node missing LEAF flag — rejected",
+    "case midleaf: rejected (ROOT flag on non-root triggers footer geometry failure — fail-closed)",
+    "case midroot: rejected (same ROOT-on-non-root path — fail-closed)"
+  ],
+  "gate": "catalog-walker-regression-coverage-complete",
+  "reviewer_items_applied": [
+    "Item 1: late-key regression — synthetic variable-KV FSTREE leaf with DIR_REC System\\0 at k_off=0x0F00 (key base 0x48 + 0xF00 = 0xF48, near block end); the old double-count formula would reject this; new direct name_off accepts; path reaches Library lookup",
+    "Item 2: level-skip regression — synthetic root level 2 with child at level 0; walker fails with exact-descent mismatch; no path resolved",
+    "Item 2b: positive virtual-child test — FSTREE child OIDs (200/201/202) differ from physical blocks (6/7/8); resolution succeeds only through volume OMAP; direct block interpretation would read wrong blocks",
+    "Item 3: topology flag validation enforced in code — ROOT required on root, forbidden on non-root; LEAF required at level 0, forbidden above; three negative synthetic cases prove each violation is rejected (missing LEAF, interior LEAF, non-root ROOT)",
+    "Synthetic FSTREE topology: NXSB -> APSB(omap=4, root_tree_oid=200) -> omap_phys -> OMAP leaf(fixed-KV 3 entries virtual->physical) -> FSTREE root(level 2) -> FSTREE mid(level 1, OID 201 -> paddr 7) -> FSTREE leaf(level 0, OID 202 -> paddr 8) with late DIR_REC"
+  ],
+  "date": "2026-09-27 18:18:48",
+  "runtime": {
+    "real_fixture": "launchdaemons.status=RESOLVED cnid=632 — unchanged under topology enforcement",
+    "synthetic": "APFS_READER_TEST_PASS — all 5 FSTREE cases plus all prior OMAP/checksum/TOC regressions"
+  },
+  "superseded_by": {
+    "changes": [
+      "Case D isolated to LEAF-only flags (0x0002) — rejection reason is now specifically the interior-LEAF violation",
+      "Case E isolated to ROOT-only flags (0x0001) — rejection reason is now specifically the non-root ROOT violation",
+      "All negative cases assert exact expected error strings via expected_error substring matching",
+      "Case F added: root-without-ROOT caught by volume-level root validation (fail-closed integration check)",
+      "Production topology checks moved before decode_btree_node/footer so topology errors are not masked",
+      "Total FSTREE cases: 6 (1 positive + 5 negative with exact assertions)"
+    ],
+    "iteration": 11,
+    "commit": "2d2908f"
+  }
+}

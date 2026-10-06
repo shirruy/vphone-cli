@@ -1,0 +1,33 @@
+{
+  "gate": "58B_DT_ENTRY_NAME_COMPAT_PROVEN",
+  "method": "hbreak at factory blraa 0xfffffff008388140+slide; walk DT entry property table (+0x20 dict, entries at +0x20, key string at key_obj+0x10, value OSData data-ptr at val+0x20 / OSString char* at val+0x10)",
+  "layout_discovery": "OSSymbol/OSString char* is at object+0x10 in this kernel build (not +0x18 as in stock XNU 8792 headers) - proven by reading 'IOName','IOLocation','interrupt-controller','#main-cpus','name','reg' keys",
+  "results": {
+    "total_entries": 102,
+    "named_entries": 102,
+    "ans_entry": {
+      "n": 24,
+      "name": "ans",
+      "compatible": "iop,ascwrap-v6"
+    },
+    "all_with_compatible": [
+      {
+        "n": 0,
+        "name": "aic",
+        "compatible": "aic,2"
+      },
+      {
+        "n": 24,
+        "name": "ans",
+        "compatible": "iop,ascwrap-v6"
+      },
+      {
+        "n": 33,
+        "name": "uart0",
+        "compatible": "uart-1,samsung"
+      }
+    ]
+  },
+  "conclusion": "The /arm-io/ans DT plane entry reaches the AppleARMIODevice factory with name=ans AND compatible=iop,ascwrap-v6 intact. DT encoding, DT plane construction, and property propagation are all verified correct end-to-end. Combined with 102/102 nub init/start/register success and zero ASCWrapV6 starts, the blocker is definitively isolated to the IOService personality matching stage (IONameMatch evaluation against the nub) - not DT, not nub creation, not properties.",
+  "next_probe": "Instrument IOService matching: break at the point where matchPropertyTable evaluates IONameMatch for each registered nub, or verify the IOCatalogue contains the ASCWrapV6 personality (its kext bundle load)."
+}

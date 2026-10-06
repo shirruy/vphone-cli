@@ -1,0 +1,1294 @@
+{
+  "gate": "ARMIO_THUNK_X2_NAME_EXTRACTION",
+  "generated": "2026-10-05T01:21:48",
+  "capture_pair_limit": 40,
+  "captured_pairs": 40,
+  "captured_breakpoint_events": 40,
+  "total_events": 40,
+  "capture_termination_reason": "PAIR_LIMIT",
+  "slide": {
+    "slide": "0x0000000020000000"
+  },
+  "events": [
+    {
+      "label": "thunk_hit",
+      "t": 0.027,
+      "x2": "0xffffffdf01e18fe0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf204a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3a10",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a16c0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf75b0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "heap_search": [
+          {
+            "region": "heap_dfx",
+            "lo": "0xffffffdf20000000",
+            "hi": "0xffffffe020000000",
+            "hits": [],
+            "count": 0
+          },
+          {
+            "region": "heap_ddx",
+            "lo": "0xffffffdd20000000",
+            "hi": "0xffffffde20000000",
+            "hits": [],
+            "count": 0
+          },
+          {
+            "region": "dt_plane",
+            "lo": "0xffffffdf20000000",
+            "hi": "0xffffffdf30000000",
+            "hits": [],
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.045,
+      "x2": "0xffffffdf01e1ba60",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23f00",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a2188",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1be8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf6f70",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.063,
+      "x2": "0xffffffdf01e185e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf20100",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a0248",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2fc0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf4270",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.067,
+      "x2": "0xffffffdf01e1a160",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf22f80",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1558",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1080",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf68e0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.085,
+      "x2": "0xffffffdf01e19800",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21060",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a03d8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a34e8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf49a0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.261,
+      "x2": "0xffffffdf01e18cc0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23720",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a2a48",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1918",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf67f0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.278,
+      "x2": "0xffffffdf01e18ea0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21f80",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1a80",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3df8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf5490",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.3,
+      "x2": "0xffffffdf01e19440",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21a80",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1ff8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1490",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf4680",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.314,
+      "x2": "0xffffffdf01e198a0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf216a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1878",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3a38",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7290",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.328,
+      "x2": "0xffffffdf01e199e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf223e0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3bf0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a26b0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf4360",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.345,
+      "x2": "0xffffffdf01df8cc0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23aa0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a35d8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a18a0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf51c0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.357,
+      "x2": "0xffffffdf01dfb560",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21460",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a08b0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2e80",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf72e0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.371,
+      "x2": "0xffffffdf01dfab60",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21920",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1e90",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3678",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf6110",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.408,
+      "x2": "0xffffffdf01df8f40",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf209c0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3510",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2b88",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7920",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.43,
+      "x2": "0xffffffdf01dfbb00",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23040",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a11c0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3a60",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf4b80",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.451,
+      "x2": "0xffffffdf01df9b20",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf22200",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a0478",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3060",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf5350",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.475,
+      "x2": "0xffffffdf01dfa160",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23d20",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a0dd8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3538",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf6480",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.496,
+      "x2": "0xffffffdf01dfaa20",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21ce0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a2598",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a20c0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf5440",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.514,
+      "x2": "0xffffffdf01dfbec0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21c20",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3ce0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1cd8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf74c0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.532,
+      "x2": "0xffffffdf01dfb4c0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf219a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1a58",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3358",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf4bd0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.571,
+      "x2": "0xffffffdf01dfaf20",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf20a00",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3d58",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2de0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7010",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.683,
+      "x2": "0xffffffdf01df9bc0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21780",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a30b0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1d50",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf4cc0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.713,
+      "x2": "0xffffffdf01dfb600",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21be0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a29d0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a0900",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7f10",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.742,
+      "x2": "0xffffffdf01dfb420",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf22320",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a12d8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3830",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf4400",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.759,
+      "x2": "0xffffffdf01dfbe20",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf222a0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1b48",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a0f18",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf62a0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.777,
+      "x2": "0xffffffdf01df99e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf212c0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3d08",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2cf0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf6250",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.794,
+      "x2": "0xffffffdf01df8e00",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23ec0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a37b8",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1ad0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf6930",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.817,
+      "x2": "0xffffffdf01dfaac0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23e60",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3a88",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2d18",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf6660",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.834,
+      "x2": "0xffffffdf01df8180",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23740",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a2c00",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a22f0",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf6bb0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.876,
+      "x2": "0xffffffdf01dfafc0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21660",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a0cc0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a0158",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf76f0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.889,
+      "x2": "0xffffffdf01df9120",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf228e0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a2778",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2390",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7150",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.903,
+      "x2": "0xffffffdf01dfa480",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf23bc0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a0ea0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a30d8",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf66b0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.916,
+      "x2": "0xffffffdf01dfb880",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf219c0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a2868",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a0d10",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7470",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.929,
+      "x2": "0xffffffdf01dfad40",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21b20",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a23e0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a0450",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7600",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.94,
+      "x2": "0xffffffdf01df91c0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf22340",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a25c0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a0d60",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7b50",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.951,
+      "x2": "0xffffffdf01dfb6a0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf20340",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a1260",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a3808",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf5850",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.964,
+      "x2": "0xffffffdf01dfa520",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf22960",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a3d80",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2638",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf5da0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 0.998,
+      "x2": "0xffffffdf01df85e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf216e0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a28e0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a0f90",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf62f0",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 1.014,
+      "x2": "0xffffffdf01df9300",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf21f00",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a2958",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a1418",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf5210",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    },
+    {
+      "label": "thunk_hit",
+      "t": 1.034,
+      "x2": "0xffffffdf01dfb7e0",
+      "graph_strings": [
+        [
+          "obj+00->0xfffffff027cc90f8",
+          "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+        ],
+        [
+          "obj+10->0xffffffde1bf207e0",
+          "\u0003"
+        ],
+        [
+          "obj+18->0xffffffdd360a38d0",
+          "\u0001"
+        ],
+        [
+          "obj+20->0xffffffdd360a2980",
+          "\u0001"
+        ],
+        [
+          "obj+28->0xffffffdfe7bf7c40",
+          "\n\u0001"
+        ]
+      ],
+      "wide_ans_search": {
+        "skipped": true
+      }
+    }
+  ],
+  "notes": [
+    "[0000.000] v10 x2 name extraction attached",
+    "[0000.017] slide=0x0000000020000000 thunk=0xfffffff028387eb0",
+    "[0000.018] hbreak THUNK @ 0xfffffff028387eb0 installed",
+    "[0000.027] hit #1: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.045] hit #2: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.063] hit #3: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.067] hit #4: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.085] hit #5: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.261] hit #6: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.278] hit #7: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.300] hit #8: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.314] hit #9: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.328] hit #10: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.345] hit #11: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.357] hit #12: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.371] hit #13: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.408] hit #14: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.430] hit #15: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.451] hit #16: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.475] hit #17: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.496] hit #18: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.514] hit #19: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.532] hit #20: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.571] hit #21: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.684] hit #22: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.713] hit #23: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.742] hit #24: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.759] hit #25: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.777] hit #26: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.794] hit #27: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.817] hit #28: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.834] hit #29: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.876] hit #30: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.889] hit #31: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.904] hit #32: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.916] hit #33: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.929] hit #34: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.940] hit #35: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.951] hit #36: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.964] hit #37: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0000.998] hit #38: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0001.014] hit #39: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']",
+    "[0001.034] hit #40: 5 strings, first: ['_$\\x03\ufffd\ufffd\\x03\\x01\ufffd\\x10', '\\x03', '\\x01']"
+  ],
+  "classification": "NO_ANS_IN_GRAPH",
+  "summary": {
+    "total_hits": 40,
+    "all_unique_strings": [
+      "\u0001",
+      "\u0003",
+      "\n\u0001",
+      "_$\u0003\ufffd\ufffd\u0003\u0001\ufffd\u0010"
+    ],
+    "total_unique_strings": 4,
+    "ans_hits": [],
+    "ans_found": false
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "gate": "57ZZ_CLOSURE_PROOFS",
+  "proof_1_non8_control": {
+    "result": "PASS",
+    "reporting_layer_rejected": true,
+    "shared_decoder_rejected_synthetic": true,
+    "END_TO_END_SAME_FIXTURE_PROVENANCE": "PASS",
+    "canonical_unaffected": true
+  },
+  "proof_2_truncation_authority": {
+    "MAX_HITS_value_derived": 60,
+    "MAX_HITS_source": "parsed from scripts/phase05f-57zz-runtime-gdb-capture-v3.py via regex",
+    "bp_hits_increments_only_in_addrmap": true,
+    "non_bp_events_count_toward_limit": false,
+    "nubwre_counts_toward_limit": true,
+    "recorder_fields_published": true,
+    "legacy_captures": "DERIVED fallback; recorder fields absent"
+  },
+  "proof_3_output_regression": {
+    "hash_normalization": "CRLF->LF (Windows wrapper artifact); semantic identity unaffected",
+    "regenerated_sha256": "7BA9895601DEC47510223B68717E2F90D2535F084250AAD4037136D61FDBC9E7",
+    "canonical_tracked_sha256": "7BA9895601DEC47510223B68717E2F90D2535F084250AAD4037136D61FDBC9E7",
+    "historical_0962712_sha256": "7BA9895601DEC47510223B68717E2F90D2535F084250AAD4037136D61FDBC9E7",
+    "CURRENT_GENERATOR_REPRODUCES_CANONICAL": true,
+    "BYTE_IDENTICAL_TO_0962712": true
+  },
+  "proof_4_commit_manifest": {
+    "commit": "09627121c3c42210155b6b9d3b9c70c3cc512b4e",
+    "file_count": 4,
+    "files": [
+      {
+        "status": "M",
+        "path": "artifacts/evidence/05f/phase05f-57zz-ans-provider-publication.json"
+      },
+      {
+        "status": "M",
+        "path": "artifacts/evidence/05f/phase05f-57zz-bootkc-chained-fixups.json"
+      },
+      {
+        "status": "M",
+        "path": "scripts/phase05f-57zz-ans-provider-publication.py"
+      },
+      {
+        "status": "M",
+        "path": "scripts/phase05f-57zz-bootkc-chain-decoder.py"
+      }
+    ]
+  }
+}

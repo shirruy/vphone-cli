@@ -1,0 +1,15 @@
+{
+  "gate": "58B_ARMIO_MATCH_CALLBACK",
+  "callback_static": "0xfffffff00aad7da0",
+  "slide": 536870912,
+  "events": [
+    {
+      "n": 0,
+      "t": 37.006,
+      "x0": "0xffffffdee5e0b870"
+    }
+  ],
+  "hit_count": 1,
+  "named_count": 0,
+  "ans_hits": []
+}

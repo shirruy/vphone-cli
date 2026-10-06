@@ -1,0 +1,112 @@
+# IOS_ROOT_TRANSITION group-pairing consumer disassembly
+# BootKC SHA-256: c01b133237eb9c5aa6c7ed38f54ed5db924b4ba2e6465cd51f0245b4c823e800
+# function vm: 0xfffffff00a265548
+
+0xfffffff00a265548  bti      c
+0xfffffff00a26554c  pacibsp  
+0xfffffff00a265550  sub      sp, sp, #0x80
+0xfffffff00a265554  stp      x26, x25, [sp, #0x30]
+0xfffffff00a265558  stp      x24, x23, [sp, #0x40]
+0xfffffff00a26555c  stp      x22, x21, [sp, #0x50]
+0xfffffff00a265560  stp      x20, x19, [sp, #0x60]
+0xfffffff00a265564  stp      x29, x30, [sp, #0x70]
+0xfffffff00a265568  add      x29, sp, #0x70
+0xfffffff00a26556c  mov      x19, x0
+0xfffffff00a265570  ldr      x8, [x0, #0xc0]
+0xfffffff00a265574  ldrh     w8, [x8, #0x3c4]
+0xfffffff00a265578  cmp      w8, w1
+0xfffffff00a26557c  b.ne     #0xfffffff00a265590
+0xfffffff00a265580  mov      x0, x19
+0xfffffff00a265584  mov      w1, #0
+0xfffffff00a265588  bl       #0xfffffff00a292374
+0xfffffff00a26558c  b        #0xfffffff00a26567c
+0xfffffff00a265590  ldr      x22, [x19, #0xd0]
+0xfffffff00a265594  ldr      x8, [x22, #0xc0]
+0xfffffff00a265598  ldr      w9, [x8, #0xb4]
+0xfffffff00a26559c  cbz      w9, #0xfffffff00a265638
+0xfffffff00a2655a0  mov      x20, x2
+0xfffffff00a2655a4  mov      x21, x1
+0xfffffff00a2655a8  mov      x25, #0
+0xfffffff00a2655ac  add      x26, sp, #0x28
+0xfffffff00a2655b0  adrp     x23, #0xfffffff007ba4000
+0xfffffff00a2655b4  add      x23, x23, #0xbc
+0xfffffff00a2655b8  add      x9, x8, #0xb8
+0xfffffff00a2655bc  ldr      x2, [x9, x25, lsl #3]
+0xfffffff00a2655c0  cbz      x2, #0xfffffff00a265628
+0xfffffff00a2655c4  str      x26, [sp]
+0xfffffff00a2655c8  mov      x0, x22
+0xfffffff00a2655cc  mov      x1, #0
+0xfffffff00a2655d0  mov      x3, x23
+0xfffffff00a2655d4  mov      x4, #0
+0xfffffff00a2655d8  mov      x5, #0
+0xfffffff00a2655dc  mov      x6, #0
+0xfffffff00a2655e0  mov      x7, #0
+0xfffffff00a2655e4  bl       #0xfffffff00a293838
+0xfffffff00a2655e8  cbnz     w0, #0xfffffff00a265640
+0xfffffff00a2655ec  ldr      x24, [sp, #0x28]
+0xfffffff00a2655f0  ldr      x8, [x24, #0xc0]
+0xfffffff00a2655f4  ldrh     w9, [x8, #0x3c4]
+0xfffffff00a2655f8  cmp      w9, w21
+0xfffffff00a2655fc  b.ne     #0xfffffff00a265618
+0xfffffff00a265600  tbnz     w20, #0, #0xfffffff00a265678
+0xfffffff00a265604  ldr      x9, [x19, #0xc0]
+0xfffffff00a265608  add      x0, x8, #0x3f0
+0xfffffff00a26560c  add      x1, x9, #0x3f0
+0xfffffff00a265610  bl       #0xfffffff00a2be274
+0xfffffff00a265614  cbz      w0, #0xfffffff00a265678
+0xfffffff00a265618  mov      x0, x24
+0xfffffff00a26561c  bl       #0xfffffff00a28f920
+0xfffffff00a265620  str      xzr, [sp, #0x28]
+0xfffffff00a265624  ldr      x8, [x22, #0xc0]
+0xfffffff00a265628  add      x25, x25, #1
+0xfffffff00a26562c  ldr      w9, [x8, #0xb4]
+0xfffffff00a265630  cmp      x25, x9
+0xfffffff00a265634  b.lo     #0xfffffff00a2655b8
+0xfffffff00a265638  mov      x19, #0
+0xfffffff00a26563c  b        #0xfffffff00a26567c
+0xfffffff00a265640  ldp      x9, x8, [x22, #0xc0]
+0xfffffff00a265644  ldr      x8, [x8, #0x558]
+0xfffffff00a265648  add      x9, x9, #0xb8
+0xfffffff00a26564c  ldr      x9, [x9, x25, lsl #3]
+0xfffffff00a265650  stp      x8, x9, [sp, #0x10]
+0xfffffff00a265654  adrp     x8, #0xfffffff007be1000
+0xfffffff00a265658  add      x8, x8, #0xc25
+0xfffffff00a26565c  mov      w9, #0x4fa
+0xfffffff00a265660  stp      x8, x9, [sp]
+0xfffffff00a265664  adrp     x0, #0xfffffff007be1000
+0xfffffff00a265668  add      x0, x0, #0xbf7
+0xfffffff00a26566c  bl       #0xfffffff00a1cbce0
+0xfffffff00a265670  ldr      x19, [sp, #0x28]
+0xfffffff00a265674  b        #0xfffffff00a26567c
+0xfffffff00a265678  mov      x19, x24
+0xfffffff00a26567c  mov      x0, x19
+0xfffffff00a265680  ldp      x29, x30, [sp, #0x70]
+0xfffffff00a265684  ldp      x20, x19, [sp, #0x60]
+0xfffffff00a265688  ldp      x22, x21, [sp, #0x50]
+0xfffffff00a26568c  ldp      x24, x23, [sp, #0x40]
+0xfffffff00a265690  ldp      x26, x25, [sp, #0x30]
+0xfffffff00a265694  add      sp, sp, #0x80
+0xfffffff00a265698  retab    
+0xfffffff00a26569c  bti      c
+0xfffffff00a2656a0  cmp      w2, #8
+0xfffffff00a2656a4  b.lo     #0xfffffff00a2656c8
+
+# comparison helper stub 0xfffffff00aa980c0
+0xfffffff00aa980c0  bti      c
+0xfffffff00aa980c4  mov      w2, #0x10
+0xfffffff00aa980c8  b        #0xfffffff00a50f5c0
+0xfffffff00aa980cc  bti      c
+
+# compare implementation 0xfffffff00a50f5c0
+0xfffffff00a50f5c0  bti      c
+0xfffffff00a50f5c4  cbz      x2, #0xfffffff00a50f5e0
+0xfffffff00a50f5c8  ldrb     w8, [x0], #1
+0xfffffff00a50f5cc  ldrb     w9, [x1], #1
+0xfffffff00a50f5d0  subs     w8, w8, w9
+0xfffffff00a50f5d4  b.ne     #0xfffffff00a50f5e4
+0xfffffff00a50f5d8  subs     x2, x2, #1
+0xfffffff00a50f5dc  b.ne     #0xfffffff00a50f5c8
+0xfffffff00a50f5e0  mov      w8, #0
+0xfffffff00a50f5e4  mov      x0, x8
+0xfffffff00a50f5e8  ret      
+0xfffffff00a50f5ec  pacibsp  

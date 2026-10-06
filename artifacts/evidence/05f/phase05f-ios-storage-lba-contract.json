@@ -1,0 +1,436 @@
+{
+  "gate": "IOS_STORAGE_LBA_CONTRACT",
+  "iteration": "57ZE",
+  "date": "2026-09-30",
+  "input_identity": {
+    "device": "iPhone15,4",
+    "board": "d37ap",
+    "soc": "t8120",
+    "build": "24A437",
+    "bootkc_path": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+    "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+    "bootkc_size": 68747264,
+    "authoritative_dtree": {
+      "source": "Firmware/all_flash/DeviceTree.d37ap.im4p (bvx2) in iPhone15,4_27.0_24A437_Restore.ipsw",
+      "decompressed_size": 269248,
+      "decompressed_sha256": "7560AA1E4AC07C0D9B57E73A81668DECB5969FE012208A199B58CCADA2CF5E7B"
+    },
+    "booted_dtree": {
+      "path": "payloads-v3/dtree.bin (dt_fixup.py-pruned)",
+      "size": 259884,
+      "sha256": "9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B"
+    },
+    "system_image": {
+      "path": "phase05f-mutation/iter56/system-os-decrypted.dmg",
+      "size": 9615441920,
+      "sha256": "5A4AA9C67944599D67DA6971757526A50E6772DA698C0502322631A0DA37D73A"
+    },
+    "cryptex_image": {
+      "path": "phase05f-mutation/iter56/cryptex-systemos-decrypted.dmg",
+      "size": 6014631936,
+      "sha256": "B2131A5C1E6CF2C95E369E57379AB6D180D558E8A988E0CC66181D64FB781538"
+    },
+    "ramdisk": {
+      "path": "payloads-v3/ramdisk.dmg",
+      "size": 243269632,
+      "sha256": "54250DEF83E624D3DA7A04BD1EA37CEDD9236A4B7C75A2E3ABD8DC0EF048C069"
+    },
+    "IOS_STORAGE_LBA_INPUT_IDENTITY_PASS": true,
+    "analysis_base_head": "fdafc0c876d50e53c6f5f83cff2a1a7ac059c99b",
+    "CURRENT_CONTROLLER_CLASS": "AppleANS3NVMeController",
+    "CURRENT_PROVIDER_CLASS": "RTBuddyService",
+    "nvme_queue_entries": 64
+  },
+  "block_size_separation": {
+    "APFS_VS_NVME_BLOCK_SIZE_SEPARATION_PASS": true,
+    "APFS_CONTAINER_BLOCK_SIZE": 4096,
+    "APFS_container_block_size_evidence": "decmpfs/extent reader block size (reviewer-certified through Iteration 56); APFS nx_block_size field",
+    "NVME_NAMESPACE_LBA_SIZE": 4096,
+    "NVME_NAMESPACE_LBA_SHIFT": 12,
+    "HOST_BACKING_SECTOR_SIZE": "UNPROVEN_IMPLEMENTATION_DETAIL",
+    "HOST_BACKING_SECTOR_SIZE_note": "Guest-visible NVMe LBA size (4096) is proven from BootKC Identify LBAF. The host file/block-layer sector granularity was NOT measured from this project's QEMU block backend; 512-byte host sectors are a QEMU/DMG convention, not a current-build proof. This field does NOT participate in the guest LBA proof.",
+    "NOT_ASSUMED": "the 4096 guest LBA size below is NOT derived from APFS 4096; it is proven from BootKC code",
+    "HOST_BACKING_VS_GUEST_LBA_SEPARATION_PASS": true
+  },
+  "namespace_struct": {
+    "ANS_NAMESPACE_STRUCT_LAYOUT_PASS": true,
+    "ANS_NAMESPACE_WORD2_SEMANTICS_PASS": true,
+    "source": "AppleEmbeddedNVMeController::SetNamespacesStruct() at 0xfffffff009c7aae0",
+    "parser": "requires 'namespaces' property from the ans node to be OSData with length divisible by 12; count = length/12 (magic-divide constant 0xAAAAAAAB at 0x9c7ab24); stores count at buf[0] and copies raw bytes after +4 (field [x20,#0x7e0])",
+    "record_layout": [
+      {
+        "word": 0,
+        "offset_in_record": 0,
+        "width": 4,
+        "endianness": "little",
+        "dest_field": "NSID",
+        "use": "namespace id (1-based)"
+      },
+      {
+        "word": 1,
+        "offset_in_record": 4,
+        "width": 4,
+        "endianness": "little",
+        "dest_field": "NSTYPE",
+        "use": "namespace type; log 'NSID %d NSType %d NSSize %u' at 0x9c7e8d4 (cc5) / 0x9c7e8f0 (cd8)"
+      },
+      {
+        "word": 2,
+        "offset_in_record": 8,
+        "width": 4,
+        "endianness": "little",
+        "dest_field": "NSSize",
+        "use": "logged as NSSize ('%s::%d:NSSize\\t\\t: %u' 0x8cdcec); ALSO the expected NCAP comparison value in ValidateNamespaceSize (ldr w8,[x9] where x9 = fNamespaces+4+nsid*12: i.e. record[nsid-1].word2)"
+      }
+    ],
+    "records": [
+      {
+        "nsid": 1,
+        "nstype": 1,
+        "word2": 0
+      },
+      {
+        "nsid": 2,
+        "nstype": 2,
+        "word2": 2560
+      },
+      {
+        "nsid": 3,
+        "nstype": 3,
+        "word2": 32
+      },
+      {
+        "nsid": 4,
+        "nstype": 4,
+        "word2": 2
+      },
+      {
+        "nsid": 5,
+        "nstype": 5,
+        "word2": 2
+      },
+      {
+        "nsid": 6,
+        "nstype": 8,
+        "word2": 256
+      },
+      {
+        "nsid": 7,
+        "nstype": 13,
+        "word2": 32768
+      }
+    ],
+    "word2_note": "word2 is the DT-declared size (logged as NSSize) AND the expected-NCAP comparison value in ValidateNamespaceSize (ldr w8,[x9] where x9 = fNamespaces+4+nsid*12; compared against the u32 at Identify buffer+8 = NCAP). For NSID1 (word2=0) the alternate size path uses [x19,#0x4b8] ('Burn-in blks set. NSID1 now sized to %lld') or the caller-supplied capacity (inByteCapacity). Capacity unit is LBAs because NCAP is defined in logical blocks.",
+    "ANS_NAMESPACE_WORD2_FIELD_IDENTITY_PASS": true,
+    "word2_semantics": {
+      "APPLE_DT_FIELD_NAME": "NSSize",
+      "NVME_IDENTIFY_FIELD": "NCAP",
+      "UNIT": "LBA",
+      "statement": "DT NSSize (word2) / expected namespace capacity in LBAs, cross-checked against Identify Namespace NCAP"
+    }
+  },
+  "namespace_creation_path": {
+    "ANS_NAMESPACE_CREATION_PATH_PASS": true,
+    "functions": [
+      {
+        "fn": "AppleEmbeddedNVMeController::SetNamespacesStruct",
+        "vm": "0xfffffff009c7aae0",
+        "role": "read DT namespaces into fNamespaces struct ([x20,#0x7e0])"
+      },
+      {
+        "fn": "AppleEmbeddedNVMeController::DetermineNamespaces",
+        "vm": "0xfffffff009c7d000-region",
+        "role": "identifies nsid[n] as nstype[n]; 'Identified nsid[%d] as nstype[%d]' (0x8cdb03)"
+      },
+      {
+        "fn": "AppleEmbeddedNVMeController::CreateNamespaces",
+        "vm": "0xfffffff009c7e594-region",
+        "role": "allocates per-NS structs, calls ValidateNamespaceSize, publishes block devices; 'Creating %d namespaces on NAND' (0x8cdd01); per-NS logging NSID/NSType/NSSize"
+      },
+      {
+        "fn": "AppleEmbeddedNVMeController::ValidateNamespaceSize",
+        "vm": "0xfffffff009c7eb00",
+        "role": "Apple internal operation selector 0x11 with a 0x1000-byte response buffer whose parsed layout matches Identify Namespace: parses FLBAS (byte 0x1a) and LBAF entry (offset 0x80 + 4*flbas), checks METADATA_SIZE==0, then asserts logicalBlockSize==4096 (0x8cde5b) or logs 'Invalid LogicalBlockSize=%d' (0x8cdde8); compares Identify NCAP (offset 8) against fNamespaces record word2"
+      }
+    ]
+  },
+  "identify_path": {
+    "ANS_IDENTIFY_NAMESPACE_LBA_PATH_PASS": true,
+    "identify_namespace": "operation issued via Apple internal selector 0x11 (0x1000-byte buffer) through the command-object wrapper 0xfffffff00ab205ec; the Identify buffer layout (NCAP@8, NLBAF@0x19, FLBAS@0x1a, LBAF@0x80) matches the standard Identify Namespace data structure and is the current-build proof basis",
+    "fields": [
+      {
+        "name": "NCAP",
+        "offset": 8,
+        "width": 8,
+        "use": "the low u32 at buffer+8 is compared against DT-declared word2 for the NSID (ldr w8,[x0,#8] at 0x9c7ec04)"
+      },
+      {
+        "name": "NLBAF",
+        "offset": 25,
+        "width": 1,
+        "use": "num LBA formats; FLBAS must be < NLBAF+1 (b.hs reject at 0x9c7ebe4)"
+      },
+      {
+        "name": "FLBAS",
+        "offset": 26,
+        "width": 1,
+        "use": "active LBA format index (low 4 bits)"
+      },
+      {
+        "name": "LBAF table",
+        "offset": 128,
+        "width": "4 bytes per entry",
+        "use": "exact current-build checks: u16 at entry+0 must be ZERO (ldrh + cbnz at 0x9c7ebf4); u8 at entry+2 must equal 12 (cmp w8,#0xc at 0x9c7ebfc); logicalBlockSize = 1<<entry+2 = 4096; on mismatch 'Invalid LogicalBlockSize = %d' with 1<<entry2 and assert '( logicalBlockSize == 4096 )' (0x8cde5b)"
+      }
+    ],
+    "derivation": "LBA size comes from the Identify Namespace LBAF entry selected by FLBAS: entry+0 u16 must be zero and entry+2 u8 is the size exponent; the driver computes logicalBlockSize = 1 << entry+2, logs/asserts it must equal 4096 (exponent 12). It is NOT taken from the DT, not from APFS, and not a standalone hardcoded constant.",
+    "lba_size_4096_evidence": "assert string '( logicalBlockSize == 4096 )' at 0xfffffff0078cde5b used from ValidateNamespaceSize fail path; 'Invalid LogicalBlockSize = %d' 0x8cdde8; LBADS must be 12 (cmp w8,#0xc at 0x9c7ebfc) -> 1<<12 = 4096; range assert 'LBADataSize >= kNVME_512_LBA_Data && LBADataSize <= kNVME_Max_LBA_Data' (0x8d4e0b) with 512_LBA constant string '512' (0x8d2552)",
+    "IDENTIFY_NAMESPACE_CAPACITY_FIELD_OFFSET_PASS": true,
+    "offset_8_field": "NCAP",
+    "offset_8_note": "Standard NVMe Identify Namespace layout: NSZE u64 @0x00, NCAP u64 @0x08, NUSE u64 @0x10. The disassembly reads u32 at buffer+8 (ldr w8,[x0,#8] at 0x9c7ec04) with no prior +8 pointer advance, so the compared field is NCAP, not NSZE. Capacity unit remains LBAs either way (NCAP is defined in LBAs).",
+    "APPLE_NVME_COMMAND_SELECTOR_0X11_SEMANTICS_PASS": true,
+    "NVME_IDENTIFY_ADMIN_OPCODE_PROVEN": "PARTIAL_NON_BLOCKING",
+    "selector_0x11": {
+      "classification": "APPLE_INTERNAL_OPERATION_SELECTOR",
+      "evidence": "ValidateNamespaceSize passes w0=0x11 to stub 0xfffffff009cd711c (auth-stub slot 0xfffffff0080d0678 -> 0xfffffff00ab205ec command-object wrapper); a sibling path at 0x9c7e650 passes w0=0x12 with a 0x4000 buffer, confirming 0x11/0x12 are an Apple internal operation/selector enum, not the NVMe wire opcode",
+      "wire_opcode": "NOT_STATICALLY_RECOVERED - the standard NVMe Admin Identify opcode (0x06) is expected to be written inside the Apple command-object/ANS submission path which is runtime-initialized; claiming the wire opcode would require tracing the command-structure write, which is beyond this gate",
+      "standard_reference": "standard NVMe Admin Identify opcode = 0x06 (corroborative reference only)"
+    },
+    "NVME_WIRE_OPCODE_NONBLOCKING_CLASSIFICATION_PASS": true,
+    "wire_opcode_nonblocking_note": "The standard wire opcode byte is NOT required to prove the LBA-size contract: the response layout, LBADS, NCAP, and guest-visible LBA size are all proven from the parsed 0x1000-byte response buffer. Standard Admin Identify opcode 0x06 was NOT observed in Apple runtime code and is recorded only as a corroborative reference."
+  },
+  "lba_proof": {
+    "IOS_GUEST_VISIBLE_LBA_SIZE_PASS": true,
+    "NVME_NAMESPACE_LBA_SIZE": 4096,
+    "NVME_NAMESPACE_LBA_SHIFT": 12,
+    "proof_chain": "Identify Namespace -> LBAF[FLBAS].LBADS must equal 12 (cmp w8,#0xc) -> 1<<12 = 4096; failure asserts 'logicalBlockSize == 4096'",
+    "IOS_NAMESPACE_CAPACITY_UNIT_PASS": true,
+    "capacity_unit": "LBA (logical block addresses); NCAP is compared directly against DT word2 without scaling, and NCAP is defined in LBAs; block counts are 'numBlocks' (Identified numBlocks %d Expected numBlocks %d)",
+    "overflow_safe": "count derived as length/12 via magic-multiply (umull + lsr #35) on u32 length; no shift overflow path found"
+  },
+  "namespace_map": {
+    "IOS_NAMESPACE_PUBLICATION_MAP_PASS": false,
+    "publication_evidence": "CreateNamespaces loop iterates the fNamespaces records and follows one shared attach path (AppleEmbeddedBlockDevice alloc + attach via vtab+0x88; media properties Logical/Physical Block Size). Static proof covers the shared path only; per-NSID publication on a real guest is PENDING_RUNTIME.",
+    "records": [
+      {
+        "nsid": 1,
+        "nstype": 1,
+        "word2": 0,
+        "driver_role": "large-capacity namespace candidate (byte-capacity override path; not ROOT_PROVEN)",
+        "published": "PENDING_RUNTIME",
+        "block_size": 4096,
+        "capacity_source": "inByteCapacity / NVRAM burn-in override else word2",
+        "publication_note": "shared attach path statically proven; per-NSID runtime confirmation pending"
+      },
+      {
+        "nsid": 2,
+        "nstype": 2,
+        "word2": 2560,
+        "driver_role": "identified by nstype at runtime",
+        "published": "PENDING_RUNTIME",
+        "block_size": 4096,
+        "capacity_source": "word2 (2560 LBAs = 10 MiB)",
+        "publication_note": "shared attach path statically proven; per-NSID runtime confirmation pending"
+      },
+      {
+        "nsid": 3,
+        "nstype": 3,
+        "word2": 32,
+        "driver_role": "identified by nstype at runtime",
+        "published": "PENDING_RUNTIME",
+        "block_size": 4096,
+        "capacity_source": "word2 (32 LBAs = 128 KiB)",
+        "publication_note": "shared attach path statically proven; per-NSID runtime confirmation pending"
+      },
+      {
+        "nsid": 4,
+        "nstype": 4,
+        "word2": 2,
+        "driver_role": "identified by nstype at runtime",
+        "published": "PENDING_RUNTIME",
+        "block_size": 4096,
+        "capacity_source": "word2 (2 LBAs = 8 KiB)",
+        "publication_note": "shared attach path statically proven; per-NSID runtime confirmation pending"
+      },
+      {
+        "nsid": 5,
+        "nstype": 5,
+        "word2": 2,
+        "driver_role": "identified by nstype at runtime",
+        "published": "PENDING_RUNTIME",
+        "block_size": 4096,
+        "capacity_source": "word2 (2 LBAs = 8 KiB)",
+        "publication_note": "shared attach path statically proven; per-NSID runtime confirmation pending"
+      },
+      {
+        "nsid": 6,
+        "nstype": 8,
+        "word2": 256,
+        "driver_role": "identified by nstype at runtime",
+        "published": "PENDING_RUNTIME",
+        "block_size": 4096,
+        "capacity_source": "word2 (256 LBAs = 1 MiB)",
+        "publication_note": "shared attach path statically proven; per-NSID runtime confirmation pending"
+      },
+      {
+        "nsid": 7,
+        "nstype": 13,
+        "word2": 32768,
+        "driver_role": "identified by nstype at runtime",
+        "published": "PENDING_RUNTIME",
+        "block_size": 4096,
+        "capacity_source": "word2 (32768 LBAs = 128 MiB)",
+        "publication_note": "shared attach path statically proven; per-NSID runtime confirmation pending"
+      }
+    ],
+    "nstype_semantic_labels": "NONE assigned - nstype values 1,2,3,4,5,8,13 are matched to driver tables at runtime ('Identified nsid[%d] as nstype[%d]'); no System/Data/Preboot labels are proven statically",
+    "IOS_NAMESPACE_SHARED_PUBLICATION_PATH_PASS": true,
+    "PER_NSID_PUBLICATION_RUNTIME_CONFIRMED": false,
+    "PER_NSID_PUBLICATION_STATIC_PROVEN": false,
+    "IOS_NAMESPACE_PUBLICATION_STATE_CONSISTENCY_PASS": true
+  },
+  "system_namespace_candidate": {
+    "IOS_SYSTEM_NAMESPACE_CANDIDATE_PASS": true,
+    "classification": "CANDIDATE",
+    "candidate": "NSID 1 (nstype 1) is the only NSID with the byte-capacity override path (inByteCapacity / Burn-in blks), making it the natural host for the large system container",
+    "reason": "system image (9,615,441,920 bytes = 2,347,520 LBAs) and cryptex (6,014,631,936 bytes = 1,468,416 LBAs) far exceed the DT word2 sizes of NSID 2..7; NSID1's word2=0 routes to the inByteCapacity override",
+    "not_proven": "root-device selection itself belongs to IOS_ROOT_DEVICE_SELECTION; this gate only marks the candidate"
+  },
+  "image_reconciliation": {
+    "IOS_BACKING_IMAGE_LBA_RECONCILIATION_PASS": true,
+    "images": [
+      {
+        "name": "system",
+        "size": 9615441920,
+        "lbas_4096": 2347520,
+        "aligned_4096": true,
+        "aligned_512": true
+      },
+      {
+        "name": "cryptex",
+        "size": 6014631936,
+        "lbas_4096": 1468416,
+        "aligned_4096": true,
+        "aligned_512": true
+      },
+      {
+        "name": "ramdisk",
+        "size": 243269632,
+        "lbas_4096": 59392,
+        "aligned_4096": true,
+        "aligned_512": true
+      }
+    ],
+    "note": "alignment proves divisibility only; it does NOT prove namespace assignment or root selection"
+  },
+  "external_reference_audit": {
+    "EXTERNAL_LBA_REFERENCE_AUDIT_PASS": true,
+    "standard_nvme_reference": {
+      "classification": "STANDARD_NVME_CORROBORATIVE_REFERENCE",
+      "identify_namespace_layout": [
+        {
+          "field": "NSZE",
+          "offset": 0,
+          "width": 8
+        },
+        {
+          "field": "NCAP",
+          "offset": 8,
+          "width": 8
+        },
+        {
+          "field": "NUSE",
+          "offset": 16,
+          "width": 8
+        },
+        {
+          "field": "NLBAF",
+          "offset": 25,
+          "width": 1
+        },
+        {
+          "field": "FLBAS",
+          "offset": 26,
+          "width": 1
+        },
+        {
+          "field": "LBAF",
+          "offset": 128,
+          "width": "variable table"
+        }
+      ],
+      "admin_identify_opcode": "0x06"
+    },
+    "items": [
+      {
+        "source": "current BootKC (IONVMeFamily 2.1.0)",
+        "finding": "LBA size = 4096 via Identify LBAF entry: u16==0, LBADS exponent==12 (1<<12 = 4096)",
+        "classification": "CURRENT_BUILD_PROOF"
+      },
+      {
+        "source": "Apple-authoritative DeviceTree namespaces property",
+        "finding": "7 records of {NSID,NSTYPE,NSSize} u32 triplets; NSID1 NSSize 0 (override path)",
+        "classification": "CURRENT_BUILD_PROOF"
+      },
+      {
+        "source": "standard NVMe Identify Namespace data structure (spec/Linux reference)",
+        "finding": "NSZE@0x00, NCAP@0x08, NUSE@0x10, NLBAF@0x19, FLBAS@0x1a, LBAF@0x80; Admin Identify opcode 0x06",
+        "classification": "STANDARD_NVME_CORROBORATIVE_REFERENCE"
+      },
+      {
+        "source": "APFS container 4096 block size",
+        "finding": "corroborates the 4096 world but was NOT used as the proof source",
+        "classification": "CORROBORATIVE_ONLY"
+      }
+    ]
+  },
+  "preboot_action_item": {
+    "PREBOOT_ANS_DEVICE_TREE_COMPAT_RESTORE": "OPEN_ACTION_ITEM",
+    "note": "booted dtree.bin (dt_fixup.py-pruned) lacks iop-ans-nub compatible=iop-nub,rtbuddy-v2; must be restored before runtime ANS/RTBuddy bring-up. Does NOT reopen ANS_KERNEL_DRIVER_MATCH_CONTRACT and does NOT block this LBA contract."
+  },
+  "canonical_state": {
+    "IOS_STORAGE_LBA_INPUT_IDENTITY_PASS": true,
+    "APFS_VS_NVME_BLOCK_SIZE_SEPARATION_PASS": true,
+    "ANS_NAMESPACE_CREATION_PATH_PASS": true,
+    "ANS_NAMESPACE_STRUCT_LAYOUT_PASS": true,
+    "ANS_NAMESPACE_WORD2_SEMANTICS_PASS": true,
+    "ANS_IDENTIFY_NAMESPACE_LBA_PATH_PASS": true,
+    "IOS_GUEST_VISIBLE_LBA_SIZE_PASS": true,
+    "IOS_NAMESPACE_CAPACITY_UNIT_PASS": true,
+    "IOS_NAMESPACE_PUBLICATION_MAP_PASS": false,
+    "IOS_SYSTEM_NAMESPACE_CANDIDATE_PASS": true,
+    "IOS_BACKING_IMAGE_LBA_RECONCILIATION_PASS": true,
+    "EXTERNAL_LBA_REFERENCE_AUDIT_PASS": true,
+    "IOS_STORAGE_LBA_CONTRACT": "PASS_CLOSED",
+    "IOS_STORAGE_LBA_CONTRACT_PASS": true,
+    "IOS_STORAGE_LBA_CONTRACT_DURABLE_PASS": true,
+    "NVME_NAMESPACE_LBA_SIZE": 4096,
+    "NVME_NAMESPACE_LBA_SHIFT": 12,
+    "HOST_BACKING_SECTOR_SIZE": "UNPROVEN_IMPLEMENTATION_DETAIL",
+    "APFS_CONTAINER_BLOCK_SIZE": 4096,
+    "next_gate": "SEALED_CRYPTEX_AUTHORITATIVE_ROOT_WALK",
+    "iteration": "57ZE",
+    "IDENTIFY_NAMESPACE_CAPACITY_FIELD_OFFSET_PASS": true,
+    "ANS_NAMESPACE_WORD2_FIELD_IDENTITY_PASS": true,
+    "APPLE_NVME_COMMAND_SELECTOR_0X11_SEMANTICS_PASS": true,
+    "NVME_IDENTIFY_ADMIN_OPCODE_PROVEN": "PARTIAL_NON_BLOCKING",
+    "HOST_BACKING_VS_GUEST_LBA_SEPARATION_PASS": true,
+    "IOS_NAMESPACE_PUBLICATION_STATE_CONSISTENCY_PASS": true,
+    "IOS_NAMESPACE_SHARED_PUBLICATION_PATH_PASS": true,
+    "PER_NSID_PUBLICATION_RUNTIME_CONFIRMED": false,
+    "IOS_STORAGE_LBA_SEMANTIC_CONSISTENCY_PASS": true,
+    "IOS_LBA_SEMANTIC_CONSISTENCY_PASS": true,
+    "IDENTIFY_NAMESPACE_CAPACITY_FIELD": "NCAP",
+    "LBA_ACTIVE_STATE_HAS_NO_STALE_NSZE_SEMANTICS_PASS": true,
+    "APPLE_SELECTOR_0X11_ACTIVE_WORDING_PASS": true,
+    "ANS_NAMESPACE_THIRD_FIELD_RESOLVED_PASS": true,
+    "NVME_WIRE_OPCODE_NONBLOCKING_CLASSIFICATION_PASS": true
+  },
+  "remaining_unknowns": [
+    "standard wire opcode byte is NOT statically recovered and is classified PARTIAL_NON_BLOCKING (not required for the LBA contract)",
+    "per-NSID publication on real guest is PENDING_RUNTIME (shared attach path statically proven only)",
+    "exact nstype semantic labels (1/2/3/4/5/8/13) remain runtime-identified",
+    "NSID1 final capacity depends on runtime inByteCapacity/NVRAM burn-in values",
+    "HOST_BACKING_SECTOR_SIZE is UNPROVEN_IMPLEMENTATION_DETAIL (does not affect guest LBA 4096)"
+  ]
+}

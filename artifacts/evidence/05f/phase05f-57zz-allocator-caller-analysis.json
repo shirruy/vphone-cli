@@ -1,0 +1,69 @@
+{
+  "gate": "57ZZ_ALLOCATOR_CALLER_ANALYSIS",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "method": "executable: canonical fixup decoder + Capstone BL/B scan + adrp/add xref scan",
+  "fixup_decoder": "scripts/phase05f-57zz-fixup-index.py (shared canonical)",
+  "chained_segments_searched": [
+    "__DATA_CONST",
+    "__DATA_SPTM",
+    "__DATA"
+  ],
+  "total_fixup_index_size": 532174,
+  "allocator": {
+    "vm": "0xfffffff008387eb8",
+    "direct_bl_b_callers": [],
+    "fixup_references": []
+  },
+  "thunk": {
+    "vm": "0xfffffff008387eb0",
+    "instructions": [
+      {
+        "addr": "0xfffffff008387eb0",
+        "mnemonic": "mov",
+        "operands": "x1, x2"
+      },
+      {
+        "addr": "0xfffffff008387eb4",
+        "mnemonic": "b",
+        "operands": "#0xfffffff008387eb8"
+      },
+      {
+        "addr": "0xfffffff008387eb8",
+        "mnemonic": "bti",
+        "operands": "c"
+      },
+      {
+        "addr": "0xfffffff008387ebc",
+        "mnemonic": "pacibsp",
+        "operands": ""
+      }
+    ],
+    "register_transformation": "thunk x2 -> allocator x1 (derived from 'mov x1, x2')",
+    "direct_bl_b_callers": [],
+    "fixup_references": []
+  },
+  "armio_class_object": {
+    "vm": "0xfffffff00afef458",
+    "xrefs_in_BootKC_TEXT_EXEC": [
+      "0xfffffff008387ef0",
+      "0xfffffff008388ce8",
+      "0xfffffff008388d68",
+      "0xfffffff008388dd8",
+      "0xfffffff008388e34",
+      "0xfffffff00838a1b4",
+      "0xfffffff00838a208"
+    ]
+  },
+  "verdicts": {
+    "DIRECT_CALLER_TO_ALLOCATOR": "NOT_OBSERVED",
+    "DIRECT_CALLER_TO_THUNK": "NOT_OBSERVED",
+    "FIXUP_REFERENCE_TO_ALLOCATOR": "NOT_OBSERVED",
+    "FIXUP_REFERENCE_TO_THUNK": "NOT_OBSERVED",
+    "INDIRECT_CALL_MECHANISM": "UNKNOWN",
+    "OSMETACLASS_DISPATCH": "SUPPORTED_HYPOTHESIS_ONLY (not proven)",
+    "THUNK_X2_TO_ALLOCATOR_X1": "PROVEN_STATIC (fail-closed assertion passed)",
+    "RUNTIME_ALLOCATOR_ENTRY_VIA_THUNK": "UNKNOWN (not yet proven; indirect entry bypassing thunk is possible)",
+    "ALLOCATOR_ARG1_SOURCE_GLOBAL": "UNKNOWN (depends on runtime entry path)",
+    "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate target)"
+  }
+}

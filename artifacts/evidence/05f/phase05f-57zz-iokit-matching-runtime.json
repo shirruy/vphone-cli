@@ -1,0 +1,54 @@
+{
+  "gate": "57ZZ_IOKIT_MATCHING_RUNTIME",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "vtable_reference_scan": {
+    "method": "whole-binary qword scan, dyld chained-fixup target = raw & (BIT(30)-1)",
+    "candA_static_vm": "0xfffffff0082f4df0",
+    "candB_static_vm": "0xfffffff0082f804c",
+    "candA_fixup_offset": "0x12f0df0",
+    "candB_fixup_offset": "0x12f404c",
+    "candA_reference_count": 0,
+    "candB_reference_count": 0,
+    "conclusion": "RETRACTED: this scan assumed target30 == file offset, which is not the DYLD_CHAINED_PTR_64_KERNEL_CACHE resolution semantics (resolved = basePointers[cacheLevel] + target). The scan result is INVALID_DECODER_ASSUMPTION until a real chained-fixup decoder proves the reference counts."
+  },
+  "runs": {
+    "ans58a_dt": {
+      "dir": "build/phase05f-runtime/p2-decisive-v18",
+      "classification": "NO_HIT",
+      "slide": "0x20000000",
+      "serial_bytes": 37170,
+      "ans_related_serial_lines": []
+    },
+    "ascwrap_corrected_dt": {
+      "dir": "build/phase05f-runtime/p9-ascwrap-v2",
+      "classification": "NO_HIT",
+      "slide": "0x20000000",
+      "serial_bytes": 37155,
+      "ans_related_serial_lines": []
+    }
+  },
+  "xnu_matching_research": {
+    "source": "xnu-8792.81.2 (github.com/apple-oss-distributions/xnu, tag identical to opensource.apple.com xnu-8792.81.2)",
+    "key_findings": [
+      "IONameMatch compares against the provider nub's OWN name/compatible/device_type/model (IODeviceTreeSupport.cpp:950-958); it never consults the parent node's properties.",
+      "Provider-class filtering happens at IOCatalogue::findDrivers via IOProviderClass bucketing (IOCatalogue.cpp:133-162, 233-245) plus metaCast verification (IOService.cpp:7514-7531).",
+      "A personality is never considered if the provider is never registerService()d, IOProviderClass is absent from the provider's metaclass chain, or platformAdjustService rejects the nub (IOService.cpp:1044-1097).",
+      "IOPlatformDevice nubs copy exactly one DT node's property table (IORegistryEntry.cpp:371); IOParentMatch is the only ancestor-consulting matcher."
+    ],
+    "supports": "The H1 mechanism: parent-level iop,ascwrap-v6 compatible is invisible to child-nub matching, and dt_fixup's stripping removed the provider identity that AppleASCWrapV6's IONameMatch requires (STATIC_MATCHING_PRECONDITION_DEFECT: PROVEN; RUNTIME_CAUSAL_SUFFICIENCY: UNKNOWN).",
+    "does_not_support": "Any claim about our specific fixture's runtime nub publication; that requires runtime observation."
+  },
+  "verdicts": {
+    "VTABLE_REFERENCE_SCAN_CANDA_CANDB": "INVALID_DECODER_ASSUMPTION",
+    "CANDA_VTABLE_DISPATCH_STATUS": "UNKNOWN",
+    "CANDB_VTABLE_DISPATCH_STATUS": "UNKNOWN",
+    "PRIOR_NO_HIT_DISPROVES_INSTANTIATION": "UNKNOWN",
+    "APPLEASCWRAPV6_RUNTIME_ENTRY": "NOT_OBSERVED",
+    "APPLEA7IOP_INSTANTIATION": "UNKNOWN",
+    "BREAKPOINT_ARMED_BEFORE_TARGET_MATCHING": "UNKNOWN",
+    "ASCWRAP_CORRECTED_DT_BOOT": "COMPLETED_NO_NEW_ANS_SERIAL",
+    "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_VALID_INSTRUMENTATION",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE"
+  }
+}

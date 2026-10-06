@@ -1,0 +1,322 @@
+# Phase 5F guest integration / boot validation harness.
+# Boots a ramdisk through the canonical QEMU/SPTM configuration and
+# records ordered serial milestones, first-exception state, UART
+# bytes, stderr, runtime duration, and natural-exit status.
+#
+# Usage:
+#   run-guest-integration.ps1 -Ramdisk <path.dmg> -RunName <label> [-BootArgs "rd=md0 serial=3 -v ..."]
+#
+# Milestone comparison is ORDERED, not total-byte based.
+
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$Ramdisk,
+
+    [Parameter(Mandatory = $true)]
+    [string]$RunName,
+
+    [int]$WindowSeconds = 30,
+
+    [string]$BootArgs = 'rd=md0 serial=3 -v -noprogress wdt=-1 wlan-olyhal-abort',
+
+    [switch]$NegativeControl
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$RepoRoot = 'C:\Users\rbjos\source\vphone-cli-windows'
+$QemuBuild = Join-Path $RepoRoot 'build\phase05e-qemu-sptm-source-build\darwin-vm\qemu-sptm\build-win'
+$QemuExe = Join-Path $QemuBuild 'qemu-system-aarch64.exe'
+$MingwBin = 'C:\msys64\mingw64\bin'
+$PayloadRoot = Join-Path $env:USERPROFILE 'vphone-private\phase05f-known-good\payloads-v3'
+$RunRoot = Join-Path $RepoRoot "build\phase05f-runtime\$RunName"
+
+New-Item -ItemType Directory -Force -Path $RunRoot | Out-Null
+
+# Clear any orphaned qemu from earlier failed harness runs so it
+# cannot hold this run's serial file open.
+Get-Process -Name 'qemu-system-aarch64' -ErrorAction SilentlyContinue |
+    Stop-Process -Force -ErrorAction SilentlyContinue
+Start-Sleep -Milliseconds 500
+
+$serial = Join-Path $RunRoot 'uart0.log'
+$so = Join-Path $RunRoot 'stdout.log'
+$se = Join-Path $RunRoot 'stderr.log'
+$result = Join-Path $RunRoot 'result.json'
+
+function QPath([string]$p) {
+    return ([System.IO.Path]::GetFullPath($p)).Replace('\', '/')
+}
+
+# Ordered boot STAGES (canonical baseline). Stage order is strictly
+# asserted; within STAGE_4_IOKIT the member order is NOT required
+# (Backlight/CredentialManager reorder across runs).
+$stages = @(
+    [ordered]@{ name = 'STAGE_1_IBOOT';     members = @('iBoot version: qemu-sptm') },
+    [ordered]@{ name = 'STAGE_2_IMAGE4';    members = @('Darwin Image4 Extension Version') },
+    [ordered]@{ name = 'STAGE_3_AMFI';      members = @('AMFI: Booted in a VM') },
+    [ordered]@{ name = 'STAGE_4_IOKIT';     members = @('AppleARMBacklight::start', 'AppleCredentialManager: init') },
+    [ordered]@{ name = 'STAGE_5_APFS_MOUNT'; members = @('handle_mount:') },
+    [ordered]@{ name = 'STAGE_6_IGNITION';  members = @('Darwin Ignition Sequence Version') },
+    [ordered]@{ name = 'STAGE_7_LAUNCHD';   members = @('hello from launchd.1') },
+    [ordered]@{ name = 'STAGE_8_IGNITION_COMPLETE'; members = @('ignition sequence complete') }
+)
+
+# Negative control: inject an impossible stage to prove the gate
+# fails closed (exit code 1) when a stage cannot be satisfied.
+if ($NegativeControl) {
+    $stages += [ordered]@{
+        name = 'STAGE_9_IMPOSSIBLE'
+        members = @('IMPOSSIBLE_MARKER_0123456789')
+    }
+}
+
+# Fatal-exception markers (any hit = exception present).
+$exceptionMarkers = @(
+    'panic',
+    'Kernel trap',
+    'data abort',
+    'prefetch abort',
+    'ESR',
+    'fatal exception'
+)
+
+$argsList = @(
+    '-M', 'darwin',
+    '-bootkc', (QPath (Join-Path $PayloadRoot 'bootkc.bin')),
+    '-dtree', (QPath (Join-Path $PayloadRoot 'dtree.bin')),
+    '-tc', (QPath (Join-Path $PayloadRoot 'trustcache.bin')),
+    '-ramdisk', (QPath $Ramdisk),
+    '-args', ('"' + $BootArgs + '"'),
+    '-display', 'none',
+    '-monitor', 'none',
+    '-chardev', ('file,id=uart0,path=' + (QPath $serial)),
+    '-serial', 'chardev:uart0',
+    '-m', '8G',
+    '-sptm', (QPath (Join-Path $PayloadRoot 'sptm.bin')),
+    '-txm', (QPath (Join-Path $PayloadRoot 'txm.bin'))
+)
+
+# Start-Process joins array elements with spaces; quote any element
+# containing spaces so qemu receives the boot-args as one argument.
+$argString = ($argsList | ForEach-Object {
+    if ($_ -match '\s' -and -not $_.StartsWith('"')) {
+        '"' + $_ + '"'
+    } else {
+        $_
+    }
+}) -join ' '
+
+$oldPath = $env:PATH
+try {
+    $env:PATH = "$MingwBin;$oldPath"
+    $proc = Start-Process `
+        -FilePath $QemuExe `
+        -WorkingDirectory $QemuBuild `
+        -ArgumentList $argString `
+        -RedirectStandardOutput $so `
+        -RedirectStandardError $se `
+        -PassThru `
+        -WindowStyle Hidden
+} finally {
+    $env:PATH = $oldPath
+}
+
+if ($null -eq $proc) { throw 'qemu start failed' }
+
+Write-Host ("QEMU PID {0}" -f $proc.Id)
+
+$sw = [System.Diagnostics.Stopwatch]::StartNew()
+$serialBytes = 0
+$procExited = $false
+$maxIterations = [int][math]::Ceiling($WindowSeconds / 2.0)
+$iteration = 0
+while ($iteration -lt $maxIterations) {
+    $iteration++
+    Start-Sleep -Seconds 2
+    $proc.Refresh()
+    if (Test-Path $serial) { $serialBytes = (Get-Item $serial).Length }
+    if ($proc.HasExited) { $procExited = $true; break }
+}
+$sw.Stop()
+
+$elapsed = [math]::Round($sw.Elapsed.TotalSeconds, 2)
+
+$proc.Refresh()
+$naturalExit = $procExited
+$exitCode = $null
+if ($procExited) {
+    $exitCode = $proc.ExitCode
+} else {
+    # taskkill kills the full tree and is reliable for this child
+    # process; Stop-Process -Force is the fallback.
+    & taskkill /F /T /PID $proc.Id 2>$null | Out-Null
+    Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+    try {
+        [void]$proc.WaitForExit(10000)
+    } catch {}
+    $proc.Refresh()
+    $exitCode = $proc.ExitCode
+}
+
+if (Test-Path $serial) {
+    $serialBytes = (Get-Item $serial).Length
+}
+
+# Analyze UART.
+$uartText = ''
+$uartSha = $null
+$stageResults = @()
+$stageOrderOk = $true
+$iokitMembersPresent = $false
+$firstException = $null
+
+if ($serialBytes -gt 0) {
+    # qemu may still hold the serial file briefly after being
+    # killed; retry the open with a bounded wait.
+    $b = $null
+    for ($retry = 0; $retry -lt 20 -and $null -eq $b; $retry++) {
+        try {
+            $b = [IO.File]::ReadAllBytes($serial)
+        } catch {
+            Start-Sleep -Milliseconds 250
+        }
+    }
+    if ($null -eq $b) {
+        throw "serial log unreadable after kill: $serial"
+    }
+    $uartText = [Text.Encoding]::ASCII.GetString($b)
+    $uartSha = (Get-FileHash $serial -Algorithm SHA256).Hash.ToLowerInvariant()
+
+    # For each stage, record the first occurrence index of every
+    # member. A stage is PASS when every member is present. The
+    # stage's effective index is the minimum member index.
+    foreach ($stage in $stages) {
+        $members = @()
+        $allFound = $true
+        $minIndex = [int]::MaxValue
+        foreach ($m in $stage.members) {
+            $idx = $uartText.IndexOf($m)
+            $members += [ordered]@{
+                milestone = $m
+                found = ($idx -ge 0)
+                index = $idx
+            }
+            if ($idx -lt 0) { $allFound = $false }
+            elseif ($idx -lt $minIndex) { $minIndex = $idx }
+        }
+        if ($allFound -and $stage.name -eq 'STAGE_4_IOKIT') {
+            $iokitMembersPresent = $true
+        }
+        $stageResults += [ordered]@{
+            stage = $stage.name
+            found = $allFound
+            min_index = $(if ($allFound) { $minIndex } else { -1 })
+            members = $members
+        }
+    }
+
+    # Strict stage order: each stage's min index must be greater
+    # than the previous stage's min index.
+    $prevIndex = -1
+    foreach ($s in $stageResults) {
+        if (-not $s.found) {
+            $stageOrderOk = $false
+            break
+        }
+        if ($s.min_index -le $prevIndex) {
+            $stageOrderOk = $false
+            break
+        }
+        $prevIndex = $s.min_index
+    }
+
+    foreach ($em in $exceptionMarkers) {
+        $i = $uartText.IndexOf($em, [System.StringComparison]::OrdinalIgnoreCase)
+        if ($i -ge 0) {
+            $ctx = $uartText.Substring(
+                [Math]::Max(0, $i - 120),
+                [Math]::Min(240, $uartText.Length - [Math]::Max(0, $i - 120)))
+            $firstException = [ordered]@{
+                marker = $em
+                index = $i
+                context = $ctx
+            }
+            break
+        }
+    }
+}
+
+$stderrText = ''
+if (Test-Path $se) {
+    $stderrText = (Get-Content $se -Raw -ErrorAction SilentlyContinue)
+    if ($null -eq $stderrText) { $stderrText = '' }
+}
+
+$record = [ordered]@{
+    run_name = $RunName
+    stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    ramdisk_sha256 = (Get-FileHash $Ramdisk -Algorithm SHA256).Hash.ToLowerInvariant()
+    qemu_sha256 = (Get-FileHash $QemuExe -Algorithm SHA256).Hash.ToLowerInvariant()
+    boot_args = $BootArgs
+    serial_bytes = $serialBytes
+    serial_sha256 = $uartSha
+    elapsed_seconds = $elapsed
+    natural_exit = $naturalExit
+    exit_code = $exitCode
+    stages = $stageResults
+    stage_order_pass = $stageOrderOk
+    iokit_stage_members_present = $iokitMembersPresent
+    first_exception = $firstException
+    stderr_bytes = [math]::Max(0, $stderrText.Length)
+    stderr = $stderrText
+}
+
+$record | ConvertTo-Json -Depth 6 |
+    Set-Content $result -Encoding UTF8
+
+Write-Host ("RESULT: serial_bytes={0} natural_exit={1} exit={2}" -f
+    $serialBytes, $naturalExit, $exitCode)
+Write-Host '=== STAGES ==='
+foreach ($s in $stageResults) {
+    $tag = if ($s.found) { 'PASS' } else { 'MISS' }
+    Write-Host ("  {0,-5} minidx={1,-6} {2}" -f $tag, $s.min_index, $s.stage)
+    foreach ($m in $s.members) {
+        $mtag = if ($m.found) { '  ok' } else { '  MISSING' }
+        Write-Host ("{0} idx={1,-6} {2}" -f $mtag, $m.index, $m.milestone)
+    }
+}
+if ($stageOrderOk) {
+    Write-Host 'GUEST_BOOT_STAGE_ORDER_PASS'
+} else {
+    Write-Host 'GUEST_BOOT_STAGE_ORDER_FAIL'
+}
+if ($iokitMembersPresent) {
+    Write-Host 'IOKIT_STAGE_MEMBERS_PRESENT_PASS'
+} else {
+    Write-Host 'IOKIT_STAGE_MEMBERS_PRESENT_FAIL'
+}
+if ($null -ne $firstException) {
+    Write-Host ("FIRST_EXCEPTION: marker={0} index={1}" -f
+        $firstException.marker, $firstException.index)
+} else {
+    Write-Host 'FIRST_EXCEPTION: NONE'
+}
+
+# Fail-closed gate: analysis result drives the process exit code.
+$gatePass =
+    $stageOrderOk -and
+    $iokitMembersPresent -and
+    ($null -eq $firstException)
+if ($gatePass) {
+    Write-Host 'HEADLESS_BOOT_REGRESSION_PASS'
+} else {
+    Write-Host 'HEADLESS_BOOT_REGRESSION_FAIL'
+}
+Write-Host "EVIDENCE: $RunRoot"
+
+if (-not $gatePass) {
+    exit 1
+}
+exit 0

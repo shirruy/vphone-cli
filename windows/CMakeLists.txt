@@ -243,6 +243,66 @@ if(WIN32)
     add_executable(vphone_apfs_snapshot_rename_test tests/apfs_snapshot_rename_test.cpp)
     target_link_libraries(vphone_apfs_snapshot_rename_test PRIVATE vphone_apfs_snapshot_portable)
 
+    add_library(vphone_apfs_reader STATIC src/apfs_reader.cpp src/decmpfs_type4.cpp src/decmpfs_dstream.cpp src/file_extent.cpp src/macho_validate.cpp)
+    target_include_directories(vphone_apfs_reader PUBLIC include)
+    target_link_libraries(vphone_apfs_reader PRIVATE advapi32 ZLIB::ZLIBSTATIC)
+
+    add_executable(vphone-apfs-reader-win src/apfs_reader_main.cpp)
+    target_link_libraries(vphone-apfs-reader-win PRIVATE vphone_apfs_reader)
+
+    add_executable(vphone_apfs_reader_test tests/apfs_reader_test.cpp)
+    target_link_libraries(vphone_apfs_reader_test PRIVATE vphone_apfs_reader)
+
+    add_executable(vphone_apfs_mutator_test src/apfs_mutator_test.cpp)
+    target_link_libraries(vphone_apfs_mutator_test PRIVATE vphone_apfs_reader)
+    add_executable(vphone_apfs_semantic_wrapper_test src/apfs_semantic_wrapper_test.cpp)
+    target_link_libraries(vphone_apfs_semantic_wrapper_test PRIVATE vphone_apfs_reader)
+    add_executable(vphone_apfs_semantic_integration_test src/apfs_semantic_integration_test.cpp)
+    target_link_libraries(vphone_apfs_semantic_integration_test PRIVATE vphone_apfs_reader)
+    add_executable(vphone_apfs_decmpfs_fixture_test tests/apfs_decmpfs_fixture_test.cpp src/decmpfs_type4.cpp)
+    target_link_libraries(vphone_apfs_decmpfs_fixture_test PRIVATE ZLIB::ZLIBSTATIC)
+    target_include_directories(vphone_apfs_decmpfs_fixture_test PRIVATE include)
+    add_executable(vphone_apfs_macho_fixture_test tests/apfs_macho_fixture_test.cpp src/macho_validate.cpp)
+    target_include_directories(vphone_apfs_macho_fixture_test PRIVATE include)
+    add_executable(vphone_apfs_file_extent_fixture_test tests/apfs_file_extent_fixture_test.cpp src/file_extent.cpp)
+    target_include_directories(vphone_apfs_file_extent_fixture_test PRIVATE include)
+    add_executable(vphone_apfs_dstream_fixture_test tests/apfs_dstream_fixture_test.cpp src/decmpfs_dstream.cpp)
+    target_include_directories(vphone_apfs_dstream_fixture_test PRIVATE include)
+    add_executable(vphone_apfs_dstream_contract_test tests/apfs_dstream_contract_test.cpp src/decmpfs_dstream.cpp src/file_extent.cpp)
+    target_include_directories(vphone_apfs_dstream_contract_test PRIVATE include)
+    add_test(NAME apfs_reader_test COMMAND vphone_apfs_reader_test)
+    set_tests_properties(apfs_reader_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "APFS_READER_TEST_PASS"
+    )
+    add_test(NAME apfs_mutator_test COMMAND vphone_apfs_mutator_test)
+    set_tests_properties(apfs_mutator_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "APFS_MUTATOR_TEST_PASS"
+    )
+    add_test(NAME apfs_semantic_wrapper_test COMMAND vphone_apfs_semantic_wrapper_test)
+    set_tests_properties(apfs_semantic_wrapper_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "SEMANTIC_WRAPPER_TEST_PASS"
+    )
+    add_test(NAME apfs_decmpfs_fixture_test COMMAND vphone_apfs_decmpfs_fixture_test)
+    set_tests_properties(apfs_decmpfs_fixture_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "DECMPFS_TYPE4_REAL_FIXTURE_MATRIX_PASS"
+    )
+    add_test(NAME apfs_macho_fixture_test COMMAND vphone_apfs_macho_fixture_test)
+    set_tests_properties(apfs_macho_fixture_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "MACHO_STRUCTURAL_FIXTURE_MATRIX_PASS"
+    )
+    add_test(NAME apfs_file_extent_fixture_test COMMAND vphone_apfs_file_extent_fixture_test)
+    set_tests_properties(apfs_file_extent_fixture_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "RESOURCEFORK_FILE_EXTENT_NEGATIVE_MATRIX_PASS"
+    )
+    add_test(NAME apfs_dstream_fixture_test COMMAND vphone_apfs_dstream_fixture_test)
+    set_tests_properties(apfs_dstream_fixture_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "RESOURCEFORK_DSTREAM_DESCRIPTOR_NEGATIVE_MATRIX_PASS"
+    )
+    add_test(NAME apfs_dstream_contract_test COMMAND vphone_apfs_dstream_contract_test)
+    set_tests_properties(apfs_dstream_contract_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "RESOURCEFORK_DATA_STREAM_NEGATIVE_MATRIX_PASS"
+    )
+
     add_library(vphone_udif_portable STATIC src/udif_portable.cpp)
     target_include_directories(vphone_udif_portable
         PUBLIC include

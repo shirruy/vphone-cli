@@ -1,0 +1,116 @@
+{
+  "gate": "57ZZ_ANS_PROVIDER_PUBLICATION",
+  "instrumentation_targets": {
+    "armio_allocator": "0xfffffff008387eb8",
+    "start_dispatch": "0xfffffff00aada0e0 (client->start(provider) blraa; proven +0x360 slot)"
+  },
+  "allocator_register_contract": {
+    "derived_from": "disassembly of 0xfffffff008387eb8 (AppleARMPlatform exec)",
+    "instructions": [
+      "0xfffffff008387ed0  mov x20, x1        ; save arg1",
+      "0xfffffff008387ed4  mov x21, x0        ; save arg0",
+      "0xfffffff008387f50  mov x1, x21        ; init arg1 <- caller arg0",
+      "0xfffffff008387f54  mov x2, x20        ; init arg2 <- caller arg1",
+      "0xfffffff008387f60  blraa x9, x17      ; OSMetaClass init virtual"
+    ],
+    "ARMIO_ALLOC_ARG0": "forwarded unchanged as init arg1; role UNKNOWN pending caller analysis",
+    "ARMIO_ALLOC_ARG1": "forwarded unchanged as init arg2; role UNKNOWN pending caller analysis",
+    "DT_REGISTRY_ENTRY_ARG": "UNKNOWN (both args forwarded; needs caller-of-allocator trace)"
+  },
+  "runs": {
+    "p7-provider-v2": {
+      "warmup_seconds": 3,
+      "slide": 536870912,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 55",
+      "START_DISPATCH_HITS_OBSERVED": ">= 5",
+      "captured_breakpoint_events": null,
+      "capture_event_limit": null,
+      "capture_termination_reason": null,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT_DERIVATION": "DERIVED (bp: event count vs known MAX_HITS=60; recorder field absent in legacy capture)",
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "start_client_vtables": [
+        "other(fffffff007d2fd70)",
+        "other(fffffff007f96c00)",
+        "other(fffffff007f963f0)",
+        "other(fffffff007d2fd70)",
+        "other(fffffff007ff4440)"
+      ],
+      "ascwrap_family_start": false,
+      "note": "event cap 60 truncates counts; both phases observed"
+    },
+    "p7-provider-v3": {
+      "warmup_seconds": 3,
+      "slide": 536870912,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 20",
+      "START_DISPATCH_HITS_OBSERVED": ">= 40",
+      "captured_breakpoint_events": null,
+      "capture_event_limit": null,
+      "capture_termination_reason": null,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT_DERIVATION": "DERIVED (bp: event count vs known MAX_HITS=60; recorder field absent in legacy capture)",
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "start_client_vtables": [
+        "other(fffffff007d35038)",
+        "other(fffffff007c91b80)",
+        "other(fffffff007d2fd70)",
+        "other(fffffff008001ef0)",
+        "other(fffffff007d04848)",
+        "other(fffffff007d0e5d0)",
+        "other(fffffff007d10c78)",
+        "other(fffffff007d303e0)",
+        "other(fffffff007d446d0)",
+        "other(fffffff007dbad98)",
+        "other(fffffff007e1fad8)",
+        "other(fffffff007e88960)",
+        "other(fffffff007ea2c80)",
+        "other(fffffff007f3d058)",
+        "other(fffffff007f52420)",
+        "other(fffffff007f574f8)",
+        "other(fffffff007f566d8)",
+        "other(fffffff007fbbf80)",
+        "other(fffffff007fec2b8)",
+        "other(fffffff00805fda8)",
+        "other(fffffff008091e60)",
+        "other(fffffff0080dc720)",
+        "other(fffffff0081046d0)",
+        "other(fffffff008122818)",
+        "other(fffffff008126ce8)",
+        "other(fffffff007d2fd70)",
+        "other(fffffff007d2fd70)",
+        "other(fffffff007d410d0)",
+        "other(fffffff007fa9100)",
+        "other(fffffff007d2fd70)",
+        "other(fffffff007d2fd70)",
+        "other(fffffff007ef1200)",
+        "other(fffffff007e8a288)",
+        "other(fffffff007ee36c0)",
+        "other(fffffff00815da00)",
+        "other(fffffff007d2fd70)",
+        "other(fffffff008148bf8)",
+        "other(fffffff00814c068)",
+        "other(fffffff007ed6fe0)",
+        "other(fffffff007e9c100)"
+      ],
+      "ascwrap_family_start": false,
+      "note": "event cap 60 truncates counts; both phases observed"
+    }
+  },
+  "findings": {
+    "ARMIO_ALLOCATION_OBSERVED_AFTER_ARMING": "PROVEN (earliest allocation t=0.057 post-attach, derived from events)",
+    "IOKIT_START_DISPATCH_OBSERVED_AFTER_ARMING": "PROVEN (earliest start t=0.388 post-attach, derived from events)",
+    "BREAKPOINT_ARMED_BEFORE_FIRST_ARMIO_ALLOCATION": "UNKNOWN (earlier pre-attach allocations possible)",
+    "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS alloc not identified among ARMIO allocations yet)",
+    "ARMIO_ALLOCATION_PHASE_ACTIVE": true,
+    "IOKIT_START_DISPATCH_ACTIVE": true,
+    "ASCWRAP_FAMILY_START_OBSERVED": false
+  },
+  "verdicts": {
+    "ANS_DT_ENTRY_CONSUMED": "UNKNOWN",
+    "APPLEARMIODEVICE_ALLOCATED": "PROVEN_FOR_OTHER_NODES (>=55 observed; ANS-specific not identified)",
+    "APPLEARMIODEVICE_INITIALIZED": "UNKNOWN",
+    "PROVIDER_ATTACHED": "UNKNOWN",
+    "PROVIDER_PUBLICATION_RESULT": "PARTIAL: allocation + start phases observed; no ASCWrap-family start; ANS-specific identity unconfirmed",
+    "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_ANS_NAME_CORRELATION",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE"
+  }
+}

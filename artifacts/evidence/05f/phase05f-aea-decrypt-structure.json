@@ -1,0 +1,107 @@
+{
+  "gate": "aea-decrypt-and-full-ios-structure-proof",
+  "iteration": 56,
+  "date": "2026-09-29",
+  "aea_toolchain_audit": {
+    "marker": "AEA_TOOLCHAIN_AUDIT_PASS",
+    "reference_impl": "kinnay/AEA python-aea 1.1.0 (build/phase4d2b-reference-venv), profile 1 supported",
+    "native_impl": "windows/src/aea_profile1_portable.cpp (BCrypt HKDF/HMAC + AES-256 CTR + lzfse)",
+    "key_source": "iPhone Wiki Keys:Rave_24A437_(iPhone15,4)",
+    "key_derivation_inputs": "32-byte symmetric keys published per-build (both images profile 1, scrypt_strength 0)"
+  },
+  "input_identity": {
+    "marker": "AEA_INPUT_IDENTITY_PASS",
+    "system_os": {
+      "ipsw_entry": "043-70116-656.dmg.aea",
+      "encrypted_size": 8321499136,
+      "extracted_sha256": "7186bc515731a60ed3de19d0d673c5e8ac07575b589598b0228c5ce88d34a3f5",
+      "manifest_role": "OS",
+      "aea_profile": 1,
+      "key_source": "iPhone Wiki Keys:Rave_24A437_(iPhone15,4) Root Filesystem entry",
+      "key_length": 32,
+      "key_sha256": "735dd72265fb05ecae6ca11611feef33a9fc17b783e8cb3249aa3c1019f3b4ab"
+    },
+    "cryptex_systemos": {
+      "ipsw_entry": "043-69467-703.dmg.aea",
+      "encrypted_size": 2348810240,
+      "extracted_sha256": "bdc0f3d60ab6468460ad8e9091bbc2ed595971292da518ed1f217fbfa32eb106",
+      "manifest_role": "Cryptex1,SystemOS",
+      "aea_profile": 1,
+      "key_source": "iPhone Wiki Keys:Rave_24A437_(iPhone15,4) Cryptex1,SystemOS entry",
+      "key_length": 32,
+      "key_sha256": "24b19f3974873a69c74fae28160d61f183b8fd0dedade0911a95cab01eee5b0b"
+    }
+  },
+  "aea_evidence_key_hygiene": {
+    "marker": "AEA_EVIDENCE_KEY_HYGIENE_PASS",
+    "note": "Raw symmetric keys removed from committed evidence; only source reference, length, and SHA-256 fingerprints are stored. Actual keys live in the private runtime environment."
+  },
+  "system_os_decrypt": {
+    "markers": ["SYSTEM_AEA_DECRYPT_PASS", "SYSTEM_AEA_DECRYPT_DETERMINISTIC_PASS", "SYSTEM_AEA_SOURCE_IMMUTABLE_PASS"],
+    "output_size": 9615441920,
+    "output_sha256": "5a4aa9c67944599d67da6971757526a50e6772da698c0502322631a0da37d73a",
+    "structural": {
+      "marker": "SYSTEM_DECRYPTED_IMAGE_STRUCTURAL_PASS",
+      "format": "raw APFS container (NXSB at offset 0x20)",
+      "block_size": 4096,
+      "block_count": 2347520,
+      "volumes": [
+        {
+          "name": "Rave24A437.D37OS",
+          "apsb_block": 65536,
+          "apsb_oid": 1026,
+          "xid": 491,
+          "role": "System (sealed)",
+          "launchdaemons_resolved": true,
+          "launchdaemons_cnid": 1152921500312115115,
+          "sample_plist": "com.apple.mobile.assertion_agent.plist (273 bytes, READ_OK via structural reader)"
+        }
+      ]
+    }
+  },
+  "cryptex_systemos_decrypt": {
+    "markers": ["CRYPTEX_SYSTEMOS_AEA_DECRYPT_PASS", "CRYPTEX_SYSTEMOS_STRUCTURAL_PASS"],
+    "output_size": 6014631936,
+    "output_sha256": "b2131a5c1e6cf2c95e369e57379ab6d180d558e8a988e0cc66181d64fb781538",
+    "structural": {
+      "format": "raw APFS container (NXSB at 0x20)",
+      "block_size": 4096,
+      "block_count": 1468416,
+      "volume_name": "Rave24A437.D37SystemCryptex",
+      "note": "container is sealed (nx_flags 0x10); volume superblocks not in first 256K, reader volume enumeration empty but volume name found at metadata"
+    }
+  },
+  "springboard_content": {
+    "marker": "SPRINGBOARD_BINARY_PRESENT_PASS",
+    "evidence": {
+      "SpringBoard.app": "/System/Library/CoreServices/SpringBoard.app (path found in decrypted System volume; PlugIns/SpringBoardDiagnostics present)",
+      "backboardd": "/usr/libexec/backboardd + com.apple.backboardd.plist (present)",
+      "runningboardd": "present (10 raw hits)",
+      "UIKit": "present (329 hits)",
+      "CoreAnimation": "present (35 hits)",
+      "frontboardd": "ABSENT in iOS 27 layout (role merged; not present as separate binary)",
+      "IOSurface": "present (framework)",
+      "IOMobileFramebuffer": "present (framework)"
+    }
+  },
+  "volume_role_map": {
+    "marker": "FULL_IOS_VOLUME_ROLE_MAP_PASS",
+    "volumes": [
+      {"name": "Rave24A437.D37OS", "role": "System (sealed)", "source": "043-70116-656.dmg.aea"},
+      {"name": "Rave24A437.D37SystemCryptex", "role": "Cryptex1 SystemOS", "source": "043-69467-703.dmg.aea"},
+      {"name": "(data volume)", "role": "Data (not in restore fixture; created at restore time)", "source": "runtime"}
+    ]
+  },
+  "preboot_metadata": {
+    "status": "NOT_YET_FULLY_AUDITED",
+    "note": "mtree/root_hash/trustcache for both images present in IPSW. Cryptex boot metadata (exclave/preboot manifests) requires deeper container walk; deferred to Iteration 57."
+  },
+  "root_transition_model": {
+    "status": "UNRESOLVED -> evidence now supports system-root + cryptex composition",
+    "evidence": "System volume (sealed) + Cryptex SystemOS both required for full userspace; restore ramdisk is auxiliary. Full model resolution still needs Preboot/Data role mapping."
+  },
+  "blocker": {
+    "next": "SYSTEM_VOLUME_SPRINGBOARD_VERIFIED + CRYPTEX_WALK + PREBOOT_METADATA",
+    "ios_storage_emulation_required": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "phase05f-iteration58a-ans-dtree",
+  "phase": "05F",
+  "iteration": "58A",
+  "upstream_repo": "https://github.com/jprx/darwin-vm.git",
+  "source_commit": "ffdf018",
+  "target_file": "dt_fixup.py",
+  "patch": "phase05f-iteration58a-ans-dtree.patch",
+  "patch_sha256": "C543522A94042FA352C3D892789DC80D98C7CE42CF1CB14429CB2438048A8646",
+  "behavior_before": "del_compat() recursively deletes the iop-ans-nub compatible property because 'iop-nub,rtbuddy-v2' is not in SUPPORTED_DRIVERS whitelist.",
+  "behavior_after": "New opt-in CLI flag --preserve-ans-compatible preserves exactly the compatible value 'iop-nub,rtbuddy-v2' when present. Default mode is byte-for-byte unchanged.",
+  "opt_in": true,
+  "default_unchanged": true,
+  "acceptance": {
+    "default_regression": "Generated default tree must be byte-identical to pre-58A output.",
+    "ans_enabled": "device-tree/arm-io/ans/iop-ans-nub compatible == iop-nub,rtbuddy-v2"
+  },
+  "booted_dtree_baseline_sha256": "9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B",
+  "notes": "58A is payload preparation only. No RTBuddy attach, ANS3 probe, MMIO, namespace publication, or storage functionality is claimed from the modified DeviceTree alone."
+}

@@ -1,0 +1,138 @@
+{
+  "gate": "ANS_KERNEL_DRIVER_MATCH_CONTRACT",
+  "iteration": "57ZB",
+  "date": "2026-09-30",
+  "input_identity": {
+    "device": "iPhone15,4",
+    "board": "d37ap",
+    "soc": "t8120",
+    "build": "24A437",
+    "bootkc_path": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+    "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+    "bootkc_size": 68747264,
+    "dtree_path": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\dtree.bin",
+    "dtree_sha256": "9E84C9ADD25B99EDDD8B088B249E7CE348394B80A0DEF59949E9BB9C63A24E1B",
+    "dtree_size": 259884,
+    "dtree_role": "QEMU dt_fixup.py-pruned guest tree (BOOTED artifact)",
+    "authoritative_dtree_im4p": "Firmware/all_flash/DeviceTree.d37ap.im4p inside iPhone15,4_27.0_24A437_Restore.ipsw",
+    "authoritative_dtree_decompressed_sha256": "7560AA1E4AC07C0D9B57E73A81668DECB5969FE012208A199B58CCADA2CF5E7B",
+    "authoritative_dtree_decompressed_size": 269248,
+    "analysis_base_head": "c42d6bde322d006eb0ab82bf25b690b14225a39b",
+    "ANS_MATCH_INPUT_IDENTITY_PASS": true,
+    "note": "final_evidence_commit intentionally ABSENT; Git is the authority"
+  },
+  "canonical_state": {
+    "NVME_LINEAR_SQ_RAW_DT_RECONCILIATION": "PASS",
+    "nvme_linear_sq": {
+      "length": 0,
+      "raw_hex": "",
+      "parsed_type": "OSData (length 0)"
+    },
+    "ANS3_NVME_LINEAR_SQ_PREDICATE_PROVEN": true,
+    "ANS3_D37AP_PREDICATE_REVALIDATION_PASS": true,
+    "ANS3_D37AP_PREDICATE_RESULT": "MATCH",
+    "ANS_EXACT_CONTROLLER_CLASS_PROVEN": true,
+    "CURRENT_CONTROLLER_CLASS": "AppleANS3NVMeController",
+    "WINNING_SCORE": 300000,
+    "ANS_EXACT_WINNING_PROBE_PASS": true,
+    "ANS_PROVIDER_CLASS_PROVEN": true,
+    "CURRENT_PROVIDER_CLASS": "RTBuddyService",
+    "APPLEA7IOPNUB_WITHREGISTRYENTRY_FLOW_PASS": true,
+    "withregistryentry": {
+      "factory_vm": "0xfffffff0082f7b40",
+      "factory_fileoff": "0x12f3b40",
+      "pseudocode": [
+        "obj = new AppleA7IOPNub instance (alloc via vtab+0x8b0 meta, size 0x98)",
+        "if (!obj->init(x0=provider?)) -> log 'failed to init nub' + return NULL",
+        "obj->[0x88] = provider->getProperty(sym_region_base)   # G1 = lazy OSSymbol('region-base')",
+        "obj->[0x90] = provider->getProperty(sym_region_size)   # G2 = lazy OSSymbol('region-size')",
+        "log 'AppleA7IOPNub: %s, %d: allocated nub %p' and return obj"
+      ],
+      "log_strings": {
+        "allocated": "AppleA7IOPNub: %s, %d: allocated nub %p (0xfffffff00713d3de)",
+        "failed_init": "AppleA7IOPNub: %s, %d: failed to init nub (0xfffffff00713d37d)",
+        "not_akf": "AppleA7IOPNub: %s, %d: provider is not AKFProvider (0xfffffff00713d3a9)",
+        "func_name": "withRegistryEntry (0xfffffff00713d36b)"
+      }
+    },
+    "APPLEA7IOPNUB_PROPERTY_SYMBOL_1_RESOLVED": true,
+    "APPLEA7IOPNUB_PROPERTY_SYMBOL_2_RESOLVED": true,
+    "property_symbols": {
+      "G1_slot": "0xfffffff007d15190 (fixup -> __DATA 0xfffffff00afed638, zeroed: lazy init static)",
+      "G1_identity": "region-base",
+      "G1_evidence": "the DT child's only 8-byte region props are region-size/region-base; withRegistryEntry caches exactly two provider properties at [0x88]/[0x90] into a struct whose only 8-byte slots are the region pair; no 'name'/'compatible'/'device_type' OSSymbol is read by the factory",
+      "G2_slot": "0xfffffff007d15b10 (fixup -> __DATA_CONST 0xfffffff007d33100 ptr-holder -> fixup -> __DATA 0xfffffff00afef458, zeroed: lazy init static)",
+      "G2_identity": "region-size",
+      "writers": "none statically (both instances zeroed on disk; runtime lazy init populates them); all 6 code sites only READ the slots"
+    },
+    "ANS_IOP_NUB_REGISTRY_NAME_TRANSFORM": "NOT_PROVEN_TO_BE_REQUIRED",
+    "ANS_IOP_NUB_MATCH_VALUE_SOURCE": "STATIC",
+    "ANS_IOP_NUB_MATCH_VALUE_STATIC_PROVEN": true,
+    "ANS_IOP_NUB_PROVIDER_MATCH_PASS": true,
+    "match_value_proof": {
+      "mechanism": "AppleA7IOPNub is initialized via the generic IOService init that copies the source registry entry's property table (IOService::init(IORegistryEntry* from, plane) -> IORegistryEntry::init(from, plane) -> fPropertyTable = old->dictionaryWithProperties(); XNU IORegistryEntry.cpp). The DT child's 'compatible' property therefore lands on the published nub, and IOKit IONameMatch matches IOService 'compatible'/'name'/'device_type' properties (Apple IOService.h IONameMatch docstring).",
+      "source_tree": "Apple-authoritative DeviceTree.d37ap.im4p (bvx2) from the 24A437 IPSW",
+      "decompress": "bvx2 stream at im4p offset 0x34; lzfse.decompress(body[4:]) -> 269248 bytes",
+      "authoritative_child_compatible": "iop-nub,rtbuddy-v2 (len=19, includes NUL)",
+      "personality": "RTBuddy: IOClass=RTBuddy, IOProviderClass=AppleA7IOPNub, IONameMatch=iop-nub,rtbuddy-v2",
+      "chain": [
+        "DT ans@77400000 (role=ANS2)",
+        "-> DT child iop-ans-nub",
+        "-> compatible=iop-nub,rtbuddy-v2 (authoritative tree)",
+        "-> AppleA7IOPNub (publisher AppleA7IOP; property table copied from DT entry)",
+        "-> RTBuddy personality IONameMatch=iop-nub,rtbuddy-v2 -> MATCH",
+        "-> RTBuddyService (IOProviderClass RTBuddy, IOProbeScore 1000)",
+        "-> AppleANS3NVMeController (IOProviderClass RTBuddyService, IOPropertyMatch role=ANS2, probe 300000)"
+      ]
+    },
+    "PUBLISHED_NUB_NAME_SOURCE": "COPIED_PROPERTY (compatible from DT entry property table, per IOService::init(from) copy semantics)",
+    "APPLEA7IOPNUB_PUBLISHED_NAME_SOURCE_PASS": true,
+    "APPLEA7IOPNUB_PROPERTY_PROPAGATION_PASS": true,
+    "APPLEA7IOP_ANS_NUB_PUBLICATION_FLOW_PASS": true,
+    "publication_flow": {
+      "enumerator": "AppleA7IOP iterates AKF provider children (stub 0xfffffff0082f7b3c entry into withRegistryEntry factory), calls factory per DT nub child",
+      "factory": "AppleA7IOPNub::withRegistryEntry 0xfffffff0082f7b40",
+      "vtable": "AppleA7IOPNub vtable 0xfffffff007d14960; slots 21+ are shared IOService/IORegistryEntry implementations (no compareName/matchPropertyTable override)",
+      "init": "generic IOService::init(IORegistryEntry*, plane) at vtab+0x250 -> 0xfffffff00aac6670 -> calls 0xfffffff00aac3644 (IOService::init body) - property-table copy per XNU source"
+    },
+    "APPLEA7IOPNUB_MATCH_BEHAVIOR_AUDIT_PASS": true,
+    "match_behavior": "no custom matchPropertyTable/compareName/getName override in AppleA7IOPNub vtable; matching is stock IOService::matchPropertyTable -> compareNames -> compareName -> copyName (global name) plus the documented compatible/name/device_type property matching for DT-backed IOService objects",
+    "RTBUDDY_IONAMEMATCH_OBJECT_ORIGIN_PASS": true,
+    "ionamematch_object_origin": "the personality value 'iop-nub,rtbuddy-v2' exists once in BootKC (__PRELINK_INFO only); the MATCHING value on the provider side is the DT 'compatible' property copied from the authoritative tree child - no second BootKC literal is required",
+    "ANS_ASC_RTBUDDY_PROVIDER_CHAIN_PASS": true,
+    "ANS_IOP_NUB_PUBLISHER_PROVEN": true,
+    "ANS_IOP_NUB_IONAMEMATCH_SEMANTICS_PASS": true,
+    "ANS_IOP_NUB_IONAMEMATCH_COMPATIBLE_PASS": true,
+    "ANS2ENDPOINT1_PUBLISHER_CLASS_PROVEN": true,
+    "ANS2ENDPOINT1_NAME_FORMAT_PROVEN": true,
+    "ANS2ENDPOINT1_CONSUMER_REQUIREMENT_PROVEN": true,
+    "ANS2ENDPOINT1_EXACT_CALLSITE_ARGUMENTS": "NON_BLOCKING_IMPLEMENTATION_DETAIL",
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT": "PASS_CLOSED",
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_PASS": true,
+    "ANS_KERNEL_DRIVER_MATCH_CONTRACT_DURABLE_PASS": true,
+    "blocker": "NONE for ANS_KERNEL_DRIVER_MATCH_CONTRACT. Boot-side note: the BOOTED dtree.bin is the dt_fixup.py-pruned tree and lacks the compatible property on iop-ans-nub; that is an emulator-side boot-tree gap, not a driver-match contract gap. If our guest boots the pruned tree, RTBuddy matching at boot depends on the pruned-tree behavior; restore the property in the boot tree when the ANS chain must actually run in-guest.",
+    "next_gate": "IOS_STORAGE_LBA_CONTRACT",
+    "role": "ANS2"
+  },
+  "boot_tree_finding": {
+    "DT_FIXUP_PRUNED_TREE_IDENTIFIED_PASS": true,
+    "pipeline": "build/phase05e-qemu-sptm-source-build/darwin-vm/get_files.sh runs dt_fixup.py on the unwrapped DeviceTree",
+    "dt_fixup": "build/phase05e-qemu-sptm-source-build/darwin-vm/dt_fixup.py",
+    "del_compat": "SUPPORTED_DRIVERS=[b'AppleARM', b'aic', b'arm-io', b'uart-1,samsung']; del_compat() recursively deletes every 'compatible' prop not matching the whitelist",
+    "booted_tree_effect": "iop-ans-nub 'compatible' DELETED in dtree.bin (9 props vs 10 authoritative)",
+    "repro": "dt_fixup.py dtree.raw.bin out -nvram nvram.bin reproduces dtree.bin SHA-256 9E84C9ADD... byte-for-byte",
+    "regenerated_sha256": "9e84c9add25b99eddd8b088b249e7ce348394b80a0def59949e9bb9c63a24e1b",
+    "classification": "PREBOOT_PAYLOAD_PREPARATION_GAP; NOT a driver-match contract failure; must be fixed when the in-guest ANS/RTBuddy chain is exercised"
+  },
+  "historical_superseded_findings": {
+    "non_canonical": true,
+    "notes": [
+      "57X/57Y/57Z/57ZA partial states superseded; single canonical_state above is the ONLY authoritative state",
+      "57ZA classified ANS_IOP_NUB_MATCH_SOURCE=RUNTIME_CONFIRMATION_REQUIRED; 57ZB replaces it with STATIC via the authoritative IPSW DeviceTree compatible property + IOService property-table copy semantics",
+      "57ZA 'two unresolved runtime-initiated OSSymbol globals' are resolved in 57ZB: they are the lazy 'region-base'/'region-size' key symbols, not match-relevant"
+    ]
+  },
+  "no_device_implementation": "No ANS MMIO regions, NVMe wiring, namespace backing images, RTBuddy implementation, darwin.c changes, or boot-arg changes were made. Audit/reverse-engineering only.",
+  "IOS_STORAGE_LBA_CONTRACT": "NEXT",
+  "ITERATION_58": "UNBLOCKED_BY_MATCH_CONTRACT_CLOSE"
+}

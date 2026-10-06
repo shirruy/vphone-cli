@@ -1,0 +1,1451 @@
+=== CALLER 0x100024428 ===
+1000243b8  pacibsp  
+1000243bc  sub      sp, sp, #0x50
+1000243c0  stp      x24, x23, [sp, #0x10]
+1000243c4  stp      x22, x21, [sp, #0x20]
+1000243c8  stp      x20, x19, [sp, #0x30]
+1000243cc  stp      x29, x30, [sp, #0x40]
+1000243d0  add      x29, sp, #0x40
+1000243d4  mov      x20, x0
+1000243d8  adrp     x8, #0x1002ef000
+1000243dc  ldr      x8, [x8, #0x330]
+1000243e0  ldr      x8, [x8]
+1000243e4  str      x8, [sp, #8]
+1000243e8  adrp     x8, #0x1002d6000
+1000243ec  add      x8, x8, #0x420
+1000243f0  str      x8, [sp]
+1000243f4  adrp     x8, #0x1002ef000
+1000243f8  ldr      x8, [x8, #0x98]
+1000243fc  ldr      x0, [x8]
+100024400  adrp     x3, #0x1002ef000
+100024404  ldr      x3, [x3, #0x118]
+100024408  mov      x1, sp
+10002440c  mov      w2, #1
+100024410  bl       #0x1001bc930  ; _APFSContainerWaitForReaper
+100024414  mov      x19, x0
+100024418  cbz      x20, #0x10002449c
+10002441c  mov      x0, x20
+100024420  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+100024424  mov      x21, x0
+100024428  bl       #0x1001bc990  ; _APFSVolumeCreate <<<< _APFSVolumeCreate
+10002442c  cmp      x21, x0
+100024430  b.ne     #0x10002449c
+100024434  mov      x0, x20
+100024438  bl       #0x1001bc970  ; _APFSOverProvModel
+10002443c  cmp      x0, #2
+100024440  b.lt     #0x10002449c
+100024444  mov      x21, #0
+100024448  mov      w22, #1
+10002444c  mov      x0, x19
+100024450  bl       #0x1001bc970  ; _APFSOverProvModel
+100024454  mov      x23, x0
+100024458  mvn      x24, x21
+10002445c  mov      x0, x20
+100024460  mov      x1, x22
+100024464  bl       #0x1001bc9a0  ; _APFSVolumeCreateForMSU
+100024468  mov      x3, x0
+10002446c  add      x1, x21, #1
+100024470  add      x2, x23, x24
+100024474  mov      x0, x19
+100024478  bl       #0x1001bc980  ; _APFSShouldSealSystemVolume
+10002447c  cmn      x0, #1
+100024480  csel     x21, x21, x0, eq
+100024484  add      x22, x22, #1
+100024488  mov      x0, x20
+10002448c  bl       #0x1001bc970  ; _APFSOverProvModel
+100024490  cmp      x22, x0
+100024494  b.lt     #0x10002444c
+100024498  b        #0x1000244a0
+10002449c  mov      x21, #0
+1000244a0  mov      x0, x19
+1000244a4  mov      x1, x21
+1000244a8  bl       #0x1001bc9a0  ; _APFSVolumeCreateForMSU
+1000244ac  bl       #0x1001bcd50  ; _CC_SHA384_Init
+1000244b0  mov      x20, x0
+1000244b4  mov      x0, x19
+1000244b8  bl       #0x1001bcd40  ; _CC_SHA384_Final
+1000244bc  ldr      x8, [sp, #8]
+1000244c0  adrp     x9, #0x1002ef000
+1000244c4  ldr      x9, [x9, #0x330]
+1000244c8  ldr      x9, [x9]
+1000244cc  cmp      x9, x8
+1000244d0  b.ne     #0x1000244f0
+1000244d4  mov      x0, x20
+1000244d8  ldp      x29, x30, [sp, #0x40]
+1000244dc  ldp      x20, x19, [sp, #0x30]
+1000244e0  ldp      x22, x21, [sp, #0x20]
+1000244e4  ldp      x24, x23, [sp, #0x10]
+1000244e8  add      sp, sp, #0x50
+1000244ec  retab    
+1000244f0  bl       #0x1001bdb50  ; _MobileGestalt_get_shouldHactivate
+
+=== CALLER 0x10003f970 ===
+10003f880  pacibsp  
+10003f884  sub      sp, sp, #0x70
+10003f888  stp      x26, x25, [sp, #0x20]
+10003f88c  stp      x24, x23, [sp, #0x30]
+10003f890  stp      x22, x21, [sp, #0x40]
+10003f894  stp      x20, x19, [sp, #0x50]
+10003f898  stp      x29, x30, [sp, #0x60]
+10003f89c  add      x29, sp, #0x60
+10003f8a0  mov      x21, x6
+10003f8a4  mov      x20, x0
+10003f8a8  str      xzr, [sp, #0x18]
+10003f8ac  cbz      x0, #0x10003fa3c
+10003f8b0  ldr      x8, [x20]
+10003f8b4  cbz      x8, #0x10003fa48
+10003f8b8  cbz      x1, #0x10003fa54
+10003f8bc  cbz      x2, #0x10003fa60
+10003f8c0  mov      x22, x3
+10003f8c4  cbz      x3, #0x10003fa6c
+10003f8c8  cbz      x21, #0x10003fa84
+10003f8cc  ldp      x24, x23, [x8]
+10003f8d0  adrp     x8, #0x1002ef000
+10003f8d4  ldr      x8, [x8, #0x98]
+10003f8d8  ldr      x0, [x8]
+10003f8dc  adrp     x2, #0x1002ef000
+10003f8e0  ldr      x2, [x2, #0x120]
+10003f8e4  adrp     x3, #0x1002ef000
+10003f8e8  ldr      x3, [x3, #0x128]
+10003f8ec  mov      x1, #0
+10003f8f0  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10003f8f4  mov      x19, x0
+10003f8f8  cbz      x0, #0x10003fa90
+10003f8fc  ldr      x8, [x20]
+10003f900  ldr      x20, [x8, #0x38]
+10003f904  str      x20, [sp, #0x18]
+10003f908  cbz      x20, #0x10003f918
+10003f90c  mov      x0, x20
+10003f910  bl       #0x1001bcd50  ; _CC_SHA384_Init
+10003f914  b        #0x10003f950
+10003f918  adrp     x8, #0x1002ef000
+10003f91c  ldr      x8, [x8, #0xb0]
+10003f920  ldr      x2, [x8]
+10003f924  ldr      x0, [x24]
+10003f928  adrp     x4, #0x1002d4000
+10003f92c  add      x4, x4, #0xf80
+10003f930  add      x5, sp, #0x18
+10003f934  mov      x1, x23
+10003f938  mov      x3, x2
+10003f93c  mov      x6, #0
+10003f940  bl       #0x100032da4  ; local
+10003f944  cbnz     w0, #0x10003faa0
+10003f948  ldr      x20, [sp, #0x18]
+10003f94c  cbz      x20, #0x10003fadc
+10003f950  adrp     x1, #0x1002da000
+10003f954  add      x1, x1, #0xd60
+10003f958  mov      x0, x22
+10003f95c  bl       #0x1001bcb70  ; _BOMCopierUserData
+10003f960  cbz      x0, #0x10003fae8
+10003f964  mov      x22, x0
+10003f968  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10003f96c  mov      x23, x0
+10003f970  bl       #0x1001bc990  ; _APFSVolumeCreate <<<< _APFSVolumeCreate
+10003f974  cmp      x23, x0
+10003f978  b.ne     #0x10003faf4
+10003f97c  mov      x0, x22
+10003f980  bl       #0x1001bc970  ; _APFSOverProvModel
+10003f984  cmp      x0, #1
+10003f988  b.lt     #0x10003fa00
+10003f98c  mov      x21, #0
+10003f990  adrp     x23, #0x1002da000
+10003f994  add      x23, x23, #0xda0
+10003f998  adrp     x24, #0x1002d3000
+10003f99c  add      x24, x24, #0xa40
+10003f9a0  mov      x0, x22
+10003f9a4  mov      x1, x21
+10003f9a8  bl       #0x1001bc9a0  ; _APFSVolumeCreateForMSU
+10003f9ac  mov      x25, x0
+10003f9b0  str      x0, [sp]
+10003f9b4  mov      x0, #0
+10003f9b8  mov      x1, x20
+10003f9bc  mov      x2, x23
+10003f9c0  bl       #0x1001bc0c0  ; _CFNumberGetTypeID
+10003f9c4  cbnz     x0, #0x10003f9dc
+10003f9c8  str      x25, [sp]
+10003f9cc  mov      x1, x20
+10003f9d0  mov      x2, x24
+10003f9d4  bl       #0x1001bc0c0  ; _CFNumberGetTypeID
+10003f9d8  cbz      x0, #0x10003f9ec
+10003f9dc  mov      x2, x0
+10003f9e0  mov      x0, x19
+10003f9e4  mov      x1, x25
+10003f9e8  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10003f9ec  add      x21, x21, #1
+10003f9f0  mov      x0, x22
+10003f9f4  bl       #0x1001bc970  ; _APFSOverProvModel
+10003f9f8  cmp      x21, x0
+10003f9fc  b.lt     #0x10003f9a0
+10003fa00  mov      x0, x19
+10003fa04  bl       #0x1001bc450  ; _AMSupportFileURLExists
+10003fa08  mov      x21, x0
+10003fa0c  mov      x0, x20
+10003fa10  bl       #0x1001bc440  ; _AMSupportDigestSha256
+10003fa14  mov      x0, x19
+10003fa18  bl       #0x1001bc440  ; _AMSupportDigestSha256
+10003fa1c  mov      x0, x21
+10003fa20  ldp      x29, x30, [sp, #0x60]
+10003fa24  ldp      x20, x19, [sp, #0x50]
+10003fa28  ldp      x22, x21, [sp, #0x40]
+10003fa2c  ldp      x24, x23, [sp, #0x30]
+10003fa30  ldp      x26, x25, [sp, #0x20]
+10003fa34  add      sp, sp, #0x70
+10003fa38  retab    
+10003fa3c  mov      x0, x21
+10003fa40  bl       #0x1001b2c10  ; local
+10003fa44  b        #0x10003fa78
+10003fa48  mov      x0, x21
+10003fa4c  bl       #0x1001b2be8  ; local
+10003fa50  b        #0x10003fa74
+10003fa54  mov      x0, x21
+10003fa58  bl       #0x1001b2bbc  ; local
+10003fa5c  b        #0x10003fa74
+10003fa60  mov      x0, x21
+10003fa64  bl       #0x1001b2b90  ; local
+10003fa68  b        #0x10003fa74
+10003fa6c  mov      x0, x21
+10003fa70  bl       #0x1001b2b64  ; local
+10003fa74  mov      x20, #0
+10003fa78  mov      x21, #0
+10003fa7c  mov      x19, #0
+10003fa80  b        #0x10003fa0c
+10003fa84  bl       #0x1001b2b40  ; local
+10003fa88  mov      x20, #0
+10003fa8c  b        #0x10003fa7c
+10003fa90  mov      x0, x21
+10003fa94  bl       #0x1001b2b14  ; local
+10003fa98  mov      x20, #0
+10003fa9c  b        #0x10003fafc
+10003faa0  adrp     x8, #0x1002ef000
+10003faa4  ldr      x8, [x8, #0x218]
+10003faa8  ldr      x1, [x8]
+10003faac  adrp     x8, #0x1001eb000
+10003fab0  add      x8, x8, #0xc88
+10003fab4  adrp     x4, #0x1002da000
+10003fab8  add      x4, x4, #0xd20
+10003fabc  stp      x8, x0, [sp]
+10003fac0  mov      x0, x21
+10003fac4  mov      w2, #6
+10003fac8  mov      x3, #0
+10003facc  bl       #0x1001bc380  ; _AMFDRSealingMapVerifyAndCommitSealedData
+10003fad0  mov      x21, #0
+10003fad4  ldr      x20, [sp, #0x18]
+10003fad8  b        #0x10003fa0c
+10003fadc  mov      x0, x21
+10003fae0  bl       #0x1001b2adc  ; local
+10003fae4  b        #0x10003fafc
+10003fae8  mov      x0, x21
+10003faec  bl       #0x1001b2ab0  ; local
+10003faf0  b        #0x10003fafc
+10003faf4  mov      x0, x21
+10003faf8  bl       #0x1001b2a84  ; local
+10003fafc  mov      x21, #0
+10003fb00  b        #0x10003fa0c
+
+=== CALLER 0x100053458 ===
+100053278  pacibsp  
+10005327c  sub      sp, sp, #0x60
+100053280  stp      x26, x25, [sp, #0x10]
+100053284  stp      x24, x23, [sp, #0x20]
+100053288  stp      x22, x21, [sp, #0x30]
+10005328c  stp      x20, x19, [sp, #0x40]
+100053290  stp      x29, x30, [sp, #0x50]
+100053294  add      x29, sp, #0x50
+100053298  mov      x21, x3
+10005329c  mov      x25, x1
+1000532a0  mov      x23, x0
+1000532a4  adrp     x8, #0x1002ef000
+1000532a8  ldr      x8, [x8, #0x98]
+1000532ac  ldr      x22, [x8]
+1000532b0  cbz      x2, #0x1000532d4
+1000532b4  mov      x0, x22
+1000532b8  mov      x1, #0
+1000532bc  bl       #0x1001bcb30  ; _BOMCopierSetFatalErrorHandler
+1000532c0  mov      x19, x0
+1000532c4  cbnz     x0, #0x1000532f8
+1000532c8  mov      x0, x21
+1000532cc  bl       #0x1001b46d0  ; local
+1000532d0  b        #0x100053520
+1000532d4  adrp     x2, #0x1002ef000
+1000532d8  ldr      x2, [x2, #0x120]
+1000532dc  adrp     x3, #0x1002ef000
+1000532e0  ldr      x3, [x3, #0x128]
+1000532e4  mov      x0, x22
+1000532e8  mov      x1, #0
+1000532ec  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+1000532f0  mov      x19, x0
+1000532f4  cbz      x0, #0x100053518
+1000532f8  adrp     x8, #0x1002ef000
+1000532fc  ldr      x8, [x8, #0xb0]
+100053300  ldr      x20, [x8]
+100053304  adrp     x1, #0x1002dc000
+100053308  add      x1, x1, #0xc00
+10005330c  mov      x0, x19
+100053310  mov      x2, x20
+100053314  bl       #0x1001bcad0  ; _BMCMCUUpdaterGetDeviceInfo
+100053318  adrp     x8, #0x1002ef000
+10005331c  ldr      x8, [x8, #0xb8]
+100053320  ldr      x2, [x8]
+100053324  adrp     x1, #0x1002dc000
+100053328  add      x1, x1, #0xbe0
+10005332c  mov      x0, x19
+100053330  bl       #0x1001bcad0  ; _BMCMCUUpdaterGetDeviceInfo
+100053334  adrp     x1, #0x1002dd000
+100053338  add      x1, x1, #0x6a0
+10005333c  mov      x0, x19
+100053340  mov      x2, x20
+100053344  bl       #0x1001bcad0  ; _BMCMCUUpdaterGetDeviceInfo
+100053348  adrp     x1, #0x1002dc000
+10005334c  add      x1, x1, #0xca0
+100053350  mov      x0, x19
+100053354  bl       #0x1001bcaf0  ; _BOMCopierCopyWithOptions
+100053358  cbz      w0, #0x100053368
+10005335c  mov      x20, #0
+100053360  mov      x22, #0
+100053364  b        #0x1000533d8
+100053368  adrp     x8, #0x1001d6000
+10005336c  add      x8, x8, #0x1b3
+100053370  str      x8, [sp]
+100053374  adrp     x0, #0x1001f4000
+100053378  add      x0, x0, #0x767
+10005337c  bl       #0x10001dac4  ; local
+100053380  adrp     x8, #0x1002dc000
+100053384  add      x8, x8, #0xc40
+100053388  adrp     x9, #0x1001e2000
+10005338c  add      x9, x9, #0xd90
+100053390  stp      x9, x8, [sp]
+100053394  adrp     x2, #0x1002dc000
+100053398  add      x2, x2, #0xc20
+10005339c  mov      x0, x22
+1000533a0  mov      x1, #0
+1000533a4  bl       #0x1001bcea0  ; _CFCopyDescription
+1000533a8  mov      x20, x0
+1000533ac  cbz      x0, #0x100053528
+1000533b0  mov      x0, x22
+1000533b4  mov      x1, x20
+1000533b8  bl       #0x1001bc390  ; _AMFDRSetMemoryStore
+1000533bc  mov      x22, x0
+1000533c0  cbz      x0, #0x100053544
+1000533c4  adrp     x1, #0x1002dc000
+1000533c8  add      x1, x1, #0xca0
+1000533cc  mov      x0, x19
+1000533d0  mov      x2, x22
+1000533d4  bl       #0x1001bcad0  ; _BMCMCUUpdaterGetDeviceInfo
+1000533d8  adrp     x1, #0x1002d9000
+1000533dc  add      x1, x1, #0xc80
+1000533e0  mov      x0, x19
+1000533e4  bl       #0x1001bcaf0  ; _BOMCopierCopyWithOptions
+1000533e8  cbz      w0, #0x100053414
+1000533ec  mov      x24, #0
+1000533f0  cbz      x25, #0x100053438
+1000533f4  mov      x0, x23
+1000533f8  mov      x1, x25
+1000533fc  mov      x2, x19
+100053400  mov      x3, x21
+100053404  bl       #0x1001bc250  ; _$s9CryptoKit4HPKEO9RecipientV4openy10Foundation4DataVxKAG0G8ProtocolRzlF
+100053408  mov      x21, x0
+10005340c  mov      x25, #0
+100053410  b        #0x1000534d0
+100053414  bl       #0x100077c58  ; local
+100053418  mov      x24, x0
+10005341c  cbz      x0, #0x100053538
+100053420  adrp     x1, #0x1002d9000
+100053424  add      x1, x1, #0xc80
+100053428  mov      x0, x19
+10005342c  mov      x2, x24
+100053430  bl       #0x1001bcad0  ; _BMCMCUUpdaterGetDeviceInfo
+100053434  cbnz     x25, #0x1000533f4
+100053438  mov      x0, x23
+10005343c  mov      x1, x21
+100053440  bl       #0x1001bc260  ; _$s9CryptoKit4HPKEO9RecipientVMa
+100053444  mov      x25, x0
+100053448  cbz      x0, #0x10005355c
+10005344c  mov      x0, x25
+100053450  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+100053454  mov      x26, x0
+100053458  bl       #0x1001bc990  ; _APFSVolumeCreate <<<< _APFSVolumeCreate
+10005345c  cmp      x26, x0
+100053460  b.ne     #0x10005349c
+100053464  mov      x0, x25
+100053468  bl       #0x1001bc970  ; _APFSOverProvModel
+10005346c  cmp      x0, #0
+100053470  b.le     #0x100053568
+100053474  mov      x0, x25
+100053478  mov      x1, #0
+10005347c  bl       #0x1001bc9a0  ; _APFSVolumeCreateForMSU
+100053480  mov      x1, x0
+100053484  mov      x0, x23
+100053488  mov      x2, x19
+10005348c  mov      x3, x21
+100053490  bl       #0x1001bc250  ; _$s9CryptoKit4HPKEO9RecipientV4openy10Foundation4DataVxKAG0G8ProtocolRzlF
+100053494  mov      x21, x0
+100053498  b        #0x1000534d0
+10005349c  adrp     x8, #0x1002ca000
+1000534a0  add      x8, x8, #0xef8
+1000534a4  ldr      x1, [x8]
+1000534a8  adrp     x8, #0x1001f4000
+1000534ac  add      x8, x8, #0x724
+1000534b0  adrp     x4, #0x1002dd000
+1000534b4  add      x4, x4, #0x720
+1000534b8  str      x8, [sp]
+1000534bc  mov      x0, x21
+1000534c0  mov      w2, #6
+1000534c4  mov      x3, #0
+1000534c8  bl       #0x10007baec  ; local
+1000534cc  mov      x21, #0
+1000534d0  mov      x0, x19
+1000534d4  bl       #0x1001bc440  ; _AMSupportDigestSha256
+1000534d8  mov      x0, x20
+1000534dc  bl       #0x1001bc440  ; _AMSupportDigestSha256
+1000534e0  mov      x0, x22
+1000534e4  bl       #0x1001bc440  ; _AMSupportDigestSha256
+1000534e8  mov      x0, x24
+1000534ec  bl       #0x1001bc440  ; _AMSupportDigestSha256
+1000534f0  mov      x0, x25
+1000534f4  bl       #0x1001bc440  ; _AMSupportDigestSha256
+1000534f8  mov      x0, x21
+1000534fc  ldp      x29, x30, [sp, #0x50]
+100053500  ldp      x20, x19, [sp, #0x40]
+100053504  ldp      x22, x21, [sp, #0x30]
+100053508  ldp      x24, x23, [sp, #0x20]
+10005350c  ldp      x26, x25, [sp, #0x10]
+100053510  add      sp, sp, #0x60
+100053514  retab    
+100053518  mov      x0, x21
+10005351c  bl       #0x1001b47e4  ; local
+100053520  mov      x20, #0
+100053524  b        #0x100053530
+100053528  mov      x0, x21
+10005352c  bl       #0x1001b47bc  ; local
+100053530  mov      x22, #0
+100053534  b        #0x100053550
+100053538  mov      x0, x21
+10005353c  bl       #0x1001b4760  ; local
+100053540  b        #0x100053554
+100053544  mov      x0, x21
+100053548  mov      x1, x20
+10005354c  bl       #0x1001b4790  ; local
+100053550  mov      x24, #0
+100053554  mov      x21, #0
+100053558  b        #0x10005340c
+10005355c  mov      x0, x21
+100053560  bl       #0x1001b4730  ; local
+100053564  b        #0x1000534cc
+100053568  mov      x0, x21
+10005356c  bl       #0x1001b4700  ; local
+100053570  b        #0x1000534cc
+
+=== CALLER 0x10007c1ac ===
+10007c138  pacibsp  
+10007c13c  stp      x24, x23, [sp, #-0x40]!
+10007c140  stp      x22, x21, [sp, #0x10]
+10007c144  stp      x20, x19, [sp, #0x20]
+10007c148  stp      x29, x30, [sp, #0x30]
+10007c14c  add      x29, sp, #0x30
+10007c150  cbz      x0, #0x10007c194
+10007c154  mov      x19, x0
+10007c158  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c15c  mov      x20, x0
+10007c160  bl       #0x1001bcb60  ; _BOMCopierSetUserData
+10007c164  cmp      x20, x0
+10007c168  b.ne     #0x10007c1ac
+10007c16c  mov      x0, x19
+10007c170  ldp      x29, x30, [sp, #0x30]
+10007c174  ldp      x20, x19, [sp, #0x20]
+10007c178  ldp      x22, x21, [sp, #0x10]
+10007c17c  ldp      x24, x23, [sp], #0x40
+10007c180  autibsp  
+10007c184  eor      x16, x30, x30, lsl #1
+10007c188  tbz      x16, #0x3e, #0x10007c190
+10007c18c  brk      #0xc471
+10007c190  b        #0x10007bf3c
+10007c194  adrp     x8, #0x1002fa000
+10007c198  ldr      x8, [x8, #0x2e0]
+10007c19c  cbz      x8, #0x10007c3c0
+10007c1a0  adrp     x0, #0x100204000
+10007c1a4  add      x0, x0, #0x235
+10007c1a8  b        #0x10007c3bc
+10007c1ac  bl       #0x1001bc990  ; _APFSVolumeCreate <<<< _APFSVolumeCreate
+10007c1b0  cmp      x20, x0
+10007c1b4  b.ne     #0x10007c2ac
+10007c1b8  mov      x0, x19
+10007c1bc  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c1c0  mov      x20, x0
+10007c1c4  bl       #0x1001bc990  ; _APFSVolumeCreate
+10007c1c8  cmp      x20, x0
+10007c1cc  b.ne     #0x10007c390
+10007c1d0  adrp     x8, #0x1002ef000
+10007c1d4  ldr      x8, [x8, #0x98]
+10007c1d8  ldr      x21, [x8]
+10007c1dc  adrp     x2, #0x1002ef000
+10007c1e0  ldr      x2, [x2, #0x120]
+10007c1e4  adrp     x3, #0x1002ef000
+10007c1e8  ldr      x3, [x3, #0x128]
+10007c1ec  mov      x0, x21
+10007c1f0  mov      w1, #1
+10007c1f4  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10007c1f8  cbz      x0, #0x10007c3a8
+10007c1fc  mov      x20, x0
+10007c200  mov      x0, x19
+10007c204  bl       #0x1001bc970  ; _APFSOverProvModel
+10007c208  mov      x1, x0
+10007c20c  adrp     x2, #0x1002ef000
+10007c210  ldr      x2, [x2, #0x118]
+10007c214  mov      x0, x21
+10007c218  bl       #0x1001bc950  ; _APFSExtendedSpaceInfo
+10007c21c  cbz      x0, #0x10007c444
+10007c220  mov      x21, x0
+10007c224  mov      x0, x19
+10007c228  bl       #0x1001bc970  ; _APFSOverProvModel
+10007c22c  cmp      x0, #1
+10007c230  b.lt     #0x10007c274
+10007c234  mov      x22, x0
+10007c238  mov      x23, #0
+10007c23c  mov      x0, x19
+10007c240  mov      x1, x23
+10007c244  bl       #0x1001bc9a0  ; _APFSVolumeCreateForMSU
+10007c248  bl       #0x10007c138  ; local
+10007c24c  cbz      x0, #0x10007c494
+10007c250  mov      x24, x0
+10007c254  mov      x0, x21
+10007c258  mov      x1, x24
+10007c25c  bl       #0x1001bc900  ; _APFSContainerGetSpaceInfo
+10007c260  mov      x0, x24
+10007c264  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c268  add      x23, x23, #1
+10007c26c  cmp      x22, x23
+10007c270  b.ne     #0x10007c23c
+10007c274  adrp     x1, #0x1002e2000
+10007c278  add      x1, x1, #0x40
+10007c27c  adrp     x2, #0x1002e2000
+10007c280  add      x2, x2, #0xc0
+10007c284  mov      x0, x20
+10007c288  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c28c  adrp     x1, #0x1002e2000
+10007c290  add      x1, x1, #0x80
+10007c294  mov      x0, x20
+10007c298  mov      x2, x21
+10007c29c  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c2a0  mov      x0, x21
+10007c2a4  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c2a8  b        #0x10007c3c4
+10007c2ac  bl       #0x1001bcf80  ; _CFDateGetTypeID
+10007c2b0  cmp      x20, x0
+10007c2b4  b.ne     #0x10007c310
+10007c2b8  mov      x0, x19
+10007c2bc  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c2c0  mov      x20, x0
+10007c2c4  bl       #0x1001bcf80  ; _CFDateGetTypeID
+10007c2c8  cmp      x20, x0
+10007c2cc  b.ne     #0x10007c390
+10007c2d0  adrp     x8, #0x1002ef000
+10007c2d4  ldr      x8, [x8, #0x98]
+10007c2d8  ldr      x0, [x8]
+10007c2dc  adrp     x2, #0x1002ef000
+10007c2e0  ldr      x2, [x2, #0x120]
+10007c2e4  adrp     x3, #0x1002ef000
+10007c2e8  ldr      x3, [x3, #0x128]
+10007c2ec  mov      w1, #1
+10007c2f0  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10007c2f4  cbz      x0, #0x10007c3a8
+10007c2f8  mov      x20, x0
+10007c2fc  adrp     x1, #0x1002e2000
+10007c300  add      x1, x1, #0x40
+10007c304  adrp     x2, #0x1002e2000
+10007c308  add      x2, x2, #0xe0
+10007c30c  b        #0x10007c370
+10007c310  bl       #0x1001bccf0  ; _CC_SHA1_Update
+10007c314  cmp      x20, x0
+10007c318  b.ne     #0x10007c3dc
+10007c31c  mov      x0, x19
+10007c320  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c324  mov      x20, x0
+10007c328  bl       #0x1001bccf0  ; _CC_SHA1_Update
+10007c32c  cmp      x20, x0
+10007c330  b.ne     #0x10007c390
+10007c334  adrp     x8, #0x1002ef000
+10007c338  ldr      x8, [x8, #0x98]
+10007c33c  ldr      x0, [x8]
+10007c340  adrp     x2, #0x1002ef000
+10007c344  ldr      x2, [x2, #0x120]
+10007c348  adrp     x3, #0x1002ef000
+10007c34c  ldr      x3, [x3, #0x128]
+10007c350  mov      w1, #1
+10007c354  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10007c358  cbz      x0, #0x10007c3a8
+10007c35c  mov      x20, x0
+10007c360  adrp     x1, #0x1002e2000
+10007c364  add      x1, x1, #0x40
+10007c368  adrp     x2, #0x1002e2000
+10007c36c  add      x2, x2, #0x100
+10007c370  mov      x0, x20
+10007c374  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c378  adrp     x1, #0x1002e2000
+10007c37c  add      x1, x1, #0x80
+10007c380  mov      x0, x20
+10007c384  mov      x2, x19
+10007c388  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c38c  b        #0x10007c3c4
+10007c390  adrp     x8, #0x1002fa000
+10007c394  ldr      x8, [x8, #0x2e0]
+10007c398  cbz      x8, #0x10007c3c0
+10007c39c  adrp     x0, #0x100204000
+10007c3a0  add      x0, x0, #0x7f
+10007c3a4  b        #0x10007c3bc
+10007c3a8  adrp     x8, #0x1002fa000
+10007c3ac  ldr      x8, [x8, #0x2e0]
+10007c3b0  cbz      x8, #0x10007c3c0
+10007c3b4  adrp     x0, #0x100204000
+10007c3b8  add      x0, x0, #0x191
+10007c3bc  blraaz   x8
+10007c3c0  mov      x20, #0
+10007c3c4  mov      x0, x20
+10007c3c8  ldp      x29, x30, [sp, #0x30]
+10007c3cc  ldp      x20, x19, [sp, #0x20]
+10007c3d0  ldp      x22, x21, [sp, #0x10]
+10007c3d4  ldp      x24, x23, [sp], #0x40
+10007c3d8  retab    
+10007c3dc  bl       #0x1001bca90  ; _BBUpdaterExtremeCreateWithError
+10007c3e0  cmp      x20, x0
+10007c3e4  b.ne     #0x10007c410
+10007c3e8  mov      x0, x19
+10007c3ec  ldp      x29, x30, [sp, #0x30]
+10007c3f0  ldp      x20, x19, [sp, #0x20]
+10007c3f4  ldp      x22, x21, [sp, #0x10]
+10007c3f8  ldp      x24, x23, [sp], #0x40
+10007c3fc  autibsp  
+10007c400  eor      x16, x30, x30, lsl #1
+10007c404  tbz      x16, #0x3e, #0x10007c40c
+10007c408  brk      #0xc471
+10007c40c  b        #0x10007c540
+10007c410  bl       #0x1001bcac0  ; _BMCMCUUpdaterCleanupDeviceInfo
+10007c414  cmp      x20, x0
+10007c418  b.ne     #0x10007c460
+10007c41c  mov      x0, x19
+10007c420  ldp      x29, x30, [sp, #0x30]
+10007c424  ldp      x20, x19, [sp, #0x20]
+10007c428  ldp      x22, x21, [sp, #0x10]
+10007c42c  ldp      x24, x23, [sp], #0x40
+10007c430  autibsp  
+10007c434  eor      x16, x30, x30, lsl #1
+10007c438  tbz      x16, #0x3e, #0x10007c440
+10007c43c  brk      #0xc471
+10007c440  b        #0x10007c604
+10007c444  adrp     x8, #0x1002fa000
+10007c448  ldr      x8, [x8, #0x2e0]
+10007c44c  cbz      x8, #0x10007c4b4
+10007c450  adrp     x0, #0x100204000
+10007c454  add      x0, x0, #0x26e
+10007c458  blraaz   x8
+10007c45c  b        #0x10007c4b4
+10007c460  bl       #0x1001bcc40  ; _CCHmacUpdate
+10007c464  cmp      x20, x0
+10007c468  b.ne     #0x10007c4c0
+10007c46c  mov      x0, x19
+10007c470  ldp      x29, x30, [sp, #0x30]
+10007c474  ldp      x20, x19, [sp, #0x20]
+10007c478  ldp      x22, x21, [sp, #0x10]
+10007c47c  ldp      x24, x23, [sp], #0x40
+10007c480  autibsp  
+10007c484  eor      x16, x30, x30, lsl #1
+10007c488  tbz      x16, #0x3e, #0x10007c490
+10007c48c  brk      #0xc471
+10007c490  b        #0x10007bcd0
+10007c494  adrp     x8, #0x1002fa000
+10007c498  ldr      x8, [x8, #0x2e0]
+10007c49c  cbz      x8, #0x10007c4ac
+10007c4a0  adrp     x0, #0x100204000
+10007c4a4  add      x0, x0, #0x290
+10007c4a8  blraaz   x8
+10007c4ac  mov      x0, x21
+10007c4b0  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c4b4  mov      x0, x20
+10007c4b8  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c4bc  b        #0x10007c3c0
+10007c4c0  bl       #0x1001bc9c0  ; _APFSVolumeEnableUserProtectionWithOptions
+10007c4c4  cmp      x20, x0
+10007c4c8  b.ne     #0x10007c4f4
+10007c4cc  mov      x0, x19
+10007c4d0  ldp      x29, x30, [sp, #0x30]
+10007c4d4  ldp      x20, x19, [sp, #0x20]
+10007c4d8  ldp      x22, x21, [sp, #0x10]
+10007c4dc  ldp      x24, x23, [sp], #0x40
+10007c4e0  autibsp  
+10007c4e4  eor      x16, x30, x30, lsl #1
+10007c4e8  tbz      x16, #0x3e, #0x10007c4f0
+10007c4ec  brk      #0xc471
+10007c4f0  b        #0x10007c6c8
+10007c4f4  bl       #0x1001bd060  ; _CFDictionaryRemoveValue
+10007c4f8  cmp      x20, x0
+10007c4fc  b.ne     #0x10007c528
+10007c500  mov      x0, x19
+10007c504  ldp      x29, x30, [sp, #0x30]
+10007c508  ldp      x20, x19, [sp, #0x20]
+10007c50c  ldp      x22, x21, [sp, #0x10]
+10007c510  ldp      x24, x23, [sp], #0x40
+10007c514  autibsp  
+10007c518  eor      x16, x30, x30, lsl #1
+10007c51c  tbz      x16, #0x3e, #0x10007c524
+10007c520  brk      #0xc471
+10007c524  b        #0x10007c78c
+10007c528  adrp     x8, #0x1002fa000
+10007c52c  ldr      x8, [x8, #0x2e0]
+10007c530  cbz      x8, #0x10007c3c0
+10007c534  adrp     x0, #0x100204000
+10007c538  add      x0, x0, #0x24e
+10007c53c  b        #0x10007c3bc
+
+=== CALLER 0x10007c1c4 ===
+10007c138  pacibsp  
+10007c13c  stp      x24, x23, [sp, #-0x40]!
+10007c140  stp      x22, x21, [sp, #0x10]
+10007c144  stp      x20, x19, [sp, #0x20]
+10007c148  stp      x29, x30, [sp, #0x30]
+10007c14c  add      x29, sp, #0x30
+10007c150  cbz      x0, #0x10007c194
+10007c154  mov      x19, x0
+10007c158  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c15c  mov      x20, x0
+10007c160  bl       #0x1001bcb60  ; _BOMCopierSetUserData
+10007c164  cmp      x20, x0
+10007c168  b.ne     #0x10007c1ac
+10007c16c  mov      x0, x19
+10007c170  ldp      x29, x30, [sp, #0x30]
+10007c174  ldp      x20, x19, [sp, #0x20]
+10007c178  ldp      x22, x21, [sp, #0x10]
+10007c17c  ldp      x24, x23, [sp], #0x40
+10007c180  autibsp  
+10007c184  eor      x16, x30, x30, lsl #1
+10007c188  tbz      x16, #0x3e, #0x10007c190
+10007c18c  brk      #0xc471
+10007c190  b        #0x10007bf3c
+10007c194  adrp     x8, #0x1002fa000
+10007c198  ldr      x8, [x8, #0x2e0]
+10007c19c  cbz      x8, #0x10007c3c0
+10007c1a0  adrp     x0, #0x100204000
+10007c1a4  add      x0, x0, #0x235
+10007c1a8  b        #0x10007c3bc
+10007c1ac  bl       #0x1001bc990  ; _APFSVolumeCreate
+10007c1b0  cmp      x20, x0
+10007c1b4  b.ne     #0x10007c2ac
+10007c1b8  mov      x0, x19
+10007c1bc  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c1c0  mov      x20, x0
+10007c1c4  bl       #0x1001bc990  ; _APFSVolumeCreate <<<< _APFSVolumeCreate
+10007c1c8  cmp      x20, x0
+10007c1cc  b.ne     #0x10007c390
+10007c1d0  adrp     x8, #0x1002ef000
+10007c1d4  ldr      x8, [x8, #0x98]
+10007c1d8  ldr      x21, [x8]
+10007c1dc  adrp     x2, #0x1002ef000
+10007c1e0  ldr      x2, [x2, #0x120]
+10007c1e4  adrp     x3, #0x1002ef000
+10007c1e8  ldr      x3, [x3, #0x128]
+10007c1ec  mov      x0, x21
+10007c1f0  mov      w1, #1
+10007c1f4  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10007c1f8  cbz      x0, #0x10007c3a8
+10007c1fc  mov      x20, x0
+10007c200  mov      x0, x19
+10007c204  bl       #0x1001bc970  ; _APFSOverProvModel
+10007c208  mov      x1, x0
+10007c20c  adrp     x2, #0x1002ef000
+10007c210  ldr      x2, [x2, #0x118]
+10007c214  mov      x0, x21
+10007c218  bl       #0x1001bc950  ; _APFSExtendedSpaceInfo
+10007c21c  cbz      x0, #0x10007c444
+10007c220  mov      x21, x0
+10007c224  mov      x0, x19
+10007c228  bl       #0x1001bc970  ; _APFSOverProvModel
+10007c22c  cmp      x0, #1
+10007c230  b.lt     #0x10007c274
+10007c234  mov      x22, x0
+10007c238  mov      x23, #0
+10007c23c  mov      x0, x19
+10007c240  mov      x1, x23
+10007c244  bl       #0x1001bc9a0  ; _APFSVolumeCreateForMSU
+10007c248  bl       #0x10007c138  ; local
+10007c24c  cbz      x0, #0x10007c494
+10007c250  mov      x24, x0
+10007c254  mov      x0, x21
+10007c258  mov      x1, x24
+10007c25c  bl       #0x1001bc900  ; _APFSContainerGetSpaceInfo
+10007c260  mov      x0, x24
+10007c264  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c268  add      x23, x23, #1
+10007c26c  cmp      x22, x23
+10007c270  b.ne     #0x10007c23c
+10007c274  adrp     x1, #0x1002e2000
+10007c278  add      x1, x1, #0x40
+10007c27c  adrp     x2, #0x1002e2000
+10007c280  add      x2, x2, #0xc0
+10007c284  mov      x0, x20
+10007c288  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c28c  adrp     x1, #0x1002e2000
+10007c290  add      x1, x1, #0x80
+10007c294  mov      x0, x20
+10007c298  mov      x2, x21
+10007c29c  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c2a0  mov      x0, x21
+10007c2a4  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c2a8  b        #0x10007c3c4
+10007c2ac  bl       #0x1001bcf80  ; _CFDateGetTypeID
+10007c2b0  cmp      x20, x0
+10007c2b4  b.ne     #0x10007c310
+10007c2b8  mov      x0, x19
+10007c2bc  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c2c0  mov      x20, x0
+10007c2c4  bl       #0x1001bcf80  ; _CFDateGetTypeID
+10007c2c8  cmp      x20, x0
+10007c2cc  b.ne     #0x10007c390
+10007c2d0  adrp     x8, #0x1002ef000
+10007c2d4  ldr      x8, [x8, #0x98]
+10007c2d8  ldr      x0, [x8]
+10007c2dc  adrp     x2, #0x1002ef000
+10007c2e0  ldr      x2, [x2, #0x120]
+10007c2e4  adrp     x3, #0x1002ef000
+10007c2e8  ldr      x3, [x3, #0x128]
+10007c2ec  mov      w1, #1
+10007c2f0  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10007c2f4  cbz      x0, #0x10007c3a8
+10007c2f8  mov      x20, x0
+10007c2fc  adrp     x1, #0x1002e2000
+10007c300  add      x1, x1, #0x40
+10007c304  adrp     x2, #0x1002e2000
+10007c308  add      x2, x2, #0xe0
+10007c30c  b        #0x10007c370
+10007c310  bl       #0x1001bccf0  ; _CC_SHA1_Update
+10007c314  cmp      x20, x0
+10007c318  b.ne     #0x10007c3dc
+10007c31c  mov      x0, x19
+10007c320  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007c324  mov      x20, x0
+10007c328  bl       #0x1001bccf0  ; _CC_SHA1_Update
+10007c32c  cmp      x20, x0
+10007c330  b.ne     #0x10007c390
+10007c334  adrp     x8, #0x1002ef000
+10007c338  ldr      x8, [x8, #0x98]
+10007c33c  ldr      x0, [x8]
+10007c340  adrp     x2, #0x1002ef000
+10007c344  ldr      x2, [x2, #0x120]
+10007c348  adrp     x3, #0x1002ef000
+10007c34c  ldr      x3, [x3, #0x128]
+10007c350  mov      w1, #1
+10007c354  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10007c358  cbz      x0, #0x10007c3a8
+10007c35c  mov      x20, x0
+10007c360  adrp     x1, #0x1002e2000
+10007c364  add      x1, x1, #0x40
+10007c368  adrp     x2, #0x1002e2000
+10007c36c  add      x2, x2, #0x100
+10007c370  mov      x0, x20
+10007c374  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c378  adrp     x1, #0x1002e2000
+10007c37c  add      x1, x1, #0x80
+10007c380  mov      x0, x20
+10007c384  mov      x2, x19
+10007c388  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007c38c  b        #0x10007c3c4
+10007c390  adrp     x8, #0x1002fa000
+10007c394  ldr      x8, [x8, #0x2e0]
+10007c398  cbz      x8, #0x10007c3c0
+10007c39c  adrp     x0, #0x100204000
+10007c3a0  add      x0, x0, #0x7f
+10007c3a4  b        #0x10007c3bc
+10007c3a8  adrp     x8, #0x1002fa000
+10007c3ac  ldr      x8, [x8, #0x2e0]
+10007c3b0  cbz      x8, #0x10007c3c0
+10007c3b4  adrp     x0, #0x100204000
+10007c3b8  add      x0, x0, #0x191
+10007c3bc  blraaz   x8
+10007c3c0  mov      x20, #0
+10007c3c4  mov      x0, x20
+10007c3c8  ldp      x29, x30, [sp, #0x30]
+10007c3cc  ldp      x20, x19, [sp, #0x20]
+10007c3d0  ldp      x22, x21, [sp, #0x10]
+10007c3d4  ldp      x24, x23, [sp], #0x40
+10007c3d8  retab    
+10007c3dc  bl       #0x1001bca90  ; _BBUpdaterExtremeCreateWithError
+10007c3e0  cmp      x20, x0
+10007c3e4  b.ne     #0x10007c410
+10007c3e8  mov      x0, x19
+10007c3ec  ldp      x29, x30, [sp, #0x30]
+10007c3f0  ldp      x20, x19, [sp, #0x20]
+10007c3f4  ldp      x22, x21, [sp, #0x10]
+10007c3f8  ldp      x24, x23, [sp], #0x40
+10007c3fc  autibsp  
+10007c400  eor      x16, x30, x30, lsl #1
+10007c404  tbz      x16, #0x3e, #0x10007c40c
+10007c408  brk      #0xc471
+10007c40c  b        #0x10007c540
+10007c410  bl       #0x1001bcac0  ; _BMCMCUUpdaterCleanupDeviceInfo
+10007c414  cmp      x20, x0
+10007c418  b.ne     #0x10007c460
+10007c41c  mov      x0, x19
+10007c420  ldp      x29, x30, [sp, #0x30]
+10007c424  ldp      x20, x19, [sp, #0x20]
+10007c428  ldp      x22, x21, [sp, #0x10]
+10007c42c  ldp      x24, x23, [sp], #0x40
+10007c430  autibsp  
+10007c434  eor      x16, x30, x30, lsl #1
+10007c438  tbz      x16, #0x3e, #0x10007c440
+10007c43c  brk      #0xc471
+10007c440  b        #0x10007c604
+10007c444  adrp     x8, #0x1002fa000
+10007c448  ldr      x8, [x8, #0x2e0]
+10007c44c  cbz      x8, #0x10007c4b4
+10007c450  adrp     x0, #0x100204000
+10007c454  add      x0, x0, #0x26e
+10007c458  blraaz   x8
+10007c45c  b        #0x10007c4b4
+10007c460  bl       #0x1001bcc40  ; _CCHmacUpdate
+10007c464  cmp      x20, x0
+10007c468  b.ne     #0x10007c4c0
+10007c46c  mov      x0, x19
+10007c470  ldp      x29, x30, [sp, #0x30]
+10007c474  ldp      x20, x19, [sp, #0x20]
+10007c478  ldp      x22, x21, [sp, #0x10]
+10007c47c  ldp      x24, x23, [sp], #0x40
+10007c480  autibsp  
+10007c484  eor      x16, x30, x30, lsl #1
+10007c488  tbz      x16, #0x3e, #0x10007c490
+10007c48c  brk      #0xc471
+10007c490  b        #0x10007bcd0
+10007c494  adrp     x8, #0x1002fa000
+10007c498  ldr      x8, [x8, #0x2e0]
+10007c49c  cbz      x8, #0x10007c4ac
+10007c4a0  adrp     x0, #0x100204000
+10007c4a4  add      x0, x0, #0x290
+10007c4a8  blraaz   x8
+10007c4ac  mov      x0, x21
+10007c4b0  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c4b4  mov      x0, x20
+10007c4b8  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007c4bc  b        #0x10007c3c0
+10007c4c0  bl       #0x1001bc9c0  ; _APFSVolumeEnableUserProtectionWithOptions
+10007c4c4  cmp      x20, x0
+10007c4c8  b.ne     #0x10007c4f4
+10007c4cc  mov      x0, x19
+10007c4d0  ldp      x29, x30, [sp, #0x30]
+10007c4d4  ldp      x20, x19, [sp, #0x20]
+10007c4d8  ldp      x22, x21, [sp, #0x10]
+10007c4dc  ldp      x24, x23, [sp], #0x40
+10007c4e0  autibsp  
+10007c4e4  eor      x16, x30, x30, lsl #1
+10007c4e8  tbz      x16, #0x3e, #0x10007c4f0
+10007c4ec  brk      #0xc471
+10007c4f0  b        #0x10007c6c8
+10007c4f4  bl       #0x1001bd060  ; _CFDictionaryRemoveValue
+10007c4f8  cmp      x20, x0
+10007c4fc  b.ne     #0x10007c528
+10007c500  mov      x0, x19
+10007c504  ldp      x29, x30, [sp, #0x30]
+10007c508  ldp      x20, x19, [sp, #0x20]
+10007c50c  ldp      x22, x21, [sp, #0x10]
+10007c510  ldp      x24, x23, [sp], #0x40
+10007c514  autibsp  
+10007c518  eor      x16, x30, x30, lsl #1
+10007c51c  tbz      x16, #0x3e, #0x10007c524
+10007c520  brk      #0xc471
+10007c524  b        #0x10007c78c
+10007c528  adrp     x8, #0x1002fa000
+10007c52c  ldr      x8, [x8, #0x2e0]
+10007c530  cbz      x8, #0x10007c3c0
+10007c534  adrp     x0, #0x100204000
+10007c538  add      x0, x0, #0x24e
+10007c53c  b        #0x10007c3bc
+
+=== CALLER 0x10007e874 ===
+10007e4dc  pacibsp  
+10007e4e0  sub      sp, sp, #0xa0
+10007e4e4  stp      x28, x27, [sp, #0x40]
+10007e4e8  stp      x26, x25, [sp, #0x50]
+10007e4ec  stp      x24, x23, [sp, #0x60]
+10007e4f0  stp      x22, x21, [sp, #0x70]
+10007e4f4  stp      x20, x19, [sp, #0x80]
+10007e4f8  stp      x29, x30, [sp, #0x90]
+10007e4fc  add      x29, sp, #0x90
+10007e500  mov      x19, x3
+10007e504  mov      x23, x2
+10007e508  mov      x20, x1
+10007e50c  mov      x21, x0
+10007e510  stp      xzr, xzr, [sp, #0x30]
+10007e514  adrp     x8, #0x100204000
+10007e518  add      x8, x8, #0xf28
+10007e51c  str      x8, [sp]
+10007e520  adrp     x0, #0x1001dc000
+10007e524  add      x0, x0, #0xb93
+10007e528  bl       #0x10001dac4  ; local
+10007e52c  cbz      x21, #0x10007e74c
+10007e530  tbnz     w20, #0, #0x10007e540
+10007e534  ldrb     w8, [x21, #0x30]
+10007e538  cmp      w8, #1
+10007e53c  b.ne     #0x10007e760
+10007e540  ldr      x8, [x21, #0x18]
+10007e544  cbz      x8, #0x10007e754
+10007e548  ldr      x8, [x21, #0x20]
+10007e54c  cbz      x8, #0x10007e778
+10007e550  ldr      x8, [x21, #0x48]
+10007e554  cbz      x8, #0x10007e794
+10007e558  adrp     x16, #0x10007d000
+10007e55c  add      x16, x16, #0xb28
+10007e560  paciza   x16
+10007e564  mov      x0, x16
+10007e568  bl       #0x1001bc200  ; _$s9CryptoKit4HPKEO6SenderV12recipientKey11ciphersuite4infoAEx_AC11CiphersuiteV10Foundation4DataVtKcAA023HPKEDiffieHellmanPublicF0RzlufC
+10007e56c  bl       #0x100077c58  ; local
+10007e570  mov      x20, x0
+10007e574  cbz      x0, #0x10007e784
+10007e578  mov      x0, x20
+10007e57c  bl       #0x1001bca70  ; _AppleTypeCRetimerUpdaterReset
+10007e580  cmp      x0, #1
+10007e584  b.lt     #0x10007e784
+10007e588  ldr      x0, [x21, #0x20]
+10007e58c  adrp     x22, #0x1002d9000
+10007e590  add      x22, x22, #0xc80
+10007e594  mov      x1, x22
+10007e598  mov      x2, x20
+10007e59c  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e5a0  ldr      x0, [x21, #0x18]
+10007e5a4  mov      x1, x22
+10007e5a8  mov      x2, x20
+10007e5ac  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e5b0  ldr      x0, [x21, #0x48]
+10007e5b4  adrp     x1, #0x1002dd000
+10007e5b8  add      x1, x1, #0x9a0
+10007e5bc  bl       #0x1001bcb70  ; _BOMCopierUserData
+10007e5c0  mov      x24, x0
+10007e5c4  cbz      x0, #0x10007e5e4
+10007e5c8  mov      x0, x24
+10007e5cc  bl       #0x1001bc9d0  ; _APFSVolumeGetVEKState
+10007e5d0  cbz      w0, #0x10007e5e4
+10007e5d4  mov      w0, #0x7573
+10007e5d8  movk     w0, #0x6661, lsl #16
+10007e5dc  bl       #0x100077cec  ; local
+10007e5e0  tbz      w0, #0, #0x10007ea80
+10007e5e4  ldr      x0, [x21, #0x48]
+10007e5e8  adrp     x8, #0x1002e2000
+10007e5ec  add      x8, x8, #0x340
+10007e5f0  adrp     x9, #0x1002e2000
+10007e5f4  add      x9, x9, #0x320
+10007e5f8  cmp      w23, #0
+10007e5fc  csel     x1, x9, x8, ne
+10007e600  bl       #0x1001bcb70  ; _BOMCopierUserData
+10007e604  mov      x25, x0
+10007e608  ldr      x0, [x21, #0x48]
+10007e60c  adrp     x1, #0x1002e2000
+10007e610  add      x1, x1, #0x360
+10007e614  bl       #0x1001bcb70  ; _BOMCopierUserData
+10007e618  cbz      x0, #0x10007e86c
+10007e61c  bl       #0x1001bc9d0  ; _APFSVolumeGetVEKState
+10007e620  cbz      w0, #0x10007e86c
+10007e624  bl       #0x1001bc2a0  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V06publicD0AE06PublicD0Vvg
+10007e628  mov      x25, x0
+10007e62c  adrp     x8, #0x1002ef000
+10007e630  ldr      x8, [x8, #0x98]
+10007e634  ldr      x0, [x8]
+10007e638  adrp     x2, #0x1002ef000
+10007e63c  ldr      x2, [x2, #0x118]
+10007e640  mov      x1, #0
+10007e644  bl       #0x1001bc950  ; _APFSExtendedSpaceInfo
+10007e648  mov      x22, x0
+10007e64c  cbz      x0, #0x10007ea98
+10007e650  cbz      x25, #0x10007ebf0
+10007e654  mov      x0, x25
+10007e658  bl       #0x1001bc970  ; _APFSOverProvModel
+10007e65c  cmp      x0, #1
+10007e660  b.lt     #0x10007e744
+10007e664  mov      x26, #0
+10007e668  adrp     x8, #0x1002ee000
+10007e66c  ldr      x8, [x8, #0xd60]
+10007e670  ldr      x27, [x8]
+10007e674  adrp     x8, #0x1002ee000
+10007e678  ldr      x8, [x8, #0xd58]
+10007e67c  ldr      x8, [x8]
+10007e680  str      x8, [sp, #0x28]
+10007e684  adrp     x8, #0x1002ee000
+10007e688  ldr      x8, [x8, #0xd50]
+10007e68c  ldr      x8, [x8]
+10007e690  str      x8, [sp, #0x20]
+10007e694  adrp     x8, #0x1002ee000
+10007e698  ldr      x8, [x8, #0xd30]
+10007e69c  ldr      x8, [x8]
+10007e6a0  str      x8, [sp, #0x18]
+10007e6a4  adrp     x8, #0x1002ee000
+10007e6a8  ldr      x8, [x8, #0xd48]
+10007e6ac  ldr      x8, [x8]
+10007e6b0  str      x8, [sp, #0x10]
+10007e6b4  mov      x0, x25
+10007e6b8  mov      x1, x26
+10007e6bc  bl       #0x1001bc9a0  ; _APFSVolumeCreateForMSU
+10007e6c0  cbz      x0, #0x10007ec60
+10007e6c4  mov      x1, x27
+10007e6c8  bl       #0x1001bcb70  ; _BOMCopierUserData
+10007e6cc  cbz      x0, #0x10007ec6c
+10007e6d0  mov      x28, x0
+10007e6d4  ldr      x1, [sp, #0x28]
+10007e6d8  mov      w2, #0
+10007e6dc  bl       #0x1001bc290  ; _$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa
+10007e6e0  tbnz     w0, #0, #0x10007e730
+10007e6e4  mov      x0, x28
+10007e6e8  ldr      x1, [sp, #0x20]
+10007e6ec  mov      w2, #0
+10007e6f0  bl       #0x1001bc290  ; _$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa
+10007e6f4  tbnz     w0, #0, #0x10007e730
+10007e6f8  mov      x0, x28
+10007e6fc  ldr      x1, [sp, #0x18]
+10007e700  mov      w2, #0
+10007e704  bl       #0x1001bc290  ; _$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa
+10007e708  tbnz     w0, #0, #0x10007e730
+10007e70c  cbz      w23, #0x10007e724
+10007e710  mov      x0, x28
+10007e714  ldr      x1, [sp, #0x10]
+10007e718  mov      w2, #0
+10007e71c  bl       #0x1001bc290  ; _$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa
+10007e720  cbz      w0, #0x10007e730
+10007e724  mov      x0, x22
+10007e728  mov      x1, x28
+10007e72c  bl       #0x1001bc900  ; _APFSContainerGetSpaceInfo
+10007e730  add      x26, x26, #1
+10007e734  mov      x0, x25
+10007e738  bl       #0x1001bc970  ; _APFSOverProvModel
+10007e73c  cmp      x26, x0
+10007e740  b.lt     #0x10007e6b4
+10007e744  mov      x25, x22
+10007e748  b        #0x10007e870
+10007e74c  mov      w26, #0
+10007e750  b        #0x10007e848
+10007e754  adrp     x0, #0x100204000
+10007e758  add      x0, x0, #0xf3b
+10007e75c  b        #0x10007e79c
+10007e760  mov      x20, #0
+10007e764  mov      x24, #0
+10007e768  mov      x22, #0
+10007e76c  mov      x25, #0
+10007e770  mov      w26, #0x34
+10007e774  b        #0x10007e7b4
+10007e778  adrp     x0, #0x100204000
+10007e77c  add      x0, x0, #0xf59
+10007e780  b        #0x10007e79c
+10007e784  adrp     x0, #0x100204000
+10007e788  add      x0, x0, #0xf96
+10007e78c  bl       #0x10001dac4  ; local
+10007e790  b        #0x10007e7a4
+10007e794  adrp     x0, #0x100204000
+10007e798  add      x0, x0, #0xf78
+10007e79c  bl       #0x10001dac4  ; local
+10007e7a0  mov      x20, #0
+10007e7a4  mov      x24, #0
+10007e7a8  mov      x22, #0
+10007e7ac  mov      x25, #0
+10007e7b0  mov      w26, #0x35
+10007e7b4  ldr      x0, [x21, #0x48]
+10007e7b8  bl       #0x1001b396c  ; local
+10007e7bc  cbz      w0, #0x10007e7dc
+10007e7c0  cbz      w26, #0x10007e7fc
+10007e7c4  str      x26, [sp]
+10007e7c8  adrp     x0, #0x100205000
+10007e7cc  add      x0, x0, #0x335
+10007e7d0  bl       #0x10001dac4  ; local
+10007e7d4  mov      w26, #0
+10007e7d8  b        #0x10007e7fc
+10007e7dc  cbz      x19, #0x10007e7fc
+10007e7e0  cbz      w26, #0x10007e7fc
+10007e7e4  ldr      x2, [sp, #0x38]
+10007e7e8  adrp     x1, #0x1002e2000
+10007e7ec  add      x1, x1, #0x500
+10007e7f0  mov      x0, x26
+10007e7f4  bl       #0x100024e10  ; local
+10007e7f8  str      x0, [x19]
+10007e7fc  ldr      x0, [sp, #0x38]
+10007e800  cbz      x0, #0x10007e808
+10007e804  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007e808  ldr      x0, [sp, #0x30]
+10007e80c  cbz      x0, #0x10007e818
+10007e810  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007e814  str      xzr, [sp, #0x30]
+10007e818  cbz      x20, #0x10007e824
+10007e81c  mov      x0, x20
+10007e820  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007e824  cbz      x24, #0x10007e830
+10007e828  mov      x0, x24
+10007e82c  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007e830  cbz      x25, #0x10007e83c
+10007e834  mov      x0, x25
+10007e838  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007e83c  cbz      x22, #0x10007e848
+10007e840  mov      x0, x22
+10007e844  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007e848  mov      x0, x26
+10007e84c  ldp      x29, x30, [sp, #0x90]
+10007e850  ldp      x20, x19, [sp, #0x80]
+10007e854  ldp      x22, x21, [sp, #0x70]
+10007e858  ldp      x24, x23, [sp, #0x60]
+10007e85c  ldp      x26, x25, [sp, #0x50]
+10007e860  ldp      x28, x27, [sp, #0x40]
+10007e864  add      sp, sp, #0xa0
+10007e868  retab    
+10007e86c  mov      x22, #0
+10007e870  cbz      x25, #0x10007e8a4
+10007e874  bl       #0x1001bc990  ; _APFSVolumeCreate <<<< _APFSVolumeCreate
+10007e878  mov      x26, x0
+10007e87c  mov      x0, x25
+10007e880  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007e884  cmp      x26, x0
+10007e888  b.ne     #0x10007e8a4
+10007e88c  bl       #0x1001bc2b0  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V17pemRepresentationAGSS_tKcfC
+10007e890  cmp      w0, #2
+10007e894  b.ne     #0x10007e8a4
+10007e898  ldr      x0, [x21, #0x18]
+10007e89c  mov      x1, x25
+10007e8a0  bl       #0x1001bc170  ; _$s14CoreFoundation9_CFObjectPAAE2eeoiySbx_xtFZ
+10007e8a4  ldr      x0, [x21, #0x48]
+10007e8a8  adrp     x1, #0x1002e2000
+10007e8ac  add      x1, x1, #0x380
+10007e8b0  bl       #0x1001bcb70  ; _BOMCopierUserData
+10007e8b4  cbz      x0, #0x10007e8fc
+10007e8b8  mov      x25, x0
+10007e8bc  bl       #0x1001bc9c0  ; _APFSVolumeEnableUserProtectionWithOptions
+10007e8c0  mov      x26, x0
+10007e8c4  mov      x0, x25
+10007e8c8  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007e8cc  cmp      x26, x0
+10007e8d0  b.ne     #0x10007e8fc
+10007e8d4  mov      x0, x25
+10007e8d8  bl       #0x1001bc9d0  ; _APFSVolumeGetVEKState
+10007e8dc  cbz      w0, #0x10007e8fc
+10007e8e0  ldr      x0, [x21, #0x18]
+10007e8e4  adrp     x8, #0x1002ef000
+10007e8e8  ldr      x8, [x8, #0xb8]
+10007e8ec  ldr      x2, [x8]
+10007e8f0  adrp     x1, #0x1002e2000
+10007e8f4  add      x1, x1, #0x3a0
+10007e8f8  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e8fc  mov      x0, x21
+10007e900  bl       #0x10007e340  ; local
+10007e904  cbz      w0, #0x10007e93c
+10007e908  ldr      x0, [x21, #0x18]
+10007e90c  adrp     x8, #0x1002ef000
+10007e910  ldr      x8, [x8, #0xb8]
+10007e914  ldr      x25, [x8]
+10007e918  adrp     x1, #0x1002e2000
+10007e91c  add      x1, x1, #0x3c0
+10007e920  mov      x2, x25
+10007e924  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e928  ldr      x0, [x21, #0x18]
+10007e92c  adrp     x1, #0x1002e2000
+10007e930  add      x1, x1, #0x3e0
+10007e934  mov      x2, x25
+10007e938  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e93c  ldr      x0, [x21, #0x48]
+10007e940  adrp     x1, #0x1002e2000
+10007e944  add      x1, x1, #0x400
+10007e948  mov      w2, #0
+10007e94c  bl       #0x100044ba0  ; local
+10007e950  cmp      w0, #1
+10007e954  b.ne     #0x10007e974
+10007e958  ldr      x0, [x21, #0x18]
+10007e95c  adrp     x8, #0x1002ef000
+10007e960  ldr      x8, [x8, #0xb8]
+10007e964  ldr      x2, [x8]
+10007e968  adrp     x1, #0x1002e2000
+10007e96c  add      x1, x1, #0x420
+10007e970  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e974  ldr      x0, [x21, #0x48]
+10007e978  adrp     x1, #0x1002e2000
+10007e97c  add      x1, x1, #0x440
+10007e980  mov      w2, #0
+10007e984  bl       #0x100044ba0  ; local
+10007e988  cmp      w0, #1
+10007e98c  b.ne     #0x10007e9ac
+10007e990  ldr      x0, [x21, #0x20]
+10007e994  adrp     x8, #0x1002ef000
+10007e998  ldr      x8, [x8, #0xb8]
+10007e99c  ldr      x2, [x8]
+10007e9a0  adrp     x1, #0x1002e2000
+10007e9a4  add      x1, x1, #0x460
+10007e9a8  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e9ac  ldp      x26, x25, [x21, #0x18]
+10007e9b0  mov      x2, x23
+10007e9b4  cbz      w23, #0x10007e9d0
+10007e9b8  mov      x2, x23
+10007e9bc  cbz      x24, #0x10007e9d0
+10007e9c0  mov      x0, x24
+10007e9c4  bl       #0x1001bc9d0  ; _APFSVolumeGetVEKState
+10007e9c8  cmp      w0, #0
+10007e9cc  cset     w2, eq
+10007e9d0  add      x3, sp, #0x38
+10007e9d4  mov      x0, x25
+10007e9d8  mov      x1, x26
+10007e9dc  bl       #0x1001bc2d0  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V18x963Representation10Foundation4DataVvg
+10007e9e0  mov      x24, x0
+10007e9e4  ldr      x0, [x21, #0x18]
+10007e9e8  adrp     x1, #0x1002e2000
+10007e9ec  add      x1, x1, #0x480
+10007e9f0  mov      x2, #0
+10007e9f4  bl       #0x1001bc300  ; _$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa
+10007e9f8  ldr      x0, [x21, #0x20]
+10007e9fc  bl       #0x1001bc1c0  ; _$s9CryptoKit13SecureEnclaveO4P256O12KeyAgreementO07PrivateF0V18dataRepresentation21authenticationContextAI10Foundation4DataV_So9LAContextCSgtKcfC
+10007ea00  ldrb     w8, [x21, #0x30]
+10007ea04  mov      w26, #-1
+10007ea08  cmp      w8, #1
+10007ea0c  b.ne     #0x10007eac4
+10007ea10  mov      x25, x0
+10007ea14  cbz      x0, #0x10007eac4
+10007ea18  adrp     x8, #0x1002ef000
+10007ea1c  ldr      x8, [x8, #0x98]
+10007ea20  ldr      x0, [x8]
+10007ea24  adrp     x2, #0x1002ef000
+10007ea28  ldr      x2, [x2, #0x120]
+10007ea2c  adrp     x3, #0x1002ef000
+10007ea30  ldr      x3, [x3, #0x128]
+10007ea34  mov      x1, #0
+10007ea38  bl       #0x1001bcb20  ; _BOMCopierSetCopyFileFinishedHandler
+10007ea3c  cbz      x0, #0x10007ea8c
+10007ea40  mov      x26, x0
+10007ea44  adrp     x8, #0x1002c9000
+10007ea48  ldr      x1, [x8, #0x818]
+10007ea4c  mov      x2, x25
+10007ea50  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007ea54  adrp     x8, #0x1002c9000
+10007ea58  ldr      x1, [x8, #0x590]
+10007ea5c  ldr      x0, [x21, #0x10]
+10007ea60  add      x3, sp, #0x30
+10007ea64  mov      x2, x26
+10007ea68  bl       #0x100028ccc  ; local
+10007ea6c  cbz      w0, #0x10007eab4
+10007ea70  str      x0, [sp]
+10007ea74  adrp     x0, #0x100205000
+10007ea78  add      x0, x0, #0x184
+10007ea7c  b        #0x10007ec74
+10007ea80  adrp     x0, #0x100204000
+10007ea84  add      x0, x0, #0xfb2
+10007ea88  b        #0x10007e78c
+10007ea8c  adrp     x0, #0x100205000
+10007ea90  add      x0, x0, #0x139
+10007ea94  b        #0x10007eaa0
+10007ea98  adrp     x0, #0x100205000
+10007ea9c  add      x0, x0, #0x1f
+10007eaa0  bl       #0x10001dac4  ; local
+10007eaa4  mov      x24, #0
+10007eaa8  mov      x25, #0
+10007eaac  mov      w26, #0x12
+10007eab0  b        #0x10007e7b4
+10007eab4  adrp     x0, #0x100205000
+10007eab8  add      x0, x0, #0x157
+10007eabc  bl       #0x10001dac4  ; local
+10007eac0  mov      w26, #0
+10007eac4  ldr      x0, [sp, #0x38]
+10007eac8  tbz      w24, #0, #0x10007eba8
+10007eacc  cbz      x0, #0x10007ebe4
+10007ead0  bl       #0x1001bcc40  ; _CCHmacUpdate
+10007ead4  mov      x24, x0
+10007ead8  ldr      x0, [sp, #0x38]
+10007eadc  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007eae0  cmp      x24, x0
+10007eae4  b.ne     #0x10007ebe4
+10007eae8  ldr      x0, [sp, #0x38]
+10007eaec  bl       #0x1001bcbf0  ; _CCCryptorUpdate
+10007eaf0  mov      x24, x0
+10007eaf4  cbz      x0, #0x10007ec04
+10007eaf8  bl       #0x1001bcb60  ; _BOMCopierSetUserData
+10007eafc  mov      x25, x0
+10007eb00  mov      x0, x24
+10007eb04  bl       #0x1001bcc50  ; _CCKDFParametersCreateHkdf
+10007eb08  cmp      x25, x0
+10007eb0c  b.ne     #0x10007ec04
+10007eb10  mov      x0, #0
+10007eb14  mov      x1, #0
+10007eb18  mov      x2, x24
+10007eb1c  bl       #0x1001bcb30  ; _BOMCopierSetFatalErrorHandler
+10007eb20  mov      x25, x0
+10007eb24  cbz      x0, #0x10007ec80
+10007eb28  adrp     x8, #0x1002ef000
+10007eb2c  ldr      x8, [x8, #0xf0]
+10007eb30  ldr      x1, [x8]
+10007eb34  mov      x0, x25
+10007eb38  bl       #0x1001bcba0  ; _BZ2_bzDecompressInit
+10007eb3c  ldr      x0, [x21, #0x70]
+10007eb40  cbz      x0, #0x10007eb98
+10007eb44  adrp     x1, #0x1002e2000
+10007eb48  add      x1, x1, #0x4a0
+10007eb4c  bl       #0x1001bcb70  ; _BOMCopierUserData
+10007eb50  cbz      x0, #0x10007eb68
+10007eb54  mov      x2, x0
+10007eb58  adrp     x1, #0x1002e2000
+10007eb5c  add      x1, x1, #0x4a0
+10007eb60  mov      x0, x25
+10007eb64  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007eb68  ldr      x0, [x21, #0x70]
+10007eb6c  adrp     x1, #0x1002e2000
+10007eb70  add      x1, x1, #0x4c0
+10007eb74  bl       #0x1001bcb70  ; _BOMCopierUserData
+10007eb78  cbz      x0, #0x10007eb90
+10007eb7c  mov      x2, x0
+10007eb80  adrp     x1, #0x1002e2000
+10007eb84  add      x1, x1, #0x4c0
+10007eb88  mov      x0, x25
+10007eb8c  bl       #0x1001bcbc0  ; _CCCryptorFinal
+10007eb90  ldr      x0, [x21, #0x70]
+10007eb94  bl       #0x1001bcd40  ; _CC_SHA384_Final
+10007eb98  mov      x0, x25
+10007eb9c  bl       #0x1001bcd50  ; _CC_SHA384_Init
+10007eba0  str      x0, [x21, #0x70]
+10007eba4  b        #0x10007ec08
+10007eba8  cbz      x0, #0x10007ebf8
+10007ebac  bl       #0x1001bcc20  ; _CCHmacFinal
+10007ebb0  adrp     x8, #0x1001d0000
+10007ebb4  add      x8, x8, #0x2e8
+10007ebb8  adrp     x9, #0x1001cf000
+10007ebbc  add      x9, x9, #0xd50
+10007ebc0  cmp      w23, #0
+10007ebc4  csel     x8, x9, x8, ne
+10007ebc8  stp      x8, x0, [sp]
+10007ebcc  adrp     x0, #0x100205000
+10007ebd0  add      x0, x0, #0x205
+10007ebd4  bl       #0x10001dac4  ; local
+10007ebd8  ldr      x0, [sp, #0x38]
+10007ebdc  bl       #0x100024c8c  ; local
+10007ebe0  b        #0x10007ec78
+10007ebe4  mov      x25, #0
+10007ebe8  mov      x24, #0
+10007ebec  b        #0x10007ec08
+10007ebf0  mov      x25, x22
+10007ebf4  b        #0x10007e874
+10007ebf8  adrp     x0, #0x100205000
+10007ebfc  add      x0, x0, #0x1c3
+10007ec00  b        #0x10007ec74
+10007ec04  mov      x25, #0
+10007ec08  tbz      w23, #0, #0x10007ec18
+10007ec0c  adrp     x8, #0x1001cf000
+10007ec10  add      x8, x8, #0xd50
+10007ec14  b        #0x10007ec38
+10007ec18  adrp     x1, #0x1002e2000
+10007ec1c  add      x1, x1, #0x4e0
+10007ec20  mov      x0, x21
+10007ec24  mov      w2, #0
+10007ec28  bl       #0x10007f294  ; local
+10007ec2c  tbz      w0, #0, #0x10007ec50
+10007ec30  adrp     x8, #0x1001d0000
+10007ec34  add      x8, x8, #0x2e8
+10007ec38  str      x8, [sp]
+10007ec3c  adrp     x0, #0x100205000
+10007ec40  add      x0, x0, #0x301
+10007ec44  bl       #0x10001dac4  ; local
+10007ec48  mov      w26, #0
+10007ec4c  b        #0x10007e7b4
+10007ec50  adrp     x0, #0x100205000
+10007ec54  add      x0, x0, #0x2bc
+10007ec58  bl       #0x10001dac4  ; local
+10007ec5c  b        #0x10007e7b0
+10007ec60  adrp     x0, #0x100205000
+10007ec64  add      x0, x0, #0x34
+10007ec68  b        #0x10007ec74
+10007ec6c  adrp     x0, #0x100205000
+10007ec70  add      x0, x0, #0x64
+10007ec74  bl       #0x10001dac4  ; local
+10007ec78  mov      x24, #0
+10007ec7c  b        #0x10007e7ac
+10007ec80  adrp     x0, #0x100205000
+10007ec84  add      x0, x0, #0x245
+10007ec88  bl       #0x10001dac4  ; local
+10007ec8c  b        #0x10007e7b4

@@ -1,0 +1,48 @@
+{
+  "phase": "05F+",
+  "nvram_evidence": {
+    "checkpoint": "Skipping consuming APNonce because we have no nvram access yet",
+    "qemu_nvram_model": "none — no NVRAM device model in qemu-sptm"
+  },
+  "serial_progress": {
+    "userspace_sysctl": "net.inet.tcp tuning applied",
+    "window": "60s",
+    "total_bytes": 33060,
+    "checkpoint_main": "umask + setvbuf + set_progress_0 reached",
+    "launchd_messages": 121,
+    "stderr": "clean (empty)",
+    "restore_daemon_messages": 25
+  },
+  "gate": "sep-acmtrm-blocker-localization",
+  "sep_evidence": {
+    "qemu_sep_model": "zeroed reg-block only (init_sep in darwin.c) — no SEP manager, no mailbox, no interrupts",
+    "isSEPAvailable": "YES (from DT /chosen/sepfw-load-at-boot=0x1)",
+    "AppleSEPKeyStore": "started, _sep_enabled=1 (from DT)"
+  },
+  "apple_guest_root_shell": "NOT_YET_PROVEN",
+  "date": "2026-09-27 13:40:16",
+  "upstream_diff": {
+    "newer": "bad6336fb24211f8c4e8e946c259bd5b12417340",
+    "key_change": "NEW hw/intc/apple_aic.c (280 lines): real AIC v1-v3 interrupt controller with enable/disable/pending/EOI/IACK — our pinned base has only zeroed RAM for AIC",
+    "hypothesis": "Without a real AIC, no device interrupts reach the guest, so drivers like AppleSEPManager never complete probing and never publish their IOKit service; ACMTRM then times out waiting for it.",
+    "next_step": "A/B experiment: cherry-pick only apple_aic.c + apple_aic.h + meson wiring + darwin.c init_aic replacement onto the pinned base, rebuild, run 60s serial gate. If AppleSEPManager appears or ACMTRM timeout changes, AIC is proven missing semantics.",
+    "base": "2867d847d3471560e773120ee50c42dbcbb6d60b"
+  },
+  "terminal_blockers": [
+    "ACMTRM waitForSEPEndpoint timed out waiting for AppleSEPManager (repeated)",
+    "waiting for matching IOKit service IOResourceMatch=IONVRAM (repeated)"
+  ],
+  "decisive_finding": {
+    "finding": "ACMTRM/SEP timeout is NOT the actual root-shell blocker. The upstream darwin-vm root shell comes from a PATCHED ramdisk containing a com.jprx.bash launchdaemon, an iOS sysroot, and a custom trustcache built on macOS via hdiutil + codesign (get_files.sh patch_ramdisk). Our Windows fixture uses the RAW unpatched ramdisk, so iOS runs the restore daemon instead of bash. The upstream AIC source comment itself states: you do not need a working AIC to boot to a root shell.",
+    "ab_experiment": {
+      "hypothesis": "Real Apple AIC interrupt controller would unblock AppleSEPManager probing",
+      "result": "REJECTED — serial output 33,052 vs 33,060 bytes, same terminal state, same ACMTRM timeout. AIC alone changes nothing for this milestone.",
+      "method": "Cherry-picked hw/intc/apple_aic.c + apple_aic.h + meson + darwin.c wiring from upstream bad6336 onto pinned 2867d847; rebuilt; ran identical 60s serial gate"
+    },
+    "upstream_pipeline": {
+      "windows_gap": "No APFS ramdisk mount/patch/codesign pipeline exists on Windows yet. The Phase 4 vphone-udif-win / vphone-aea-win / apfs_snapshot tooling covers container decode but not full APFS LaunchDaemons replacement + ad-hoc signing + trustcache rebuild.",
+      "get_files_sh": "patch_ramdisk() mounts ramdisk.dmg with hdiutil on macOS, replaces /System/Library/LaunchDaemons with com.jprx.bash.plist, extracts ios_sysroot.tar.gz, ad-hoc codesigns all binaries, and builds ramdisk.tc from their cdhashes",
+      "conclusion": "Reaching a guest root shell on Windows requires porting the ramdisk patching pipeline (or obtaining a pre-patched ramdisk), not additional SEP/AIC device emulation for this milestone."
+    }
+  }
+}

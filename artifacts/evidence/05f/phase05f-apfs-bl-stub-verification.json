@@ -1,0 +1,113 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14G_INDEPENDENT_STUB_VERIFICATION",
+  "binary": {
+    "path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\57zz-binaries\\APFS_framework.bin",
+    "sha256": "4d0b7b4444d62bdd7b985770748bf6fa91f78f68d44c9d935f6e2abb10ef764b"
+  },
+  "instruction_chain": [
+    {
+      "vm": "0x262b8",
+      "mnemonic": "sub",
+      "op_str": "sp, sp, #0x500",
+      "expected_mnemonic": "sub",
+      "match": true
+    },
+    {
+      "vm": "0x262bc",
+      "mnemonic": "mov",
+      "op_str": "x19, x1",
+      "expected_mnemonic": "mov",
+      "match": true
+    },
+    {
+      "vm": "0x262c0",
+      "mnemonic": "str",
+      "op_str": "x0, [sp, #8]",
+      "expected_mnemonic": "str",
+      "match": true
+    },
+    {
+      "vm": "0x262c4",
+      "mnemonic": "stur",
+      "op_str": "xzr, [x29, #-0x6c]",
+      "expected_mnemonic": "stur",
+      "match": true
+    },
+    {
+      "vm": "0x262c8",
+      "mnemonic": "add",
+      "op_str": "x0, sp, #0x18",
+      "expected_mnemonic": "add",
+      "match": true
+    },
+    {
+      "vm": "0x262cc",
+      "mnemonic": "mov",
+      "op_str": "w1, #0x4c8",
+      "expected_mnemonic": "mov",
+      "match": true
+    },
+    {
+      "vm": "0x262d0",
+      "mnemonic": "bl",
+      "op_str": "#0x6dcfc",
+      "expected_mnemonic": "bl",
+      "match": true
+    },
+    {
+      "vm": "0x262e8",
+      "mnemonic": "mov",
+      "op_str": "x0, x19",
+      "expected_mnemonic": "mov",
+      "match": true
+    },
+    {
+      "vm": "0x262ec",
+      "mnemonic": "bl",
+      "op_str": "#0x6d8ac",
+      "expected_mnemonic": "bl",
+      "match": true
+    }
+  ],
+  "bl_stub_resolution": {
+    "dict_lookup": {
+      "stub_vm": "0x6d8ac",
+      "decoded": [
+        "adrp x17, #0x75000",
+        "add x17, x17, #0x7a0",
+        "ldr x16, [x17]",
+        "braa x16, x17"
+      ],
+      "got_vm": "0x757a0",
+      "got_file_offset": "0x757a0",
+      "segment": "__AUTH_CONST",
+      "fixup_raw": "0xc00900000000002a",
+      "import_ordinal": 42,
+      "symbol": "_CFDictionaryGetValue"
+    },
+    "zero_fill": {
+      "stub_vm": "0x6dcfc",
+      "decoded": [
+        "adrp x17, #0x75000",
+        "add x17, x17, #0x9e0",
+        "ldr x16, [x17]",
+        "braa x16, x17"
+      ],
+      "got_vm": "0x759e0",
+      "got_file_offset": "0x759e0",
+      "segment": "__AUTH_CONST",
+      "fixup_raw": "0xc009000000000072",
+      "import_ordinal": 114,
+      "symbol": "_bzero"
+    }
+  },
+  "checks": {
+    "binary_identity_pass": true,
+    "instruction_chain_pass": true,
+    "x1_to_x19_to_dictionary_flow_pass": true,
+    "bl_symbols_pass": true
+  },
+  "result": "PASS",
+  "summary": "x1 is saved to x19 and consumed by _CFDictionaryGetValue; the 1224-byte clear calls _bzero, not memset."
+}

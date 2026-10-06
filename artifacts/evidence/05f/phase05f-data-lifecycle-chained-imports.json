@@ -1,0 +1,190 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART8B",
+  "date": "2026-10-02",
+  "discovery": "SUPERSEDED \u2014 see historical_superseded_findings",
+  "bind_locations": {
+    "_kAPFSVolumeCaseSensitiveKey": [
+      {
+        "file": "0x1c828",
+        "vm": "0x10001c828",
+        "ordinal": 1191
+      }
+    ],
+    "_kAPFSVolumeFSIndexKey": [
+      {
+        "file": "0x38d0",
+        "vm": "0x1000038d0",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x98b8",
+        "vm": "0x1000098b8",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb20a0",
+        "vm": "0x1000b20a0",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb2400",
+        "vm": "0x1000b2400",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb4698",
+        "vm": "0x1000b4698",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xb49f8",
+        "vm": "0x1000b49f8",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xe0e58",
+        "vm": "0x1000e0e58",
+        "ordinal": 1192
+      },
+      {
+        "file": "0xee850",
+        "vm": "0x1000ee850",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x125620",
+        "vm": "0x100125620",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x145380",
+        "vm": "0x100145380",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x14cf70",
+        "vm": "0x10014cf70",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x168538",
+        "vm": "0x100168538",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x17e678",
+        "vm": "0x10017e678",
+        "ordinal": 1192
+      },
+      {
+        "file": "0x18b520",
+        "vm": "0x10018b520",
+        "ordinal": 1192
+      }
+    ],
+    "_kAPFSVolumeGroupSiblingFSIndexKey": [
+      {
+        "file": "0x192478",
+        "vm": "0x100192478",
+        "ordinal": 1193
+      }
+    ],
+    "_kAPFSVolumeNameKey": [
+      {
+        "file": "0xc4c10",
+        "vm": "0x1000c4c10",
+        "ordinal": 1194
+      },
+      {
+        "file": "0xc4c98",
+        "vm": "0x1000c4c98",
+        "ordinal": 1194
+      },
+      {
+        "file": "0x14f0f0",
+        "vm": "0x10014f0f0",
+        "ordinal": 1194
+      },
+      {
+        "file": "0x191428",
+        "vm": "0x100191428",
+        "ordinal": 1194
+      }
+    ],
+    "_kAPFSVolumeNoAutomountAtCreateKey": [
+      {
+        "file": "0x6cb28",
+        "vm": "0x10006cb28",
+        "ordinal": 1195
+      }
+    ],
+    "_kAPFSVolumeReserveSizeKey": [
+      {
+        "file": "0xda258",
+        "vm": "0x1000da258",
+        "ordinal": 1197
+      }
+    ],
+    "_kAPFSVolumeRoleKey": [
+      {
+        "file": "0x138070",
+        "vm": "0x100138070",
+        "ordinal": 1198
+      }
+    ]
+  },
+  "note": "quota_size key not yet located in this scan; full scan of all ordinals needed",
+  "next_step": "ADRP+LDR xrefs from __text code to these bind VMs -> dictionary construction sites",
+  "bind_location_analysis": {
+    "discovery": "SUPERSEDED: __TEXT does NOT participate in chained fixups",
+    "interpretation": "SUPERSEDED: see historical_superseded_findings",
+    "role_key_bind": {
+      "file": "0x138070",
+      "vm": "0x100138070",
+      "context": "data in __TEXT __const"
+    },
+    "sibling_key_bind": {
+      "file": "0x192478",
+      "vm": "0x100192478",
+      "context": "data in __TEXT __const"
+    },
+    "xref_result": "no direct ADRP+LDR xrefs found from executable code to these bind VMs",
+    "next_approach": "The dictionary construction likely uses ObjC literal syntax or CF API calls that reference these keys through __cfstring or __objc_dictobj sections. Need to trace from the _APFSVolumeCreate callers backward through their x1 (dictionary) provenance chain to find who constructed it.",
+    "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false,
+    "DATA_LIFECYCLE_APFS_KEY_XREF_STATUS": "INDIRECT_THROUGH_DATA_STRUCTURES",
+    "status": "UNVERIFIED_CANDIDATE_BIT_PATTERNS",
+    "reason": "__TEXT has seg_info_offset=0 in dyld_chained_starts_in_image, so __TEXT does NOT participate in the chained-pointer walk. A full-binary bit63==1 + ordinal match scan is insufficient proof of a chained bind location. The candidate offsets are bit-pattern coincidences until proven through an authoritative relocation/fixup structure.",
+    "DATA_LIFECYCLE_BIND_LOCATION_CLAIM_LEVEL_PASS": true
+  },
+  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_PASS": false,
+  "historical_superseded_findings": [
+    {
+      "claim": "kAPFSVolume bind pointers are inline in __TEXT segment",
+      "status": "REJECTED",
+      "reason": "__TEXT does not participate in chained starts (seg_info_offset=0)"
+    },
+    {
+      "claim": "The bind pointers are chained-fixup values embedded in __TEXT",
+      "status": "REJECTED",
+      "reason": "__TEXT seg_info_offset=0; bit-pattern matches are not authoritative bind locations"
+    }
+  ],
+  "DATA_LIFECYCLE_BIND_LOCATION_SINGLE_STATE_PASS": true,
+  "DYLD_CHAINED_FIXUPS_HEADER": {
+    "fixups_version": 0,
+    "starts_offset": 32,
+    "imports_offset": 132,
+    "symbols_offset": 12140,
+    "imports_count": 1501,
+    "imports_format": 2,
+    "symbols_format": 0,
+    "note": "starts_offset=32 is the observed value from the parsed header, not a hardcoded assumption",
+    "DYLD_CHAINED_FIXUPS_HEADER_PASS": true
+  },
+  "DYLD_CHAINED_POINTER_FORMAT_IDENTIFICATION_PASS": true,
+  "DYLD_CHAINED_POINTER_CHAIN_WALK_PASS": false,
+  "DYLD_CHAINED_POINTER_FORMAT_CLAIM_LEVEL_PASS": true,
+  "DYLD_CHAINED_POINTER_CLAIM_LEVEL_PASS": true,
+  "DATA_LIFECYCLE_APFS_KEY_BIND_LOCATION_STATUS": "UNVERIFIED"
+}

@@ -1,0 +1,303 @@
+diff --git a/hw/arm/apple_ans.c b/hw/arm/apple_ans.c
+new file mode 100644
+index 0000000..4c1c4a8
+--- /dev/null
++++ b/hw/arm/apple_ans.c
+@@ -0,0 +1,181 @@
++#include "qemu/osdep.h"
++#include "qapi/error.h"
++#include "hw/arm/apple_ans.h"
++#include "hw/core/sysbus.h"
++#include "system/address-spaces.h"
++#include "trace.h"
++
++/*
++ * Register offsets within the first ANS MMIO region, corroborated by
++ * Linux drivers/nvme/host/apple.c for the ANS2 coprocessor interface.
++ */
++#define ANS_REG_PAGE_SIZE        0x4000
++#define ANS_COPROC_CPU_CONTROL   0x44
++#define ANS_COPROC_CPU_CONTROL_RUN 0x1
++#define ANS_BOOT_STATUS          0x1300
++#define ANS_BOOT_STATUS_OK       0xde71ce55
++
++/* Print the first N distinct accesses so early boot traces stay readable. */
++#define ANS_TRACE_LIMIT 64
++
++static uint64_t apple_ans_read(void *opaque, hwaddr offset, unsigned size) {
++    AppleANSState *s = APPLE_ANS(opaque);
++    uint64_t val = 0;
++
++    if (offset == ANS_COPROC_CPU_CONTROL) {
++        val = s->coproc_cpu_control;
++    } else if (offset == ANS_BOOT_STATUS) {
++        /* The model reports the coprocessor firmware as always booted
++         * so polling drivers proceed past the readiness check. */
++        val = ANS_BOOT_STATUS_OK;
++    } else if (offset >= 0x100 && offset < 0x180) {
++        /* ASCWrap mailbox message buffer area - reads return zero for
++         * now; the mailbox protocol model is the next iteration. */
++        val = 0;
++    } else {
++        val = 0;
++    }
++
++    if (s->read_count < ANS_TRACE_LIMIT) {
++        fprintf(stderr,
++                "apple-ans: read  bar0+%5u (0x%05x) size=%u -> 0x%0*llx\n",
++                (unsigned)offset, (unsigned)offset, size,
++                size * 2, (unsigned long long)val);
++    }
++    s->read_count++;
++
++    return val;
++}
++
++static void apple_ans_write(void *opaque, hwaddr offset, uint64_t value,
++                            unsigned size) {
++    AppleANSState *s = APPLE_ANS(opaque);
++
++    if (offset == ANS_COPROC_CPU_CONTROL) {
++        s->coproc_cpu_control = value;
++        if (s->write_count < ANS_TRACE_LIMIT) {
++            fprintf(stderr,
++                    "apple-ans: write bar0+%5u (0x%05x) size=%u <- 0x%0*llx"
++                    " (cpu %s)\n",
++                    (unsigned)offset, (unsigned)offset, size, size * 2,
++                    (unsigned long long)value,
++                    (value & ANS_COPROC_CPU_CONTROL_RUN) ? "RUN" : "HALT");
++        }
++    } else {
++        if (s->write_count < ANS_TRACE_LIMIT) {
++            fprintf(stderr,
++                    "apple-ans: write bar0+%5u (0x%05x) size=%u <- 0x%0*llx\n",
++                    (unsigned)offset, (unsigned)offset, size, size * 2,
++                    (unsigned long long)value);
++    }
++        s->unhandled_writes[s->unhandled_write_head] =
++            ((uint64_t)offset << 32) | (value & 0xffffffffu);
++        s->unhandled_write_head =
++            (s->unhandled_write_head + 1) % 16;
++    }
++    s->write_count++;
++}
++
++static const MemoryRegionOps apple_ans_ops = {
++    .read = apple_ans_read,
++    .write = apple_ans_write,
++    .endianness = DEVICE_LITTLE_ENDIAN,
++    .impl = {
++        .min_access_size = 1,
++        .max_access_size = 8,
++    },
++};
++
++static void apple_ans_init(Object *obj) {
++    AppleANSState *s = APPLE_ANS(obj);
++
++    s->num_regs = 0;
++    s->read_count = 0;
++    s->write_count = 0;
++    s->unhandled_write_head = 0;
++    s->coproc_cpu_control = 0;
++    s->boot_status = ANS_BOOT_STATUS_OK;
++
++    /* Regions are sized in apple_ans_create() from the device tree
++     * before this instance is realized; iomem entries with len == 0
++     * remain unmapped. See apple_ans_create() for the mapping loop. */
++}
++
++static void apple_ans_realize(DeviceState *dev, Error **errp) {
++    AppleANSState *s = APPLE_ANS(dev);
++    SysBusDevice *sbd = SYS_BUS_DEVICE(dev);
++    struct adt_io_reg *regs;
++    size_t reg_len_bytes;
++    unsigned n_regs;
++    unsigned mmio_idx = 0;
++
++    regs = adt_get_prop_val(s->create_ans_node, "reg");
++    assert(regs != NULL);
++    reg_len_bytes = adt_get_prop_len(s->create_ans_node, "reg");
++    n_regs = (unsigned)(reg_len_bytes / sizeof(struct adt_io_reg));
++    if (n_regs > ANS_NUM_REGS) {
++        n_regs = ANS_NUM_REGS;
++    }
++
++    for (unsigned i = 0; i < n_regs; i++) {
++        hwaddr base = regs[i].base + s->create_iobase;
++        uint64_t len = regs[i].len;
++        s->reg_base[i] = base;
++        s->reg_len[i] = len;
++        if (len == 0) {
++            fprintf(stderr,
++                    "apple-ans: mmio[%u] skipped (len=0)\n", i);
++            continue;
++        }
++        memory_region_init_io(&s->iomem[i], OBJECT(dev), &apple_ans_ops, s,
++                              TYPE_APPLE_ANS "-bar", len);
++        sysbus_init_mmio(sbd, &s->iomem[i]);
++        s->sysbus_slot[i] = mmio_idx;
++        mmio_idx++;
++    }
++}
++
++static void apple_ans_class_init(ObjectClass *klass, const void *data) {
++    DeviceClass *dc = DEVICE_CLASS(klass);
++    dc->realize = apple_ans_realize;
++}
++
++static const TypeInfo apple_ans_info = {
++    .name          = TYPE_APPLE_ANS,
++    .parent        = TYPE_SYS_BUS_DEVICE,
++    .instance_size = sizeof(AppleANSState),
++    .instance_init = apple_ans_init,
++    .class_init    = apple_ans_class_init,
++};
++
++
++static void apple_ans_register_types(void) {
++    type_register_static(&apple_ans_info);
++}
++
++type_init(apple_ans_register_types)
++
++DeviceState *apple_ans_create(struct dtree_node *ans_node, uint64_t iobase) {
++    DeviceState *d;
++    SysBusDevice *sbd;
++    AppleANSState *s;
++
++    assert(ans_node != NULL);
++
++    d = qdev_new(TYPE_APPLE_ANS);
++    sbd = SYS_BUS_DEVICE(d);
++    s = APPLE_ANS(d);
++    s->create_ans_node = ans_node;
++    s->create_iobase = iobase;
++    sysbus_realize_and_unref(sbd, &error_fatal);
++
++    for (unsigned i = 0; i < ANS_NUM_REGS; i++) {
++        if (s->reg_len[i] == 0) continue;
++        sysbus_mmio_map(sbd, s->sysbus_slot[i], s->reg_base[i]);
++        fprintf(stderr,
++                "apple-ans: mmio[%u] mapped at 0x%08llx len=0x%llx\n",
++                i, (unsigned long long)s->reg_base[i],
++                (unsigned long long)s->reg_len[i]);
++    }
++    return d;
++}
+diff --git a/hw/arm/darwin.c b/hw/arm/darwin.c
+index 51d240b..965c010 100644
+--- a/hw/arm/darwin.c
++++ b/hw/arm/darwin.c
+@@ -19,15 +19,17 @@
+ #include "xnu/apple_dtree.h"
+ #include "xnu/apple_regs.h"
+ #include "hw/arm/apple_amcc.h"
++#include "hw/arm/apple_ans.h"
+ #include "xnu/patch.h"
+ #include "xnu/macho.h"
++#include "hw/intc/apple_aic.h"
++#include "ui/console.h"
++#include "ui/qemu-pixman.h"
++#include "qemu/timer.h"
+ 
+ // See device tree specification section 2.3.8: ranges
+ #define IO_RANGE_BASE_OFFSET     1
+ 
+-// Use this for AICs where we don't know how many interrupts there should be
+-#define A_GOOD_NUMBER_OF_IRQS    0x1000
+-
+ #define EXPECTED_FIRMWARE_NAME   "qemu-sptm"
+ 
+ static char *g_default_args = (char*)"debug=0x8 kextlog=0xffff cpus=1 rd=md0 serial=7 -v -noprogress keepsyms=1 wdt=-1 -enable_kprintf_spam wlan-olyhal-abort";
+@@ -272,7 +476,13 @@ static void darwin_init(MachineState *ms) {
+     assert(0 == arm_io_ranges[0]); // child bus phys addr must be zero
+ 
+     init_uart(dt_root, iobase);
+-    init_aic(dt_root, iobase);
++    apple_aic_create(adt_find_node(dt_root, "arm-io/aic"), iobase);
++    {
++        struct dtree_node *ans_node = adt_find_node(dt_root, "arm-io/ans");
++        if (ans_node) {
++            apple_ans_create(ans_node, iobase);
++        }
++    }
+     init_sep(dt_root);
+     init_cpu_impl(dt_root);
+ 
+diff --git a/hw/arm/meson.build b/hw/arm/meson.build
+index 2a21540..7e99b2c 100644
+--- a/hw/arm/meson.build
++++ b/hw/arm/meson.build
+@@ -114,7 +114,7 @@ arm_common_ss.add(files('boot.c'))
+ 
+ hw_common_arch += {'arm': arm_common_ss}
+ 
+-arm_common_ss.add(files('darwin.c', 'xnuboot_sptm.c', 'xnu_patch.c', 'apple_regs.c', 'apple_dtree.c', 'apple_amcc.c', 'macho.c'))
++arm_common_ss.add(files('darwin.c', 'xnuboot_sptm.c', 'xnu_patch.c', 'apple_regs.c', 'apple_dtree.c', 'apple_amcc.c', 'apple_ans.c', 'macho.c'))
+ 
+ arm_common_ss.add(custom_target('apple_regs_autogen.h',
+   output: 'apple_regs_autogen.h',
+diff --git a/include/hw/arm/apple_ans.h b/include/hw/arm/apple_ans.h
+new file mode 100644
+index 0000000..0262d7d
+--- /dev/null
++++ b/include/hw/arm/apple_ans.h
+@@ -0,0 +1,57 @@
++#ifndef APPLE_ANS_H
++#define APPLE_ANS_H
++
++#include "hw/core/sysbus.h"
++#include "qom/object.h"
++#include "xnu/apple_dtree.h"
++
++#define TYPE_APPLE_ANS "apple-ans"
++OBJECT_DECLARE_SIMPLE_TYPE(AppleANSState, APPLE_ANS)
++
++/* Number of MMIO BARs declared by the ANS device-tree node. */
++#define ANS_NUM_REGS 14
++
++/*
++ * Minimal ANS (Apple ANS2 / NVMe coprocessor) MMIO model.
++ *
++ * This is Iteration 58B: map the ANS MMIO ranges from the device tree
++ * and log guest accesses so the first hardware primitives the Apple
++ * ASCWrap/ANS driver touches become observable. The only behaviorally
++ * emulated registers are the coprocessor control and boot-status
++ * values that the Linux apple.c driver taught us:
++ *
++ *   COPROC_CPU_CONTROL (offset 0x44) - coprocessor run/halt control
++ *   BOOT_STATUS        (offset 0x1300) - firmware readiness; 0xde71ce55
++ *                       means booted
++ *
++ * Everything else reads as zero and writes are recorded for the next
++ * iteration of the protocol model.
++ */
++struct AppleANSState {
++    SysBusDevice parent_obj;
++
++    /* Passed from darwin.c via apple_ans_create() before realize. */
++    struct dtree_node *create_ans_node;
++    uint64_t create_iobase;
++
++    /* One MMIO subregion per active device-tree reg entry. */
++    MemoryRegion iomem[ANS_NUM_REGS];
++    hwaddr reg_base[ANS_NUM_REGS];
++    uint64_t reg_len[ANS_NUM_REGS];
++    unsigned sysbus_slot[ANS_NUM_REGS];
++    unsigned num_regs;
++
++    /* Behavioral state */
++    uint64_t coproc_cpu_control;   /* offset 0x44 in BAR0 */
++    uint64_t boot_status;          /* offset 0x1300 in BAR0 */
++    uint64_t unhandled_writes[16]; /* LRU log of recent unknown writes */
++    unsigned unhandled_write_head;
++
++    /* Access instrumentation */
++    uint64_t read_count;
++    uint64_t write_count;
++};
++
++DeviceState *apple_ans_create(struct dtree_node *ans_node, uint64_t iobase);
++
++#endif /* APPLE_ANS_H */

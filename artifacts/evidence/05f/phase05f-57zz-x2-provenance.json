@@ -1,0 +1,31 @@
+{
+  "gate": "ARMIO_THUNK_X2_PROVENANCE",
+  "method": "v9: thunk-only hbreak; at each hit, read x2 object vtable and chase pointers",
+  "run": "build/phase05f-runtime/x2-prov-v1",
+  "summary": {
+    "total_hits": 40,
+    "x2_class_distribution": {
+      "unknown_vtable": 40
+    },
+    "all_x2_strings": [],
+    "ans_related_strings": [],
+    "x0_class": "unknown_vtable"
+  },
+  "key_finding": {
+    "x2_vtable_static": "0xfffffff007cc90f8",
+    "x2_vtable_plus_0x40": "0xfffffff00aa4e744 (= IOService::start base)",
+    "interpretation": "All 40 x2 objects share vtable 0xfffffff007cc90f8 whose +0x40 slot resolves to 0xfffffff00aa4e744 (the independently anchored IOService::start base function). This means the x2 objects are IOService-family objects (likely IORegistryEntry or IOService subclasses), NOT ARMIODevice instances themselves. The ARMIODevice allocator is called to CREATE an ARMIODevice FROM these x2 source objects. The x2 objects are the DT-derived service entries that the platform expert passes to the allocator for conversion.",
+    "ANS_strings_found": 0
+  },
+  "verdicts": {
+    "X2_OBJECT_FAMILY": "IOService-family (vtable +0x40 == IOService::start)",
+    "X2_SPECIFIC_CLASS": "UNKNOWN (vtable 0xfffffff007cc90f8 not in known map)",
+    "X2_IS_ARMIODevice_INSTANCE": "NO (ARMIODevice vtable is 0xfffffff007d336e0, different)",
+    "X2_IS_DT_DERIVED_SERVICE": "SUPPORTED (IOService-family vtable + allocator context)",
+    "ANS_SPECIFIC_ALLOCATION": "UNKNOWN (no 'ans' string found in x2 objects; name may not be inline)",
+    "THUNK_X2_SEMANTIC_ROLE": "LIKELY_DT_DERIVED_SERVICE_ENTRY (IOService-family object passed to ARMIODevice allocator as the source/registry object)",
+    "NEXT_APPROACH": "The x2 objects are IOService-family but their names are not inline strings. Next: instrument IORegistryEntry::getName or compareName at runtime with the specific x2 pointers as 'this' to extract names.",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE"
+  }
+}

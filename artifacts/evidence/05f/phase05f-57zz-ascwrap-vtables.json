@@ -1,0 +1,2585 @@
+{
+  "gate": "57ZZ_ASCWRAP_VTABLES",
+  "derivation": "vtable CONTENTS chain-decoder derived; vtable BASES derived from mod_init adrp/add x16 sequences and asserted",
+  "start_slot": "+0x360 (bti c landing pad targets)",
+  "vtables": {
+    "AppleA7IOP": {
+      "vtable_vm": "0xfffffff007d14370",
+      "mod_init": "0xfffffff0082f7798",
+      "resolved_entries": 125,
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
+      "start_owner": "kernel",
+      "entries": {
+        "+0x000": {
+          "target": "0xfffffff0082f4cfc",
+          "owner": "a7iop"
+        },
+        "+0x008": {
+          "target": "0xfffffff0082f7790",
+          "owner": "a7iop"
+        },
+        "+0x010": {
+          "target": "0xfffffff00aa4e7a4",
+          "owner": "kernel"
+        },
+        "+0x018": {
+          "target": "0xfffffff00aa4e798",
+          "owner": "kernel"
+        },
+        "+0x020": {
+          "target": "0xfffffff00aa4e790",
+          "owner": "kernel"
+        },
+        "+0x028": {
+          "target": "0xfffffff00aa4e788",
+          "owner": "kernel"
+        },
+        "+0x030": {
+          "target": "0xfffffff00ac1a5d4",
+          "owner": "kernel"
+        },
+        "+0x038": {
+          "target": "0xfffffff00aa4e778",
+          "owner": "kernel"
+        },
+        "+0x040": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x048": {
+          "target": "0xfffffff00aa4e770",
+          "owner": "kernel"
+        },
+        "+0x050": {
+          "target": "0xfffffff00aa4e768",
+          "owner": "kernel"
+        },
+        "+0x058": {
+          "target": "0xfffffff00aa4e760",
+          "owner": "kernel"
+        },
+        "+0x060": {
+          "target": "0xfffffff00ab790e4",
+          "owner": "kernel"
+        },
+        "+0x068": {
+          "target": "0xfffffff0082f4db4",
+          "owner": "a7iop"
+        },
+        "+0x078": {
+          "target": "0xfffffff00afed5e8",
+          "owner": "other"
+        },
+        "+0x080": {
+          "target": "0xfffffff00af5c358",
+          "owner": "other"
+        },
+        "+0x098": {
+          "target": "0xfffffff0082f7940",
+          "owner": "a7iop"
+        },
+        "+0x0a0": {
+          "target": "0xfffffff0082f7948",
+          "owner": "a7iop"
+        },
+        "+0x0a8": {
+          "target": "0xfffffff00aa51a24",
+          "owner": "kernel"
+        },
+        "+0x0b0": {
+          "target": "0xfffffff00aa51a18",
+          "owner": "kernel"
+        },
+        "+0x0b8": {
+          "target": "0xfffffff00aa519e8",
+          "owner": "kernel"
+        },
+        "+0x0c0": {
+          "target": "0xfffffff00aa519b8",
+          "owner": "kernel"
+        },
+        "+0x0c8": {
+          "target": "0xfffffff00aa51830",
+          "owner": "kernel"
+        },
+        "+0x0d0": {
+          "target": "0xfffffff0082f79a8",
+          "owner": "a7iop"
+        },
+        "+0x0d8": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x0e0": {
+          "target": "0xfffffff00aa517a0",
+          "owner": "kernel"
+        },
+        "+0x0e8": {
+          "target": "0xfffffff00aa51770",
+          "owner": "kernel"
+        },
+        "+0x0f0": {
+          "target": "0xfffffff00aa51618",
+          "owner": "kernel"
+        },
+        "+0x0f8": {
+          "target": "0xfffffff00aaa8dac",
+          "owner": "kernel"
+        },
+        "+0x100": {
+          "target": "0xfffffff00aa5160c",
+          "owner": "kernel"
+        },
+        "+0x108": {
+          "target": "0xfffffff00aadfb38",
+          "owner": "kernel"
+        },
+        "+0x110": {
+          "target": "0xfffffff00aac9bfc",
+          "owner": "kernel"
+        },
+        "+0x118": {
+          "target": "0xfffffff00aac9a1c",
+          "owner": "kernel"
+        },
+        "+0x120": {
+          "target": "0xfffffff00aac983c",
+          "owner": "kernel"
+        },
+        "+0x128": {
+          "target": "0xfffffff00aac9778",
+          "owner": "kernel"
+        },
+        "+0x130": {
+          "target": "0xfffffff00aac96b4",
+          "owner": "kernel"
+        },
+        "+0x138": {
+          "target": "0xfffffff00aac9598",
+          "owner": "kernel"
+        },
+        "+0x140": {
+          "target": "0xfffffff00aadfa88",
+          "owner": "kernel"
+        },
+        "+0x148": {
+          "target": "0xfffffff00aac9138",
+          "owner": "kernel"
+        },
+        "+0x150": {
+          "target": "0xfffffff00aac8f0c",
+          "owner": "kernel"
+        },
+        "+0x158": {
+          "target": "0xfffffff00aac8e84",
+          "owner": "kernel"
+        },
+        "+0x160": {
+          "target": "0xfffffff00aac8dfc",
+          "owner": "kernel"
+        },
+        "+0x168": {
+          "target": "0xfffffff00aac8d44",
+          "owner": "kernel"
+        },
+        "+0x170": {
+          "target": "0xfffffff00aac8c84",
+          "owner": "kernel"
+        },
+        "+0x178": {
+          "target": "0xfffffff00aac8b68",
+          "owner": "kernel"
+        },
+        "+0x180": {
+          "target": "0xfffffff00aac8a4c",
+          "owner": "kernel"
+        },
+        "+0x188": {
+          "target": "0xfffffff00aac894c",
+          "owner": "kernel"
+        },
+        "+0x190": {
+          "target": "0xfffffff00aac88d0",
+          "owner": "kernel"
+        },
+        "+0x198": {
+          "target": "0xfffffff00aac8854",
+          "owner": "kernel"
+        },
+        "+0x1a0": {
+          "target": "0xfffffff00aac8754",
+          "owner": "kernel"
+        },
+        "+0x1a8": {
+          "target": "0xfffffff00aac86d4",
+          "owner": "kernel"
+        },
+        "+0x1b0": {
+          "target": "0xfffffff00aac8654",
+          "owner": "kernel"
+        },
+        "+0x1b8": {
+          "target": "0xfffffff00aac8474",
+          "owner": "kernel"
+        },
+        "+0x1c0": {
+          "target": "0xfffffff00aac8294",
+          "owner": "kernel"
+        },
+        "+0x1c8": {
+          "target": "0xfffffff00aac80b4",
+          "owner": "kernel"
+        },
+        "+0x1d0": {
+          "target": "0xfffffff00aac7f8c",
+          "owner": "kernel"
+        },
+        "+0x1d8": {
+          "target": "0xfffffff00aac7e64",
+          "owner": "kernel"
+        },
+        "+0x1e0": {
+          "target": "0xfffffff00aac7d3c",
+          "owner": "kernel"
+        },
+        "+0x1e8": {
+          "target": "0xfffffff00aac7bbc",
+          "owner": "kernel"
+        },
+        "+0x1f0": {
+          "target": "0xfffffff00aadfa80",
+          "owner": "kernel"
+        },
+        "+0x1f8": {
+          "target": "0xfffffff00aac7a60",
+          "owner": "kernel"
+        },
+        "+0x200": {
+          "target": "0xfffffff00aac7848",
+          "owner": "kernel"
+        },
+        "+0x208": {
+          "target": "0xfffffff00aac7690",
+          "owner": "kernel"
+        },
+        "+0x210": {
+          "target": "0xfffffff00aac7630",
+          "owner": "kernel"
+        },
+        "+0x218": {
+          "target": "0xfffffff00aac7418",
+          "owner": "kernel"
+        },
+        "+0x220": {
+          "target": "0xfffffff00aac7260",
+          "owner": "kernel"
+        },
+        "+0x228": {
+          "target": "0xfffffff00aac7200",
+          "owner": "kernel"
+        },
+        "+0x230": {
+          "target": "0xfffffff00aac7028",
+          "owner": "kernel"
+        },
+        "+0x238": {
+          "target": "0xfffffff00aac6e50",
+          "owner": "kernel"
+        },
+        "+0x240": {
+          "target": "0xfffffff00aac6c58",
+          "owner": "kernel"
+        },
+        "+0x248": {
+          "target": "0xfffffff00aac6a9c",
+          "owner": "kernel"
+        },
+        "+0x250": {
+          "target": "0xfffffff00aac6670",
+          "owner": "kernel"
+        },
+        "+0x258": {
+          "target": "0xfffffff00aac64b4",
+          "owner": "kernel"
+        },
+        "+0x260": {
+          "target": "0xfffffff00aac631c",
+          "owner": "kernel"
+        },
+        "+0x268": {
+          "target": "0xfffffff00aac6160",
+          "owner": "kernel"
+        },
+        "+0x270": {
+          "target": "0xfffffff00aac6054",
+          "owner": "kernel"
+        },
+        "+0x278": {
+          "target": "0xfffffff00aac5524",
+          "owner": "kernel"
+        },
+        "+0x280": {
+          "target": "0xfffffff00aac5400",
+          "owner": "kernel"
+        },
+        "+0x288": {
+          "target": "0xfffffff00aac52e0",
+          "owner": "kernel"
+        },
+        "+0x290": {
+          "target": "0xfffffff00aac50e4",
+          "owner": "kernel"
+        },
+        "+0x298": {
+          "target": "0xfffffff0082f7cfc",
+          "owner": "a7iop"
+        },
+        "+0x2a0": {
+          "target": "0xfffffff00aac4f08",
+          "owner": "kernel"
+        },
+        "+0x2a8": {
+          "target": "0xfffffff00aac4e60",
+          "owner": "kernel"
+        },
+        "+0x2b0": {
+          "target": "0xfffffff00aac4dd4",
+          "owner": "kernel"
+        },
+        "+0x2b8": {
+          "target": "0xfffffff00aac4d00",
+          "owner": "kernel"
+        },
+        "+0x2c0": {
+          "target": "0xfffffff00aac4c60",
+          "owner": "kernel"
+        },
+        "+0x2c8": {
+          "target": "0xfffffff00aac4bb8",
+          "owner": "kernel"
+        },
+        "+0x2d0": {
+          "target": "0xfffffff00aac42a8",
+          "owner": "kernel"
+        },
+        "+0x2d8": {
+          "target": "0xfffffff00aac4168",
+          "owner": "kernel"
+        },
+        "+0x2e0": {
+          "target": "0xfffffff00aac39ac",
+          "owner": "kernel"
+        },
+        "+0x2e8": {
+          "target": "0xfffffff00aadf9d0",
+          "owner": "kernel"
+        },
+        "+0x2f0": {
+          "target": "0xfffffff00aadf92c",
+          "owner": "kernel"
+        },
+        "+0x2f8": {
+          "target": "0xfffffff00aadf89c",
+          "owner": "kernel"
+        },
+        "+0x300": {
+          "target": "0xfffffff00aadf740",
+          "owner": "kernel"
+        },
+        "+0x308": {
+          "target": "0xfffffff00ab07860",
+          "owner": "kernel"
+        },
+        "+0x310": {
+          "target": "0xfffffff00ab08ee0",
+          "owner": "kernel"
+        },
+        "+0x318": {
+          "target": "0xfffffff00aadf5b8",
+          "owner": "kernel"
+        },
+        "+0x320": {
+          "target": "0xfffffff00aadf2f8",
+          "owner": "kernel"
+        },
+        "+0x328": {
+          "target": "0xfffffff00aadf034",
+          "owner": "kernel"
+        },
+        "+0x330": {
+          "target": "0xfffffff00aadf028",
+          "owner": "kernel"
+        },
+        "+0x338": {
+          "target": "0xfffffff00aad826c",
+          "owner": "kernel"
+        },
+        "+0x340": {
+          "target": "0xfffffff00aad8264",
+          "owner": "kernel"
+        },
+        "+0x348": {
+          "target": "0xfffffff00aad8190",
+          "owner": "kernel"
+        },
+        "+0x350": {
+          "target": "0xfffffff00aad8168",
+          "owner": "kernel"
+        },
+        "+0x358": {
+          "target": "0xfffffff00aad7fcc",
+          "owner": "kernel"
+        },
+        "+0x360": {
+          "target": "0xfffffff00aad7da0",
+          "owner": "kernel"
+        },
+        "+0x368": {
+          "target": "0xfffffff00aad7cf8",
+          "owner": "kernel"
+        },
+        "+0x370": {
+          "target": "0xfffffff00aad7c6c",
+          "owner": "kernel"
+        },
+        "+0x378": {
+          "target": "0xfffffff00aad7c50",
+          "owner": "kernel"
+        },
+        "+0x380": {
+          "target": "0xfffffff00aad7c2c",
+          "owner": "kernel"
+        },
+        "+0x388": {
+          "target": "0xfffffff00aad6bd8",
+          "owner": "kernel"
+        },
+        "+0x390": {
+          "target": "0xfffffff00aad66a4",
+          "owner": "kernel"
+        },
+        "+0x398": {
+          "target": "0xfffffff00aad61c0",
+          "owner": "kernel"
+        },
+        "+0x3a0": {
+          "target": "0xfffffff00aad5f84",
+          "owner": "kernel"
+        },
+        "+0x3a8": {
+          "target": "0xfffffff00aad5edc",
+          "owner": "kernel"
+        },
+        "+0x3b0": {
+          "target": "0xfffffff00aad5ecc",
+          "owner": "kernel"
+        },
+        "+0x3b8": {
+          "target": "0xfffffff00aad5e48",
+          "owner": "kernel"
+        },
+        "+0x3c0": {
+          "target": "0xfffffff00aad5e14",
+          "owner": "kernel"
+        },
+        "+0x3c8": {
+          "target": "0xfffffff00aad5e08",
+          "owner": "kernel"
+        },
+        "+0x3d0": {
+          "target": "0xfffffff0082f7d80",
+          "owner": "a7iop"
+        },
+        "+0x3d8": {
+          "target": "0xfffffff00aad5b14",
+          "owner": "kernel"
+        },
+        "+0x3e0": {
+          "target": "0xfffffff00aad5a28",
+          "owner": "kernel"
+        },
+        "+0x3e8": {
+          "target": "0xfffffff00aad593c",
+          "owner": "kernel"
+        },
+        "+0x3f0": {
+          "target": "0xfffffff00aad57bc",
+          "owner": "kernel"
+        },
+        "+0x3f8": {
+          "target": "0xfffffff00aad531c",
+          "owner": "kernel"
+        }
+      },
+      "start_classification": "OVERRIDES_START",
+      "superclass_start_target": "0xfffffff008300420",
+      "superclass_relation_basis": "PROVEN (mod_init[0] x2 superclass = AppleIOP class object)"
+    },
+    "AppleASCWrapV6": {
+      "vtable_vm": "0xfffffff007d131e0",
+      "mod_init": "0xfffffff0082f42b4",
+      "resolved_entries": 125,
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
+      "start_owner": "kernel",
+      "entries": {
+        "+0x000": {
+          "target": "0xfffffff0082f32e8",
+          "owner": "ascwrap"
+        },
+        "+0x008": {
+          "target": "0xfffffff0082f4100",
+          "owner": "ascwrap"
+        },
+        "+0x010": {
+          "target": "0xfffffff00aa4e7a4",
+          "owner": "kernel"
+        },
+        "+0x018": {
+          "target": "0xfffffff00aa4e798",
+          "owner": "kernel"
+        },
+        "+0x020": {
+          "target": "0xfffffff00aa4e790",
+          "owner": "kernel"
+        },
+        "+0x028": {
+          "target": "0xfffffff00aa4e788",
+          "owner": "kernel"
+        },
+        "+0x030": {
+          "target": "0xfffffff00ac1a5d4",
+          "owner": "kernel"
+        },
+        "+0x038": {
+          "target": "0xfffffff00aa4e778",
+          "owner": "kernel"
+        },
+        "+0x040": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x048": {
+          "target": "0xfffffff00aa4e770",
+          "owner": "kernel"
+        },
+        "+0x050": {
+          "target": "0xfffffff00aa4e768",
+          "owner": "kernel"
+        },
+        "+0x058": {
+          "target": "0xfffffff00aa4e760",
+          "owner": "kernel"
+        },
+        "+0x060": {
+          "target": "0xfffffff00ab790e4",
+          "owner": "kernel"
+        },
+        "+0x068": {
+          "target": "0xfffffff0082f3454",
+          "owner": "ascwrap"
+        },
+        "+0x078": {
+          "target": "0xfffffff00afed4c0",
+          "owner": "other"
+        },
+        "+0x080": {
+          "target": "0xfffffff00afed498",
+          "owner": "other"
+        },
+        "+0x098": {
+          "target": "0xfffffff0082f4440",
+          "owner": "ascwrap"
+        },
+        "+0x0a0": {
+          "target": "0xfffffff0082f4448",
+          "owner": "ascwrap"
+        },
+        "+0x0a8": {
+          "target": "0xfffffff00aa51a24",
+          "owner": "kernel"
+        },
+        "+0x0b0": {
+          "target": "0xfffffff00aa51a18",
+          "owner": "kernel"
+        },
+        "+0x0b8": {
+          "target": "0xfffffff00aa519e8",
+          "owner": "kernel"
+        },
+        "+0x0c0": {
+          "target": "0xfffffff00aa519b8",
+          "owner": "kernel"
+        },
+        "+0x0c8": {
+          "target": "0xfffffff00aa51830",
+          "owner": "kernel"
+        },
+        "+0x0d0": {
+          "target": "0xfffffff0082f44a8",
+          "owner": "ascwrap"
+        },
+        "+0x0d8": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x0e0": {
+          "target": "0xfffffff00aa517a0",
+          "owner": "kernel"
+        },
+        "+0x0e8": {
+          "target": "0xfffffff00aa51770",
+          "owner": "kernel"
+        },
+        "+0x0f0": {
+          "target": "0xfffffff00aa51618",
+          "owner": "kernel"
+        },
+        "+0x0f8": {
+          "target": "0xfffffff00aaa8dac",
+          "owner": "kernel"
+        },
+        "+0x100": {
+          "target": "0xfffffff00aa5160c",
+          "owner": "kernel"
+        },
+        "+0x108": {
+          "target": "0xfffffff009dad978",
+          "owner": "kernel"
+        },
+        "+0x110": {
+          "target": "0xfffffff00aac9bfc",
+          "owner": "kernel"
+        },
+        "+0x118": {
+          "target": "0xfffffff00aac9a1c",
+          "owner": "kernel"
+        },
+        "+0x120": {
+          "target": "0xfffffff00aac983c",
+          "owner": "kernel"
+        },
+        "+0x128": {
+          "target": "0xfffffff00aac9778",
+          "owner": "kernel"
+        },
+        "+0x130": {
+          "target": "0xfffffff00aac96b4",
+          "owner": "kernel"
+        },
+        "+0x138": {
+          "target": "0xfffffff00aac9598",
+          "owner": "kernel"
+        },
+        "+0x140": {
+          "target": "0xfffffff00aadfa88",
+          "owner": "kernel"
+        },
+        "+0x148": {
+          "target": "0xfffffff00aac9138",
+          "owner": "kernel"
+        },
+        "+0x150": {
+          "target": "0xfffffff00aac8f0c",
+          "owner": "kernel"
+        },
+        "+0x158": {
+          "target": "0xfffffff00aac8e84",
+          "owner": "kernel"
+        },
+        "+0x160": {
+          "target": "0xfffffff00aac8dfc",
+          "owner": "kernel"
+        },
+        "+0x168": {
+          "target": "0xfffffff00aac8d44",
+          "owner": "kernel"
+        },
+        "+0x170": {
+          "target": "0xfffffff00aac8c84",
+          "owner": "kernel"
+        },
+        "+0x178": {
+          "target": "0xfffffff00aac8b68",
+          "owner": "kernel"
+        },
+        "+0x180": {
+          "target": "0xfffffff00aac8a4c",
+          "owner": "kernel"
+        },
+        "+0x188": {
+          "target": "0xfffffff00aac894c",
+          "owner": "kernel"
+        },
+        "+0x190": {
+          "target": "0xfffffff00aac88d0",
+          "owner": "kernel"
+        },
+        "+0x198": {
+          "target": "0xfffffff00aac8854",
+          "owner": "kernel"
+        },
+        "+0x1a0": {
+          "target": "0xfffffff00aac8754",
+          "owner": "kernel"
+        },
+        "+0x1a8": {
+          "target": "0xfffffff00aac86d4",
+          "owner": "kernel"
+        },
+        "+0x1b0": {
+          "target": "0xfffffff00aac8654",
+          "owner": "kernel"
+        },
+        "+0x1b8": {
+          "target": "0xfffffff00aac8474",
+          "owner": "kernel"
+        },
+        "+0x1c0": {
+          "target": "0xfffffff00aac8294",
+          "owner": "kernel"
+        },
+        "+0x1c8": {
+          "target": "0xfffffff00aac80b4",
+          "owner": "kernel"
+        },
+        "+0x1d0": {
+          "target": "0xfffffff00aac7f8c",
+          "owner": "kernel"
+        },
+        "+0x1d8": {
+          "target": "0xfffffff00aac7e64",
+          "owner": "kernel"
+        },
+        "+0x1e0": {
+          "target": "0xfffffff00aac7d3c",
+          "owner": "kernel"
+        },
+        "+0x1e8": {
+          "target": "0xfffffff00aac7bbc",
+          "owner": "kernel"
+        },
+        "+0x1f0": {
+          "target": "0xfffffff00aadfa80",
+          "owner": "kernel"
+        },
+        "+0x1f8": {
+          "target": "0xfffffff00aac7a60",
+          "owner": "kernel"
+        },
+        "+0x200": {
+          "target": "0xfffffff00aac7848",
+          "owner": "kernel"
+        },
+        "+0x208": {
+          "target": "0xfffffff00aac7690",
+          "owner": "kernel"
+        },
+        "+0x210": {
+          "target": "0xfffffff00aac7630",
+          "owner": "kernel"
+        },
+        "+0x218": {
+          "target": "0xfffffff00aac7418",
+          "owner": "kernel"
+        },
+        "+0x220": {
+          "target": "0xfffffff00aac7260",
+          "owner": "kernel"
+        },
+        "+0x228": {
+          "target": "0xfffffff00aac7200",
+          "owner": "kernel"
+        },
+        "+0x230": {
+          "target": "0xfffffff00aac7028",
+          "owner": "kernel"
+        },
+        "+0x238": {
+          "target": "0xfffffff00aac6e50",
+          "owner": "kernel"
+        },
+        "+0x240": {
+          "target": "0xfffffff00aac6c58",
+          "owner": "kernel"
+        },
+        "+0x248": {
+          "target": "0xfffffff00aac6a9c",
+          "owner": "kernel"
+        },
+        "+0x250": {
+          "target": "0xfffffff00aac6670",
+          "owner": "kernel"
+        },
+        "+0x258": {
+          "target": "0xfffffff00aac64b4",
+          "owner": "kernel"
+        },
+        "+0x260": {
+          "target": "0xfffffff00aac631c",
+          "owner": "kernel"
+        },
+        "+0x268": {
+          "target": "0xfffffff00aac6160",
+          "owner": "kernel"
+        },
+        "+0x270": {
+          "target": "0xfffffff00aac6054",
+          "owner": "kernel"
+        },
+        "+0x278": {
+          "target": "0xfffffff00aac5524",
+          "owner": "kernel"
+        },
+        "+0x280": {
+          "target": "0xfffffff00aac5400",
+          "owner": "kernel"
+        },
+        "+0x288": {
+          "target": "0xfffffff00aac52e0",
+          "owner": "kernel"
+        },
+        "+0x290": {
+          "target": "0xfffffff00aac50e4",
+          "owner": "kernel"
+        },
+        "+0x298": {
+          "target": "0xfffffff00aac5004",
+          "owner": "kernel"
+        },
+        "+0x2a0": {
+          "target": "0xfffffff00aac4f08",
+          "owner": "kernel"
+        },
+        "+0x2a8": {
+          "target": "0xfffffff00aac4e60",
+          "owner": "kernel"
+        },
+        "+0x2b0": {
+          "target": "0xfffffff00aac4dd4",
+          "owner": "kernel"
+        },
+        "+0x2b8": {
+          "target": "0xfffffff00aac4d00",
+          "owner": "kernel"
+        },
+        "+0x2c0": {
+          "target": "0xfffffff00aac4c60",
+          "owner": "kernel"
+        },
+        "+0x2c8": {
+          "target": "0xfffffff00aac4bb8",
+          "owner": "kernel"
+        },
+        "+0x2d0": {
+          "target": "0xfffffff00aac42a8",
+          "owner": "kernel"
+        },
+        "+0x2d8": {
+          "target": "0xfffffff00aac4168",
+          "owner": "kernel"
+        },
+        "+0x2e0": {
+          "target": "0xfffffff00aac39ac",
+          "owner": "kernel"
+        },
+        "+0x2e8": {
+          "target": "0xfffffff00aadf9d0",
+          "owner": "kernel"
+        },
+        "+0x2f0": {
+          "target": "0xfffffff00aadf92c",
+          "owner": "kernel"
+        },
+        "+0x2f8": {
+          "target": "0xfffffff00aadf89c",
+          "owner": "kernel"
+        },
+        "+0x300": {
+          "target": "0xfffffff00aadf740",
+          "owner": "kernel"
+        },
+        "+0x308": {
+          "target": "0xfffffff00ab07860",
+          "owner": "kernel"
+        },
+        "+0x310": {
+          "target": "0xfffffff00ab08ee0",
+          "owner": "kernel"
+        },
+        "+0x318": {
+          "target": "0xfffffff00aadf5b8",
+          "owner": "kernel"
+        },
+        "+0x320": {
+          "target": "0xfffffff00aadf2f8",
+          "owner": "kernel"
+        },
+        "+0x328": {
+          "target": "0xfffffff00aadf034",
+          "owner": "kernel"
+        },
+        "+0x330": {
+          "target": "0xfffffff00aadf028",
+          "owner": "kernel"
+        },
+        "+0x338": {
+          "target": "0xfffffff00aad826c",
+          "owner": "kernel"
+        },
+        "+0x340": {
+          "target": "0xfffffff00aad8264",
+          "owner": "kernel"
+        },
+        "+0x348": {
+          "target": "0xfffffff0082f4dec",
+          "owner": "a7iop"
+        },
+        "+0x350": {
+          "target": "0xfffffff00aad8168",
+          "owner": "kernel"
+        },
+        "+0x358": {
+          "target": "0xfffffff00aad7fcc",
+          "owner": "kernel"
+        },
+        "+0x360": {
+          "target": "0xfffffff00aad7da0",
+          "owner": "kernel"
+        },
+        "+0x368": {
+          "target": "0xfffffff00aad7cf8",
+          "owner": "kernel"
+        },
+        "+0x370": {
+          "target": "0xfffffff00aad7c6c",
+          "owner": "kernel"
+        },
+        "+0x378": {
+          "target": "0xfffffff00aad7c50",
+          "owner": "kernel"
+        },
+        "+0x380": {
+          "target": "0xfffffff00aad7c2c",
+          "owner": "kernel"
+        },
+        "+0x388": {
+          "target": "0xfffffff00aad6bd8",
+          "owner": "kernel"
+        },
+        "+0x390": {
+          "target": "0xfffffff00aad66a4",
+          "owner": "kernel"
+        },
+        "+0x398": {
+          "target": "0xfffffff00aad61c0",
+          "owner": "kernel"
+        },
+        "+0x3a0": {
+          "target": "0xfffffff00aad5f84",
+          "owner": "kernel"
+        },
+        "+0x3a8": {
+          "target": "0xfffffff00aad5edc",
+          "owner": "kernel"
+        },
+        "+0x3b0": {
+          "target": "0xfffffff00aad5ecc",
+          "owner": "kernel"
+        },
+        "+0x3b8": {
+          "target": "0xfffffff00aad5e48",
+          "owner": "kernel"
+        },
+        "+0x3c0": {
+          "target": "0xfffffff00aad5e14",
+          "owner": "kernel"
+        },
+        "+0x3c8": {
+          "target": "0xfffffff00aad5e08",
+          "owner": "kernel"
+        },
+        "+0x3d0": {
+          "target": "0xfffffff00aad5d80",
+          "owner": "kernel"
+        },
+        "+0x3d8": {
+          "target": "0xfffffff00aad5b14",
+          "owner": "kernel"
+        },
+        "+0x3e0": {
+          "target": "0xfffffff00aad5a28",
+          "owner": "kernel"
+        },
+        "+0x3e8": {
+          "target": "0xfffffff00aad593c",
+          "owner": "kernel"
+        },
+        "+0x3f0": {
+          "target": "0xfffffff00aad57bc",
+          "owner": "kernel"
+        },
+        "+0x3f8": {
+          "target": "0xfffffff00aad531c",
+          "owner": "kernel"
+        }
+      },
+      "start_classification": "INHERITS_START",
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "PROVEN (GOT superclass chase)"
+    },
+    "AppleASCWrapV6SEP": {
+      "vtable_vm": "0xfffffff007d139b8",
+      "mod_init": "0xfffffff0082f4800",
+      "resolved_entries": 107,
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aac8a4c",
+      "start_owner": "kernel",
+      "entries": {
+        "+0x000": {
+          "target": "0xfffffff0082f43c0",
+          "owner": "ascwrap"
+        },
+        "+0x008": {
+          "target": "0xfffffff0082f464c",
+          "owner": "ascwrap"
+        },
+        "+0x010": {
+          "target": "0xfffffff00aa4e7a4",
+          "owner": "kernel"
+        },
+        "+0x018": {
+          "target": "0xfffffff00aa4e798",
+          "owner": "kernel"
+        },
+        "+0x020": {
+          "target": "0xfffffff00aa4e790",
+          "owner": "kernel"
+        },
+        "+0x028": {
+          "target": "0xfffffff00aa4e788",
+          "owner": "kernel"
+        },
+        "+0x030": {
+          "target": "0xfffffff00ac1a5d4",
+          "owner": "kernel"
+        },
+        "+0x038": {
+          "target": "0xfffffff00aa4e778",
+          "owner": "kernel"
+        },
+        "+0x040": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x048": {
+          "target": "0xfffffff00aa4e770",
+          "owner": "kernel"
+        },
+        "+0x050": {
+          "target": "0xfffffff00aa4e768",
+          "owner": "kernel"
+        },
+        "+0x058": {
+          "target": "0xfffffff00aa4e760",
+          "owner": "kernel"
+        },
+        "+0x060": {
+          "target": "0xfffffff00ab790e4",
+          "owner": "kernel"
+        },
+        "+0x068": {
+          "target": "0xfffffff0082f4504",
+          "owner": "ascwrap"
+        },
+        "+0x088": {
+          "target": "0xfffffff00713bd0b",
+          "owner": "other"
+        },
+        "+0x098": {
+          "target": "0xfffffff00713bd23",
+          "owner": "other"
+        },
+        "+0x0c8": {
+          "target": "0xfffffff00713be81",
+          "owner": "other"
+        },
+        "+0x0d8": {
+          "target": "0xfffffff00713be95",
+          "owner": "other"
+        },
+        "+0x108": {
+          "target": "0xfffffff00713c1d5",
+          "owner": "other"
+        },
+        "+0x118": {
+          "target": "0xfffffff00713be95",
+          "owner": "other"
+        },
+        "+0x138": {
+          "target": "0xfffffff00a549f44",
+          "owner": "kernel"
+        },
+        "+0x140": {
+          "target": "0xfffffff00a549fcc",
+          "owner": "kernel"
+        },
+        "+0x148": {
+          "target": "0xfffffff00aabc2f0",
+          "owner": "kernel"
+        },
+        "+0x150": {
+          "target": "0xfffffff00aa520c0",
+          "owner": "kernel"
+        },
+        "+0x158": {
+          "target": "0xfffffff00aa5205c",
+          "owner": "kernel"
+        },
+        "+0x160": {
+          "target": "0xfffffff0082f6278",
+          "owner": "a7iop"
+        },
+        "+0x168": {
+          "target": "0xfffffff0082f7450",
+          "owner": "a7iop"
+        },
+        "+0x170": {
+          "target": "0xfffffff0082f62a4",
+          "owner": "a7iop"
+        },
+        "+0x178": {
+          "target": "0xfffffff0082f74b8",
+          "owner": "a7iop"
+        },
+        "+0x180": {
+          "target": "0xfffffff0082f7400",
+          "owner": "a7iop"
+        },
+        "+0x188": {
+          "target": "0xfffffff0082f75a0",
+          "owner": "a7iop"
+        },
+        "+0x190": {
+          "target": "0xfffffff0082f4d04",
+          "owner": "a7iop"
+        },
+        "+0x198": {
+          "target": "0xfffffff0082f4d50",
+          "owner": "a7iop"
+        },
+        "+0x1a0": {
+          "target": "0xfffffff00aa4ea18",
+          "owner": "kernel"
+        },
+        "+0x1a8": {
+          "target": "0xfffffff00aa4f5a0",
+          "owner": "kernel"
+        },
+        "+0x1b0": {
+          "target": "0xfffffff00aacbe94",
+          "owner": "kernel"
+        },
+        "+0x1b8": {
+          "target": "0xfffffff0082fa154",
+          "owner": "a7iop"
+        },
+        "+0x1c0": {
+          "target": "0xfffffff0082fa0f4",
+          "owner": "a7iop"
+        },
+        "+0x1c8": {
+          "target": "0xfffffff00ab39b9c",
+          "owner": "kernel"
+        },
+        "+0x1d0": {
+          "target": "0xfffffff00aa57ef4",
+          "owner": "kernel"
+        },
+        "+0x1d8": {
+          "target": "0xfffffff0082f6de8",
+          "owner": "a7iop"
+        },
+        "+0x1e0": {
+          "target": "0xfffffff0082f5f78",
+          "owner": "a7iop"
+        },
+        "+0x1e8": {
+          "target": "0xfffffff00aa4ff30",
+          "owner": "kernel"
+        },
+        "+0x1f0": {
+          "target": "0xfffffff00a54e5d4",
+          "owner": "kernel"
+        },
+        "+0x1f8": {
+          "target": "0xfffffff00ac05f74",
+          "owner": "kernel"
+        },
+        "+0x200": {
+          "target": "0xfffffff00a927758",
+          "owner": "kernel"
+        },
+        "+0x208": {
+          "target": "0xfffffff00afed5c0",
+          "owner": "other"
+        },
+        "+0x210": {
+          "target": "0xfffffff007d13c20",
+          "owner": "other"
+        },
+        "+0x218": {
+          "target": "0xfffffff0082f7798",
+          "owner": "a7iop"
+        },
+        "+0x220": {
+          "target": "0xfffffff0082f7d90",
+          "owner": "a7iop"
+        },
+        "+0x228": {
+          "target": "0xfffffff0082f9884",
+          "owner": "a7iop"
+        },
+        "+0x230": {
+          "target": "0xfffffff0082f9bf4",
+          "owner": "a7iop"
+        },
+        "+0x238": {
+          "target": "0xfffffff0082f77ec",
+          "owner": "a7iop"
+        },
+        "+0x240": {
+          "target": "0xfffffff0082f7de4",
+          "owner": "a7iop"
+        },
+        "+0x248": {
+          "target": "0xfffffff0082f98d8",
+          "owner": "a7iop"
+        },
+        "+0x250": {
+          "target": "0xfffffff0082f9c48",
+          "owner": "a7iop"
+        },
+        "+0x258": {
+          "target": "0xfffffff00afed5c0",
+          "owner": "other"
+        },
+        "+0x260": {
+          "target": "0xfffffff00afed638",
+          "owner": "other"
+        },
+        "+0x278": {
+          "target": "0xfffffff0082fa720",
+          "owner": "a7iop"
+        },
+        "+0x280": {
+          "target": "0xfffffff0082fa728",
+          "owner": "a7iop"
+        },
+        "+0x288": {
+          "target": "0xfffffff00aa51a24",
+          "owner": "kernel"
+        },
+        "+0x290": {
+          "target": "0xfffffff00aa51a18",
+          "owner": "kernel"
+        },
+        "+0x298": {
+          "target": "0xfffffff00aa519e8",
+          "owner": "kernel"
+        },
+        "+0x2a0": {
+          "target": "0xfffffff00aa519b8",
+          "owner": "kernel"
+        },
+        "+0x2a8": {
+          "target": "0xfffffff00aa51830",
+          "owner": "kernel"
+        },
+        "+0x2b0": {
+          "target": "0xfffffff0082f4d58",
+          "owner": "a7iop"
+        },
+        "+0x2b8": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x2c0": {
+          "target": "0xfffffff00aa517a0",
+          "owner": "kernel"
+        },
+        "+0x2c8": {
+          "target": "0xfffffff00aa51770",
+          "owner": "kernel"
+        },
+        "+0x2d0": {
+          "target": "0xfffffff00aa51618",
+          "owner": "kernel"
+        },
+        "+0x2d8": {
+          "target": "0xfffffff00aaa8dac",
+          "owner": "kernel"
+        },
+        "+0x2e0": {
+          "target": "0xfffffff00aa5160c",
+          "owner": "kernel"
+        },
+        "+0x2e8": {
+          "target": "0xfffffff009dad978",
+          "owner": "kernel"
+        },
+        "+0x2f0": {
+          "target": "0xfffffff00aac9bfc",
+          "owner": "kernel"
+        },
+        "+0x2f8": {
+          "target": "0xfffffff00aac9a1c",
+          "owner": "kernel"
+        },
+        "+0x300": {
+          "target": "0xfffffff00aac983c",
+          "owner": "kernel"
+        },
+        "+0x308": {
+          "target": "0xfffffff00aac9778",
+          "owner": "kernel"
+        },
+        "+0x310": {
+          "target": "0xfffffff00aac96b4",
+          "owner": "kernel"
+        },
+        "+0x318": {
+          "target": "0xfffffff00aac9598",
+          "owner": "kernel"
+        },
+        "+0x320": {
+          "target": "0xfffffff00aadfa88",
+          "owner": "kernel"
+        },
+        "+0x328": {
+          "target": "0xfffffff00aac9138",
+          "owner": "kernel"
+        },
+        "+0x330": {
+          "target": "0xfffffff00aac8f0c",
+          "owner": "kernel"
+        },
+        "+0x338": {
+          "target": "0xfffffff00aac8e84",
+          "owner": "kernel"
+        },
+        "+0x340": {
+          "target": "0xfffffff00aac8dfc",
+          "owner": "kernel"
+        },
+        "+0x348": {
+          "target": "0xfffffff00aac8d44",
+          "owner": "kernel"
+        },
+        "+0x350": {
+          "target": "0xfffffff00aac8c84",
+          "owner": "kernel"
+        },
+        "+0x358": {
+          "target": "0xfffffff00aac8b68",
+          "owner": "kernel"
+        },
+        "+0x360": {
+          "target": "0xfffffff00aac8a4c",
+          "owner": "kernel"
+        },
+        "+0x368": {
+          "target": "0xfffffff00aac894c",
+          "owner": "kernel"
+        },
+        "+0x370": {
+          "target": "0xfffffff00aac88d0",
+          "owner": "kernel"
+        },
+        "+0x378": {
+          "target": "0xfffffff00aac8854",
+          "owner": "kernel"
+        },
+        "+0x380": {
+          "target": "0xfffffff00aac8754",
+          "owner": "kernel"
+        },
+        "+0x388": {
+          "target": "0xfffffff00aac86d4",
+          "owner": "kernel"
+        },
+        "+0x390": {
+          "target": "0xfffffff00aac8654",
+          "owner": "kernel"
+        },
+        "+0x398": {
+          "target": "0xfffffff00aac8474",
+          "owner": "kernel"
+        },
+        "+0x3a0": {
+          "target": "0xfffffff00aac8294",
+          "owner": "kernel"
+        },
+        "+0x3a8": {
+          "target": "0xfffffff00aac80b4",
+          "owner": "kernel"
+        },
+        "+0x3b0": {
+          "target": "0xfffffff00aac7f8c",
+          "owner": "kernel"
+        },
+        "+0x3b8": {
+          "target": "0xfffffff00aac7e64",
+          "owner": "kernel"
+        },
+        "+0x3c0": {
+          "target": "0xfffffff00aac7d3c",
+          "owner": "kernel"
+        },
+        "+0x3c8": {
+          "target": "0xfffffff00aac7bbc",
+          "owner": "kernel"
+        },
+        "+0x3d0": {
+          "target": "0xfffffff00aadfa80",
+          "owner": "kernel"
+        },
+        "+0x3d8": {
+          "target": "0xfffffff00aac7a60",
+          "owner": "kernel"
+        },
+        "+0x3e0": {
+          "target": "0xfffffff00aac7848",
+          "owner": "kernel"
+        },
+        "+0x3e8": {
+          "target": "0xfffffff00aac7690",
+          "owner": "kernel"
+        },
+        "+0x3f0": {
+          "target": "0xfffffff00aac7630",
+          "owner": "kernel"
+        },
+        "+0x3f8": {
+          "target": "0xfffffff00aac7418",
+          "owner": "kernel"
+        }
+      },
+      "start_classification": "OVERRIDES_START",
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "ASSERTION_ANCHOR (shared registration block)"
+    },
+    "AppleASCWrapV6SISP": {
+      "vtable_vm": "0xfffffff007d12a08",
+      "mod_init": "0xfffffff0082f3238",
+      "resolved_entries": 125,
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
+      "start_owner": "kernel",
+      "entries": {
+        "+0x000": {
+          "target": "0xfffffff0082f2c3c",
+          "owner": "ascwrap"
+        },
+        "+0x008": {
+          "target": "0xfffffff0082f3084",
+          "owner": "ascwrap"
+        },
+        "+0x010": {
+          "target": "0xfffffff00aa4e7a4",
+          "owner": "kernel"
+        },
+        "+0x018": {
+          "target": "0xfffffff00aa4e798",
+          "owner": "kernel"
+        },
+        "+0x020": {
+          "target": "0xfffffff00aa4e790",
+          "owner": "kernel"
+        },
+        "+0x028": {
+          "target": "0xfffffff00aa4e788",
+          "owner": "kernel"
+        },
+        "+0x030": {
+          "target": "0xfffffff00ac1a5d4",
+          "owner": "kernel"
+        },
+        "+0x038": {
+          "target": "0xfffffff00aa4e778",
+          "owner": "kernel"
+        },
+        "+0x040": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x048": {
+          "target": "0xfffffff00aa4e770",
+          "owner": "kernel"
+        },
+        "+0x050": {
+          "target": "0xfffffff00aa4e768",
+          "owner": "kernel"
+        },
+        "+0x058": {
+          "target": "0xfffffff00aa4e760",
+          "owner": "kernel"
+        },
+        "+0x060": {
+          "target": "0xfffffff00ab790e4",
+          "owner": "kernel"
+        },
+        "+0x068": {
+          "target": "0xfffffff0082f2d80",
+          "owner": "ascwrap"
+        },
+        "+0x078": {
+          "target": "0xfffffff00afed498",
+          "owner": "other"
+        },
+        "+0x080": {
+          "target": "0xfffffff00afed5c0",
+          "owner": "other"
+        },
+        "+0x098": {
+          "target": "0xfffffff0082f3390",
+          "owner": "ascwrap"
+        },
+        "+0x0a0": {
+          "target": "0xfffffff0082f3398",
+          "owner": "ascwrap"
+        },
+        "+0x0a8": {
+          "target": "0xfffffff00aa51a24",
+          "owner": "kernel"
+        },
+        "+0x0b0": {
+          "target": "0xfffffff00aa51a18",
+          "owner": "kernel"
+        },
+        "+0x0b8": {
+          "target": "0xfffffff00aa519e8",
+          "owner": "kernel"
+        },
+        "+0x0c0": {
+          "target": "0xfffffff00aa519b8",
+          "owner": "kernel"
+        },
+        "+0x0c8": {
+          "target": "0xfffffff00aa51830",
+          "owner": "kernel"
+        },
+        "+0x0d0": {
+          "target": "0xfffffff0082f33f8",
+          "owner": "ascwrap"
+        },
+        "+0x0d8": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x0e0": {
+          "target": "0xfffffff00aa517a0",
+          "owner": "kernel"
+        },
+        "+0x0e8": {
+          "target": "0xfffffff00aa51770",
+          "owner": "kernel"
+        },
+        "+0x0f0": {
+          "target": "0xfffffff00aa51618",
+          "owner": "kernel"
+        },
+        "+0x0f8": {
+          "target": "0xfffffff00aaa8dac",
+          "owner": "kernel"
+        },
+        "+0x100": {
+          "target": "0xfffffff00aa5160c",
+          "owner": "kernel"
+        },
+        "+0x108": {
+          "target": "0xfffffff009dad978",
+          "owner": "kernel"
+        },
+        "+0x110": {
+          "target": "0xfffffff00aac9bfc",
+          "owner": "kernel"
+        },
+        "+0x118": {
+          "target": "0xfffffff00aac9a1c",
+          "owner": "kernel"
+        },
+        "+0x120": {
+          "target": "0xfffffff00aac983c",
+          "owner": "kernel"
+        },
+        "+0x128": {
+          "target": "0xfffffff00aac9778",
+          "owner": "kernel"
+        },
+        "+0x130": {
+          "target": "0xfffffff00aac96b4",
+          "owner": "kernel"
+        },
+        "+0x138": {
+          "target": "0xfffffff00aac9598",
+          "owner": "kernel"
+        },
+        "+0x140": {
+          "target": "0xfffffff00aadfa88",
+          "owner": "kernel"
+        },
+        "+0x148": {
+          "target": "0xfffffff00aac9138",
+          "owner": "kernel"
+        },
+        "+0x150": {
+          "target": "0xfffffff00aac8f0c",
+          "owner": "kernel"
+        },
+        "+0x158": {
+          "target": "0xfffffff00aac8e84",
+          "owner": "kernel"
+        },
+        "+0x160": {
+          "target": "0xfffffff00aac8dfc",
+          "owner": "kernel"
+        },
+        "+0x168": {
+          "target": "0xfffffff00aac8d44",
+          "owner": "kernel"
+        },
+        "+0x170": {
+          "target": "0xfffffff00aac8c84",
+          "owner": "kernel"
+        },
+        "+0x178": {
+          "target": "0xfffffff00aac8b68",
+          "owner": "kernel"
+        },
+        "+0x180": {
+          "target": "0xfffffff00aac8a4c",
+          "owner": "kernel"
+        },
+        "+0x188": {
+          "target": "0xfffffff00aac894c",
+          "owner": "kernel"
+        },
+        "+0x190": {
+          "target": "0xfffffff00aac88d0",
+          "owner": "kernel"
+        },
+        "+0x198": {
+          "target": "0xfffffff00aac8854",
+          "owner": "kernel"
+        },
+        "+0x1a0": {
+          "target": "0xfffffff00aac8754",
+          "owner": "kernel"
+        },
+        "+0x1a8": {
+          "target": "0xfffffff00aac86d4",
+          "owner": "kernel"
+        },
+        "+0x1b0": {
+          "target": "0xfffffff00aac8654",
+          "owner": "kernel"
+        },
+        "+0x1b8": {
+          "target": "0xfffffff00aac8474",
+          "owner": "kernel"
+        },
+        "+0x1c0": {
+          "target": "0xfffffff00aac8294",
+          "owner": "kernel"
+        },
+        "+0x1c8": {
+          "target": "0xfffffff00aac80b4",
+          "owner": "kernel"
+        },
+        "+0x1d0": {
+          "target": "0xfffffff00aac7f8c",
+          "owner": "kernel"
+        },
+        "+0x1d8": {
+          "target": "0xfffffff00aac7e64",
+          "owner": "kernel"
+        },
+        "+0x1e0": {
+          "target": "0xfffffff00aac7d3c",
+          "owner": "kernel"
+        },
+        "+0x1e8": {
+          "target": "0xfffffff00aac7bbc",
+          "owner": "kernel"
+        },
+        "+0x1f0": {
+          "target": "0xfffffff00aadfa80",
+          "owner": "kernel"
+        },
+        "+0x1f8": {
+          "target": "0xfffffff00aac7a60",
+          "owner": "kernel"
+        },
+        "+0x200": {
+          "target": "0xfffffff00aac7848",
+          "owner": "kernel"
+        },
+        "+0x208": {
+          "target": "0xfffffff00aac7690",
+          "owner": "kernel"
+        },
+        "+0x210": {
+          "target": "0xfffffff00aac7630",
+          "owner": "kernel"
+        },
+        "+0x218": {
+          "target": "0xfffffff00aac7418",
+          "owner": "kernel"
+        },
+        "+0x220": {
+          "target": "0xfffffff00aac7260",
+          "owner": "kernel"
+        },
+        "+0x228": {
+          "target": "0xfffffff00aac7200",
+          "owner": "kernel"
+        },
+        "+0x230": {
+          "target": "0xfffffff00aac7028",
+          "owner": "kernel"
+        },
+        "+0x238": {
+          "target": "0xfffffff00aac6e50",
+          "owner": "kernel"
+        },
+        "+0x240": {
+          "target": "0xfffffff00aac6c58",
+          "owner": "kernel"
+        },
+        "+0x248": {
+          "target": "0xfffffff00aac6a9c",
+          "owner": "kernel"
+        },
+        "+0x250": {
+          "target": "0xfffffff00aac6670",
+          "owner": "kernel"
+        },
+        "+0x258": {
+          "target": "0xfffffff00aac64b4",
+          "owner": "kernel"
+        },
+        "+0x260": {
+          "target": "0xfffffff00aac631c",
+          "owner": "kernel"
+        },
+        "+0x268": {
+          "target": "0xfffffff00aac6160",
+          "owner": "kernel"
+        },
+        "+0x270": {
+          "target": "0xfffffff00aac6054",
+          "owner": "kernel"
+        },
+        "+0x278": {
+          "target": "0xfffffff00aac5524",
+          "owner": "kernel"
+        },
+        "+0x280": {
+          "target": "0xfffffff00aac5400",
+          "owner": "kernel"
+        },
+        "+0x288": {
+          "target": "0xfffffff00aac52e0",
+          "owner": "kernel"
+        },
+        "+0x290": {
+          "target": "0xfffffff00aac50e4",
+          "owner": "kernel"
+        },
+        "+0x298": {
+          "target": "0xfffffff00aac5004",
+          "owner": "kernel"
+        },
+        "+0x2a0": {
+          "target": "0xfffffff00aac4f08",
+          "owner": "kernel"
+        },
+        "+0x2a8": {
+          "target": "0xfffffff00aac4e60",
+          "owner": "kernel"
+        },
+        "+0x2b0": {
+          "target": "0xfffffff00aac4dd4",
+          "owner": "kernel"
+        },
+        "+0x2b8": {
+          "target": "0xfffffff00aac4d00",
+          "owner": "kernel"
+        },
+        "+0x2c0": {
+          "target": "0xfffffff00aac4c60",
+          "owner": "kernel"
+        },
+        "+0x2c8": {
+          "target": "0xfffffff00aac4bb8",
+          "owner": "kernel"
+        },
+        "+0x2d0": {
+          "target": "0xfffffff00aac42a8",
+          "owner": "kernel"
+        },
+        "+0x2d8": {
+          "target": "0xfffffff00aac4168",
+          "owner": "kernel"
+        },
+        "+0x2e0": {
+          "target": "0xfffffff00aac39ac",
+          "owner": "kernel"
+        },
+        "+0x2e8": {
+          "target": "0xfffffff00aadf9d0",
+          "owner": "kernel"
+        },
+        "+0x2f0": {
+          "target": "0xfffffff00aadf92c",
+          "owner": "kernel"
+        },
+        "+0x2f8": {
+          "target": "0xfffffff00aadf89c",
+          "owner": "kernel"
+        },
+        "+0x300": {
+          "target": "0xfffffff00aadf740",
+          "owner": "kernel"
+        },
+        "+0x308": {
+          "target": "0xfffffff00ab07860",
+          "owner": "kernel"
+        },
+        "+0x310": {
+          "target": "0xfffffff00ab08ee0",
+          "owner": "kernel"
+        },
+        "+0x318": {
+          "target": "0xfffffff00aadf5b8",
+          "owner": "kernel"
+        },
+        "+0x320": {
+          "target": "0xfffffff00aadf2f8",
+          "owner": "kernel"
+        },
+        "+0x328": {
+          "target": "0xfffffff00aadf034",
+          "owner": "kernel"
+        },
+        "+0x330": {
+          "target": "0xfffffff00aadf028",
+          "owner": "kernel"
+        },
+        "+0x338": {
+          "target": "0xfffffff00aad826c",
+          "owner": "kernel"
+        },
+        "+0x340": {
+          "target": "0xfffffff00aad8264",
+          "owner": "kernel"
+        },
+        "+0x348": {
+          "target": "0xfffffff0082f4dec",
+          "owner": "a7iop"
+        },
+        "+0x350": {
+          "target": "0xfffffff00aad8168",
+          "owner": "kernel"
+        },
+        "+0x358": {
+          "target": "0xfffffff00aad7fcc",
+          "owner": "kernel"
+        },
+        "+0x360": {
+          "target": "0xfffffff00aad7da0",
+          "owner": "kernel"
+        },
+        "+0x368": {
+          "target": "0xfffffff00aad7cf8",
+          "owner": "kernel"
+        },
+        "+0x370": {
+          "target": "0xfffffff00aad7c6c",
+          "owner": "kernel"
+        },
+        "+0x378": {
+          "target": "0xfffffff00aad7c50",
+          "owner": "kernel"
+        },
+        "+0x380": {
+          "target": "0xfffffff00aad7c2c",
+          "owner": "kernel"
+        },
+        "+0x388": {
+          "target": "0xfffffff00aad6bd8",
+          "owner": "kernel"
+        },
+        "+0x390": {
+          "target": "0xfffffff00aad66a4",
+          "owner": "kernel"
+        },
+        "+0x398": {
+          "target": "0xfffffff00aad61c0",
+          "owner": "kernel"
+        },
+        "+0x3a0": {
+          "target": "0xfffffff00aad5f84",
+          "owner": "kernel"
+        },
+        "+0x3a8": {
+          "target": "0xfffffff00aad5edc",
+          "owner": "kernel"
+        },
+        "+0x3b0": {
+          "target": "0xfffffff00aad5ecc",
+          "owner": "kernel"
+        },
+        "+0x3b8": {
+          "target": "0xfffffff00aad5e48",
+          "owner": "kernel"
+        },
+        "+0x3c0": {
+          "target": "0xfffffff00aad5e14",
+          "owner": "kernel"
+        },
+        "+0x3c8": {
+          "target": "0xfffffff00aad5e08",
+          "owner": "kernel"
+        },
+        "+0x3d0": {
+          "target": "0xfffffff00aad5d80",
+          "owner": "kernel"
+        },
+        "+0x3d8": {
+          "target": "0xfffffff00aad5b14",
+          "owner": "kernel"
+        },
+        "+0x3e0": {
+          "target": "0xfffffff00aad5a28",
+          "owner": "kernel"
+        },
+        "+0x3e8": {
+          "target": "0xfffffff00aad593c",
+          "owner": "kernel"
+        },
+        "+0x3f0": {
+          "target": "0xfffffff00aad57bc",
+          "owner": "kernel"
+        },
+        "+0x3f8": {
+          "target": "0xfffffff00aad531c",
+          "owner": "kernel"
+        }
+      },
+      "start_classification": "INHERITS_START",
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "ASSERTION_ANCHOR (shared registration block)"
+    },
+    "AppleA7IOPNub": {
+      "vtable_vm": "0xfffffff007d14960",
+      "mod_init": "0xfffffff0082f7d90",
+      "resolved_entries": 125,
+      "start_slot": "+0x360",
+      "start_target": "0xfffffff00aad7da0",
+      "start_owner": "kernel",
+      "entries": {
+        "+0x000": {
+          "target": "0xfffffff0082f78c0",
+          "owner": "a7iop"
+        },
+        "+0x008": {
+          "target": "0xfffffff0082f7d88",
+          "owner": "a7iop"
+        },
+        "+0x010": {
+          "target": "0xfffffff00aa4e7a4",
+          "owner": "kernel"
+        },
+        "+0x018": {
+          "target": "0xfffffff00aa4e798",
+          "owner": "kernel"
+        },
+        "+0x020": {
+          "target": "0xfffffff00aa4e790",
+          "owner": "kernel"
+        },
+        "+0x028": {
+          "target": "0xfffffff00aa4e788",
+          "owner": "kernel"
+        },
+        "+0x030": {
+          "target": "0xfffffff00ac1a5d4",
+          "owner": "kernel"
+        },
+        "+0x038": {
+          "target": "0xfffffff00aa4e778",
+          "owner": "kernel"
+        },
+        "+0x040": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x048": {
+          "target": "0xfffffff00aa4e770",
+          "owner": "kernel"
+        },
+        "+0x050": {
+          "target": "0xfffffff00aa4e768",
+          "owner": "kernel"
+        },
+        "+0x058": {
+          "target": "0xfffffff00aa4e760",
+          "owner": "kernel"
+        },
+        "+0x060": {
+          "target": "0xfffffff00ab790e4",
+          "owner": "kernel"
+        },
+        "+0x068": {
+          "target": "0xfffffff0082f7a04",
+          "owner": "a7iop"
+        },
+        "+0x078": {
+          "target": "0xfffffff00afed610",
+          "owner": "other"
+        },
+        "+0x080": {
+          "target": "0xfffffff00afed638",
+          "owner": "other"
+        },
+        "+0x098": {
+          "target": "0xfffffff0082faef0",
+          "owner": "a7iop"
+        },
+        "+0x0a0": {
+          "target": "0xfffffff0082faef8",
+          "owner": "a7iop"
+        },
+        "+0x0a8": {
+          "target": "0xfffffff00aa51a24",
+          "owner": "kernel"
+        },
+        "+0x0b0": {
+          "target": "0xfffffff00aa51a18",
+          "owner": "kernel"
+        },
+        "+0x0b8": {
+          "target": "0xfffffff00aa519e8",
+          "owner": "kernel"
+        },
+        "+0x0c0": {
+          "target": "0xfffffff00aa519b8",
+          "owner": "kernel"
+        },
+        "+0x0c8": {
+          "target": "0xfffffff00aa51830",
+          "owner": "kernel"
+        },
+        "+0x0d0": {
+          "target": "0xfffffff0082f7fb4",
+          "owner": "a7iop"
+        },
+        "+0x0d8": {
+          "target": "0xfffffff00aa4e744",
+          "owner": "kernel"
+        },
+        "+0x0e0": {
+          "target": "0xfffffff00aa517a0",
+          "owner": "kernel"
+        },
+        "+0x0e8": {
+          "target": "0xfffffff00aa51770",
+          "owner": "kernel"
+        },
+        "+0x0f0": {
+          "target": "0xfffffff00aa51618",
+          "owner": "kernel"
+        },
+        "+0x0f8": {
+          "target": "0xfffffff00aaa8dac",
+          "owner": "kernel"
+        },
+        "+0x100": {
+          "target": "0xfffffff00aa5160c",
+          "owner": "kernel"
+        },
+        "+0x108": {
+          "target": "0xfffffff009dad978",
+          "owner": "kernel"
+        },
+        "+0x110": {
+          "target": "0xfffffff00aac9bfc",
+          "owner": "kernel"
+        },
+        "+0x118": {
+          "target": "0xfffffff00aac9a1c",
+          "owner": "kernel"
+        },
+        "+0x120": {
+          "target": "0xfffffff00aac983c",
+          "owner": "kernel"
+        },
+        "+0x128": {
+          "target": "0xfffffff00aac9778",
+          "owner": "kernel"
+        },
+        "+0x130": {
+          "target": "0xfffffff00aac96b4",
+          "owner": "kernel"
+        },
+        "+0x138": {
+          "target": "0xfffffff00aac9598",
+          "owner": "kernel"
+        },
+        "+0x140": {
+          "target": "0xfffffff00aadfa88",
+          "owner": "kernel"
+        },
+        "+0x148": {
+          "target": "0xfffffff00aac9138",
+          "owner": "kernel"
+        },
+        "+0x150": {
+          "target": "0xfffffff00aac8f0c",
+          "owner": "kernel"
+        },
+        "+0x158": {
+          "target": "0xfffffff00aac8e84",
+          "owner": "kernel"
+        },
+        "+0x160": {
+          "target": "0xfffffff00aac8dfc",
+          "owner": "kernel"
+        },
+        "+0x168": {
+          "target": "0xfffffff00aac8d44",
+          "owner": "kernel"
+        },
+        "+0x170": {
+          "target": "0xfffffff00aac8c84",
+          "owner": "kernel"
+        },
+        "+0x178": {
+          "target": "0xfffffff00aac8b68",
+          "owner": "kernel"
+        },
+        "+0x180": {
+          "target": "0xfffffff00aac8a4c",
+          "owner": "kernel"
+        },
+        "+0x188": {
+          "target": "0xfffffff00aac894c",
+          "owner": "kernel"
+        },
+        "+0x190": {
+          "target": "0xfffffff00aac88d0",
+          "owner": "kernel"
+        },
+        "+0x198": {
+          "target": "0xfffffff00aac8854",
+          "owner": "kernel"
+        },
+        "+0x1a0": {
+          "target": "0xfffffff00aac8754",
+          "owner": "kernel"
+        },
+        "+0x1a8": {
+          "target": "0xfffffff00aac86d4",
+          "owner": "kernel"
+        },
+        "+0x1b0": {
+          "target": "0xfffffff00aac8654",
+          "owner": "kernel"
+        },
+        "+0x1b8": {
+          "target": "0xfffffff00aac8474",
+          "owner": "kernel"
+        },
+        "+0x1c0": {
+          "target": "0xfffffff00aac8294",
+          "owner": "kernel"
+        },
+        "+0x1c8": {
+          "target": "0xfffffff00aac80b4",
+          "owner": "kernel"
+        },
+        "+0x1d0": {
+          "target": "0xfffffff00aac7f8c",
+          "owner": "kernel"
+        },
+        "+0x1d8": {
+          "target": "0xfffffff00aac7e64",
+          "owner": "kernel"
+        },
+        "+0x1e0": {
+          "target": "0xfffffff00aac7d3c",
+          "owner": "kernel"
+        },
+        "+0x1e8": {
+          "target": "0xfffffff00aac7bbc",
+          "owner": "kernel"
+        },
+        "+0x1f0": {
+          "target": "0xfffffff00aadfa80",
+          "owner": "kernel"
+        },
+        "+0x1f8": {
+          "target": "0xfffffff00aac7a60",
+          "owner": "kernel"
+        },
+        "+0x200": {
+          "target": "0xfffffff00aac7848",
+          "owner": "kernel"
+        },
+        "+0x208": {
+          "target": "0xfffffff00aac7690",
+          "owner": "kernel"
+        },
+        "+0x210": {
+          "target": "0xfffffff00aac7630",
+          "owner": "kernel"
+        },
+        "+0x218": {
+          "target": "0xfffffff00aac7418",
+          "owner": "kernel"
+        },
+        "+0x220": {
+          "target": "0xfffffff00aac7260",
+          "owner": "kernel"
+        },
+        "+0x228": {
+          "target": "0xfffffff00aac7200",
+          "owner": "kernel"
+        },
+        "+0x230": {
+          "target": "0xfffffff00aac7028",
+          "owner": "kernel"
+        },
+        "+0x238": {
+          "target": "0xfffffff00aac6e50",
+          "owner": "kernel"
+        },
+        "+0x240": {
+          "target": "0xfffffff00aac6c58",
+          "owner": "kernel"
+        },
+        "+0x248": {
+          "target": "0xfffffff00aac6a9c",
+          "owner": "kernel"
+        },
+        "+0x250": {
+          "target": "0xfffffff00aac6670",
+          "owner": "kernel"
+        },
+        "+0x258": {
+          "target": "0xfffffff00aac64b4",
+          "owner": "kernel"
+        },
+        "+0x260": {
+          "target": "0xfffffff00aac631c",
+          "owner": "kernel"
+        },
+        "+0x268": {
+          "target": "0xfffffff00aac6160",
+          "owner": "kernel"
+        },
+        "+0x270": {
+          "target": "0xfffffff00aac6054",
+          "owner": "kernel"
+        },
+        "+0x278": {
+          "target": "0xfffffff00aac5524",
+          "owner": "kernel"
+        },
+        "+0x280": {
+          "target": "0xfffffff00aac5400",
+          "owner": "kernel"
+        },
+        "+0x288": {
+          "target": "0xfffffff00aac52e0",
+          "owner": "kernel"
+        },
+        "+0x290": {
+          "target": "0xfffffff00aac50e4",
+          "owner": "kernel"
+        },
+        "+0x298": {
+          "target": "0xfffffff00aac5004",
+          "owner": "kernel"
+        },
+        "+0x2a0": {
+          "target": "0xfffffff00aac4f08",
+          "owner": "kernel"
+        },
+        "+0x2a8": {
+          "target": "0xfffffff00aac4e60",
+          "owner": "kernel"
+        },
+        "+0x2b0": {
+          "target": "0xfffffff00aac4dd4",
+          "owner": "kernel"
+        },
+        "+0x2b8": {
+          "target": "0xfffffff00aac4d00",
+          "owner": "kernel"
+        },
+        "+0x2c0": {
+          "target": "0xfffffff00aac4c60",
+          "owner": "kernel"
+        },
+        "+0x2c8": {
+          "target": "0xfffffff00aac4bb8",
+          "owner": "kernel"
+        },
+        "+0x2d0": {
+          "target": "0xfffffff00aac42a8",
+          "owner": "kernel"
+        },
+        "+0x2d8": {
+          "target": "0xfffffff00aac4168",
+          "owner": "kernel"
+        },
+        "+0x2e0": {
+          "target": "0xfffffff00aac39ac",
+          "owner": "kernel"
+        },
+        "+0x2e8": {
+          "target": "0xfffffff00aadf9d0",
+          "owner": "kernel"
+        },
+        "+0x2f0": {
+          "target": "0xfffffff00aadf92c",
+          "owner": "kernel"
+        },
+        "+0x2f8": {
+          "target": "0xfffffff00aadf89c",
+          "owner": "kernel"
+        },
+        "+0x300": {
+          "target": "0xfffffff00aadf740",
+          "owner": "kernel"
+        },
+        "+0x308": {
+          "target": "0xfffffff00ab07860",
+          "owner": "kernel"
+        },
+        "+0x310": {
+          "target": "0xfffffff00ab08ee0",
+          "owner": "kernel"
+        },
+        "+0x318": {
+          "target": "0xfffffff00aadf5b8",
+          "owner": "kernel"
+        },
+        "+0x320": {
+          "target": "0xfffffff00aadf2f8",
+          "owner": "kernel"
+        },
+        "+0x328": {
+          "target": "0xfffffff00aadf034",
+          "owner": "kernel"
+        },
+        "+0x330": {
+          "target": "0xfffffff00aadf028",
+          "owner": "kernel"
+        },
+        "+0x338": {
+          "target": "0xfffffff00aad826c",
+          "owner": "kernel"
+        },
+        "+0x340": {
+          "target": "0xfffffff00aad8264",
+          "owner": "kernel"
+        },
+        "+0x348": {
+          "target": "0xfffffff0082f8048",
+          "owner": "a7iop"
+        },
+        "+0x350": {
+          "target": "0xfffffff00aad8168",
+          "owner": "kernel"
+        },
+        "+0x358": {
+          "target": "0xfffffff00aad7fcc",
+          "owner": "kernel"
+        },
+        "+0x360": {
+          "target": "0xfffffff00aad7da0",
+          "owner": "kernel"
+        },
+        "+0x368": {
+          "target": "0xfffffff00aad7cf8",
+          "owner": "kernel"
+        },
+        "+0x370": {
+          "target": "0xfffffff00aad7c6c",
+          "owner": "kernel"
+        },
+        "+0x378": {
+          "target": "0xfffffff00aad7c50",
+          "owner": "kernel"
+        },
+        "+0x380": {
+          "target": "0xfffffff00aad7c2c",
+          "owner": "kernel"
+        },
+        "+0x388": {
+          "target": "0xfffffff00aad6bd8",
+          "owner": "kernel"
+        },
+        "+0x390": {
+          "target": "0xfffffff00aad66a4",
+          "owner": "kernel"
+        },
+        "+0x398": {
+          "target": "0xfffffff00aad61c0",
+          "owner": "kernel"
+        },
+        "+0x3a0": {
+          "target": "0xfffffff00aad5f84",
+          "owner": "kernel"
+        },
+        "+0x3a8": {
+          "target": "0xfffffff00aad5edc",
+          "owner": "kernel"
+        },
+        "+0x3b0": {
+          "target": "0xfffffff00aad5ecc",
+          "owner": "kernel"
+        },
+        "+0x3b8": {
+          "target": "0xfffffff00aad5e48",
+          "owner": "kernel"
+        },
+        "+0x3c0": {
+          "target": "0xfffffff00aad5e14",
+          "owner": "kernel"
+        },
+        "+0x3c8": {
+          "target": "0xfffffff00aad5e08",
+          "owner": "kernel"
+        },
+        "+0x3d0": {
+          "target": "0xfffffff00aad5d80",
+          "owner": "kernel"
+        },
+        "+0x3d8": {
+          "target": "0xfffffff00aad5b14",
+          "owner": "kernel"
+        },
+        "+0x3e0": {
+          "target": "0xfffffff00aad5a28",
+          "owner": "kernel"
+        },
+        "+0x3e8": {
+          "target": "0xfffffff00aad593c",
+          "owner": "kernel"
+        },
+        "+0x3f0": {
+          "target": "0xfffffff00aad57bc",
+          "owner": "kernel"
+        },
+        "+0x3f8": {
+          "target": "0xfffffff00aad531c",
+          "owner": "kernel"
+        }
+      },
+      "start_classification": "INHERITS_START",
+      "superclass_start_target": "0xfffffff00aad7da0",
+      "superclass_relation_basis": "PROVEN (mod_init[1] registers under A7IOP family)"
+    }
+  },
+  "candidate_evaluation": {
+    "candA": {
+      "vm": "0xfffffff0082f4df0",
+      "vtable_hits": [],
+      "count": 0
+    },
+    "candB": {
+      "vm": "0xfffffff0082f804c",
+      "vtable_hits": [],
+      "count": 0
+    },
+    "relationship": "candA (0xfffffff0082f4dec pad) and candB (0xfffffff0082f8048 pad) are vtable slot +0x348 targets. The proven start slot is +0x360; +0x348 is NOT start and its semantic identity is UNKNOWN. Prior breakpoints at the +4 function bodies were never start instrumentation."
+  },
+  "immediate_superclass_chain": {
+    "AppleIOP_vtable": "0xfffffff007d157f8",
+    "AppleIOP_start_0x360": "0xfffffff008300420",
+    "AppleIOP_start_source": "registration 0xfffffff0082f9bf4 x16 chain",
+    "IOService_vtable": "0xfffffff007c88580",
+    "IOService_start_0x360": "0xfffffff00aa4e744",
+    "note": "A7IOP immediate parent is AppleIOP (not IOService directly); override attribution now uses the immediate parent"
+  },
+  "ioservice_anchor": {
+    "registration_vm": "0xfffffff00aae5eec",
+    "vtable_vm": "0xfffffff007c88580",
+    "start_slot": "+0x360",
+    "ioservice_start_target": "0xfffffff00aa4e744",
+    "note": "A7IOP-family start (0xfffffff00aad7da0) is an intermediate-superclass override, NOT the IOService base"
+  },
+  "vtable_base_derivation": {
+    "AppleA7IOP": {
+      "mod_init": "0xfffffff0082f7798",
+      "derived_vtable": "0xfffffff007d14370",
+      "expected": "0xfffffff007d14370",
+      "match": true
+    },
+    "AppleASCWrapV6": {
+      "mod_init": "0xfffffff0082f42b4",
+      "derived_vtable": "0xfffffff007d131e0",
+      "expected": "0xfffffff007d131e0",
+      "match": true
+    },
+    "AppleASCWrapV6SEP": {
+      "mod_init": "0xfffffff0082f4800",
+      "derived_vtable": "0xfffffff007d139b8",
+      "expected": "0xfffffff007d139b8",
+      "match": true
+    },
+    "AppleASCWrapV6SISP": {
+      "mod_init": "0xfffffff0082f3238",
+      "derived_vtable": "0xfffffff007d12a08",
+      "expected": "0xfffffff007d12a08",
+      "match": true
+    },
+    "AppleA7IOPNub": {
+      "mod_init": "0xfffffff0082f7d90",
+      "derived_vtable": "0xfffffff007d14960",
+      "expected": "0xfffffff007d14960",
+      "match": true
+    }
+  },
+  "ALL_FIVE_VTABLE_BASES": "DERIVED_AND_ASSERTED",
+  "verdicts": {
+    "IOSERVICE_START_VTABLE_SLOT": "PROVEN_FROM_CALLSITE (+0x360)",
+    "IOSERVICE_START_DISPATCH_CALLSITE_VM": "0xfffffff00aada0c8",
+    "DISPATCH_INSTRUCTIONS": [
+      "0xfffffff00aada0bc  mov x17, x27",
+      "0xfffffff00aada0c0  ldr x16, [x22]        ; client vtable",
+      "0xfffffff00aada0c4  autda x16, x17",
+      "0xfffffff00aada0c8  add x8, x16, #0x360   ; slot",
+      "0xfffffff00aada0cc  ldr x9, [x16, #0x360] ; fn ptr",
+      "0xfffffff00aada0d0  mov x0, x22           ; client (this)",
+      "0xfffffff00aada0d4  ldr x1, [sp, #0x78]   ; provider",
+      "0xfffffff00aada0e0  blraa x9, x17         ; client->start(provider)",
+      "0xfffffff00aada0e4  cbz w0                ; bool result"
+    ],
+    "APPLEASCWRAPV6_START_TARGET": "0xfffffff00aad7da0",
+    "APPLEA7IOPNUB_START_TARGET": "0xfffffff00aad7da0",
+    "CANDA_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
+    "CANDB_VTABLE_STATUS": "AT_VTABLE_SLOT_0x348_WHICH_IS_NOT_START; semantic identity of +0x348 UNKNOWN",
+    "PRIOR_0x348_START_CLAIM": "INVALIDATED (real start slot is +0x360 per callsite proof)",
+    "PRIOR_NO_HIT_INTERPRETATION": "CANDA/CANDB breakpoints did not instrument start; the NO_HIT says nothing about ASCWrapV6::start",
+    "IOSERVICE_BASE_START": "0xfffffff00aa4e744",
+    "START_DETECTION_TARGET": "A7IOP-family start 0xfffffff00aad7da0 (intermediate override) or dispatch callsite 0xfffffff00aada0e0; IOService base is 0xfffffff00aa4e744",
+    "PRIOR_0x2C0_SUPER_START_CLAIM": "INVALIDATED (slot +0x2c0 resolves to a shared kernel function, not start)"
+  }
+}

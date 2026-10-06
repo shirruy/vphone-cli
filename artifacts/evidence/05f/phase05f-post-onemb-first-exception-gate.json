@@ -1,0 +1,9 @@
+{
+  "natural_exit": false,
+  "qemu_sha256": "0ee9df59373d5d4ec26001b40daa24a59e319dc83d3bba39a44e53c2d0a3957c",
+  "exit_code": -1,
+  "first_exception_seen": false,
+  "stamp": "20260927-064906",
+  "elapsed_seconds": 20.02,
+  "serial_bytes": 0
+}

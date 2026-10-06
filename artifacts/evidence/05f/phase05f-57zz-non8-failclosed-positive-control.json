@@ -1,0 +1,26 @@
+{
+  "gate": "57ZZ_NON8_FAILCLOSED_POSITIVE_CONTROL",
+  "synthetic_bootkc_sha256": "A67121FE855E64C633DAAE7A84B866C9633B28284421D927191EE1BF1562B7A7",
+  "canonical_bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "modified_segment": "__DATA_CONST",
+  "modified_field": "pointer_format (starts-table entry +6)",
+  "original_format": 8,
+  "synthetic_format": 2,
+  "synthetic_result": {
+    "UNSUPPORTED_POINTER_FORMAT_present": true,
+    "fixture_complete": "FAIL",
+    "self_consistency": "FAIL"
+  },
+  "shared_decoder_direct_test": {
+    "synthetic_path_passed_to_build_fixup_index": true,
+    "build_fixup_index_rejected_synthetic": true,
+    "rejection_message": "segment __DATA_CONST uses pointer_format 2 (only 8 = 64_KERNEL_CACHE supported)"
+  },
+  "END_TO_END_SAME_FIXTURE_PROVENANCE": "PASS",
+  "canonical_rerun_result": {
+    "fixture_complete": "PASS"
+  },
+  "NEGATIVE_CONTROL_PASS": true,
+  "CANONICAL_UNAFFECTED_PASS": true,
+  "OVERALL": "PASS"
+}

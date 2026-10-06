@@ -1,0 +1,18 @@
+{
+  "gate": "58B_EXACT_OPEN_FAIL_CHECK_IDENTIFIED",
+  "probe_site": "0xfffffff00aac6ee0",
+  "result": {
+    "w0": "0x1E000010 (502720848)",
+    "required": "== 1",
+    "verdict": "FAIL - this b.ne is taken"
+  },
+  "chain": {
+    "open": "0xfffffff00aacf5e0 vtable+0x428 -> checks +0x398 result",
+    "clock_gate_wrapper": "0xfffffff00aad5edc -> provider vtable+0x1a0",
+    "registry_nav": "0xfffffff00aac6e50",
+    "killer_check": "0xfffffff00aac6edc: virtual call result; 0x...aac6ee0: cmp w0,#1; b.ne -> fail 0x...aac6f50"
+  },
+  "value_analysis": "The +0x90 virtual returns 0x1E000010 - this is an IOOptionBits/flag word, not a boolean. The check demands exactly 1 (kIORegistryEntryDefault). The object at x22 (from the +0x128 call) returned a flags word instead of matching.",
+  "conclusion": "The exact killer is the +0x90 virtual on the object resolved by the +0x128 DT-plane navigation. The value 0x1E000010 suggests it IS an IORegistryEntry (flag bits set) but the comparison expects a match result of 1. This is a compareNubName variant whose match fails - the DT entry name/compatible is NOT matching what is being searched.",
+  "next_probe": "Capture x1 at the +0x90 call site (0x...aac6edc) to see WHAT NAME is being compared against the ans entry. That reveals the missing DT property or the mismatched compatible string."
+}

@@ -1,0 +1,43 @@
+{
+  "name": "phase05f-iteration58b-ans-device",
+  "phase": "05F",
+  "iteration": "58B",
+  "upstream_repo": "https://github.com/jprx/darwin-vm.git",
+  "source_commit": "ffdf018",
+  "target_files": [
+    "hw/arm/apple_ans.c",
+    "include/hw/arm/apple_ans.h",
+    "hw/arm/darwin.c",
+    "hw/arm/meson.build"
+  ],
+  "patch": "phase05f-iteration58b-ans-device.patch",
+  "behavior_before": "No QEMU device models the /arm-io/ans MMIO ranges; all guest accesses to ANS registers fault silently.",
+  "behavior_after": "apple-ans sysbus device maps the DT reg entries at iobase and logs reads/writes. COPROC_CPU_CONTROL (0x44) is stored, BOOT_STATUS (0x1300) returns 0xde71ce55 (always booted). No mailbox, interrupt, or NVMe protocol behavior is claimed.",
+  "opt_in": true,
+  "default_unchanged": false,
+  "acceptance": {
+    "boot_regression": "Kernel boots with same serial progress as control (no new panics).",
+    "ans_mmio_mapped": "stderr contains apple-ans: mmio[N] mapped for all 7 nonzero DT reg entries.",
+    "honest_failure": "Zero MMIO reads/writes observed in v4/v5 runs; ANS driver does not probe. This is recorded as the open blocker, not claimed as success."
+  },
+  "verified_runs": [
+    {
+      "run": "58b-ans-v4",
+      "serial_bytes": 35887,
+      "mmio_reads": 0,
+      "mmio_writes": 0,
+      "classification": "ANS_DRIVER_DID_NOT_PROBE"
+    },
+    {
+      "run": "58b-ans-v5",
+      "serial_bytes": 35996,
+      "ans_mmio_mapped": true,
+      "mmio_reads": 0,
+      "mmio_writes": 0,
+      "classification": "ANS_DRIVER_DID_NOT_PROBE"
+    }
+  ],
+  "open_blocker": "AppleANS3 requires RTBuddyService(role=ANS2), published by AppleASCWrapV6 which matches AppleARMIODevice via IONameMatch iop,ascwrap-v6/v7. Runtime evidence: 40+ AppleARMIODevice allocations but zero ASCWrap starts. The ARM platform expert kext (com.apple.driver.AppleARMPlatform) controls arm-io child nub creation via closed-source excludeList/deleteList; whether /arm-io/ans receives a nub is the next required proof.",
+  "notes": "58B is QEMU device infrastructure only. No RTBuddy attach, mailbox exchange, NVMe admin queue, namespace publication, or storage functionality is claimed.",
+  "patch_sha256": "1632CD9B4ED0662CB1406C0CFEB24F516F333347396204A9F73F5F37690410E4"
+}

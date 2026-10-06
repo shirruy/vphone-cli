@@ -1,0 +1,124 @@
+{
+  "gate": "57ZZ_ASCWRAP_RUNTIME_MATCHING",
+  "run": {
+    "dir": "build/phase05f-runtime/p9-ascwrap-v3",
+    "dtree": "canonical ascwrap experiment (CE06C3379F50E6E9FBB60D2EA0FBA6733F0FF2784C3E4E11AA7EC0F2F07D8868)",
+    "classification": "NO_HIT",
+    "slide": 536870912,
+    "instrumented_targets": {
+      "legacy_candA": "0xfffffff0082f4dec + slide (vtable +0x348 - NOT start; semantic identity UNKNOWN)",
+      "nub_withregistryentry": "0xfffffff0082f7b40 + slide"
+    },
+    "legacy_instrumentation_validity": "INVALID_TARGET_FOR_START (start is +0x360 per callsite proof)",
+    "arm_evidence": [
+      "CAPTURE [0000.033] hbreak candA @ 0xfffffff0282f4dec installed",
+      "CAPTURE [0000.034] hbreak candB @ 0xfffffff0282f8048 installed",
+      "CAPTURE [0000.034] hbreak nubWRE @ 0xfffffff0282f7b40 installed"
+    ],
+    "serial_bytes": 37148,
+    "serial_lines": 721,
+    "gdb_elapsed": 151.4
+  },
+  "timing_gate": {
+    "warmup_seconds": 8,
+    "arming_wall_clock": "~8.03s (slide derived 0.029s after attach; hbreaks 0.034s)",
+    "kernel_checkpoint_range": "[00:00:20] .. [00:01:06] kernel time observed in serial",
+    "kernel_iokit_starts_in_window": 14,
+    "analysis": "Breakpoints were armed at ~8.03s wall-clock and generic IOKit driver starts (kernel timestamps [00:00:20+]) occurred inside the window. This proves GENERIC IOKit activity after arming only; the ANS provider publication/matching event has never been observed, so target-specific timing remains UNKNOWN.",
+    "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
+    "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN"
+  },
+  "runtime_results": {
+    "APPLEASCWRAPV6_START_FROM_P9": "UNKNOWN_INVALID_LEGACY_TARGET (instrumented +0x348, not start)",
+    "APPLEA7IOPNUB_START_FROM_P9": "UNKNOWN_INVALID_LEGACY_TARGET (instrumented +0x348, not start)",
+    "APPLEA7IOPNUB_WITHREGISTRYENTRY": "NOT_OBSERVED (valid target; this specific entry was armed and unhit)",
+    "iokit_start_calls_of_other_drivers": 14
+  },
+  "provider_publication_runs": {
+    "p7-provider-v2": {
+      "classification": "BOTH_WITH_DISTINCT_RECEIVERS",
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 55",
+      "START_DISPATCH_HITS_OBSERVED": ">= 5",
+      "START_DISPATCH_HITS_OBSERVED_COUNT": 5,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT": 55,
+      "start_client_classes": [
+        "other",
+        "other",
+        "other",
+        "other",
+        "other"
+      ],
+      "ascwrap_family_start_observed": false,
+      "serial_bytes_path": "build\\phase05f-runtime\\p7-provider-v2\\uart0.log"
+    },
+    "p7-provider-v3": {
+      "classification": "BOTH_WITH_DISTINCT_RECEIVERS",
+      "ARMIO_ALLOCATOR_HITS_OBSERVED": ">= 20",
+      "START_DISPATCH_HITS_OBSERVED": ">= 40",
+      "START_DISPATCH_HITS_OBSERVED_COUNT": 40,
+      "CAPTURE_TRUNCATED_AT_EVENT_LIMIT": true,
+      "ARMIO_ALLOCATOR_HITS_OBSERVED_COUNT": 20,
+      "start_client_classes": [
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other",
+        "other"
+      ],
+      "ascwrap_family_start_observed": false,
+      "serial_bytes_path": "build\\phase05f-runtime\\p7-provider-v3\\uart0.log"
+    }
+  },
+  "verdicts": {
+    "GENERIC_IOKIT_ACTIVITY_AFTER_BREAKPOINT_ARMING": "PROVEN",
+    "ARMIO_ALLOCATION_OBSERVED_AFTER_ARMING": "PROVEN (earliest allocation t=0.057 post-attach, derived from provider runs)",
+    "BREAKPOINT_ARMED_BEFORE_FIRST_ARMIO_ALLOCATION": "UNKNOWN (earlier pre-attach allocations possible)",
+    "BREAKPOINT_ARMED_BEFORE_ANS_PROVIDER_MATCHING": "UNKNOWN (ANS-specific alloc not yet identified among ARMIO allocations)",
+    "ARMIO_ALLOCATIONS_OBSERVED": ">= 55",
+    "IOKIT_START_DISPATCHES_OBSERVED": ">= 40",
+    "ASCWRAP_FAMILY_START_OBSERVED": false,
+    "LEGACY_P9_START_INSTRUMENTATION": "INVALID_TARGET",
+    "APPLEASCWRAPV6_START_FROM_P9": "UNKNOWN (instrumented +0x348, not start)",
+    "APPLEA7IOPNUB_START_FROM_P9": "UNKNOWN (instrumented +0x348, not start)",
+    "MATCHING_STAGE_CLASSIFICATION": "UNKNOWN_REQUIRES_ANS_NAME_CORRELATION",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
+    "58B_IMPLEMENTATION": "NONE"
+  }
+}

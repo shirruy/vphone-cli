@@ -1,0 +1,359 @@
+{
+  "gate": "CRYPTEX_ATTACHMENT_MODEL",
+  "iteration": "57ZJ",
+  "date": "2026-10-01",
+  "input_identity": {
+    "device": "iPhone15,4",
+    "board": "d37ap",
+    "soc": "t8120",
+    "build": "24A437",
+    "bootkc_path": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+    "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+    "bootkc_size": 68747264,
+    "authoritative_dtree": {
+      "path": "payloads-v3/dtree.raw.bin",
+      "size": 269248,
+      "sha256": "7560AA1E4AC07C0D9B57E73A81668DECB5969FE012208A199B58CCADA2CF5E7B"
+    },
+    "base_system_image": {
+      "path": "phase05f-mutation/iter56/system-os-decrypted.dmg",
+      "size": 9615441920,
+      "sha256": "5A4AA9C67944599D67DA6971757526A50E6772DA698C0502322631A0DA37D73A"
+    },
+    "cryptex_image": {
+      "path": "phase05f-mutation/iter56/cryptex-systemos-decrypted.dmg",
+      "size": 6014631936,
+      "sha256": "B2131A5C1E6CF2C95E369E57379AB6D180D558E8A988E0CC66181D64FB781538"
+    },
+    "CRYPTEX_ATTACHMENT_INPUT_IDENTITY_PASS": true
+  },
+  "volume_identity": {
+    "base_system_volume": {
+      "name": "Rave24A437.D37OS",
+      "uuid": "9a503cf26d7a4fdaa233600dd13b4994",
+      "apfs_role": 0,
+      "fs_flags": "0x1 UNENCRYPTED",
+      "incompat": "0x8 NORMALIZATION_INSENSITIVE",
+      "root_tree_oid": 1028,
+      "num_snapshots": 0,
+      "nx_xid": 491,
+      "proof": "checksum-verified APSB at block 65536 resolved via NXSB nx_fs_oid[0]=1026 -> container OMAP at xid 491"
+    },
+    "system_cryptex_volume": {
+      "name": "Rave24A437.D37SystemCryptex",
+      "uuid": "7f74e822669746de878e1b0172ed0eb9",
+      "fs_flags": "0x1 UNENCRYPTED",
+      "incompat": "0x28 SEALED_VOLUME|NORMALIZATION_INSENSITIVE",
+      "root_tree_oid": 1291,
+      "fext_tree_oid": 61503,
+      "integrity_meta_oid": 1289,
+      "num_snapshots": 0,
+      "nx_xid": 15,
+      "proof": "57ZF PASS_CLOSED authoritative root walk: NXSB xid15 -> checkpoint 61434 -> container OMAP -> APSB 97922 -> volume OMAP 97917/97918 -> root 61526"
+    }
+  },
+  "attachment_actor": {
+    "CRYPTEX_ATTACHMENT_ACTOR_PASS": true,
+    "primary_actor": "kernel APFS (BootKC prelinked apfs.kext) mount-time firmlink/graft composition",
+    "kernel_evidence": [
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbca3e0",
+        "vm": "0xfffffff007bce3e0",
+        "string": "com.apple.fs.firmlink"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbca3f6",
+        "vm": "0xfffffff007bce3f6",
+        "string": "com.apple.fs.graft-vol-uuid"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbca412",
+        "vm": "0xfffffff007bce412",
+        "string": "com.apple.fs.graft-jobj-id-base"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbca432",
+        "vm": "0xfffffff007bce432",
+        "string": "com.apple.fs.graft-jobj-id-len"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbd5a00",
+        "vm": "0xfffffff007bd9a00",
+        "string": "%s:%d: %s mount no firmlinks"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbd5a4b",
+        "vm": "0xfffffff007bd9a4b",
+        "string": "%s:%d: %s mount force firmlinks"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbd5a14",
+        "vm": "0xfffffff007bd9a14",
+        "string": "com.apple.private.apfs.force-firmlink-stitch"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbd5a6c",
+        "vm": "0xfffffff007bd9a6c",
+        "string": "%s:%d: %s failed to fetch the fext tree (error %d)"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbd5aa0",
+        "vm": "0xfffffff007bd9aa0",
+        "string": "%s:%d: %s failed to fetch the integrity object (error %d)"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbce37a",
+        "vm": "0xfffffff007bce37a",
+        "string": "dedupe_assert() failed: %s"
+      },
+      {
+        "file": "bootkc.bin __PRELINK_TEXT",
+        "fileoff": "0xbce3a6",
+        "vm": "0xfffffff007bce3a6",
+        "string": "dir_dedupe.c (APFS firmlink/graft EA consumer)"
+      }
+    ],
+    "disassembly_evidence": [
+      {
+        "vm": "0xfffffff00a16a904",
+        "role": "APFS mount-path function cluster calling vfs_mount helper 0xfffffff00a2bde24, then 0xfffffff00a17e34c; the cluster containing the mount no/force firmlinks branches at 0xfffffff00a16c758/0xfffffff00a16cec8/0xfffffff00a16d394 referencing the firmlink/graft EA string page 0xfffffff007bce000"
+      },
+      {
+        "vm": "0xfffffff00a16c860",
+        "role": "cryptex/firmlink policy routine reading mount object fields [x0,#0x8e8]/[x0,#0x8f0] and calling 0xfffffff00a16c8dc + 0xfffffff00a16cf80"
+      }
+    ],
+    "userspace_actor": "cryptexd daemon (management of cryptex assets), present in the base volume",
+    "userspace_evidence": [
+      {
+        "file": "base system image",
+        "path": "/usr/libexec/cryptexd",
+        "dir_rec_fid": 1152921500312413969,
+        "inode_mode": "0o100755",
+        "size": 931280
+      },
+      {
+        "file": "bootkc.bin",
+        "string": "com.apple.security.cryptexd (sandbox profile) / com.apple.private.cryptexd-rsr-write (entitlement)"
+      },
+      {
+        "file": "bootkc.bin",
+        "string": "/private/var/run/com.apple.security.cryptexd/mnt"
+      }
+    ]
+  },
+  "attachment_source": {
+    "CRYPTEX_ATTACHMENT_SOURCE_PASS": true,
+    "backing_object": "Cryptex1 SystemOS APFS volume Rave24A437.D37SystemCryptex (UUID 7f74e822669746de878e1b0172ed0eb9) inside the decrypted cryptex-systemos.dmg container",
+    "boot_object_subtype": "cryptex1.boot.os (BootKC string table)",
+    "boot_object_variants": [
+      "cryptex1.boot.os",
+      "cryptex1.boot.app",
+      "cryptex1.preboot.os",
+      "cryptex1.preboot.app",
+      "cryptex1.generic",
+      "personalized.supplemental-persistent",
+      "personalized.supplemental-ephemeral"
+    ],
+    "boot_stage_evidence": "BootKC iBoot-side strings: CHIP_CRYPTEX1_BOOT_AP 'Cryptex1 boot [AP host]', CHIP_CRYPTEX1_BOOT_VMA2 / _VMA2_CLONE, CHIP_CRYPTEX1_BOOT_AP_VERIFICATION 'Cryptex1 boot verification [AP host]', global.bootability-brain",
+    "container_identity": "the Cryptex container is NOT the root device; its APSB was resolved in 57ZF from its own NXSB (xid 15, checkpoint map 61434)"
+  },
+  "attachment_target": {
+    "CRYPTEX_ATTACHMENT_TARGET_PASS": true,
+    "target": "runtime namespace composition: Cryptex /System and /usr overlay the base system volume at /System and /usr via firmlinks",
+    "mountpoint_topology": [
+      {
+        "base_path": "/System/Cryptexes",
+        "kind": "directory",
+        "cnid": 1152921500311912568,
+        "mode": "0o40755"
+      },
+      {
+        "base_path": "/System/Cryptexes/OS",
+        "kind": "symlink (com.apple.fs.symlink xattr)",
+        "cnid": 1152921500311912570,
+        "target": "../../private/preboot/Cryptexes/OS"
+      },
+      {
+        "base_path": "/System/Cryptexes/App",
+        "kind": "symlink (com.apple.fs.symlink xattr)",
+        "cnid": 1152921500311912569,
+        "target": "../../private/preboot/Cryptexes/App"
+      },
+      {
+        "base_path": "/System/Cryptexes/Supplemental",
+        "kind": "symlink (com.apple.fs.symlink xattr)",
+        "cnid": 1152921500311912571,
+        "target": "../../private/preboot/Cryptexes/Supplemental"
+      }
+    ],
+    "symlink_xattr_raw": [
+      {
+        "cnid": 1152921500311912570,
+        "value": "060023002e2e2f2e2e2f707269766174652f707265626f6f742f4372797074657865732f4f5300",
+        "decoded": "../../private/preboot/Cryptexes/OS"
+      },
+      {
+        "cnid": 1152921500311912569,
+        "value": "060024002e2e2f2e2e2f707269766174652f707265626f6f742f4372797074657865732f41707000",
+        "decoded": "../../private/preboot/Cryptexes/App"
+      }
+    ],
+    "dt_preboot_evidence": "authoritative DeviceTree fstab entry: /private/preboot -> preboot-vol (vol.fs_passno=1); the preboot volume is declared as a DT volume, i.e. available before userspace mount of the Cryptex",
+    "bootkc_path_pairs": [
+      {
+        "preboot_side": "/private/preboot/Cryptexes/OS/System/Library",
+        "runtime_side": "/System/Cryptexes/OS/System/Library"
+      },
+      {
+        "preboot_side": "/private/preboot/Cryptexes/OS/usr/lib",
+        "runtime_side": "/System/Cryptexes/OS/usr/lib"
+      }
+    ],
+    "bootkc_path_pairs_raw": "bootkc fileoff 0xa5a793: consecutive C-strings '/private/preboot/Cryptexes/OS/System/Library' and '/System/Cryptexes/OS/System/Library'; further '/System/Cryptexes/OS/' + 'usr/lib' + 'System/Library/' + 'Frameworks' + 'PrivateFrameworks' + '/private/preboot/Cryptexes/OS/' with the same suffixes"
+  },
+  "attachment_mechanism": {
+    "CRYPTEX_ATTACHMENT_MECHANISM_PASS": true,
+    "mechanism": "kernel-side APFS firmlink/graft namespace composition at mount time (not a plain second mount, not a loop device, not overlayfs)",
+    "components": [
+      "firmlink EA com.apple.fs.firmlink marks directories that are transparently resolved to the paired volume",
+      "graft EAs com.apple.fs.graft-vol-uuid / graft-jobj-id-base / graft-jobj-id-len bind a grafted directory tree to a specific APFS volume UUID and inode base (dir_dedupe.c)",
+      "mount-time stitch is controlled by com.apple.private.apfs.force-firmlink-stitch; without firmlinks the kernel logs 'mount no firmlinks' and the entitlement forces 'mount force firmlinks'",
+      "the stitch reads the sealed-volume FEXT tree and integrity object (logs 'failed to fetch the fext tree' / 'failed to fetch the integrity object') - exactly the fext_tree_oid 61503 and integrity_meta_oid 1289 proven on the SystemCryptex APSB"
+    ],
+    "excluded_mechanisms": [
+      "plain directory presence (rejected by reviewer rules; not used as proof)",
+      "simple loop-device mount of the cryptex as a root filesystem",
+      "overlayfs-style stack",
+      "string-scan-only path guess"
+    ]
+  },
+  "attachment_timing": {
+    "CRYPTEX_ATTACHMENT_TIMING_PASS": true,
+    "phase": "kernel mount path (APFS root/system mount) for the firmlink stitch; the Cryptex boot object itself is verified at boot by iBoot (CHIP_CRYPTEX1_BOOT_AP_VERIFICATION)",
+    "ordering_dependencies": [
+      "1. root filesystem availability (base System volume mounts first)",
+      "2. Preboot volume available (DT fstab preboot-vol at /private/preboot)",
+      "3. Cryptex volume verified by iBoot cryptex1 boot policy",
+      "4. kernel APFS mount-time firmlink/graft stitch composes Cryptex /System + /usr over the base",
+      "5. launchd starts; cryptexd manages cryptex assets (post-boot maintenance path)",
+      "6. Data volume attachment is a separate later stage (NOT solved here)"
+    ],
+    "cryptexd_timing_note": "cryptexd is a userspace daemon for cryptex asset management; the mount-time firmlink stitch is kernel-side. Both are current-build actors but at different phases."
+  },
+  "attachment_metadata": {
+    "CRYPTEX_ATTACHMENT_METADATA_PASS": true,
+    "device_tree_cryptex_props": [
+      {
+        "property": "cryptex1-certificate-format",
+        "value": "x509"
+      },
+      {
+        "property": "cryptex1-key-scheme",
+        "value": "rsa4096"
+      }
+    ],
+    "sealed_volume_metadata_used_by_stitch": {
+      "incompat": "0x28 SEALED_VOLUME",
+      "fext_tree_oid": 61503,
+      "integrity_meta_oid": 1289,
+      "note": "the BootKC stitch messages read exactly these two object types from the cryptex APSB"
+    },
+    "boot_policy": "BootKC bootability-brain + CHIP_CRYPTEX1_BOOT_AP verification; cryptex subtype cryptex1.boot.os"
+  },
+  "path_provenance": {
+    "CRYPTEX_ATTACHMENT_PATH_PROVENANCE_PASS": true,
+    "example": {
+      "cryptex_filesystem_path": "/System/Library/CoreServices/SystemVersion.plist",
+      "cryptex_identity": "DIR_REC parent 129 -> INODE CNID 132 (private_id 132) -> DSTREAM size 571 -> FEXT phys 65594",
+      "cryptex_sha256": "09B639889B59F53E04C70D81D627F892D411725E22295E3610F4B076E74F7AE1",
+      "composition_rule": "Cryptex /System composes over base /System via the kernel firmlink stitch (sealed fext/integrity metadata); the base volume carries its own SystemVersion.plist (fid 1152921500312051577) that the Cryptex version overlays at runtime",
+      "runtime_visible_path": "/System/Library/CoreServices/SystemVersion.plist (composed, not merely identical string)",
+      "not_based_on": "the proof does NOT rely on the base and cryptex simply containing a path with the same name; it relies on the proven kernel stitch machinery plus the sealed-volume metadata the stitch reads"
+    }
+  },
+  "ordering": {
+    "CRYPTEX_ATTACHMENT_ORDERING_PASS": true,
+    "order": [
+      {
+        "stage": "iBoot",
+        "action": "cryptex1.boot.os verification (CHIP_CRYPTEX1_BOOT_AP_VERIFICATION)"
+      },
+      {
+        "stage": "kernel root mount",
+        "action": "base System volume mount"
+      },
+      {
+        "stage": "preboot",
+        "action": "preboot-vol mounted at /private/preboot (DT fstab)"
+      },
+      {
+        "stage": "kernel APFS mount stitch",
+        "action": "firmlink/graft composition of the Cryptex over /System and /usr; reads cryptex fext tree + integrity object"
+      },
+      {
+        "stage": "launchd",
+        "action": "cryptexd daemon starts (asset management)"
+      },
+      {
+        "stage": "later",
+        "action": "Data volume attachment (separate gate, NOT solved here)"
+      }
+    ]
+  },
+  "current_build_evidence": {
+    "CRYPTEX_ATTACHMENT_CROSS_ARTIFACT_CONSISTENCY_PASS": true,
+    "sources": [
+      "BootKC (iPhone15,4 / d37ap / 24A437) strings + capstone disassembly",
+      "authoritative DeviceTree dtree.raw.bin (fstab preboot-vol + cryptex1-* properties)",
+      "base system-os-decrypted.dmg APFS walk (mountpoint topology, symlink xattrs, cryptexd binary)",
+      "cryptex-systemos-decrypted.dmg APFS walk (57ZF known-file chain, sealed fext/integrity objects)"
+    ],
+    "consistency": [
+      "base volume name/uuid from LBA/preboom artifacts match this walk",
+      "cryptex volume name/uuid/root/feft/integrity from 57ZF artifact match this gate",
+      "BootKC graft/firmlink EA names match apfs-fuse FIRMLINK_EA_NAME (com.apple.fs.firmlink) and APFS_SF_FIRMLINK semantics"
+    ],
+    "not_used_as_proof": [
+      "matching directory names alone",
+      "image contents alone",
+      "historical iOS behavior",
+      "public implementations without current-build evidence",
+      "guessed mount paths"
+    ]
+  },
+  "canonical_state": {
+    "CRYPTEX_ATTACHMENT_INPUT_IDENTITY_PASS": true,
+    "CRYPTEX_ATTACHMENT_ACTOR_PASS": true,
+    "CRYPTEX_ATTACHMENT_SOURCE_PASS": true,
+    "CRYPTEX_ATTACHMENT_TARGET_PASS": true,
+    "CRYPTEX_ATTACHMENT_MECHANISM_PASS": true,
+    "CRYPTEX_ATTACHMENT_TIMING_PASS": true,
+    "CRYPTEX_ATTACHMENT_METADATA_PASS": true,
+    "CRYPTEX_ATTACHMENT_PATH_PROVENANCE_PASS": true,
+    "CRYPTEX_ATTACHMENT_ORDERING_PASS": true,
+    "CRYPTEX_ATTACHMENT_MODEL_DURABLE_PASS": true,
+    "CRYPTEX_ATTACHMENT_CROSS_ARTIFACT_CONSISTENCY_PASS": true,
+    "ITERATION_57ZG": "PARTIAL_PASS_REPAIR_REQUIRED",
+    "CRYPTEX_ATTACHMENT_MODEL": "OPEN",
+    "next_gate": "IOS_ROOT_DEVICE_SELECTION + IOS_ROOT_TRANSITION_MODEL",
+    "CRYPTEX_NAMESPACE_BINDING": "OPEN"
+  },
+  "remaining_unknowns": [
+    "the exact runtime consumption of the firmlink table was not executed on a guest; the static kernel machinery, EA names, sealed metadata the stitch reads, and mountpoint topology are proven, but a live merged-namespace read remains guest-runtime evidence",
+    "the graft EA records themselves were not found in the base or cryptex volume xattrs (0 graft/firmlink xattrs in both walks); for the boot cryptex the composition table is expected in the sealed fext/integrity objects the stitch fetches, and that internal table format is not decoded yet",
+    "the precise mount flags passed to the APFS mount for the cryptex stitch are not statically recovered",
+    "Data volume attachment and root device selection are separate gates and remain open"
+  ],
+  "analysis_base_head": "fd6828f"
+}

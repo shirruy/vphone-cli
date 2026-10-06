@@ -1,0 +1,133 @@
+{
+  "gate": "PART15B_AKF_XREF_ANALYSIS",
+  "iteration": "57ZZ_PART15B_R",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "fileset_entries": {
+    "entry_24_AppleA7IOP_ASCWrap_v6": {
+      "text_vm": "0xfffffff00713b720",
+      "text_fo": "0x137720",
+      "exec_vm": "0xfffffff0082f2bf0",
+      "exec_fo": "0x12eebf0",
+      "exec_size": "0x20b4"
+    },
+    "entry_25_AppleA7IOP": {
+      "text_vm": "0xfffffff00713c1f0",
+      "text_fo": "0x1381f0",
+      "exec_vm": "0xfffffff0082f4cb0",
+      "exec_fo": "0x12f0cb0",
+      "exec_size": "0x69b4"
+    }
+  },
+  "string_vm_map": {
+    "ASC firmware must be loaded by iBoot": "0xfffffff00713c04e",
+    "AKF_RUNNING: False": "0xfffffff00713c0f7",
+    "_akfProvider != nullptr": "0xfffffff00713c8e5",
+    "_akfRegisterMap != nullptr": "0xfffffff00713c999",
+    "_akfMappedRegs != 0": "0xfffffff00713c9b4",
+    "AppleA7IOP::start(IOService *)": "0xfffffff00713c8b9",
+    "role": "0xfffffff00713c90c"
+  },
+  "xrefs_ASCWrap_entry24": {
+    "AKF_RUNNING: False": [
+      {
+        "adrp": "0xfffffff0082f4034",
+        "add": "0xfffffff0082f4038"
+      }
+    ],
+    "ASC firmware must be loaded by iBoot": [
+      {
+        "adrp": "0xfffffff0082f4a6c",
+        "add": "0xfffffff0082f4a70"
+      }
+    ]
+  },
+  "xrefs_AppleA7IOP_entry25": {
+    "role": [
+      {
+        "adrp": "0xfffffff0082f4e70",
+        "add": "0xfffffff0082f4e74"
+      },
+      {
+        "adrp": "0xfffffff0082f4f08",
+        "add": "0xfffffff0082f4f0c"
+      },
+      {
+        "adrp": "0xfffffff0082f80cc",
+        "add": "0xfffffff0082f80d0"
+      },
+      {
+        "adrp": "0xfffffff0082f8164",
+        "add": "0xfffffff0082f8168"
+      }
+    ],
+    "AppleA7IOP::start(IOService *)": [
+      {
+        "adrp": "0xfffffff0082f7800",
+        "add": "0xfffffff0082f7804"
+      }
+    ],
+    "_akfMappedRegs != 0": [
+      {
+        "adrp": "0xfffffff0082fa940",
+        "add": "0xfffffff0082fa944"
+      },
+      {
+        "adrp": "0xfffffff0082fb114",
+        "add": "0xfffffff0082fb118"
+      }
+    ],
+    "_akfRegisterMap != nullptr": [
+      {
+        "adrp": "0xfffffff0082fa96c",
+        "add": "0xfffffff0082fa970"
+      },
+      {
+        "adrp": "0xfffffff0082fb140",
+        "add": "0xfffffff0082fb144"
+      }
+    ],
+    "_akfProvider != nullptr": [
+      {
+        "adrp": "0xfffffff0082fa9c4",
+        "add": "0xfffffff0082fa9c8"
+      },
+      {
+        "adrp": "0xfffffff0082fb198",
+        "add": "0xfffffff0082fb19c"
+      }
+    ]
+  },
+  "key_findings": {
+    "ASC_firmware_xref": "in ASCWrap entry 24 exec: REQUIRE-style assertion call site with line-number w9=0x97 (the 'ASC firmware must be loaded by iBoot' predicate)",
+    "AKF_RUNNING_xref": "in ASCWrap entry 24: helper queries a provider getProperty-style vtable call (0x8110/0x8114 selectors), logs AKF_RUNNING False when bit0 clear",
+    "akfProvider_akfRegisterMap_akfMappedRegs_xrefs": "in AppleA7IOP entry 25: two distinct sites; second site reads [x0,#0xf8] provider member and invokes vtable slots 0x568/0x570 via authenticated calls",
+    "provider_member_offset": "0xf8 within AppleA7IOP object",
+    "vtable_slots": [
+      "0x568",
+      "0x570"
+    ],
+    "register_map_source": "UNKNOWN: no direct getDeviceMemory/region-base linkage proven yet; DT reg vs provider property origin unresolved",
+    "mailbox_offsets": "NOT_PROVEN: AKF mailbox register names exist only as kernel log strings (0x99cf09..0x99cf85); numeric offsets/width/access direction unproven",
+    "applea7iop_start_cfg": "PARTIAL: entry 25 start-related code identified via _akf* string xrefs; full start boundary and failure branches need per-function disassembly"
+  },
+  "mailbox_string_offsets": {
+    "AKF_KIC_INBOX_CTRL": "0x99cf09",
+    "AKF_KIC_MAILBOX_SET": "0x99cf26",
+    "AKF_AP_OUTBOX_CTRL": "0x99cf4c",
+    "AKF_AP_MAILBOX_SET": "0x99cf85"
+  },
+  "verdicts": {
+    "STRING_XREFS_PROVEN": "PARTIAL",
+    "APPLEA7IOP_START_CFG": "BLOCKED",
+    "APPLEA7IOP_PROVIDER_CLASS": "UNKNOWN",
+    "AKF_REGISTER_MAP_SOURCE": "UNKNOWN",
+    "AKF_MMIO_BASE": "UNKNOWN",
+    "AKF_MMIO_SIZE": "UNKNOWN",
+    "MAILBOX_OFFSETS": "BLOCKED",
+    "ASC_FIRMWARE_REQUIRED_FOR_58B": "UNKNOWN",
+    "AKF_ROLE_PROPERTY_REQUIRED": "UNKNOWN",
+    "FIRST_ANS_RUNTIME_REQUIREMENT": "CANDIDATE_AKF_PROVIDER_CHAIN",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
+    "ANS_STORAGE_IMPLEMENTATION_READINESS": "BLOCKED_FOR_58B"
+  }
+}

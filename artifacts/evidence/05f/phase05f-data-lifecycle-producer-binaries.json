@@ -1,0 +1,112 @@
+[
+  {
+    "path": "/usr/local/bin/restored_external",
+    "cnid": 1795,
+    "role": "RESTORE_DAEMON_CANDIDATE",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/usr/sbin/asr",
+    "cnid": 1831,
+    "role": "APPLE_SOFTWARE_RESTORE",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "f6ddf41f1ed687f3ca8eaffb824c1a6a03ee424ea1a220b0d9b9f396851a425a",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/System/Library/Filesystems/apfs.fs/newfs_apfs",
+    "cnid": 441,
+    "role": "APFS_VOLUME_CREATION_TOOL",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "a546ead8bb7af3577d3a015999b4ef436cbcd61bdc823af798bfd18a0d9b5440",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+    "cnid": 649,
+    "role": "APFS_FRAMEWORK",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "4d0b7b4444d62bdd7b985770748bf6fa91f78f68d44c9d935f6e2abb10ef764b",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 6
+  },
+  {
+    "path": "/System/Library/Filesystems/apfs.fs/apfs_vol_converter",
+    "cnid": 268,
+    "role": "APFS_VOLUME_METADATA_TOOL",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "4bb2f5ec196f9327104d78bd58afeaf60fd7f462236ad2843fb902222e792b5b",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/System/Library/Filesystems/apfs.fs/apfs_sealvolume",
+    "cnid": 264,
+    "role": "APFS_SEAL_TOOL",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "3d2aafacc4a49758d3155e505ea404d9595cd7c1e97901a29fea494454ad4f2e",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/System/Library/Filesystems/apfs.fs/apfs_iosd",
+    "cnid": 260,
+    "role": "APFS_IOS_DAEMON",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "07b99d5687d5637913cd3518c83d9df2199f8cc6b6549fb1721f31a74dbe08d6",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/System/Library/Filesystems/apfs.fs/slurpAPFSMeta",
+    "cnid": 498,
+    "role": "APFS_META_EXTRACTION",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "164638c01053939a4971a5d99fe5497d17753c19199e229831b294b5b883f261",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/System/Library/Filesystems/apfs.fs/fsck_apfs",
+    "cnid": 360,
+    "role": "APFS_FSCK",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "0bfd09c8fe0c02223f42b88cab13ab11a428ed6c24ed6be1f99d6c9c52222301",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  },
+  {
+    "path": "/System/Library/Filesystems/apfs.fs/mount_apfs",
+    "cnid": 429,
+    "role": "APFS_MOUNT",
+    "status": "READ_OK (decmpfs zlib-resource-fork DATA_STREAM)",
+    "sha256": "3582abd338734bc2248c539ab2f06c9ed05e5ae5ab18940855e175bd68b5c6b3",
+    "file_size": 0,
+    "compressed": true,
+    "macho_valid": true,
+    "macho_filetype": 2
+  }
+]

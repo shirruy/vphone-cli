@@ -1,0 +1,71 @@
+{
+  "volume_1461_decode": {
+    "omap_oid_block": 51201,
+    "note": "decoded from APSB candidate fields at +0x80/+0x90",
+    "root_tree_oid_block": 51196
+  },
+  "btree_1466": {
+    "oid": 1466,
+    "note": "second tree, likely volume-era extents/refcount",
+    "subtype": 16,
+    "type": 2,
+    "xid": 2,
+    "flags": "0x00000003 leaf"
+  },
+  "file_size": 243269632,
+  "container": {
+    "block_size": 4096,
+    "format": "raw APFS container (NXSB magic at block 0)",
+    "block_count": 59392,
+    "omap_oid": 1,
+    "checkpoint_superblocks": "blocks 0-14 even (8 NXSB copies, oid=1, xid=9 era)"
+  },
+  "target": "iPhone15,4 / iOS 27.0 / 24A437 ramdisk.dmg (raw APFS container, not UDIF)",
+  "conclusion": "The ramdisk is a raw APFS container fully parseable at the block level on Windows. No macOS mount required. The existing apfs_snapshot_portable.cpp already implements fletcher64 APFS block checksum read/write. Remaining work: B-tree node walker (fixed+variable table space), omap oid->paddr resolution, catalog key lookup for /System/Library/LaunchDaemons, file extent write, and a Windows ad-hoc Mach-O cdhash signer.",
+  "gate": "ramdisk-apfs-structure-recon",
+  "phase": "05G-prep",
+  "volumes": [
+    {
+      "role": "volume superblock (older era)",
+      "oid": 1026,
+      "block": 1461,
+      "xid": 9
+    },
+    {
+      "role": "volume superblock (current era)",
+      "oid": 1026,
+      "block": 51214,
+      "xid": 5
+    }
+  ],
+  "date": "2026-09-27 15:09:06",
+  "root_btree_51196": {
+    "oid": 51196,
+    "table_space": "16 entries",
+    "subtype": 15,
+    "type": 2,
+    "xid": 5,
+    "flags": "0x00010001 root+leaf"
+  },
+  "upstream_pipeline_requirements": [
+    "replace /System/Library/LaunchDaemons with com.jprx.bash.plist (RunAtLoad, console IO)",
+    "extract ios_sysroot.tar.gz (108 files: bash + coreutils + dylibs) into ramdisk",
+    "ad-hoc codesign every arm64/arm64e binary (cdhash computation)",
+    "build trustcache (TrustCacheModule1 v1, entries = sorted 40-hex cdhashes, hashType=2)",
+    "re-seal APFS: fletcher64 block checksums must be recomputed after any metadata write"
+  ],
+  "filesystem_evidence": [
+    "SystemVersion.plist XML visible at 0x8dfa76c (ProductVersion 27.0, ReleaseType Restore)",
+    "file_to_tunnel_dictionary.plist at 0xc7e1544",
+    "libsystem_trace.dylib / libsystem_pthread.dylib / coreutils strings visible in raw scan",
+    "com.apple.decmpfs compressed extents present"
+  ],
+  "apple_guest_root_shell": "NOT_YET_PROVEN",
+  "omap_block_51201": {
+    "subtype": 0,
+    "oid": 51201,
+    "type": 11,
+    "fields_at_32": "tree_oid=0, snapshot_tree_oid=2, tree_type=0x40000002, snap_tree_type=0x40000002",
+    "xid": 5
+  }
+}

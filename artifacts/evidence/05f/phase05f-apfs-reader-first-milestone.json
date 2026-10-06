@@ -1,0 +1,14 @@
+{
+  "real_ramdisk_output": "debug: APSB candidate at block 1461\r\ndebug: APSB candidate at block 51214\r\n{\r\n  \"block_size\": 4096,\r\n  \"block_count\": 59392,\r\n  \"volumes\": [\r\n    {\r\n      \"apsb_block\": 1461,\r\n      \"apsb_oid\": 1026,\r\n      \"xid\": 9,\r\n      \"omap_block\": 51201,\r\n      \"root_tree_block\": 51196,\r\n      \"volume_name\": \"ramdisk\"\r\n    },\r\n    {\r\n      \"apsb_block\": 51214,\r\n      \"apsb_oid\": 1026,\r\n      \"xid\": 6,\r\n      \"omap_block\": 51201,\r\n      \"root_tree_block\": 51196,\r\n      \"volume_name\": \"ramdisk\"\r\n    }\r\n  ]\r\n}",
+  "defect_fixed_during_dev": "APFS object o_type has flag bits (OBJ_PHYSICAL 0x40000000) above the concrete type; comparisons must mask with 0x0FFFFFFF",
+  "synthetic_unit_test": "APFS_READER_TEST_PASS (block size, block count, volume identity, omap/root pointers, volume name)",
+  "gate": "apfs-reader-first-milestone",
+  "phase": "05G-prep",
+  "real_ramdisk_verified": [
+    "container: block_size=4096 block_count=59392 (matches manual decode)",
+    "volume 1: APSB block 1461, oid 1026, xid 9, omap 51201, root tree 51196, name=ramdisk",
+    "volume 2: APSB block 51214, oid 1026, xid 6, omap 51201, root tree 51196, name=ramdisk",
+    "both volumes share omap/root blocks (same container era checkpoints)"
+  ],
+  "tool": "vphone-apfs-reader-win.exe (new)"
+}

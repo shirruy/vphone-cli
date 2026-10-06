@@ -1,0 +1,40 @@
+{
+  "phase": "05F",
+  "test": "fixed-upstream-parity-runtime",
+  "fix": "ProcessStartInfo.ArgumentList",
+  "target": {
+    "device": "iPhone15,3",
+    "board": "d74ap",
+    "chip": "t8120",
+    "build": "24A437"
+  },
+  "command": {
+    "memory": "8G",
+    "boot_args": "rd=md0 serial=3 -v -noprogress wdt=-1 wlan-olyhal-abort",
+    "boot_args_preserved_as_single_argument": true,
+    "nographic": true,
+    "serial": "mon:stdio"
+  },
+  "runtime": {
+    "requested_seconds": 120,
+    "elapsed_seconds": 258.71,
+    "survived_window": true,
+    "exit_code": -1
+  },
+  "evidence": {
+    "console_bytes": 0,
+    "console_sha256": null,
+    "stderr_bytes": 34,
+    "stderr_sha256": "b662b2b6ea7e98bdbfef8aaf49b7d18052a0501320b4e891250b3858cbacd4ac",
+    "classification": "PROCESS_ALIVE_NO_CONSOLE"
+  },
+  "claims": {
+    "payload_admission": "PASS",
+    "command_line_harness": "PASS",
+    "guest_execution_attempt": "PASS",
+    "serial_activity": "NOT_OBSERVED",
+    "darwin_kernel_serial": "NOT_OBSERVED",
+    "deterministic_serial": "NOT_YET_PROVEN",
+    "guest_boot": "NOT_CLAIMED"
+  }
+}

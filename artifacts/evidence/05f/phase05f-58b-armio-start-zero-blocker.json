@@ -1,0 +1,50 @@
+{
+  "gate": "58B_ARMIO_START_ZERO_BLOCKER",
+  "evidence": {
+    "allocator_hits": 103,
+    "walk_vtable_distribution": {
+      "0xfffffff007cc90f8": 10,
+      "none": 61,
+      "0xfffffff008175b70": 1,
+      "0x2000026": 1,
+      "0xfffffff007cc9730": 2,
+      "0xfffffff007c98b48": 11,
+      "0xfffffff0080ae640": 1,
+      "0x10000005e0000022": 1,
+      "0xfffffff008191fb8": 1,
+      "0xfffffff007d40500": 1,
+      "0xfffffff0080adee8": 1,
+      "0xfffffff00813ba20": 1,
+      "0xfffffff007dfe6b0": 1,
+      "0x20000a7": 1,
+      "0xfffffff008103bc0": 1,
+      "0xfffffff0081748b8": 1,
+      "0xfffffff0081046d0": 1,
+      "0xfffffff0080a8b28": 1,
+      "0xfffffff007d6fa88": 2,
+      "0xfffffff007e03700": 1,
+      "0xfffffff007eec6a8": 1
+    },
+    "armio_vtable_0xfffffff007d33088": 0,
+    "armiodevice_vtable_0xfffffff007d336e0": 0,
+    "ioplatformdevice_vtable_survivors": 10,
+    "freed_or_reused_none": 61
+  },
+  "start_probes": {
+    "ascwrap_start_0xfffffff00aad7da0_v1": {
+      "legitimate_hits": 0,
+      "artifact_hits": 1,
+      "artifact_pc": "0xfffffff02a40927c (SIGINT)"
+    },
+    "armio_start_same_addr_v2": {
+      "legitimate_hits": 0,
+      "artifact_hits": 1,
+      "artifact_pc": "0xfffffff02a40927c (SIGINT)"
+    },
+    "match_callback_0xfffffff00aad7f70_v1": {
+      "legitimate_hits": 0
+    }
+  },
+  "conclusion": "AppleARMIODevice objects ARE allocated (103 allocator dispatches) but AppleARMIO::start (0xfffffff00aad7da0, fixup-proven slot +0x360 for both AppleARMIO and AppleARMIODevice vtables) is NEVER invoked, and the +0x450 match-dispatch callback (0xfffffff00aad7f70) never fires. The walk pass shows 61/102 objects freed or reused (no valid vtable) \u2014 consistent with init() failing and the object being released before registration. The blocker is therefore: AppleARMIODevice nubs are constructed but never successfully initialized/registered, so no personality (including AppleASCWrapV6) can match them.",
+  "next_probe": "Single-step from allocator entry through the init dispatch; capture init return value per object. If init returns false, dump the DT entry argument (x1 at thunk) and its properties to identify what the init requires that our DT node lacks."
+}

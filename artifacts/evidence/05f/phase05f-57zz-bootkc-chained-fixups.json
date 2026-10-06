@@ -1,0 +1,127 @@
+{
+  "gate": "57ZZ_BOOTKC_CHAINED_FIXUPS",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "decoder_source": "scripts/phase05f-57zz-fixup-index.py (single shared implementation)",
+  "format": {
+    "seg_count": 9,
+    "starts_segment_count_matches_macho": true
+  },
+  "segments": [
+    {
+      "segment": "__TEXT",
+      "has_chain": false
+    },
+    {
+      "segment": "__PRELINK_TEXT",
+      "has_chain": false
+    },
+    {
+      "segment": "__DATA_CONST",
+      "pointer_format": 8,
+      "page_size": "0x4000",
+      "page_count": 352,
+      "single_start_pages": 334,
+      "multi_start_pages": 0,
+      "none_pages": 18,
+      "single_start_pages_exact": 334,
+      "segment_offset": "0xc14000",
+      "total_chain_heads_lower_bound": 334,
+      "total_chain_heads_note": "exact (zero MULTI pages)",
+      "has_chain": true
+    },
+    {
+      "segment": "__DATA_SPTM",
+      "pointer_format": 8,
+      "page_size": "0x4000",
+      "page_count": 19,
+      "single_start_pages": 0,
+      "multi_start_pages": 0,
+      "none_pages": 19,
+      "single_start_pages_exact": 0,
+      "segment_offset": "0x1194000",
+      "total_chain_heads_lower_bound": 0,
+      "total_chain_heads_note": "exact (zero MULTI pages)",
+      "has_chain": true
+    },
+    {
+      "segment": "__TEXT_EXEC",
+      "has_chain": false
+    },
+    {
+      "segment": "__TEXT_BOOT_EXEC",
+      "has_chain": false
+    },
+    {
+      "segment": "__PRELINK_INFO",
+      "has_chain": false
+    },
+    {
+      "segment": "__DATA",
+      "pointer_format": 8,
+      "page_size": "0x4000",
+      "page_count": 152,
+      "single_start_pages": 52,
+      "multi_start_pages": 0,
+      "none_pages": 100,
+      "single_start_pages_exact": 52,
+      "segment_offset": "0x3e74000",
+      "total_chain_heads_lower_bound": 52,
+      "total_chain_heads_note": "exact (zero MULTI pages)",
+      "has_chain": true
+    },
+    {
+      "segment": "__LINKEDIT",
+      "has_chain": false
+    }
+  ],
+  "total_fixups": 532174,
+  "multi_start_pages_total": 0,
+  "validation_checks": [
+    {
+      "known": "ASCWrap GOT superclass -> AppleA7IOP class object",
+      "location": "0xfffffff007d13bc0",
+      "expected": "0xfffffff00afed5c0",
+      "decoded": "0xfffffff00afed5c0",
+      "pass": true
+    },
+    {
+      "known": "ASCWrap mod_init[1] (AppleASCWrapV6 registration)",
+      "location": "0xfffffff007d12280",
+      "expected": "0xfffffff0082f42b4",
+      "decoded": "0xfffffff0082f42b4",
+      "pass": true
+    },
+    {
+      "known": "ASCWrap mod_init[2] (AppleASCWrapV6SEP registration)",
+      "location": "0xfffffff007d12288",
+      "expected": "0xfffffff0082f4800",
+      "decoded": "0xfffffff0082f4800",
+      "pass": true
+    },
+    {
+      "known": "A7IOP mod_init[0] chain entry",
+      "location": "0xfffffff007d13bd0",
+      "expected": "0xfffffff0082f7798",
+      "decoded": "0xfffffff0082f7798",
+      "pass": true
+    }
+  ],
+  "CHAIN_WALK_SELF_CONSISTENCY": "PASS",
+  "CHAIN_DECODER_CURRENT_FIXTURE": "PASS",
+  "MULTI_START_PAGES_OBSERVED": 0,
+  "MULTI_PATH_IMPLEMENTED": "YES",
+  "MULTI_PATH_RUNTIME_VALIDATED": "NO",
+  "note_format_complete": "FORMAT_COMPLETE is intentionally NOT claimed: the MULTI overflow-pool path is implemented but not exercised by this fixture (zero MULTI pages). A synthetic MULTI fixture is required.",
+  "candidates": {
+    "candA": {
+      "vm": "0xfffffff0082f4df0",
+      "count": 0,
+      "locations": []
+    },
+    "candB": {
+      "vm": "0xfffffff0082f804c",
+      "count": 0,
+      "locations": []
+    }
+  }
+}

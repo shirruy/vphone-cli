@@ -1,0 +1,45 @@
+{
+  "gate": "57ZZ_RUNTIME_ALLOCATOR_THUNK_PAIRING",
+  "method": "v8: thunk-only hbreak + double stepi chain proof (thunk -> thunk+4 -> allocator)",
+  "retraction": {
+    "prior_run": "thunk-pair-v1 (commit 2a33e03)",
+    "status": "RETRACTED_TARGET_LABEL_MISMATCH",
+    "reason": "The v7 capture script's CAND_B was the allocator, not the thunk. The .Replace() used to derive v7 from v3 silently failed. All 'thunk_hits' were actually allocator hits."
+  },
+  "run": "build/phase05f-runtime/thunk-pair-v10",
+  "instrumented": {
+    "thunk_entry": "0xfffffff008387eb0 (single hbreak only)",
+    "allocator_entry": "0xfffffff008387eb8 (reached via stepi, no hbreak)"
+  },
+  "summary": {
+    "thunk_hits": 40,
+    "control_flow_ok": 40,
+    "control_flow_fail": 0,
+    "register_match": 40,
+    "register_mismatch": 0
+  },
+  "slide": {
+    "slide": "0x0000000020000000"
+  },
+  "total_events": 80,
+  "thunk_hits": 40,
+  "control_flow_ok": 40,
+  "control_flow_fail": 0,
+  "register_match": 40,
+  "register_mismatch": 0,
+  "classification": "ALL_PAIRS_PROVEN",
+  "verdicts": {
+    "THUNK_ENTRY_RUNTIME": "PROVEN",
+    "CONTROL_FLOW_THUNK_TO_ALLOCATOR": "PROVEN_RUNTIME",
+    "THUNK_X2_TO_ALLOCATOR_X1_RUNTIME": "PROVEN_RUNTIME",
+    "RUNTIME_ALLOCATOR_ENTRY_VIA_THUNK": "PROVEN_RUNTIME",
+    "ALLOCATOR_ARG1_SOURCE_OBSERVED_PAIRS": "THUNK_X2",
+    "OBSERVED_PAIR_COVERAGE": "40/40",
+    "ALLOCATOR_ARG1_SOURCE_GLOBAL": "UNKNOWN_OUTSIDE_OBSERVED_WINDOW",
+    "THUNK_X2_DISTINCT_VALUES": "PROVEN (40/40 unique)",
+    "THUNK_X2_POINTER_LIKE_VALUES": "PROVEN_OBSERVED (40/40)",
+    "THUNK_X2_SEMANTIC_ROLE": "UNKNOWN (next gate: ARMIO_THUNK_X2_PROVENANCE)",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE"
+  }
+}

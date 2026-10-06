@@ -1,0 +1,396 @@
+{
+  "gate": "CRYPTEX_NAMESPACE_BINDING",
+  "iteration": "57ZK",
+  "date": "2026-10-01",
+  "input_identity": {
+    "device": "iPhone15,4",
+    "board": "d37ap",
+    "soc": "t8120",
+    "build": "24A437",
+    "bootkc_path": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+    "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+    "base_system_image": {
+      "path": "phase05f-mutation/iter56/system-os-decrypted.dmg",
+      "sha256": "5A4AA9C67944599D67DA6971757526A50E6772DA698C0502322631A0DA37D73A"
+    },
+    "cryptex_image": {
+      "path": "phase05f-mutation/iter56/cryptex-systemos-decrypted.dmg",
+      "sha256": "B2131A5C1E6CF2C95E369E57379AB6D180D558E8A988E0CC66181D64FB781538"
+    },
+    "CRYPTEX_BINDING_INPUT_IDENTITY_PASS": true
+  },
+  "mapping_table_source": {
+    "CRYPTEX_PREBOOT_ALIAS_MAPPING_PASS": true,
+    "CRYPTEX_PREBOOT_ALIAS_VS_ROOT_BINDING_SEPARATION_PASS": true,
+    "sources": [
+      {
+        "name": "kernel static path-pair table (PREBOOT ALIAS ONLY)",
+        "location": "bootkc.bin __PRELINK_TEXT fileoff 0xa5a793",
+        "pairs": [
+          [
+            "/private/preboot/Cryptexes/OS/System/Library",
+            "/System/Cryptexes/OS/System/Library"
+          ],
+          [
+            "/private/preboot/Cryptexes/OS/usr/lib",
+            "/System/Cryptexes/OS/usr/lib"
+          ]
+        ],
+        "classification": "proves only the /private/preboot/Cryptexes/OS <-> /System/Cryptexes/OS alias, NOT the ordinary /System or /usr binding"
+      },
+      {
+        "name": "kernel ephemeral graft store",
+        "location": "apfs mount-private structure [apfs,#0xd50] hash table, count at #0xd60",
+        "role": "runtime graft records keyed by volume UUID / jobj range; loaded by apfs_mount_update and consumed by lookup"
+      },
+      {
+        "name": "sealed volume fext + integrity objects",
+        "location": "cryptex APSB fext_tree_oid=61503, integrity_meta_oid=1289",
+        "role": "FEXT = extent index (1828 records, verified); INTEGRITY_META = seal/root-hash anchor (v2, hash_type 1, root_hash_offset 128) - NEITHER stores a pathname graft table"
+      }
+    ],
+    "CRYPTEX_FEXT_INTEGRITY_NON_OVERCLAIM_PASS": true,
+    "fext_integrity_role": {
+      "FEXT": "sealed-volume file extent index/tree (61503, 1828 records)",
+      "INTEGRITY_META": "sealed-volume integrity/root-hash metadata (1289, v2, hash_type 1, root_hash_offset 128)",
+      "note": "neither stores a pathname graft table; no graft/composition metadata anchored in either"
+    },
+    "CRYPTEX_FEXT_INTEGRITY_SINGLE_STATE_PASS": true
+  },
+  "exact_consumer_function": {
+    "CRYPTEX_CONSUMER_FUNCTION_PASS": true,
+    "function": "apfs_mount (BootKC __TEXT_EXEC 0xfffffff00a25f794..0xfffffff00a261048)",
+    "verified_branch_sequence": [
+      {
+        "addr": "0xfffffff00a25fa70",
+        "string": "com.apple.private.apfs.force-firmlink-stitch",
+        "meaning": "entitlement gate"
+      },
+      {
+        "addr": "0xfffffff00a25fa9c",
+        "string": "mount force firmlinks"
+      },
+      {
+        "addr": "0xfffffff00a25fac8",
+        "string": "mount no firmlinks"
+      },
+      {
+        "addr": "0xfffffff00a25fb98",
+        "string": "failed to fetch the integrity object"
+      },
+      {
+        "addr": "0xfffffff00a25fdcc",
+        "string": "failed to fetch the fext tree"
+      },
+      {
+        "addr": "0xfffffff00a25fe00",
+        "string": "Cannot load the filesystem root tree"
+      },
+      {
+        "addr": "0xfffffff00a25fef4",
+        "string": "Cannot load the secondary filesystem root tree (PFK/secondary-fsroot loader path; INACTIVE for these volumes: sec_root_oid=0)"
+      },
+      {
+        "addr": "0xfffffff00a26149c",
+        "string": "failed to persist ephemeral grafts (apfs_mount_update)"
+      }
+    ]
+  },
+  "source_path": {
+    "CRYPTEX_SOURCE_PATH_PASS": true,
+    "source": "/private/preboot/Cryptexes/OS",
+    "evidence": [
+      "base volume symlink xattr: /System/Cryptexes/OS -> ../../private/preboot/Cryptexes/OS (com.apple.fs.symlink, cnid 1152921500311912570)",
+      "DT fstab: /private/preboot -> preboot-vol",
+      "BootKC pair table prefix at fileoff 0xa5a793"
+    ]
+  },
+  "destination_runtime_path": {
+    "CRYPTEX_DESTINATION_PATH_PASS": true,
+    "destination": "/System and /usr composed through the kernel graft store (NOT the inactive secondary-fsroot branch)",
+    "justification": "graft model only; the secondary-fsroot branch is INACTIVE for these volumes"
+  },
+  "end_to_end_binding": {
+    "CRYPTEX_ORDINARY_PATH_BINDING_PASS": false,
+    "CRYPTEX_SYSTEMVERSION_PROVENANCE_PASS": true,
+    "provenance_note": "the kernel mechanism and lookup path are statically traced; the exact concrete runtime graft record connecting a normal /System or /usr lookup to the SystemCryptex backing object remains runtime-deferred",
+    "status": "BLOCKED_BY_GUEST_BOOT_STAGE (concrete graft record STATIC_UNRESOLVED)",
+    "CRYPTEX_BINDING_CLAIM_LEVEL_PASS": true,
+    "claim_level": "MECHANISM_STATICALLY_TRACED_NOT_RUNTIME_PROVEN"
+  },
+  "fext_integrity_role": {
+    "CRYPTEX_FEXT_INTEGRITY_ROLE_PASS": true,
+    "fext_tree": {
+      "oid": 61503,
+      "role": "sealed-volume extent data tree; provides physical extents for files in the cryptex (verified: SystemVersion.plist extent phys 65594 via FEXT)",
+      "consumer_string": "failed to fetch the fext tree (0xa25fdcc inside apfs_mount)"
+    },
+    "integrity_meta": {
+      "oid": 1289,
+      "role": "sealed-volume integrity/root-hash metadata (v2, hash_type 1, root_hash_offset 128) - does NOT store a pathname graft table",
+      "consumer_string": "failed to fetch the integrity object (0xa25fb98 inside apfs_mount)"
+    },
+    "order": "integrity object is fetched BEFORE the fext tree in the mount sequence (0xa25fb98 < 0xa25fdcc), matching seal-first-then-data"
+  },
+  "timing_dependencies": {
+    "CRYPTEX_BINDING_TIMING_SINGLE_STATE_PASS": true,
+    "stages": [
+      {
+        "stage": "Preboot mount (/private/preboot -> preboot-vol)",
+        "status": "PROVEN (DT fstab)"
+      },
+      {
+        "stage": "graft record generation (EA decode at mount)",
+        "status": "INFERRED (code traced, no static record)"
+      },
+      {
+        "stage": "graft-store population (apfs_mount_update)",
+        "status": "INFERRED (code traced)"
+      },
+      {
+        "stage": "lookup availability",
+        "status": "INFERRED (lookup consumer traced)"
+      },
+      {
+        "stage": "launchd/cryptexd timing",
+        "status": "UNKNOWN"
+      }
+    ]
+  },
+  "checker_enforcement": {
+    "CRYPTEX_RUNTIME_BINDING_DEPENDENCY_CHECK_PASS": true,
+    "closure_fails_if": [
+      "SECONDARY_FSROOT_IS_CRYPTEX=true while exact volume incompat flags do not enable the feature (0x100 byte-2 bit0)",
+      "CRYPTEX_NAMESPACE_BINDING=PASS_CLOSED without CRYPTEX_RUNTIME_BINDING_SOURCE_PASS, CRYPTEX_RUNTIME_LOOKUP_CONSUMER_PASS, CRYPTEX_ORDINARY_PATH_BINDING_PASS"
+    ]
+  },
+  "canonical_state": {
+    "CRYPTEX_BINDING_INPUT_IDENTITY_PASS": true,
+    "APFS_SECONDARY_FSROOT_FORMAT_PASS": true,
+    "EXACT_VOLUME_SECONDARY_FSROOT_AUDIT_PASS": true,
+    "APFS_SECONDARY_FSROOT_BRANCH_CONDITION_PASS": true,
+    "SECONDARY_FSROOT_CRYPTEX_DEPENDENCY_CHECK_PASS": true,
+    "CRYPTEX_PREBOOT_ALIAS_MAPPING_PASS": true,
+    "CRYPTEX_PREBOOT_ALIAS_VS_ROOT_BINDING_SEPARATION_PASS": true,
+    "CRYPTEX_RUNTIME_BINDING_SOURCE_PASS": true,
+    "CRYPTEX_GRAFT_EA_VALUE_FLOW_PASS": true,
+    "APFS_EPHEMERAL_GRAFT_MODEL_PASS": true,
+    "CRYPTEX_RUNTIME_LOOKUP_CONSUMER_PASS": true,
+    "CRYPTEX_ORDINARY_PATH_BINDING_PASS": false,
+    "CRYPTEX_FEXT_INTEGRITY_NON_OVERCLAIM_PASS": true,
+    "CRYPTEX_SYSTEMVERSION_PROVENANCE_PASS": true,
+    "CRYPTEX_RUNTIME_BINDING_DEPENDENCY_CHECK_PASS": true,
+    "SECONDARY_FSROOT_IS_CRYPTEX": false,
+    "CRYPTEX_RUNTIME_BINDING_SOURCE": "kernel ephemeral graft store (apfs mount-private graft records)",
+    "ITERATION_57ZH": "PARTIAL_PASS_REPAIR_REQUIRED",
+    "ITERATION_57ZI": "PARTIAL_PASS_REPAIR_REQUIRED",
+    "CRYPTEX_NAMESPACE_BINDING": "STATIC_PASS_RUNTIME_DEFERRED",
+    "CRYPTEX_ATTACHMENT_MODEL": "STATIC_PASS_RUNTIME_DEFERRED",
+    "next_gate": "IOS_ROOT_DEVICE_SELECTION",
+    "APFS_INCOMPAT_FEATURE_CONSTANTS_PASS": true,
+    "APFS_SECONDARY_FSROOT_CONTROL_FLOW_PASS": true,
+    "APFS_SECONDARY_FSROOT_FEATURE_TEST_PASS": true,
+    "CRYPTEX_ACTIVE_STATE_NO_STALE_SECONDARY_ROOT_PASS": true,
+    "CRYPTEX_BINDING_TIMING_SINGLE_STATE_PASS": true,
+    "CRYPTEX_CONCRETE_GRAFT_RECORD_PASS": false,
+    "CRYPTEX_GRAFT_VOLUME_IDENTITY_PASS": false,
+    "CRYPTEX_GRAFT_RANGE_MEMBERSHIP_PASS": false,
+    "CRYPTEX_RUNTIME_GRAFT_MATCH_PASS": false,
+    "PREBOOM_REVIEW_STATE_SINGLE_SOURCE_PASS": true,
+    "CRYPTEX_GRAFT_RECORD_DEPENDENCY_CHECK_PASS": true,
+    "APFS_FEATURE_BIT_CONSISTENCY_PASS": true,
+    "CRYPTEX_RUNTIME_BINDING_PROOF_BLOCKED_BY_GUEST_BOOT_STAGE": true,
+    "ITERATION_57ZJ": "PASS (feature-bit repair) + RUNTIME_DEFERRED (graft record)",
+    "APFS_FEATURE_BIT_SINGLE_STATE_PASS": true,
+    "APFS_SECONDARY_FSROOT_SINGLE_STATE_PASS": true,
+    "CRYPTEX_BINDING_CLAIM_LEVEL_PASS": true,
+    "CRYPTEX_FEXT_INTEGRITY_SINGLE_STATE_PASS": true,
+    "CRYPTEX_RUNTIME_GRAFT_VALIDATION_DEFERRED_PASS": true,
+    "CRYPTEX_STATIC_VS_RUNTIME_SEPARATION_PASS": true,
+    "STORAGE_GATE_DEPENDENCY_CYCLE_REMOVED_PASS": true,
+    "ITERATION_57ZK": "PASS_PENDING_REVIEW"
+  },
+  "remaining_unknowns": [
+    "concrete graft record values (GRAFT_VOLUME_UUID / GRAFT_JOBJ_ID_BASE / GRAFT_JOBJ_ID_LEN) are STATIC_UNRESOLVED",
+    "CRYPTEX_RUNTIME_GRAFT_RECORD_VALIDATION is DEFERRED_UNTIL_GUEST_STORAGE_AVAILABLE",
+    "final Cryptex runtime certification may not close until the runtime record is observed"
+  ],
+  "analysis_base_head": "d78c9dbf935952fe3672c9fbd9386ddd1448f661",
+  "secondary_fsroot_audit": {
+    "APFS_SECONDARY_FSROOT_FORMAT_PASS": true,
+    "format": {
+      "apfs_secondary_fsroot_tree_oid": "offset 0x448 (per linux-apfs-rw apfs_raw.h apfs_sec_root_tree_oid)",
+      "apfs_secondary_fsroot_tree_type": "offset 0x450 (apfs_sec_root_tree_type)",
+      "APFS_INCOMPAT_SECONDARY_FSROOT": "0x100 (linux-apfs-rw apfs_raw.h)"
+    },
+    "EXACT_VOLUME_SECONDARY_FSROOT_AUDIT_PASS": true,
+    "volumes": {
+      "base": {
+        "name": "Rave24A437.D37OS",
+        "BASE_APFS_INCOMPAT": "0x08",
+        "BASE_SECONDARY_FSROOT_OID": 0,
+        "BASE_SECONDARY_FSROOT_TYPE": 2
+      },
+      "cryptex": {
+        "name": "Rave24A437.D37SystemCryptex",
+        "CRYPTEX_APFS_INCOMPAT": "0x28 (SEALED_VOLUME 0x20 | NORMALIZATION_INSENSITIVE 0x08)",
+        "CRYPTEX_SECONDARY_FSROOT_OID": 0,
+        "CRYPTEX_SECONDARY_FSROOT_TYPE": 2
+      }
+    },
+    "SECONDARY_FSROOT_CRYPTEX_DEPENDENCY_CHECK_PASS": true,
+    "SECONDARY_FSROOT_IS_CRYPTEX": false,
+    "dependency_note": "the previous 57ZH claim that the secondary filesystem root tree == Cryptex root is WITHDRAWN; neither volume sets the feature bit nor a nonzero sec_root oid"
+  },
+  "graft_ea_value_flow": {
+    "CRYPTEX_GRAFT_EA_VALUE_FLOW_PASS": true,
+    "decoder": "0xfffffff00a212308: EA name classifier maps com.apple.fs.firmlink -> id 8, graft-vol-uuid -> 9, graft-jobj-id-base -> 0xA, graft-jobj-id-len -> 0xB",
+    "persist_function": "0xfffffff00a1cada4 reads from source vnode [x19,#8] via 0xa23b13c (read EA): graft-vol-uuid (x2=0xbce3f6) -> apfs+0xf0; graft-jobj-id-base (0xbce412) -> sp+0x28 (8 bytes); graft-jobj-id-len (0xbce432) -> sp+0x20 (8 bytes)",
+    "write_back": "0xa245df0 called with (apfs, vnode, flags, [x19,#0xb8], 'com.apple.fs.graft-vol-uuid', 1) - persists the graft record into the mount-private graft store",
+    "store": "graft records live in the apfs mount-private structure hash table at [apfs,#0xd50], count at [apfs,#0xd60]; apfs_mount_update (0xa2611e8) walks and persists them, logging 'failed to persist ephemeral grafts' on error"
+  },
+  "ephemeral_graft_model": {
+    "APFS_EPHEMERAL_GRAFT_MODEL_PASS": true,
+    "generation": "mount-time EA decode on the source volume's grafted inodes",
+    "structure": "hash table keyed by graft range (jobj id base/len) + volume UUID",
+    "persistence": "apfs_mount_update persists ephemeral grafts into the volume metadata (0xa2613fc loop: ldr x25,[x27],#8 walks the table; each entry compared against [apsb,#0xb0] and re-persisted via 0xa1cada4)",
+    "consumption": "path lookup consults the graft store to resolve grafted ranges to their backing volume"
+  },
+  "runtime_lookup_consumer": {
+    "CRYPTEX_RUNTIME_LOOKUP_CONSUMER_PASS": true,
+    "function": "0xfffffff00a20f490 cluster: ldr x8,[x24,#0xc0]; ldr x8,[x8,#0xa0]; cbz -> graft check; call 0xa210ba4 (vnode op wrapper) -> authenticated graft lookup 0xa1ca0b4/0xa1ca284",
+    "note": "the graft lookup functions are PAC-signed vnode-op entries; direct BL callers are absent because they are invoked through the vnode_ops table, but the value-flow (EA decode -> persist -> store -> lookup test) is fully traced"
+  },
+  "apfs_incompat_constants": {
+    "APFS_INCOMPAT_FEATURE_CONSTANTS_PASS": true,
+    "APFS_FEATURE_BIT_SINGLE_STATE_PASS": true,
+    "values": {
+      "APFS_INCOMPAT_PFK": "0x00000040 (low-byte bit 6) - pfkur tree feature",
+      "APFS_INCOMPAT_EXTENT_PREALLOC": "0x00000080 (low-byte bit 7)",
+      "APFS_INCOMPAT_SECONDARY_FSROOT": "0x00000100 (byte-2 bit 0 / overall bit 8)"
+    }
+  },
+  "secondary_fsroot_control_flow": {
+    "APFS_SECONDARY_FSROOT_CONTROL_FLOW_PASS": true,
+    "entries": [
+      {
+        "addr": "0xfffffff00a25fe1c",
+        "insn": "ldr x8,[x19,#0xc0]",
+        "meaning": "apfs->apsb"
+      },
+      {
+        "addr": "0xfffffff00a25fe20",
+        "insn": "ldrb w9,[x8,#0x38]",
+        "meaning": "APSB incompat low byte"
+      },
+      {
+        "addr": "0xfffffff00a25fe24",
+        "insn": "tbz w9,#6",
+        "meaning": "tests PFK (0x40); gates the pfkur load at 0xa25ff04; NOT secondary-fsroot"
+      },
+      {
+        "addr": "0xfffffff00a25ff04",
+        "insn": "ldr w8,[x9,#0x414]; ldr x2,[x9,#0x418]",
+        "meaning": "PFK tree type/oid load; failure 'failed to fetch the pfkur tree'"
+      },
+      {
+        "addr": "0xfffffff00a25fd20",
+        "insn": "bl 0xa265858",
+        "meaning": "the secondary-fsroot loader (separate function)"
+      },
+      {
+        "addr": "0xfffffff00a265860",
+        "insn": "ldrb w8,[x9,#0x39]",
+        "meaning": "APSB incompat byte 2 (bit 8 = 0x100 SECONDARY_FSROOT)"
+      },
+      {
+        "addr": "0xfffffff00a265864",
+        "insn": "tbnz w8,#0",
+        "meaning": "THE REAL SECONDARY_FSROOT (0x100) feature test"
+      },
+      {
+        "addr": "0xfffffff00a265880",
+        "insn": "ldr x2,[x9,#0x448]",
+        "meaning": "apfs_sec_root_tree_oid load"
+      }
+    ]
+  },
+  "secondary_fsroot_feature_test": {
+    "APFS_SECONDARY_FSROOT_FEATURE_TEST_PASS": true,
+    "SECONDARY_FSROOT_FEATURE_TEST_ADDR": "0xfffffff00a265864",
+    "SECONDARY_FSROOT_FEATURE_TEST_INSN": "tbnz w8,#0 on byte loaded from APSB+0x39",
+    "SECONDARY_FSROOT_OID_LOAD_ADDR": "0xfffffff00a265880 (ldr x2,[x9,#0x448])",
+    "conclusion": "SECONDARY_FSROOT_IS_CRYPTEX=false; both volumes have sec_root_tree_oid=0 so the loader returns 0x2D (ENOTSUP)"
+  },
+  "CRYPTEX_ACTIVE_STATE_NO_STALE_SECONDARY_ROOT_PASS": true,
+  "concrete_graft_record": {
+    "CRYPTEX_CONCRETE_GRAFT_RECORD": "STATIC_UNRESOLVED",
+    "CRYPTEX_CONCRETE_GRAFT_RECORD_PASS": false,
+    "CRYPTEX_GRAFT_VOLUME_IDENTITY_PASS": false,
+    "CRYPTEX_GRAFT_RANGE_MEMBERSHIP_PASS": false,
+    "CRYPTEX_RUNTIME_GRAFT_MATCH_PASS": false,
+    "reason": "no graft EAs (com.apple.fs.graft-vol-uuid/jobj-id-base/jobj-id-len) exist as xattrs in the decrypted base or cryptex volume trees; the graft records are generated at boot from boot-prepared metadata not present in the static decrypted images",
+    "graft_record_fields_identified": [
+      "Graft directory inode",
+      "Cryptex inode",
+      "inode range base",
+      "inode range length",
+      "System content"
+    ],
+    "graft_field_consumer": "0xfffffff00a1b14b0 (delta restore / volume stats context)",
+    "CRYPTEX_RUNTIME_BINDING_PROOF_BLOCKED_BY_GUEST_BOOT_STAGE": true,
+    "blocked_note": "live graft-store dump / vnode path identity requires a guest that has mounted both volumes; the current guest cannot reach this stage without the pending ANS/NVMe storage implementation"
+  },
+  "PREBOOM_REVIEW_STATE_SINGLE_SOURCE_PASS": true,
+  "CRYPTEX_GRAFT_RECORD_DEPENDENCY_CHECK_PASS": true,
+  "APFS_FEATURE_BIT_CONSISTENCY_PASS": true,
+  "secondary_fsroot_single_state": {
+    "APFS_SECONDARY_FSROOT_SINGLE_STATE_PASS": true,
+    "feature_test": {
+      "addr": "0xfffffff00a265860",
+      "insn": "ldrb w8,[x9,#0x39]  (APSB incompat byte 2)",
+      "next": "0xfffffff00a265864: tbnz w8,#0  (bit 8 = 0x100 SECONDARY_FSROOT)"
+    },
+    "oid_load": {
+      "addr": "0xfffffff00a265880",
+      "insn": "ldr x2,[x9,#0x448]  (apfs_sec_root_tree_oid)"
+    },
+    "type_load": {
+      "addr": "0xfffffff00a26587c",
+      "insn": "ldr w8,[x9,#0x450]  (apfs_sec_root_tree_type)"
+    },
+    "volumes": {
+      "base": {
+        "incompat": "0x08",
+        "sec_root_oid": 0
+      },
+      "cryptex": {
+        "incompat": "0x28",
+        "sec_root_oid": 0
+      }
+    },
+    "SECONDARY_FSROOT_IS_CRYPTEX": false,
+    "pfk_path": {
+      "note": "the tbz bit6 at 0xfffffff00a25fe24 is the PFK (0x40) gate for the pfkur tree load at 0xa25ff04; it must NEVER be labeled SECONDARY_FSROOT"
+    }
+  },
+  "historical_superseded_findings": {
+    "note": "rejected interpretations retained for audit history only; NOT active",
+    "findings": [
+      "57ZH: 'secondary filesystem root tree = Cryptex root' - WITHDRAWN (feature bit not set, sec_root oid zero)",
+      "57ZI: '0xa25fe1c tbz bit6 = secondary-fsroot condition' - SUPERSEDED (bit6 is PFK 0x40); the real test is 0xa265864 byte-2 bit0 (0x100)"
+    ]
+  },
+  "deferred_runtime_gate": {
+    "CRYPTEX_RUNTIME_GRAFT_VALIDATION_DEFERRED_PASS": true,
+    "CRYPTEX_STATIC_ATTACHMENT_MODEL": "PASS_SUFFICIENT_FOR_IMPLEMENTATION_PLANNING",
+    "CRYPTEX_RUNTIME_GRAFT_RECORD_VALIDATION": "DEFERRED_UNTIL_GUEST_STORAGE_AVAILABLE",
+    "CRYPTEX_STATIC_VS_RUNTIME_SEPARATION_PASS": true,
+    "meaning": "static root/storage audits MAY CONTINUE; final Cryptex runtime certification MAY NOT CLOSE until the runtime record is observed"
+  },
+  "gate_dependency_graph": {
+    "STORAGE_GATE_DEPENDENCY_CYCLE_REMOVED_PASS": true,
+    "old_invalid": "CRYPTEX runtime graft proof blocks IOS_ROOT_DEVICE_SELECTION/ROOT_TRANSITION",
+    "new_valid": "CRYPTEX static attachment model is sufficient for: IOS_ROOT_DEVICE_SELECTION, IOS_ROOT_TRANSITION_MODEL, IOS_DATA_VOLUME_LIFECYCLE_AUDIT, MINIMUM_ANS_PROTOCOL_CONTRACT, MINIMUM_IOS_STORAGE_EMULATION_CONTRACT; later storage implementation + guest boot -> runtime graft-store observation -> CRYPTEX_RUNTIME_GRAFT_RECORD_VALIDATION"
+  }
+}

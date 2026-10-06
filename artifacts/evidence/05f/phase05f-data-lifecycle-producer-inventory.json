@@ -1,0 +1,302 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZY",
+  "date": "2026-10-02",
+  "ramdisk_sha256": "54250def83e624d3da7a04bd1ea37cedd9236a4b7c75a2e3abd8dc0ef048c069",
+  "ramdisk_size": 243269632,
+  "method": "raw string scan first pass; FSTREE-based file enumeration follows",
+  "findings": [
+    {
+      "needle": "newfs_apfs",
+      "hit_count": 8,
+      "samples": [
+        {
+          "offset": "0x5b5110",
+          "context": "~.......<x....A.....7m..P.:.............newfs_apfs (2332.120.31.100.1).....\\............apfs_kext (2332.120.31"
+        },
+        {
+          "offset": "0x8e0ee20",
+          "context": "reservingR-yR-n_..APFS (Encrypted).....Znewfs_apfs_.$7C3457EF-0000-11AA-AA11-00306543ECACZmount_apfsYfsck_apfs"
+        },
+        {
+          "offset": "0x8e18426",
+          "context": ".lproj...........L.tr.lproj...........q~newfs_apfs...........Gqko.lproj.............vi.lproj............ics.lp"
+        },
+        {
+          "offset": "0x8e1e936",
+          "context": "........ ...............P...............newfs_apfs..........fpmc......................................0......."
+        },
+        {
+          "offset": "0x8e914ae",
+          "context": "ert.Y........x..newfs_hfs.s.Y.........q~newfs_apfs..................................h........6rP......i......."
+        }
+      ]
+    },
+    {
+      "needle": "fsck_apfs",
+      "hit_count": 6,
+      "samples": [
+        {
+          "offset": "0x8e0d47b",
+          "context": "verter............Dit.lproj..........X.Dfsck_apfs............Fbg.lproj............Gsk.lproj..........0.Hsm_st"
+        },
+        {
+          "offset": "0x8e0ee5d",
+          "context": "-0000-11AA-AA11-00306543ECACZmount_apfsYfsck_apfsP.R-xR-i...........R-l.....?@ABCDEFGHIJKLMNOPQRSdUVWeXYZY)\\g"
+        },
+        {
+          "offset": "0x8e16534",
+          "context": "........ ...............................fsck_apfs...........fpmc.....,................................0.g...."
+        },
+        {
+          "offset": "0x8e9142c",
+          "context": "..fsck.Y.........s1fsck_hfs.Y........X.Dfsck_apfs.Y........Pyahalt.Y...........mount.Y...........launchd.Y..."
+        },
+        {
+          "offset": "0x8e93de0",
+          "context": "0.../System/Library/Filesystems/apfs.fs/fsck_apfs.Y.......]..........O.......O.....*.O.......O..............."
+        }
+      ]
+    },
+    {
+      "needle": "restore",
+      "hit_count": 12,
+      "samples": [
+        {
+          "offset": "0xc1f83f",
+          "context": "leAccessoryManagerRestoreToolsSwift/goldrestore2/FTAB/.FTABFile.m./Library/Caches/com.apple.xbs/342D9F1E-6C"
+        },
+        {
+          "offset": "0xc22762",
+          "context": "Objects/AppleAccessoryManager.build/goldrestore2.build/Objects-normal/arm64e/AUUtils.o./Library/Caches/com."
+        },
+        {
+          "offset": "0xc2975a",
+          "context": "Objects/AppleAccessoryManager.build/goldrestore2.build/Objects-normal/arm64e/AUUtils.o./Library/Caches/com."
+        },
+        {
+          "offset": "0xc30123",
+          "context": "Objects/AppleAccessoryManager.build/goldrestore2.build/Objects-normal/arm64e/AppleTypeCRetimerIICFifo.o./Li"
+        },
+        {
+          "offset": "0xc301f3",
+          "context": "leAccessoryManagerRestoreToolsSwift/goldrestore2/FTAB/.FTABFile+Dump.m./Library/Cac........................"
+        }
+      ]
+    },
+    {
+      "needle": "Restore",
+      "hit_count": 12,
+      "samples": [
+        {
+          "offset": "0xc1f829",
+          "context": "ory.NJy8WN/Sources/AppleAccessoryManagerRestoreToolsSwift/goldrestore2/FTAB/.FTABFile.m./Library/Caches/com"
+        },
+        {
+          "offset": "0xc22714",
+          "context": "ry.NJy8WN/Binaries/AppleAccessoryManagerRestoreToolsSwift/install/TempContent/Objects/AppleAccessoryManager"
+        },
+        {
+          "offset": "0xc2970c",
+          "context": "ry.NJy8WN/Binaries/AppleAccessoryManagerRestoreToolsSwift/install/TempContent/Objects/AppleAccessoryManager"
+        },
+        {
+          "offset": "0xc29803",
+          "context": "ory.NJy8WN/Sources/AppleAccessoryManagerRestoreToolsSwift/CoreUARP/.UARPDynamicAssetVersions.m./Library/Cac"
+        },
+        {
+          "offset": "0xc300d5",
+          "context": "ry.NJy8WN/Binaries/AppleAccessoryManagerRestoreToolsSwift/install/TempContent/Objects/AppleAccessoryManager"
+        }
+      ]
+    },
+    {
+      "needle": "asr",
+      "hit_count": 12,
+      "samples": [
+        {
+          "offset": "0x2acdab3",
+          "context": "..zx......P.._.6.u..b.Nc.....-..}...zc.7asr.....G.mjP..]`w.....h.-....9......y..6..rx.p..]Q..e`...|...."
+        },
+        {
+          "offset": "0x3ba1812",
+          "context": ".....5tM.....c.[..W.. =..rc!w....A.f....asr.~.B..4.\"....}Wi....m........m.....E....e.....:.c..t}..b..;."
+        },
+        {
+          "offset": "0x3c479fa",
+          "context": ".....5tM.....c.[..W.. =..rc!w....A.f....asr.~.B..4.\"....}Wi....m........m.....E....e.....:.c..t}..b..;."
+        },
+        {
+          "offset": "0x449810f",
+          "context": "r....Y'g......S...\".....&..S....3U..GS6.asr.Y..@...M....:.j.3......:9.r...g..-.3/Su t.X....Mj+......Q.."
+        },
+        {
+          "offset": "0x46534fe",
+          "context": "...a.c!M.._.-)/_...S.........E<..0VUC>..asr.l........u...YxP.....g.]$..BQ........]r.d..I.#.j7)...Y7.3b."
+        }
+      ]
+    },
+    {
+      "needle": "mis",
+      "hit_count": 12,
+      "samples": [
+        {
+          "offset": "0xc5e557",
+          "context": "..2.build/Objects-normal/arm64e/SmartFramistatProCrashAnalytics.o./Library/Caches/com.apple.xbs/342D9F1"
+        },
+        {
+          "offset": "0x16511c6",
+          "context": "P.I..P..zoX\\0!.DZ..V..G.M.).rH.+..9U....mis..[.=,....jC..sB..+..}]..S....kD.kc..0h..6....t.X?g....:.q.U"
+        },
+        {
+          "offset": "0x1d365b7",
+          "context": "(=.;0..\"o.9.V.....\\Z.R....rp..9..G..~..#mis..9.. Z...)..^....;..]..i..v+...]...$fZ...N......w....E...[."
+        },
+        {
+          "offset": "0x26e878b",
+          "context": "olution_containerunderstoodnoscript><permissioneach otheratmosphere onfocus=\"<form id=\"processingthis.v"
+        },
+        {
+          "offset": "0x2b0167c",
+          "context": "o..'.........#=-.....k.j...6.E...}}...\"Xmis...d.3..P....i....._O....,...GaS7s..._........a....N.....;.."
+        }
+      ]
+    },
+    {
+      "needle": "seal",
+      "hit_count": 4,
+      "samples": [
+        {
+          "offset": "0x8e0d2bf",
+          "context": ".........el.lproj..........$N.apfs_checkseal...........P.ja.lproj.............mr.lproj...........(.mount"
+        },
+        {
+          "offset": "0x8e0e5bc",
+          "context": "...............p..............apfs_checkseal......fpmc....p........ ......B.................0..........."
+        },
+        {
+          "offset": "0x8e0fd61",
+          "context": "... ...............0...............apfs_sealvolume..@..........................fpmc.....N........0......"
+        },
+        {
+          "offset": "0x8e183a6",
+          "context": ".......u.slurpAPFSMeta..........T'.apfs_sealvolume.............pl.lproj...........v.hu.lproj............"
+        }
+      ]
+    },
+    {
+      "needle": "AppleKeyStore",
+      "hit_count": 6,
+      "samples": [
+        {
+          "offset": "0x8e3248d",
+          "context": ".8MSUDataAccessor.framework..........`Z>AppleKeyStore.framework..........@>@ProtocolBuffer.framework..........(NB"
+        },
+        {
+          "offset": "0x8e3821c",
+          "context": "..com.apple.decmpfs........0...........NAppleKeyStore........0.......@..com.apple.ResourceFork..................."
+        },
+        {
+          "offset": "0x8e386d6",
+          "context": "........ ...............p...............AppleKeyStore.........................................I.../......./......"
+        },
+        {
+          "offset": "0x8e3875c",
+          "context": ".....................A..................AppleKeyStore.framework.....fpmc............. .......6................0.."
+        },
+        {
+          "offset": "0x8e39f27",
+          "context": "Y23A344017XiphoneosTFMWK. XiPhoneOSS6.0]AppleKeyStore_.\"com.apple.compilers.llvm.clang.1_0T27.0_..com.apple.Apple"
+        }
+      ]
+    },
+    {
+      "needle": "crypto",
+      "hit_count": 8,
+      "samples": [
+        {
+          "offset": "0x8df8465",
+          "context": "bsystem_malloc.dylib.T...........libcorecrypto.dylib.T...........libdyld.dylib.T...........libsystem_kerne"
+        },
+        {
+          "offset": "0x8df998b",
+          "context": ". ...............................libcorecrypto.dylib.........fpmc.....l................................0.f"
+        },
+        {
+          "offset": "0x8ea34d5",
+          "context": "....;liblaunch.dylib............Blibcorecrypto_noasm.dylib..........|.Klibsystem_notify.dylib...........4i"
+        },
+        {
+          "offset": "0x8ea358d",
+          "context": "ibcommonCrypto.dylib.............libcorecrypto.dylib..........h..libsystem_symptoms.dylib.........!@:.libs"
+        },
+        {
+          "offset": "0x8ea5b43",
+          "context": ". ................1..............libcorecrypto.dylib.........fpmc....p...............Ka................0.."
+        }
+      ]
+    },
+    {
+      "needle": "ramdisk",
+      "hit_count": 6,
+      "samples": [
+        {
+          "offset": "0x5b52c0",
+          "context": "........................................ramdisk............................................................"
+        },
+        {
+          "offset": "0x8e2e202",
+          "context": ".......+...com.apple.PurpleReverseProxy.ramdisk.plist.x........X..com.apple.ReportCrash.plist.y......0y...."
+        },
+        {
+          "offset": "0x8e2ebfb",
+          "context": "utPath.._.$com.apple.PurpleReverseProxy.ramdiskXAdaptive..._../usr/libexec/PurpleReverseProxyY--ramdisk...."
+        },
+        {
+          "offset": "0x8e2ec33",
+          "context": "..._../usr/libexec/PurpleReverseProxyY--ramdisk.......TctrlVnotifyUsocks.....ZSockFamily_..SockServiceNameV"
+        },
+        {
+          "offset": "0x8e2eda5",
+          "context": ".....0...+.com.apple.PurpleReverseProxy.ramdisk.plist......z.........Q.......y.........O.......{........sR."
+        }
+      ]
+    },
+    {
+      "needle": "container",
+      "hit_count": 11,
+      "samples": [
+        {
+          "offset": "0xa69b96",
+          "context": "ache: %d..%s:%d: %s sanity checking all container state..x^..y\\...8~[.R...!...%..Y.,....j4....d.V..$$I*.*.hQ."
+        },
+        {
+          "offset": "0x26e876b",
+          "context": "iscussioncomponentsbiologicalRevolution_containerunderstoodnoscript><permissioneach otheratmosphere onfocus=\""
+        },
+        {
+          "offset": "0x70311be",
+          "context": "dByString:.componentsSeparatedByString:.containerID.count.deactivateVolume:shortName:options:replyHandler:.de"
+        },
+        {
+          "offset": "0x8e0637a",
+          "context": "..........KFontParser.plist............Gcontainermanagerd.plist.............................................."
+        },
+        {
+          "offset": "0x8e0aa06",
+          "context": "d</key>...<true/>..</dict>..<key>create_containers_on_query_miss</key>..<dict>...<key>DevelopmentPhase</key>."
+        }
+      ]
+    },
+    {
+      "needle": "Container",
+      "hit_count": 1,
+      "samples": [
+        {
+          "offset": "0x8e8ff31",
+          "context": "y (SUCoreDevice) access to iBoot System Container.(allow file-read* file-write*.    (subpath \"/System/Volumes"
+        }
+      ]
+    }
+  ]
+}

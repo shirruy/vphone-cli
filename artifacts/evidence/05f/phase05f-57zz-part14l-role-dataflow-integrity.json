@@ -1,0 +1,196 @@
+{
+  "gate": "IOS_DATA_VOLUME_LIFECYCLE_AUDIT",
+  "iteration": "57ZZ_PART14L_ROLE_DATAFLOW_INTEGRITY",
+  "binary": {
+    "path": "C:\\Users\\rbjos\\AppData\\Local\\Temp\\57zz-binaries\\restored_external.bin",
+    "sha256": "c56ad938de7c0844c95ebcf7df417288b5d6eb9b655350f00a31b7d02d18c770"
+  },
+  "wrapper_bounds": {
+    "start": "0x1000821bc",
+    "end": "0x100082cc0",
+    "size": "0xb04"
+  },
+  "x25_role_register_uses": [
+    "1000821f0  mov x25, x3",
+    "1000824ac  cmp w25, #1",
+    "100082588  mov x2, x25",
+    "100082934  cmp w25, #1",
+    "1000829dc  mov x25, x0",
+    "1000829fc  sxtw x3, w25",
+    "100082a84  stur w25, [x0, #0xe]",
+    "100082b54  ldr x25, [x8, #0xf80]",
+    "100082b6c  mov x0, x25",
+    "100082b80  mov x25, x0",
+    "100082bb8  mov x2, x25",
+    "100082bcc  mov x0, x25"
+  ],
+  "x23_definitions": [
+    "100082234  mov x23, x0",
+    "1000822d4  sub x23, x8, x9",
+    "100082354  sub x23, x8, x9",
+    "1000823d4  sub x23, x8, x9",
+    "100082528  sub x23, x8, x9",
+    "100082598  ldrh w23, [x0, #4]",
+    "100082608  sub x23, x8, x9",
+    "100082660  mov w23, #0",
+    "100082698  mov x23, x0",
+    "1000826e0  mov x23, x0",
+    "100082718  mov x23, x0",
+    "10008275c  mov x23, x0",
+    "100082798  mov x23, x0",
+    "1000827e0  mov x23, x0",
+    "100082828  mov x23, x0",
+    "100082854  mov x23, x0",
+    "1000828b0  sub x23, x8, x9",
+    "10008296c  sub x23, x8, x9",
+    "100082a48  sub x23, x8, x9",
+    "100082adc  sub x23, x8, x9",
+    "100082b4c  mov x23, x0",
+    "100082c50  sub x23, x8, x9"
+  ],
+  "conversion_chain": [
+    "1000821f0  mov x25, x3",
+    "100082588  mov x2, x25",
+    "10008258c  bl #0x1001c42a0",
+    "100082594  cbz x0, #0x100082660",
+    "100082598  ldrh w23, [x0, #4]",
+    "10008259c  b #0x100082664"
+  ],
+  "conversion_call": {
+    "site": "0x100082588-0x100082598",
+    "selector": "roleMetadataForRole:",
+    "disassembly": [
+      "0x100082588  mov x2, x25        ; LP logical role -> lookup",
+      "0x10008258c  bl roleMetadataForRole: (objc stub 0x1001c42a0)",
+      "0x100082594  cbz x0, 0x100082660  ; failure -> w23 = 0 default",
+      "0x100082598  ldrh w23, [x0, #4]   ; APFS role bits from metadata +4"
+    ],
+    "receiver_class": "LPStaticAPFSVolume (metaclass)",
+    "metadata_method": "+[LPStaticAPFSVolume roleMetadataForRole:] IMP 0x1000840a8",
+    "enumeration": "+[LPStaticAPFSVolume enumerateRoleMetadataUsingBlock:] IMP 0x100084044, 17 entries",
+    "table_vm": "0x1002cb238"
+  },
+  "role_metadata_table": [
+    {
+      "index": 0,
+      "lp_logical_role": 0,
+      "apfs_role_bits": 0,
+      "name": ""
+    },
+    {
+      "index": 1,
+      "lp_logical_role": 1,
+      "apfs_role_bits": 1,
+      "name": "System"
+    },
+    {
+      "index": 2,
+      "lp_logical_role": 2,
+      "apfs_role_bits": 2,
+      "name": "User"
+    },
+    {
+      "index": 3,
+      "lp_logical_role": 4,
+      "apfs_role_bits": 4,
+      "name": "Recovery"
+    },
+    {
+      "index": 4,
+      "lp_logical_role": 5,
+      "apfs_role_bits": 8,
+      "name": "VM"
+    },
+    {
+      "index": 5,
+      "lp_logical_role": 6,
+      "apfs_role_bits": 16,
+      "name": "Preboot"
+    },
+    {
+      "index": 6,
+      "lp_logical_role": 7,
+      "apfs_role_bits": 32,
+      "name": "Installer"
+    },
+    {
+      "index": 7,
+      "lp_logical_role": 3,
+      "apfs_role_bits": 64,
+      "name": "Data"
+    },
+    {
+      "index": 8,
+      "lp_logical_role": 8,
+      "apfs_role_bits": 128,
+      "name": "Baseband data"
+    },
+    {
+      "index": 9,
+      "lp_logical_role": 12,
+      "apfs_role_bits": 192,
+      "name": "Update"
+    },
+    {
+      "index": 10,
+      "lp_logical_role": 9,
+      "apfs_role_bits": 256,
+      "name": "xART"
+    },
+    {
+      "index": 11,
+      "lp_logical_role": 13,
+      "apfs_role_bits": 320,
+      "name": "Hardware"
+    },
+    {
+      "index": 12,
+      "lp_logical_role": 11,
+      "apfs_role_bits": 384,
+      "name": "Backup"
+    },
+    {
+      "index": 13,
+      "lp_logical_role": 14,
+      "apfs_role_bits": 448,
+      "name": "SideCar"
+    },
+    {
+      "index": 14,
+      "lp_logical_role": 10,
+      "apfs_role_bits": 512,
+      "name": "Internal"
+    },
+    {
+      "index": 15,
+      "lp_logical_role": 15,
+      "apfs_role_bits": 576,
+      "name": "Enterprise data"
+    },
+    {
+      "index": 16,
+      "lp_logical_role": 16,
+      "apfs_role_bits": 640,
+      "name": "iDiags"
+    }
+  ],
+  "key_correction": {
+    "previous_claim": "w3 -> x25 -> NSNumber -> kAPFSVolumeRoleKey (unmodified passthrough)",
+    "corrected_finding": "w3 -> x25 (LP logical enum) -> [LPStaticAPFSVolume roleMetadataForRole:] -> ldrh w23, [result+4] (APFS role bits) -> numberWithInt: -> dict[kAPFSVolumeRoleKey]",
+    "mov_w23_0_meaning": "FAILURE DEFAULT: when roleMetadataForRole: returns nil (unknown role), w23 defaults to 0",
+    "previous_passthrough_claim": "RETRACTED",
+    "previous_no_0x40_wording": "CORRECTED: the conversion IS inside the wrapper via the metadata table; 0x40 is table entry LP=3"
+  },
+  "data_role": {
+    "lp_logical_enum": 3,
+    "apfs_role_bits": 64,
+    "name": "Data",
+    "proven": true
+  },
+  "verdicts": {
+    "ROLE_WRAPPER_DATAFLOW": "PASS",
+    "DATA_ROLE_0x40_STATIC_PROOF": "PASS",
+    "DATA_LIFECYCLE_STATIC_GATE": "BLOCKED"
+  },
+  "gate_blocked_reason": "The LP->APFS conversion and Data=0x40 are now PROVEN inside the wrapper. The remaining blocker is ONLY the external orchestrator that passes LP role=3 for the actual Data invocation. Runtime mount identity remains deferred."
+}

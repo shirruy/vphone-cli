@@ -1,0 +1,29 @@
+{
+  "gate": "58B_DT_PHYSICAL_COMPATIBLE_PROOF",
+  "dump_window": [
+    "0x10006000000",
+    "0x10008000000"
+  ],
+  "dump_sha256": "9A4A81465F6921420CFA126C368BE37EF91575F0EDC86CA4901D1193C0BFAA40",
+  "dtree_fixture_sha256": "CE06C3379F50E6E9FBB60D2EA0FBA6733F0FF2784C3E4E11AA7EC0F2F07D8868",
+  "findings": {
+    "ans_node_compatible_iop_ascwrap_v6": {
+      "physical_addresses": [
+        "0x10006fe07f0",
+        "0x1000713c7bd"
+      ],
+      "context_hex": "000000000000000000000000000000000000000004000000616e7300636f6d70617469626c65000000000000000000000000000000000000000000000f000000696f702c617363777261702d76360000696e746572727570747300000000000000000000000000000000000000000000140000006e0200006d020000700200006f020000750200006d73702d6266682d706172616d7300",
+      "decoded": "name=ans compatible=iop,ascwrap-v6 interrupts=<5 IRQs> msp-bfh-params present"
+    },
+    "dt_root_D37AP": [
+      "0x10006fc42a8",
+      "0x10006fc42d4",
+      "0x10006ffce48"
+    ],
+    "nub_compatible_iop_nub_rtbuddy_v2": [
+      "0x10006fe0b80",
+      "0x100072c8bb3"
+    ]
+  },
+  "conclusion": "The /arm-io/ans DT node with compatible=iop,ascwrap-v6 is physically present in guest DRAM after boot. The DT encoding is NOT the blocker. Combined with zero ASCWrapV6 starts and 103 IOPlatformDevice allocations, the blocker is isolated to the AppleARMIO enumeration/matching stage inside the closed-source ARM platform expert kext."
+}

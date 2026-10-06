@@ -1,0 +1,161 @@
+iBoot version: qemu-sptm
+Darwin Image4 Extension Version 7.0.0: Thu Aug 13 21:25:47 PDT 2026; root:AppleImage4-374~14049/AppleImage4/RELEASE_ARM64E
+AppleImage4: legacy nonce blob length insufficient: actual = 96, expected >= 368
+AppleImage4: magazine[pdmg]: failed to read nonce slot data: 2
+AppleImage4: magazine[cptx]: failed to read nonce slot data: 2
+AppleImage4: magazine[dvdi]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1bt]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1ab]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1gn]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1sm]: failed to read nonce slot data: 2
+AppleImage4: magazine[d1ma]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1ge]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1er]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1ai]: failed to read nonce slot data: 2
+AppleImage4: magazine[c1al]: failed to read nonce slot data: 2
+AppleImage4: root power domain not yet available: 19
+Image4: unable to setup /chosen/asmb node
+AMFI: UDID support enabled: 2
+AMFI: queried model name from device tree: iPhone15,4
+AMFI: disabling Swift Playgrounds JIT services on iPhone devices
+AMFI: Booted in a VM
+IOServicePH::kIOMessageSystemCapabilityChange: will 0xf->0xf
+IOServicePH::systemPowerChange to 0x30
+IOServicePH::kIOMessageSystemCapabilityChange: did 0xf->0xf
+AppleARMBacklight::start: Using new Backlight Architecture 1
+AppleARMBacklight::start: _lMaxProduct=142540800
+AppleARMBacklight::start: _lMidProduct=10158080
+AppleARMBacklight::start: _lMinProduct=131072
+AppleARMBacklight::exportCalibration: _lMaxProduct=142540800, _lMidProduct=10158080, _lMinProduct=131072, _lMaxPanel=142540800, _lMidPanel=10158080, _lMinPanel=131072, _milliAmps2NitsScaleFactor=0
+AppleARMBacklight::start: no backlight enable function
+AppleARMBacklight::start: no backlight update function
+AppleARMBacklight::start: _minDACLevel=153 _maxDACLevel=2047
+ACMTRM: initU32FromBootArg: acm_fastsim = 0xffffffff <--- not found.
+ACMTRM: initU32FromEDTProp: /defaults/insecure_hpr = 0x0 <--- not found.
+ACMTRM: isFastSimTarget: isFastSim = NO.
+AppleCredentialManager: init: inited KE[1] (ready=NO AVP=NO SIM=NO SIMT=NO USESEP=YES) -> true.
+AppleCredentialManager: probe: probed KE[1] (ready=NO) -> true (score=0).
+Warning: arc4random not implemented
+Warning: arc4random not implemented
+Warning: arc4random not implemented
+AKSAnalytics built Aug 13 2026 21:38:22
+selected analytics domain SpinningiPhoneAppCacheAKSAnalytics startedAppleARMBootPerf: Error: profile handoff region not found (2)
+AppleARMBootPerf: Error: failed to publish profile data (2)
+AppleARMSFRManifest: Starting
+AppleARMSFRManifest: Error: Failed to find property sfr-manifest-hash
+AppleARMSFRManifest: Found HASH property
+AppleARMSFRManifest: Found 0 matching hash entries
+AppleARMSFRManifest: Error: Invalid input
+AppleARMSFRManifest: Error: Failed to find manifest entry region
+AppleARMSFRManifest: Error: Failed to locate manifest information
+AppleARMSFRManifest: Successfully published sfr-manifest
+[AppleLockdownMode - start] started
+Loaded debug arguments with mask 0x00000001, serial log: disabled
+[AppleLockdownMode - LDMShouldEnforceParity] restoreOS check passed
+AppleCredentialManager: start: starting KE[1] (ready=NO) -> true.
+AppleCredentialManager: initImpl: called, KE[1].
+ACMFirstResponderKernelService: init: called, .
+ACM: init: called, .
+ACMTRM-S: init: called, starting PersistentStore service.
+ACMTRM-A: init: called, starting TRM Analytics service.
+ACMTRM-C: init: called, starting AccessoryCache service.
+ACMTRM: init: called, starting TRM service [BUILT: Aug 13 2026, 21:32:40].
+ACMTRM: initU32FromBootArg: trm_default = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_enabled = 0xffffffff <--- not found.
+ACMTRM: initU32FromEDTProp: /defaults/trm-enabled = 0x1.
+ACMTRM: initU32FromBootArg: trm_unification = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_all_policy_modes = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_base_system = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: hidrm_default = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: hidrm_enabled = 0xffffffff <--- not found.
+ACMTRM: initU32FromEDTProp: /defaults/hidrm-enabled = 0x1.
+ACMTRM: initU32FromEDTProp: /options/stress-rack = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_change_policy_mode = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_profile = 0xffffffff <--- not found.
+ACMTRM: initU32FromEDTProp: /defaults/trm-profile = 0x3.
+ACMTRM: initU32FromBootArg: trm_analytics_period = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_acc_cache_size = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_acc_cache_expiration = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_relaxed_period_timeout = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_unlocked_period_timeout = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: usb_standard_mode_timeout = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_policy_timeout = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: usb_standard_mode_lock_timeout = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_grace_period_timeout = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: trm_keep_enabled_during_apple_setup = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: itrm_hyst_period_timeout = 0xffffffff <--- not found.
+ACMTRM: initU32FromBootArg: itrm_grace_period_timeout = 0xffffffff <--- not found.
+ACMTRM: _disableBy: [TRM ENABLED=YES] (mask=0, DISABLED BY: Def=N* Arg=N HW=N DT=N Env=N Ext=N Dev=N SEP=N SR=N | MC=N DW=N CB=N GS=N CP=N BS=N MB=N SC=N AS=N IB=N DM=N).
+ACMTRM: _disableBy: [TRM ENABLED=YES] (mask=0, DISABLED BY: Def=N Arg=N* HW=N DT=N Env=N Ext=N Dev=N SEP=N SR=N | MC=N DW=N CB=N GS=N CP=N BS=N MB=N SC=N AS=N IB=N DM=N).
+ACMTRM: _disableBy: [TRM ENABLED=YES] (mask=0, DISABLED BY: Def=N Arg=N HW=N DT=N* Env=N Ext=N Dev=N SEP=N SR=N | MC=N DW=N CB=N GS=N CP=N BS=N MB=N SC=N AS=N IB=N DM=N).
+ACMTRM: _loadDisabledByOSEnvironment: disabled by OSEnvironment: NO.
+ACMTRM: _disableBy: [TRM ENABLED=YES] (mask=0, DISABLED BY: Def=N Arg=N HW=N DT=N Env=N* Ext=N Dev=N SEP=N SR=N | MC=N DW=N CB=N GS=N CP=N BS=N MB=N SC=N AS=N IB=N DM=N).
+ACMTRM: initU32FromEDTProp: /chosen/sepfw-load-at-boot = 0x1.
+ACMTRM: isSEPAvailable: isSEPAvailable = YES.
+ACMTRM: _disableBy: [TRM ENABLED=YES] (mask=0, DISABLED BY: Def=N Arg=N HW=N DT=N Env=N Ext=N Dev=N SEP=N* SR=N | MC=N DW=N CB=N GS=N CP=N BS=N MB=N SC=N AS=N IB=N DM=N).
+ACMTRM: _disableBy: [TRM ENABLED=YES] (mask=0, DISABLED BY: Def=N Arg=N HW=N DT=N Env=N Ext=N Dev=N SEP=N SR=N* | MC=N DW=N CB=N GS=N CP=N BS=N MB=N SC=N AS=N IB=N DM=N).
+ACMTRM: prop___set: TRM_PolicyTimeout = 259200.
+ACMTRM: prop___set: TRM_RelaxedPeriodTimeout = 259200.
+ACMTRM: prop___set: TRM_UnlockedPeriodTimeout = 86400.
+ACMTRM: prop___set: HIDRM_PolicyEnabled = No(0).
+ACMTRM: _mapAndPublish: ---> TRM state changed (3/0/0) while LOCKED(1), TRM: 259200/-(255) 4294967295/-(255) M=255/4294967295/4294967295 ---(255)/---(255) L=255 BS=255 R=255 RP=259200/255 UP=86400/255, RAW: -(255) -(255).
+ACMTRM: _mapAndPublish: ---> HIDRM state changed (1) while LOCKED(1), enabled=0 E=255/255.
+ACMLockdownModeKernelService: init: called, .
+ACMLockdownModeKernelService: init: returning, result = true.
+AppleCredentialManager: initImpl: KE[1] INITED.
+AppleCredentialManager: initImpl: returning, KE[1] -> true.
+AppleCredentialManager: startImpl: called, KE[1].
+ACM: TRMAccCache_SetupEmpty: called, cacheSize=48 expiration=2592000.
+ACMTRM: start: security.mac.acm.root_pivot_occurred sysctl registered.
+ACMLockdownModeKernelService: start: called, .
+ACMLockdownModeKernelService: start: returning, result = true.
+AppleCredentialManager: startImpl: initializing power management.
+AppleCredentialManager: startImpl: will join SEPManager's PM tree in getSEPEndpoint().
+AppleCredentialManager: startImpl: registering notifications.
+AppleCredentialManager: startImpl: KE[1] STARTED.
+AppleCredentialManager: startImpl: returning, KE[1] -> true.
+AppleCredentialManager: start: started KE[1] (ready=YES) -> true.
+"AppleSEPKeyStore":pid:0,:373: starting (BUILT: Aug 13 2026 21:37:54) ("normal" variant 🌽 , 2383.2.1)
+"AppleSEPKeyStore":pid:0,:492: _sep_enabled = 1
+"AppleSEPKeyStore":pid:0,:553: ioPerfControl is enabled: 1, 1
+virtual bool CoreAnalyticsHub::start(IOService *)::150:CoreAnalyticsHub start
+virtual bool CoreAnalyticsHub::start(IOService *)::229:CoreAnalyticsHub start completed
+AppleInterruptControllerV2::start: Num Shared Timestamps == 16
+AMFI: skipping PMGRAON latch due to AVP
+AMFI: trying to get developer mode status from ACM
+AppleCredentialManager: waitForSEPEndpointOutsideACMCommandGate: waiting (cmd=25).
+com.apple.AppleFSCompressionTypeZlib kmod start
+apfs_module_start:3381: load: com.apple.filesystems.apfs, v3288.2.1, apfs-3288.2.1, 2026/08/13
+com.apple.AppleFSCompressionTypeZlib load succeeded
+Setting up notifier for CoreAnalyticsHub
+apfs_sysctl_register:1328: done registering sysctls.
+L2TP domain init
+L2TP domain init complete
+Load request for com.apple.nke.pptp failed: -603946991
+BSD root: md0, major 3, minor 0
+apfs_vfsop_mountroot:3156: apfs: mountroot called!
+container_rootmount:2638: boot from ramdisk /dev/md0
+dev_init:296: md0 device accelerated crypto: 0 (compiled @ Aug 13 2026 21:26:23)
+dev_init:299: md0 device_handle block size 512 block count 475136 features 0 internal 
+nx_mount:1157: md0 initializing cache w/hash_size 1024 and cache size 4096
+nx_mount:1482: md0 checkpoint search: largest xid 9, best xid 9 @ 3
+nx_mount:1509: md0 stable checkpoint indices: desc 2 data 3
+fs_lookup_root_snapshot_name:375: md0s1 failed to get root-snapshot-name from DT
+apfs_find_named_root_snapshot_xid:2153: md0s1 failed to retrieve default root snapshot xid: No such file or directory (2)
+apfs_find_named_root_snapshot_xid:2191: md0s1 The global payload bytes pointer is NULL
+apfs_vfsop_mount:2914: md0s1 failed to find named root snapshot: Need authenticator (81)
+apfs_log_op_with_proc:3279: md0s1 mounting volume ramdisk, requested by: kernel_task (pid 0); parent: kernel_task (pid 0)
+apfs_vfsop_mount:3017: md0s1 fs iokit node was not found
+handle_mount:893: md0s1 vol-uuid: 3C78AF1A-BDD0-4115-A51F-02E7376DFB03 block size: 4096 block count: 59392 (unencrypted; flags: 0x1; features: 8.0.2)
+handle_mount:906: md0s1 setting dev block size to 4096 from 512
+apfs_log_op_with_proc:3279: md0s1 mount-complete volume ramdisk, requested by: kernel_task (pid 0); parent: kernel_task (pid 0)
+[uart] Started AppleSerialShim.
+AppleOLYHAL::probe: score = 1000
+AppleOLYHAL::start: entry with provider 0xc9610b1b2a206bdf
+AppleOLYHAL::start: found wlan-olyhal-abort boot-arg, bailing
+virtual bool AppleARMLightEmUp::start(IOService *): starting...
+Darwin Ignition Sequence Version 1.0.0: Thu Aug 13 21:26:15 PDT 2026; root:libignition-64~19679/libignition_core/RELEASE_ARM64E
+libignition: 1: arguments           :
+libignition: 1:   ignition level    : 0x5
+libignition: 1:   force dylib root  : 0x0
+libignition: 1:   halt after stage  : n/a

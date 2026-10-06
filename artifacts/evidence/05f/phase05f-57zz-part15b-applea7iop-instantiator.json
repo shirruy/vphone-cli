@@ -1,0 +1,184 @@
+{
+  "gate": "PART15B_APPLEA7IOP_INSTANTIATOR",
+  "iteration": "57ZZ_RUNTIME_BOUNDARY",
+  "bootkc_sha256": "C01B133237EB9C5AA6C7ED38F54ED5DB924B4BA2E6465CD51F0245B4C823E800",
+  "U1_prelink_parse": {
+    "method": "plistlib.loads over extracted enclosing plist document",
+    "kext_count": 276,
+    "blocks": {
+      "com.apple.driver.AppleA7IOP": {
+        "found": true,
+        "CFBundleExecutable": "AppleA7IOP",
+        "IOKitPersonalities_present": false,
+        "IOKitPersonalities_type": null,
+        "IOKitPersonalities_count": null,
+        "personality_names": null,
+        "OSBundleLibraries": {
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0"
+        }
+      },
+      "com.apple.driver.AppleA7IOP-ASCWrap-v6": {
+        "found": true,
+        "CFBundleExecutable": "AppleA7IOP-ASCWrap-v6",
+        "IOKitPersonalities_present": true,
+        "IOKitPersonalities_type": "dict",
+        "IOKitPersonalities_count": 3,
+        "personality_names": [
+          "AppleASCWrapV6",
+          "AppleASCWrapV6SEP",
+          "AppleASCWrapV6SISP"
+        ],
+        "OSBundleLibraries": {
+          "com.apple.driver.AppleA7IOP": "1.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0"
+        }
+      },
+      "com.apple.driver.AppleARMPlatform": {
+        "found": true,
+        "CFBundleExecutable": "AppleARMPlatform",
+        "IOKitPersonalities_present": true,
+        "IOKitPersonalities_type": "dict",
+        "IOKitPersonalities_count": 17,
+        "personality_names": [
+          "AppleARMBacklight",
+          "AppleARMBootPerf",
+          "AppleARMCFIFlashController",
+          "AppleARMCPU",
+          "AppleARMFabricTrace",
+          "AppleARMI2CEEPROM",
+          "AppleARMLightEmUp",
+          "AppleARMNMI",
+          "AppleARMNORNVRAM1",
+          "AppleARMNORNVRAM2",
+          "AppleARMNORPanicLog",
+          "AppleARMPE",
+          "AppleARMPWMBacklight",
+          "AppleARMSFRManifest",
+          "AppleARMSPIFlashController",
+          "AppleARMSlowAdaptiveClockingManager",
+          "AppleARMSoftIICController"
+        ],
+        "OSBundleLibraries": {
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.iokit.IOSlowAdaptiveClockingFamily": "1.0",
+          "com.apple.iokit.IOStorageFamily": "1.5",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "22.0",
+          "com.apple.kpi.unsupported": "8.0"
+        }
+      },
+      "com.apple.driver.IOSlaveProcessor": {
+        "found": true,
+        "CFBundleExecutable": "IOSlaveProcessor",
+        "IOKitPersonalities_present": false,
+        "IOKitPersonalities_type": null,
+        "IOKitPersonalities_count": null,
+        "personality_names": null,
+        "OSBundleLibraries": {
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.private": "8.0"
+        }
+      }
+    }
+  },
+  "U2_personality_verdict": "ABSENT_PROVEN",
+  "U3_fileset_mapping": {
+    "bundle_id": "com.apple.driver.AppleA7IOP",
+    "derived_entry": {
+      "bundle_id": "com.apple.driver.AppleA7IOP",
+      "prelink_load_addr": "0xfffffff00713c1f0",
+      "prelink_kmod_info": "0xfffffff00afed4e8",
+      "fileset_entry_vm": "0xfffffff00713c1f0",
+      "fileset_entry_fileoff": "0x1381f0"
+    },
+    "verdict": "PASS"
+  },
+  "U7_derived_start": {
+    "found": true,
+    "vm": "0xfffffff0082f4df0",
+    "prologue": [
+      "fffffff0082f4df0  pacibsp ",
+      "fffffff0082f4df4  sub sp, sp, #0x50",
+      "fffffff0082f4df8  stp x24, x23, [sp, #0x10]",
+      "fffffff0082f4dfc  stp x22, x21, [sp, #0x20]",
+      "fffffff0082f4e00  stp x20, x19, [sp, #0x30]",
+      "fffffff0082f4e04  stp x29, x30, [sp, #0x40]",
+      "fffffff0082f4e08  add x29, sp, #0x40",
+      "fffffff0082f4e0c  mov x19, x1"
+    ],
+    "abi": {
+      "x1_saved_to": "x19, x1",
+      "x1_saved_to_register": "x19"
+    }
+  },
+  "V1_start_proof": {
+    "start_string_xrefs": [
+      "0xfffffff0082f7804"
+    ],
+    "mod_init_class_object": "0xfffffff00afed5c0",
+    "expected_vtable": "0xfffffff007d14370",
+    "vtable_verdict": "BLOCKED",
+    "start_proof": "BLOCKED",
+    "twin_function_found": "0xfffffff0082f804c (identical prologue; candidate is one of a pair)"
+  },
+  "V3_vtable_0x2c0": {
+    "vtable_base": "0xfffffff007d151a0",
+    "entry_raw": "0x80113c6802da9920",
+    "target_fo": "0x2da9920",
+    "target_vm": "0xfffffff009dad920",
+    "classification": "SUPER_START_CHAIN (kernel entry 236 IOService-style start)"
+  },
+  "RUNTIME_BOUNDARY_STATICS": {
+    "verdict": "PASS",
+    "ascwrap_entry_index": 1275680,
+    "a7iop_entry_index": 1278448,
+    "applea7iop_class_object": "0xfffffff00afed5c0",
+    "applea7iop_class_name": "AppleA7IOP",
+    "ascwrap_got_slot": "0xfffffff007d13bc0",
+    "ascwrap_got_class_object": "0xfffffff00afed5c0",
+    "superclass_proven": true,
+    "nub_withregistryentry": "0xfffffff0082f7b40",
+    "nub_alloc_size": "0x98",
+    "nub_vtable_slot": "+0x8b0",
+    "nub_class_object": "0xfffffff00afed5e8",
+    "nub_proven": true
+  },
+  "verdicts": {
+    "PRELINK_METADATA_PARSE": "PASS",
+    "APPLEA7IOP_IOKIT_PERSONALITY": "ABSENT_PROVEN",
+    "APPLEA7IOP_FILESET_MAPPING": "PASS",
+    "APPLEA7IOP_START": "BLOCKED",
+    "START_ABI": "PROVEN",
+    "APPLEA7IOP_VTABLE": "BLOCKED",
+    "START_VTABLE_SLOT": "BLOCKED",
+    "APPLEASCWRAPV6_SUPERCLASS": "VALIDATED_WITH_KNOWN_ANCHORS -> AppleA7IOP",
+    "APPLEA7IOP_CLASS_OBJECT": "0xfffffff00afed5c0",
+    "APPLEA7IOPNUB_WITHREGISTRYENTRY": "0xfffffff0082f7b40",
+    "APPLEA7IOP_INSTANTIATOR": "UNKNOWN",
+    "FIELD_0xF8": "UNKNOWN_OBJECT_FROM_VTABLE_0x2C0",
+    "VTABLE_0x2C0": "SUPER_START_CHAIN (not factory)",
+    "VTABLE_0x118": "UNKNOWN",
+    "VTABLE_0x3D0": "UNKNOWN",
+    "VTABLE_0x568": "UNKNOWN",
+    "VTABLE_0x570": "UNKNOWN",
+    "FIRST_QEMU_VISIBLE_PRIMITIVE": "BLOCKED",
+    "FIRST_ANS_RUNTIME_REQUIREMENT": "CANDIDATE_AKF_PROVIDER_CHAIN",
+    "ITERATION_58B_ENTRY_GATE": "BLOCKED_PROOF_INCOMPLETE",
+    "ANS_STORAGE_IMPLEMENTATION_READINESS": "BLOCKED_FOR_58B"
+  }
+}

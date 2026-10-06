@@ -1,0 +1,249 @@
+{
+  "gate": "05F_58B_APPLEARMIIO_ENUMERATE",
+  "bootkc": "C:\\Users\\rbjos\\vphone-private\\phase05f-known-good\\payloads-v3\\bootkc.bin",
+  "kc_header": {
+    "filetype": "0xc (MH_FILESET)",
+    "fileset_entries": 259,
+    "text_exec": {
+      "vm": "0xfffffff0081e4000",
+      "fileoff": "0x11e0000",
+      "filesize": "0x2a44000"
+    },
+    "prelink_text": {
+      "vm": "0xfffffff00700c000",
+      "fileoff": "0x8000"
+    }
+  },
+  "string_anchors": {
+    "primary": {
+      "file": "0x15e66e",
+      "vm": "0xfffffff00716266e",
+      "value": "AppleARMIO"
+    },
+    "plus_0x10": {
+      "file": "0x15e67e",
+      "vm": "0xfffffff00716267e",
+      "verdict": "SUFFIX_MERGED tail of 'site.AppleARMIO'; not an independent anchor",
+      "xrefs": []
+    }
+  },
+  "string_xrefs_in_TEXT_EXEC": [
+    {
+      "site": "0xfffffff008387c7c",
+      "target": "0xfffffff00716266e",
+      "string": "AppleARMIO",
+      "segment": "__TEXT_EXEC"
+    },
+    {
+      "site": "0xfffffff008387dc0",
+      "target": "0xfffffff00716266e",
+      "string": "AppleARMIO",
+      "segment": "__TEXT_EXEC"
+    },
+    {
+      "site": "0xfffffff00838a180",
+      "target": "0xfffffff00716266e",
+      "string": "AppleARMIO",
+      "segment": "__TEXT_EXEC"
+    }
+  ],
+  "referencing_function_classification": {
+    "0xfffffff00838a168": {
+      "classification": "mod_init-style OSMetaClass registration function",
+      "evidence": "calls 0xfffffff0083d2d4c twice with names \"AppleARMIO\" and \"AppleARMIODevice\"; stores PAC'd vtable pointers",
+      "registers": [
+        {
+          "class": "AppleARMIO",
+          "class_object": "0xfffffff00afef430",
+          "instance_size": "0xd8",
+          "vtable_stored": "0xfffffff007d33078+0x10=0xfffffff007d33088",
+          "name_ref_site": "0xfffffff00838a180"
+        },
+        {
+          "class": "AppleARMIODevice",
+          "class_object": "0xfffffff00afef458",
+          "instance_size": "0x108",
+          "vtable_stored": "0xfffffff007d336d0+0x10=0xfffffff007d336e0",
+          "name_ref_site": "0xfffffff00838a1bc",
+          "bl_site": "0xfffffff00838a1cc"
+        }
+      ],
+      "note": "0xfffffff007d336e0 matches the 57ZZ-established AppleARMIODevice vtable (independent confirmation)"
+    },
+    "0xfffffff008387c68": {
+      "classification": "another OSMetaClass registration using the same \"AppleARMIO\" literal",
+      "evidence": "same bl 0xfffffff0083d2d4c pattern with x1=\"AppleARMIO\", size 0xd8, vtable 0xfffffff007d33078+0x10"
+    },
+    "0xfffffff008387d34_region": {
+      "classification": "third registration-family function (xref at 0xfffffff008387dc0); same call pattern",
+      "full_disassembly": "NOT_COMPLETED_IN_TIME (fail-closed)"
+    }
+  },
+  "applearmio_start": {
+    "vtable": "0xfffffff007d33088",
+    "slot_plus_0x360": "0xfffffff00aad7da0",
+    "function": "0xfffffff00aad7da0",
+    "shared_with_device_vtable_slot": "0xfffffff007d336e0+0x360 also resolves to 0xfffffff00aad7da0 (fixup-proven) => AppleARMIODevice inherits AppleARMIO::start",
+    "disassembly": [
+      "0xfffffff00aad7da0: pacibsp  ",
+      "0xfffffff00aad7da4: sub      sp, sp, #0x60",
+      "0xfffffff00aad7da8: stp      x24, x23, [sp, #0x20]",
+      "0xfffffff00aad7dac: stp      x22, x21, [sp, #0x30]",
+      "0xfffffff00aad7db0: stp      x20, x19, [sp, #0x40]",
+      "0xfffffff00aad7db4: stp      x29, x30, [sp, #0x50]",
+      "0xfffffff00aad7db8: add      x29, sp, #0x50",
+      "0xfffffff00aad7dbc: mov      x20, x2",
+      "0xfffffff00aad7dc0: mov      x21, x1",
+      "0xfffffff00aad7dc4: mov      x19, x0",
+      "0xfffffff00aad7dc8: ldr      x16, [x0]",
+      "0xfffffff00aad7dcc: mov      x17, x0",
+      "0xfffffff00aad7dd0: movk     x17, #0xcda1, lsl #48",
+      "0xfffffff00aad7dd4: autda    x16, x17",
+      "0xfffffff00aad7dd8: mov      x17, #0x300",
+      "0xfffffff00aad7ddc: add      x16, x16, x17",
+      "0xfffffff00aad7de0: ldr      x8, [x16]",
+      "0xfffffff00aad7de4: mov      w1, #1",
+      "0xfffffff00aad7de8: movk     x16, #0xc6b2, lsl #48",
+      "0xfffffff00aad7dec: blraa    x8, x16",
+      "0xfffffff00aad7df0: ldr      x16, [x19]",
+      "0xfffffff00aad7df4: mov      x17, x19",
+      "0xfffffff00aad7df8: movk     x17, #0xcda1, lsl #48",
+      "0xfffffff00aad7dfc: autda    x16, x17",
+      "0xfffffff00aad7e00: mov      x17, #0x2e8",
+      "0xfffffff00aad7e04: add      x16, x16, x17",
+      "0xfffffff00aad7e08: ldr      x8, [x16]",
+      "0xfffffff00aad7e0c: mov      x0, x19",
+      "0xfffffff00aad7e10: mov      x1, x21",
+      "0xfffffff00aad7e14: movk     x16, #0xaec3, lsl #48",
+      "0xfffffff00aad7e18: blraa    x8, x16",
+      "0xfffffff00aad7e1c: ldr      x16, [x19]",
+      "0xfffffff00aad7e20: mov      x17, x19",
+      "0xfffffff00aad7e24: movk     x17, #0xcda1, lsl #48",
+      "0xfffffff00aad7e28: autda    x16, x17",
+      "0xfffffff00aad7e2c: cbz      w0, #0xfffffff00aad7f1c",
+      "0xfffffff00aad7e30: mov      x22, x19",
+      "0xfffffff00aad7e34: movk     x22, #0xcda1, lsl #48",
+      "0xfffffff00aad7e38: add      x8, x16, #0x2e0",
+      "0xfffffff00aad7e3c: ldr      x9, [x16, #0x2e0]",
+      "0xfffffff00aad7e40: mov      x0, x19",
+      "0xfffffff00aad7e44: mov      x1, x21",
+      "0xfffffff00aad7e48: mov      x2, x20",
+      "0xfffffff00aad7e4c: mov      x17, x8",
+      "0xfffffff00aad7e50: movk     x17, #0xe933, lsl #48",
+      "0xfffffff00aad7e54: blraa    x9, x17",
+      "0xfffffff00aad7e58: ldr      w23, [x19, #0x4c]",
+      "0xfffffff00aad7e5c: cbz      x21, #0xfffffff00aad7e80",
+      "0xfffffff00aad7e60: ldr      x8, [x21, #0x28]",
+      "0xfffffff00aad7e64: ldr      x8, [x8, #0x28]",
+      "0xfffffff00aad7e68: cbz      x8, #0xfffffff00aad7e80",
+      "0xfffffff00aad7e6c: ldr      x0, [x8]",
+      "0xfffffff00aad7e70: cbz      x0, #0xfffffff00aad7e80",
+      "0xfffffff00aad7e74: mov      x1, x19",
+      "0xfffffff00aad7e78: mov      x2, x21",
+      "0xfffffff00aad7e7c: bl       #0xfffffff00ab90a00",
+      "0xfffffff00aad7e80: ldr      x16, [x19]",
+      "0xfffffff00aad7e84: autda    x16, x22",
+      "0xfffffff00aad7e88: mov      x17, #0x308",
+      "0xfffffff00aad7e8c: add      x16, x16, x17",
+      "0xfffffff00aad7e90: ldr      x8, [x16]",
+      "0xfffffff00aad7e94: mov      x0, x19",
+      "0xfffffff00aad7e98: movk     x16, #0x8a43, lsl #48",
+      "0xfffffff00aad7e9c: blraa    x8, x16",
+      "0xfffffff00aad7ea0: tbnz     w23, #0x17, #0xfffffff00aad7f4c",
+      "0xfffffff00aad7ea4: stp      x19, xzr, [sp]",
+      "0xfffffff00aad7ea8: mov      w8, #0x110",
+      "0xfffffff00aad7eac: movk     w8, #0xe000, lsl #16",
+      "0xfffffff00aad7eb0: str      w8, [sp, #8]",
+      "0xfffffff00aad7eb4: stp      x21, xzr, [sp, #0x10]",
+      "0xfffffff00aad7eb8: str      w20, [sp, #0x18]",
+      "0xfffffff00aad7ebc: adrp     x8, #0xfffffff00af5c000",
+      "0xfffffff00aad7ec0: ldr      x1, [x8, #0x380]",
+      "0xfffffff00aad7ec4: ldr      x16, [x19]",
+      "0xfffffff00aad7ec8: autda    x16, x22",
+      "0xfffffff00aad7ecc: mov      x17, #0x450",
+      "0xfffffff00aad7ed0: add      x16, x16, x17",
+      "0xfffffff00aad7ed4: ldr      x9, [x16]",
+      "0xfffffff00aad7ed8: mov      x8, x16",
+      "0xfffffff00aad7edc: adrp     x16, #0xfffffff00aad7000",
+      "0xfffffff00aad7ee0: add      x16, x16, #0xf70 ; =0xfffffff00aad7f70",
+      "0xfffffff00aad7ee4: mov      x17, #0x73d8",
+      "0xfffffff00aad7ee8: pacia    x16, x17",
+      "0xfffffff00aad7eec: mov      x2, x16",
+      "0xfffffff00aad7ef0: mov      x3, sp",
+      "0xfffffff00aad7ef4: mov      x0, x19",
+      "0xfffffff00aad7ef8: mov      x17, x8",
+      "0xfffffff00aad7efc: movk     x17, #0x785f, lsl #48",
+      "0xfffffff00aad7f00: blraa    x9, x17",
+      "0xfffffff00aad7f04: ldp      x29, x30, [sp, #0x50]",
+      "0xfffffff00aad7f08: ldp      x20, x19, [sp, #0x40]",
+      "0xfffffff00aad7f0c: ldp      x22, x21, [sp, #0x30]",
+      "0xfffffff00aad7f10: ldp      x24, x23, [sp, #0x20]",
+      "0xfffffff00aad7f14: add      sp, sp, #0x60",
+      "0xfffffff00aad7f18: retab    "
+    ],
+    "enumeration_model": "No direct DT/ADT API calls, no adrp to any string, no strcmp, no literal compares. Child nubs are produced via IOService virtual dispatch: slots +0x300/+0x2e8/+0x2e0/+0x308 virtuals run first (super::start chain), then a stack match-spec {provider=self, 0, 0xe0000110, provider, 0, dict} is passed to virtual slot +0x450 with a PAC'd callback 0xfffffff00aad7f70 => IOService matching/iteration performs child enumeration, not inline name loops.",
+    "skip_logic_verdict": "NO name-based or property-based skip logic found in AppleARMIO::start; enumeration is delegated to IOService matching."
+  },
+  "allocator_context": {
+    "thunk_0xfffffff008387eb0": [
+      "0xfffffff008387eb0: mov      x1, x2",
+      "0xfffffff008387eb4: b        #0xfffffff008387eb8",
+      "0xfffffff008387eb8: bti      c",
+      "0xfffffff008387ebc: pacibsp  ",
+      "0xfffffff008387ec0: stp      x22, x21, [sp, #-0x30]!",
+      "0xfffffff008387ec4: stp      x20, x19, [sp, #0x10]",
+      "0xfffffff008387ec8: stp      x29, x30, [sp, #0x20]",
+      "0xfffffff008387ecc: add      x29, sp, #0x20",
+      "0xfffffff008387ed0: mov      x20, x1",
+      "0xfffffff008387ed4: mov      x21, x0",
+      "0xfffffff008387ed8: adrp     x0, #0xfffffff007d46000",
+      "0xfffffff008387edc: add      x0, x0, #0x810 ; =0xfffffff007d46810"
+    ],
+    "allocator_0xfffffff008387eb8": "bti c; pacibsp head only (full contract in 57ZZ artifact)",
+    "caller": "NO direct BL/B callers and NO chained-fixup references anywhere in __TEXT_EXEC/__DATA_CONST/__DATA (57ZZ scanner, fail-closed) => allocator is reached through OSMetaClass runtime dispatch on class object 0xfffffff00afef458, not a statically-visible call site",
+    "dt_node_list_source": "NOT_FOUND_STATICALLY: the nub list is produced by IOService matching (vtable +0x450 call in AppleARMIO::start), which reads DT-backed IOPlatformDevice dictionaries at runtime"
+  },
+  "ans_skip_logic_scans": {
+    "cstring_xrefs_equal_ans": [],
+    "movz_0x7361_movk_0x6e_immediates": [
+      {
+        "site": "0xfffffff0082e279c",
+        "kind": "movk #0x6e, lsl #16"
+      },
+      {
+        "site": "0xfffffff009899f28",
+        "kind": "movk #0x6e, lsl #16"
+      },
+      {
+        "site": "0xfffffff0098b3e40",
+        "kind": "movz #0x7361"
+      },
+      {
+        "site": "0xfffffff009a67e98",
+        "kind": "movz #0x7361"
+      },
+      {
+        "site": "0xfffffff009a67f54",
+        "kind": "movz #0x7361"
+      },
+      {
+        "site": "0xfffffff009a69038",
+        "kind": "movz #0x7361"
+      },
+      {
+        "site": "0xfffffff009a690e0",
+        "kind": "movz #0x7361"
+      }
+    ],
+    "full_strcmp_needle_list_analysis": "NOT_PERFORMED_IN_TIME (fail-closed)",
+    "interim_verdict": "NO_STATIC_NAME_BASED_SKIP_FOUND_SO_FAR; absence in AppleARMIO::start is proven, exhaustive kernel-wide needle-list scan incomplete"
+  },
+  "runtime_context": {
+    "ioplatformdevice_allocations": 103,
+    "ascwrap_starts": 0,
+    "dt_compatible_strings_in_dram": true,
+    "implication": "DT content reaches matching; failure is downstream of enumeration/matching, consistent with no-name-skip in start"
+  },
+  "exact_next_probe": "Break at AppleARMIO::start virtual +0x450 callsite (0xfffffff00aad7efc blraa) and at the PAC'd callback 0xfffffff00aad7f70; capture x1 (match dict from 0xfffffff00af5c380 global) and the callback's per-child argument. If /arm-io/ans reaches the callback with name \"ans\" but no AppleARMIODevice allocator hit follows, the skip is in IOService matching personality resolution; if it never reaches the callback, the skip is upstream in DT node enumeration (IODT child iteration), which is outside this fileset entry.",
+  "verdict": "PARTIAL: xrefs + registration + start disassembly proven; kernel-wide ans-needle scan and allocator-caller trace incomplete"
+}

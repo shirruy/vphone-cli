@@ -1,0 +1,16 @@
+{
+  "gate": "58B_ASCWRAP_V6_OPEN_GATE_FAILURE_CONFIRMED",
+  "probe": {
+    "fail_target": "0xfffffff00aacf728",
+    "hits": 1,
+    "interpretation": "The ASCWrapV6 open path (vtable+0x428 -> 0xfffffff00aacf5e0) reaches its fail branch exactly once per boot - the open FAILS"
+  },
+  "fail_chain": {
+    "open_fn": "0xfffffff00aacf5e0",
+    "first_check": "vtable+0x398 virtual call (cbz x0 -> fail)",
+    "slot_0x398_target": "0xfffffff00aad5edc",
+    "slot_0x398_analysis": "Calls provider vtable+0x1a0 with w3=1 (clock enable) via a global at 0xfffffff00af5c478; returns bool. If the provider (AppleARMIODevice nub) cannot enable the clock gate, this returns false -> open fails"
+  },
+  "root_cause_hypothesis": "The ans DT node has clock-ids/clock-gates properties (u32:0x75 each). The AppleARMIODevice nub forwards clock-enable requests to the PMGR (power management) device. QEMU has NO PMGR device model - the clock-enable call cannot complete, so ASCWrapV6::open fails, so no MMIO is ever mapped, so ANS3 never loads.",
+  "fix": "Implement minimal PMGR clock-gate responses in QEMU for the ANS clock IDs (0x75), OR stub the provider's clock-gate virtual to return success. The cleanest first step: map the PMGR MMIO region from the DT (/arm-io/pmgr) and respond to its registers so clock-enable calls succeed."
+}

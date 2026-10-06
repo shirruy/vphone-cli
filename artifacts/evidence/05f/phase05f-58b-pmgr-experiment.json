@@ -1,0 +1,17 @@
+{
+  "gate": "58B_PMGR_EXPERIMENT_AND_FAIL_SITE_REFINEMENT",
+  "pmgr_experiment": {
+    "device": "apple-pmgr mapped 4 MMIO regions (0x23b700000, 0x23d280000, 0x23b000000, 0x23d200000), all reads return powered-on",
+    "result": "ANS MMIO reads remain ZERO. Open-gate fail target 0xfffffff00aacf728 still hit once. The all-ones PMGR did NOT fix the open failure.",
+    "interpretation": "The open gate failure is NOT (only) a clock-state problem. The first check in the open chain (vtable+0x398 -> 0xfffffff00aad5edc -> provider vtable+0x1a0 -> 0xfffffff00aac6e50) is a DT-plane registry navigation, and it fails at a deeper check."
+  },
+  "refined_fail_chain": {
+    "fn_0xaac6e50": [
+      "1. getParent-style: [x19+0x18] vtable+0x128 call -> cbz fail (NOT the trigger: probe at 0x...aac6eb4 shows non-null result)",
+      "2. compareName-style: result vtable+0x90 must == 1 -> b.ne fail (possible trigger)",
+      "3. property lookup: result vtable+0x118 -> cbz fail (possible trigger)"
+    ],
+    "fail_target_0xaac6f50_hit": 1
+  },
+  "next_probe": "Break at 0x...aac6ee0 (after the +0x90 call) to check w0, and at 0x...aac6f14 (after the +0x118 call) to check x0. The one that hits its fail branch is the exact killer."
+}
