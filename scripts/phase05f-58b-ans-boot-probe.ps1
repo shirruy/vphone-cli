@@ -19,7 +19,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$RepoRoot = 'C:\Users\rbjos\source\vphone-cli-windows'
+$RepoRoot = Split-Path -Parent $PSScriptRoot
 $QemuBuild = Join-Path $RepoRoot 'build\phase05e-qemu-sptm-source-build\darwin-vm\qemu-sptm\build-win'
 $QemuExe = Join-Path $QemuBuild 'qemu-system-aarch64.exe'
 $MingwBin = 'C:\msys64\mingw64\bin'

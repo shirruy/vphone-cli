@@ -1,6 +1,6 @@
 param([int]$MonitorPort = 4444, [int]$WarmupSeconds = 20, [string]$RunName = "58b-pmem-multi")
 $ErrorActionPreference = 'Stop'
-$RepoRoot = 'C:\Users\rbjos\source\vphone-cli-windows'
+$RepoRoot = Split-Path -Parent $PSScriptRoot
 $QemuBuild = Join-Path $RepoRoot 'build\phase05e-qemu-sptm-source-build\darwin-vm\qemu-sptm\build-win'
 $QemuExe = Join-Path $QemuBuild 'qemu-system-aarch64.exe'
 $MingwBin = 'C:\msys64\mingw64\bin'
@@ -23,8 +23,10 @@ $writer = New-Object System.IO.StreamWriter($stream); $writer.NewLine = "`n"
 Start-Sleep -Milliseconds 300
 $buf = New-Object byte[] 4096
 while ($stream.DataAvailable) { $null = $stream.Read($buf,0,$buf.Length) }
+# Scan the DT blob region (0x10006fc0000-0x10007000000) where the physical
+# DT copy lives, plus early DRAM for the DT plane objects.
 $windows = @()
-for ($i = 0; $i -lt 8; $i++) {
+foreach ($i in 0..7) {
     $base = [uint64]0x10000000000 + [uint64]($i * 0x2000000)
     $f = Join-Path $RunRoot ("w{0}.bin" -f $i)
     $fp = $f.Replace('\','/')

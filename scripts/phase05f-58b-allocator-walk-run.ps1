@@ -13,7 +13,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$RepoRoot = 'C:\Users\rbjos\source\vphone-cli-windows'
+$RepoRoot = Split-Path -Parent $PSScriptRoot
 $MingwBin = 'C:\msys64\mingw64\bin'
 $GdbExe = Join-Path $MingwBin 'gdb-multiarch.exe'
 $SrcRun = Join-Path $RepoRoot "build\phase05f-runtime\$RunName"
